@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import WidgetPreview from "./pages/WidgetPreview";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,7 +25,7 @@ const App = () => (
           <Route path="/dashboard/closed" element={<Dashboard />} />
           <Route path="/dashboard/properties" element={<Dashboard />} />
           <Route path="/dashboard/agents" element={<Dashboard />} />
-          <Route path="/dashboard/analytics" element={<Dashboard />} />
+          <Route path="/dashboard/analytics" element={<Analytics />} />
           <Route path="/dashboard/widget" element={<WidgetPreview />} />
           <Route path="/dashboard/settings" element={<Dashboard />} />
           <Route path="/widget-preview" element={<WidgetPreview />} />

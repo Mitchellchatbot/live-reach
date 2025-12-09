@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, BarChart3 } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { ChatPanel } from '@/components/dashboard/ChatPanel';
-import { BlogAnalytics } from '@/components/dashboard/BlogAnalytics';
 import { mockConversations, mockProperties } from '@/data/mockData';
 import { Conversation, Message } from '@/types/chat';
 import { Input } from '@/components/ui/input';
@@ -16,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 type FilterStatus = 'all' | 'active' | 'pending' | 'closed';
 
@@ -174,24 +172,6 @@ const Dashboard = () => {
             onSendMessage={handleSendMessage}
             onCloseConversation={handleCloseConversation}
           />
-        </div>
-
-        {/* Analytics Sidebar */}
-        <div className="w-80 border-l border-border bg-card hidden xl:block">
-          <div className="p-4 border-b border-border">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-primary" />
-              Lead Analytics
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Track blog performance & lead sources
-            </p>
-          </div>
-          <ScrollArea className="h-[calc(100vh-80px)]">
-            <div className="p-4">
-              <BlogAnalytics />
-            </div>
-          </ScrollArea>
         </div>
       </div>
     </div>
