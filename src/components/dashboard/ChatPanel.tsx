@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Conversation, Message } from '@/types/chat';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { mockAgents } from '@/data/mockData';
+import { useVideoChat } from '@/hooks/useVideoChat';
+import { VideoCallModal } from '@/components/video/VideoCallModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatPanelProps {
   conversation: Conversation | null;
@@ -75,8 +78,41 @@ const EmptyState = () => (
 
 export const ChatPanel = ({ conversation, onSendMessage, onCloseConversation }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
+  const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const videoChat = useVideoChat({
+    onCallRequest: () => {
+      toast({
+        title: "Calling visitor",
+        description: "Waiting for visitor to accept...",
+      });
+    },
+    onCallAccepted: () => {
+      toast({
+        title: "Call connected",
+        description: "Video call is now active",
+      });
+    },
+    onCallEnded: () => {
+      toast({
+        title: "Call ended",
+        description: "The video call has ended",
+      });
+    },
+  });
+
+  const handleStartVideoCall = async () => {
+    setIsVideoCallOpen(true);
+    await videoChat.initiateCall();
+  };
+
+  const handleEndVideoCall = () => {
+    videoChat.endCall();
+    setIsVideoCallOpen(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -145,6 +181,16 @@ export const ChatPanel = ({ conversation, onSendMessage, onCloseConversation }: 
             >
               {status}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleStartVideoCall}
+              disabled={status === 'closed'}
+              className="gap-2"
+            >
+              <Video className="h-4 w-4" />
+              Video Call
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -284,6 +330,23 @@ export const ChatPanel = ({ conversation, onSendMessage, onCloseConversation }: 
           )}
         </div>
       </div>
+
+      {/* Video Call Modal */}
+      <VideoCallModal
+        isOpen={isVideoCallOpen}
+        onClose={() => setIsVideoCallOpen(false)}
+        status={videoChat.status}
+        isMuted={videoChat.isMuted}
+        isVideoOff={videoChat.isVideoOff}
+        error={videoChat.error}
+        localVideoRef={videoChat.localVideoRef}
+        remoteVideoRef={videoChat.remoteVideoRef}
+        onEndCall={handleEndVideoCall}
+        onToggleMute={videoChat.toggleMute}
+        onToggleVideo={videoChat.toggleVideo}
+        participantName={visitorName}
+        isInitiator={true}
+      />
     </div>
   );
 };
