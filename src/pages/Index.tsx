@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { MessageSquare, Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3 } from 'lucide-react';
+import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
+import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
 const features = [
   {
@@ -44,9 +45,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-lg chat-gradient flex items-center justify-center">
-                <MessageSquare className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img src={scaledBotLogo} alt="Scaled Bot" className="h-9 w-9 rounded-lg" />
               <span className="font-bold text-xl text-foreground">Scaled Bot</span>
             </div>
             <div className="flex items-center gap-4">
@@ -164,9 +163,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg chat-gradient flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <img src={scaledBotLogo} alt="Scaled Bot" className="h-8 w-8 rounded-lg" />
               <span className="font-semibold text-foreground">Scaled Bot</span>
             </div>
             <p className="text-sm text-muted-foreground">
