@@ -139,30 +139,30 @@ export const ChatWidget = ({
     <div className={cn("z-50 font-sans", isPreview ? "relative" : "fixed bottom-4 right-4")}>
       {/* Incoming Call Notification */}
       {hasIncomingCall && (
-        <div className="absolute bottom-20 right-0 w-72 bg-background rounded-xl shadow-lg border border-border p-4 animate-in slide-in-from-bottom-4">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="absolute bottom-20 right-0 w-80 bg-card/95 backdrop-blur-lg rounded-3xl shadow-xl border border-border/50 p-5 animate-fade-in">
+          <div className="flex items-center gap-4 mb-4">
             <div 
-              className="h-10 w-10 rounded-full flex items-center justify-center animate-pulse"
+              className="h-12 w-12 rounded-full flex items-center justify-center animate-breathe"
               style={{ backgroundColor: primaryColor }}
             >
-              <Video className="h-5 w-5 text-white" />
+              <Video className="h-6 w-6 text-white" />
             </div>
             <div>
               <p className="font-semibold text-foreground">{agentName}</p>
               <p className="text-sm text-muted-foreground">Incoming video call</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={handleDeclineCall}
-              className="flex-1 h-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center gap-2 text-sm font-medium"
+              className="flex-1 h-11 rounded-full bg-destructive/90 hover:bg-destructive text-destructive-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors"
             >
               <PhoneOff className="h-4 w-4" />
               Decline
             </button>
             <button
               onClick={handleAcceptCall}
-              className="flex-1 h-10 rounded-full bg-green-500 text-white flex items-center justify-center gap-2 text-sm font-medium"
+              className="flex-1 h-11 rounded-full bg-healing hover:bg-healing/90 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors"
             >
               <Phone className="h-4 w-4" />
               Accept
@@ -174,28 +174,28 @@ export const ChatWidget = ({
       {/* Video Call Panel */}
       {showVideoCall && (
         <div 
-          className="widget-enter mb-4 bg-background rounded-2xl widget-shadow overflow-hidden flex flex-col"
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border/30"
           style={{ width: '380px', height: '520px' }}
         >
           {/* Video Call Header */}
           <div 
-            className="px-5 py-3 flex items-center justify-between"
-            style={{ backgroundColor: primaryColor }}
+            className="px-5 py-4 flex items-center justify-between"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)` }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Video className="h-5 w-5 text-white" />
               <span className="font-semibold text-white">Video Call</span>
             </div>
             <button 
               onClick={handleEndCall}
-              className="h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors"
+              className="h-9 w-9 rounded-full bg-white/20 hover:bg-destructive flex items-center justify-center transition-all duration-300"
             >
               <PhoneOff className="h-4 w-4 text-white" />
             </button>
           </div>
 
           {/* Video Area */}
-          <div className="flex-1 relative bg-muted/50">
+          <div className="flex-1 relative bg-gradient-to-br from-muted/30 to-accent/20">
             {/* Remote Video */}
             {videoChat.status === 'connected' ? (
               <video
@@ -209,30 +209,30 @@ export const ChatWidget = ({
                 {videoChat.status === 'requesting' && (
                   <>
                     <div 
-                      className="h-16 w-16 rounded-full flex items-center justify-center animate-pulse"
+                      className="h-20 w-20 rounded-full flex items-center justify-center animate-breathe"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      <Phone className="h-8 w-8 text-white" />
+                      <Phone className="h-10 w-10 text-white" />
                     </div>
                     <p className="text-foreground font-medium">Calling {agentName}...</p>
-                    <p className="text-muted-foreground text-sm">Waiting for response</p>
+                    <p className="text-muted-foreground text-sm">Please wait while we connect you</p>
                   </>
                 )}
                 {videoChat.status === 'connecting' && (
                   <>
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                      <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-10 w-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                     <p className="text-foreground font-medium">Connecting...</p>
                   </>
                 )}
                 {videoChat.status === 'error' && (
                   <>
-                    <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
-                      <X className="h-8 w-8 text-destructive" />
+                    <div className="h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <X className="h-10 w-10 text-destructive" />
                     </div>
-                    <p className="text-foreground font-medium">Call failed</p>
-                    <p className="text-destructive text-sm">{videoChat.error}</p>
+                    <p className="text-foreground font-medium">Call couldn't connect</p>
+                    <p className="text-muted-foreground text-sm">{videoChat.error}</p>
                   </>
                 )}
               </div>
@@ -240,7 +240,7 @@ export const ChatWidget = ({
 
             {/* Local Video PiP */}
             {(videoChat.status === 'connected' || videoChat.status === 'connecting' || videoChat.status === 'requesting') && (
-              <div className="absolute bottom-4 right-4 w-24 aspect-video rounded-lg overflow-hidden shadow-lg border-2 border-background">
+              <div className="absolute bottom-4 right-4 w-28 aspect-video rounded-2xl overflow-hidden shadow-lg border-2 border-white/50">
                 <video
                   ref={videoChat.localVideoRef}
                   autoPlay
@@ -250,7 +250,7 @@ export const ChatWidget = ({
                 />
                 {videoChat.isVideoOff && (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <VideoOff className="h-4 w-4 text-muted-foreground" />
+                    <VideoOff className="h-5 w-5 text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -259,30 +259,30 @@ export const ChatWidget = ({
 
           {/* Video Controls */}
           {videoChat.status === 'connected' && (
-            <div className="flex items-center justify-center gap-4 p-4 bg-card border-t border-border">
+            <div className="flex items-center justify-center gap-4 p-5 bg-card/80 backdrop-blur-sm border-t border-border/30">
               <button
                 onClick={videoChat.toggleMute}
                 className={cn(
-                  "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
-                  videoChat.isMuted ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  "h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300",
+                  videoChat.isMuted ? "bg-destructive text-destructive-foreground" : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
                 )}
               >
-                {videoChat.isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {videoChat.isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </button>
               <button
                 onClick={videoChat.toggleVideo}
                 className={cn(
-                  "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
-                  videoChat.isVideoOff ? "bg-destructive text-destructive-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  "h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300",
+                  videoChat.isVideoOff ? "bg-destructive text-destructive-foreground" : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
                 )}
               >
-                {videoChat.isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                {videoChat.isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
               </button>
               <button
                 onClick={handleEndCall}
-                className="h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                className="h-12 w-12 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground flex items-center justify-center transition-all duration-300"
               >
-                <PhoneOff className="h-4 w-4" />
+                <PhoneOff className="h-5 w-5" />
               </button>
             </div>
           )}
@@ -292,62 +292,70 @@ export const ChatWidget = ({
       {/* Chat Panel */}
       {isOpen && !showVideoCall && (
         <div 
-          className="widget-enter mb-4 bg-background rounded-2xl widget-shadow overflow-hidden flex flex-col"
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-border/30"
           style={{ width: '380px', height: '520px' }}
         >
           {/* Header */}
           <div 
             className="px-5 py-4 flex items-center justify-between"
-            style={{ backgroundColor: primaryColor }}
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)` }}
           >
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="h-11 w-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <MessageCircle className="h-5 w-5 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">{agentName}</h3>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-green-400 pulse-online" />
-                  <span className="text-xs text-white/80">Online</span>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-healing animate-pulse" />
+                  <span className="text-xs text-white/80">Here to help</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button 
                 onClick={handleStartVideoCall}
-                className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
                 title="Start video call"
               >
                 <Video className="h-4 w-4 text-white" />
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
               >
                 <Minimize2 className="h-4 w-4 text-white" />
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
               >
                 <X className="h-4 w-4 text-white" />
               </button>
             </div>
           </div>
 
+          {/* Welcome Message */}
+          <div className="px-5 py-3 bg-gradient-to-r from-accent/30 to-muted/30 border-b border-border/30">
+            <p className="text-xs text-muted-foreground text-center">
+              You're in a safe space. Take your time. 💚
+            </p>
+          </div>
+
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-secondary/30 scrollbar-thin">
-            {messages.map((msg) => (
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
+            {messages.map((msg, index) => (
               <div
                 key={msg.id}
                 className={cn(
-                  "flex gap-2 message-enter",
+                  "flex gap-3 animate-fade-in",
                   msg.senderType === 'visitor' ? "flex-row-reverse" : "flex-row"
                 )}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 {msg.senderType === 'agent' && (
                   <div 
-                    className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
                     style={{ backgroundColor: primaryColor }}
                   >
                     <MessageCircle className="h-4 w-4 text-white" />
@@ -355,16 +363,19 @@ export const ChatWidget = ({
                 )}
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-2xl px-4 py-2.5",
+                    "max-w-[75%] px-4 py-3 shadow-sm",
                     msg.senderType === 'visitor'
-                      ? "rounded-br-md"
-                      : "bg-card rounded-bl-md shadow-sm"
+                      ? "rounded-3xl rounded-br-lg"
+                      : "bg-card rounded-3xl rounded-bl-lg border border-border/30"
                   )}
-                  style={msg.senderType === 'visitor' ? { backgroundColor: primaryColor, color: 'white' } : {}}
+                  style={msg.senderType === 'visitor' ? { 
+                    background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`, 
+                    color: 'white' 
+                  } : {}}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                   <p className={cn(
-                    "text-xs mt-1",
+                    "text-xs mt-1.5",
                     msg.senderType === 'visitor' ? "text-white/70" : "text-muted-foreground"
                   )}>
                     {format(new Date(msg.timestamp), 'h:mm a')}
@@ -374,18 +385,18 @@ export const ChatWidget = ({
             ))}
 
             {isTyping && (
-              <div className="flex gap-2 items-end">
+              <div className="flex gap-3 items-end animate-fade-in">
                 <div 
-                  className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  className="h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle className="h-4 w-4 text-white" />
                 </div>
-                <div className="bg-card rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
-                  <div className="flex gap-1">
-                    <span className="h-2 w-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="h-2 w-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="h-2 w-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-card rounded-3xl rounded-bl-lg px-4 py-3 shadow-sm border border-border/30">
+                  <div className="flex gap-1.5">
+                    <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -395,29 +406,26 @@ export const ChatWidget = ({
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-border bg-card">
-            <div className="flex gap-2">
+          <div className="p-4 border-t border-border/30 bg-card/80 backdrop-blur-sm">
+            <div className="flex gap-3">
               <input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
-                className="flex-1 px-4 py-2.5 rounded-full border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Share what's on your mind..."
+                className="flex-1 px-5 py-3 rounded-full border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
               />
               <button
                 onClick={handleSend}
                 disabled={!inputValue.trim()}
-                className="h-10 w-10 rounded-full flex items-center justify-center transition-all disabled:opacity-50"
+                className="h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-40 hover:scale-105 active:scale-95 shadow-md"
                 style={{ backgroundColor: primaryColor }}
               >
                 <Send className="h-4 w-4 text-white" />
               </button>
             </div>
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              Powered by LiveChat
-            </p>
           </div>
         </div>
       )}
@@ -426,10 +434,13 @@ export const ChatWidget = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "h-14 w-14 rounded-full flex items-center justify-center widget-shadow transition-all duration-300 hover:scale-105",
+          "h-16 w-16 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 active:scale-95",
           isOpen && "rotate-90"
         )}
-        style={{ backgroundColor: primaryColor }}
+        style={{ 
+          background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)`,
+          boxShadow: `0 8px 32px ${primaryColor}40`
+        }}
       >
         {isOpen ? (
           <X className="h-6 w-6 text-white" />
