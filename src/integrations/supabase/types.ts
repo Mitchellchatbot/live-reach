@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      agents: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          assigned_agent_id: string | null
+          created_at: string
+          id: string
+          property_id: string
+          status: string
+          updated_at: string
+          visitor_id: string
+        }
+        Insert: {
+          assigned_agent_id?: string | null
+          created_at?: string
+          id?: string
+          property_id: string
+          status?: string
+          updated_at?: string
+          visitor_id: string
+        }
+        Update: {
+          assigned_agent_id?: string | null
+          created_at?: string
+          id?: string
+          property_id?: string
+          status?: string
+          updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_assigned_agent_id_fkey"
+            columns: ["assigned_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read: boolean
+          sender_id: string
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          sender_id: string
+          sender_type: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          sender_id?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           company_name: string | null
@@ -44,6 +167,78 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          created_at: string
+          domain: string
+          greeting: string | null
+          id: string
+          name: string
+          offline_message: string | null
+          updated_at: string
+          user_id: string
+          widget_color: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          greeting?: string | null
+          id?: string
+          name: string
+          offline_message?: string | null
+          updated_at?: string
+          user_id: string
+          widget_color?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          greeting?: string | null
+          id?: string
+          name?: string
+          offline_message?: string | null
+          updated_at?: string
+          user_id?: string
+          widget_color?: string | null
+        }
+        Relationships: []
+      }
+      property_agents: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          property_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          property_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_agents_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_agents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -64,6 +259,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      visitors: {
+        Row: {
+          browser_info: string | null
+          created_at: string
+          current_page: string | null
+          email: string | null
+          id: string
+          location: string | null
+          name: string | null
+          property_id: string
+          session_id: string
+        }
+        Insert: {
+          browser_info?: string | null
+          created_at?: string
+          current_page?: string | null
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          property_id: string
+          session_id: string
+        }
+        Update: {
+          browser_info?: string | null
+          created_at?: string
+          current_page?: string | null
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          property_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitors_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
