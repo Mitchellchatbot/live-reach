@@ -204,34 +204,70 @@ export type Database = {
       }
       properties: {
         Row: {
+          ai_response_delay_max_ms: number | null
+          ai_response_delay_min_ms: number | null
+          auto_escalation_enabled: boolean | null
           created_at: string
           domain: string
+          escalation_keywords: string[] | null
           greeting: string | null
           id: string
+          max_ai_messages_before_escalation: number | null
           name: string
           offline_message: string | null
+          proactive_message: string | null
+          proactive_message_delay_seconds: number | null
+          proactive_message_enabled: boolean | null
+          require_email_before_chat: boolean | null
+          require_name_before_chat: boolean | null
+          typing_indicator_max_ms: number | null
+          typing_indicator_min_ms: number | null
           updated_at: string
           user_id: string
           widget_color: string | null
         }
         Insert: {
+          ai_response_delay_max_ms?: number | null
+          ai_response_delay_min_ms?: number | null
+          auto_escalation_enabled?: boolean | null
           created_at?: string
           domain: string
+          escalation_keywords?: string[] | null
           greeting?: string | null
           id?: string
+          max_ai_messages_before_escalation?: number | null
           name: string
           offline_message?: string | null
+          proactive_message?: string | null
+          proactive_message_delay_seconds?: number | null
+          proactive_message_enabled?: boolean | null
+          require_email_before_chat?: boolean | null
+          require_name_before_chat?: boolean | null
+          typing_indicator_max_ms?: number | null
+          typing_indicator_min_ms?: number | null
           updated_at?: string
           user_id: string
           widget_color?: string | null
         }
         Update: {
+          ai_response_delay_max_ms?: number | null
+          ai_response_delay_min_ms?: number | null
+          auto_escalation_enabled?: boolean | null
           created_at?: string
           domain?: string
+          escalation_keywords?: string[] | null
           greeting?: string | null
           id?: string
+          max_ai_messages_before_escalation?: number | null
           name?: string
           offline_message?: string | null
+          proactive_message?: string | null
+          proactive_message_delay_seconds?: number | null
+          proactive_message_enabled?: boolean | null
+          require_email_before_chat?: boolean | null
+          require_name_before_chat?: boolean | null
+          typing_indicator_max_ms?: number | null
+          typing_indicator_min_ms?: number | null
           updated_at?: string
           user_id?: string
           widget_color?: string | null

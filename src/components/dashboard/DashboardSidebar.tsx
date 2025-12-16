@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   MessageSquare,
   Users, 
@@ -17,7 +17,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { mockAgents } from '@/data/mockData';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/hooks/useAuth';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -80,7 +81,17 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
 
 export const DashboardSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const currentAgent = mockAgents[0];
+  const navigate = useNavigate();
+  const { profile } = useUserProfile();
+  const { signOut, user } = useAuth();
+  
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
     <aside 
@@ -150,25 +161,25 @@ export const DashboardSidebar = () => {
         )}>
           <div className="relative">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={currentAgent.avatar} />
               <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
-                {currentAgent.name.split(' ').map(n => n[0]).join('')}
+                {initials}
               </AvatarFallback>
             </Avatar>
-            <span className={cn(
-              "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar",
-              currentAgent.status === 'online' ? "bg-status-online" : 
-              currentAgent.status === 'away' ? "bg-status-away" : "bg-status-offline"
-            )} />
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-status-online" />
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{currentAgent.name}</p>
-              <p className="text-xs text-sidebar-foreground/60 capitalize">{currentAgent.status}</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</p>
+              <p className="text-xs text-sidebar-foreground/60">Online</p>
             </div>
           )}
           {!collapsed && (
-            <Button variant="ghost" size="icon" className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              onClick={handleSignOut}
+            >
               <LogOut className="h-4 w-4" />
             </Button>
           )}
