@@ -11,6 +11,8 @@ import WidgetPreview from "./pages/WidgetPreview";
 import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
+import Onboarding from "./pages/Onboarding";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/active" element={<Dashboard />} />
               <Route path="/dashboard/pending" element={<Dashboard />} />
@@ -35,7 +38,7 @@ const App = () => (
               <Route path="/dashboard/agents" element={<Dashboard />} />
               <Route path="/dashboard/analytics" element={<Analytics />} />
               <Route path="/dashboard/widget" element={<WidgetPreview />} />
-              <Route path="/dashboard/settings" element={<Dashboard />} />
+              <Route path="/dashboard/settings" element={<Settings />} />
               <Route path="/widget-preview" element={<WidgetPreview />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

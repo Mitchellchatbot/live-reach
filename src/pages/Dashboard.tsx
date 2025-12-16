@@ -62,6 +62,13 @@ const Dashboard = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Redirect to onboarding if no properties
+  useEffect(() => {
+    if (!authLoading && !dataLoading && user && properties.length === 0) {
+      navigate('/onboarding');
+    }
+  }, [authLoading, dataLoading, user, properties.length, navigate]);
+
   const statusFilter = (searchParams.get('status') as FilterStatus) || 'all';
   
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
