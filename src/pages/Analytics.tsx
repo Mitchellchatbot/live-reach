@@ -1,15 +1,34 @@
+import { useState, useEffect } from 'react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { BlogAnalytics } from '@/components/dashboard/BlogAnalytics';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Building2, Loader2 } from 'lucide-react';
+import { useConversations } from '@/hooks/useConversations';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const Analytics = () => {
+  const { properties, loading } = useConversations();
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
+
+  // Auto-select first property when properties load
+  useEffect(() => {
+    if (properties.length > 0 && !selectedPropertyId) {
+      setSelectedPropertyId(properties[0].id);
+    }
+  }, [properties, selectedPropertyId]);
+
   return (
     <div className="flex h-screen bg-gradient-subtle">
       <DashboardSidebar />
       
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="h-16 border-b border-border flex items-center px-6 bg-card/90 backdrop-blur-sm">
+        <div className="h-16 border-b border-border flex items-center justify-between px-6 bg-card/90 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center glow-primary">
               <BarChart3 className="h-5 w-5 text-primary" />
@@ -19,12 +38,48 @@ const Analytics = () => {
               <p className="text-sm text-muted-foreground">Track blog performance & lead sources</p>
             </div>
           </div>
+
+          {/* Property Selector */}
+          {loading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Loading...</span>
+            </div>
+          ) : properties.length > 0 ? (
+            <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+              <SelectTrigger className="w-[220px]">
+                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Select property" />
+              </SelectTrigger>
+              <SelectContent>
+                {properties.map((property) => (
+                  <SelectItem key={property.id} value={property.id}>
+                    {property.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
-          <div className="max-w-4xl">
-            <BlogAnalytics />
+          <div className="max-w-4xl mx-auto">
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : properties.length === 0 ? (
+              <div className="text-center py-20">
+                <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h2 className="text-lg font-semibold text-foreground mb-2">No Properties Yet</h2>
+                <p className="text-muted-foreground">
+                  Create a property first to start tracking analytics.
+                </p>
+              </div>
+            ) : (
+              <BlogAnalytics propertyId={selectedPropertyId} />
+            )}
           </div>
         </div>
       </div>
