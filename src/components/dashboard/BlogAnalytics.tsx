@@ -10,8 +10,12 @@ const timeRangeOptions: { value: TimeRange; label: string }[] = [
   { value: 'all', label: 'All Time' },
 ];
 
-export const BlogAnalytics = () => {
-  const { data, totals, loading, error, timeRange, setTimeRange } = usePageAnalytics();
+interface BlogAnalyticsProps {
+  propertyId?: string;
+}
+
+export const BlogAnalytics = ({ propertyId }: BlogAnalyticsProps) => {
+  const { data, totals, loading, error, timeRange, setTimeRange } = usePageAnalytics(propertyId);
 
   const topPages = data.slice(0, 5);
 

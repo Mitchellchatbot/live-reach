@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Copy, Check, ArrowLeft, Code, Palette, Settings2, Globe, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Copy, Check, ArrowLeft, Code, Palette, Settings2, Globe, Loader2, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useConversations } from '@/hooks/useConversations';
 
 const colorPresets = [
   { name: 'Sage', color: 'hsl(150, 25%, 45%)' },
@@ -46,13 +54,37 @@ const hexToHsl = (hex: string): string => {
 };
 
 const WidgetPreview = () => {
-  const [propertyId] = useState('demo-property-123');
+  const { properties, loading } = useConversations();
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
   const [primaryColor, setPrimaryColor] = useState('hsl(150, 25%, 45%)');
   const [agentName, setAgentName] = useState('Support Team');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");
   const [copied, setCopied] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
+
+  // Auto-select first property and load its settings when properties load
+  useEffect(() => {
+    if (properties.length > 0 && !selectedPropertyId) {
+      const firstProperty = properties[0];
+      setSelectedPropertyId(firstProperty.id);
+      // Load property settings
+      if (firstProperty.widget_color) setPrimaryColor(firstProperty.widget_color);
+      if (firstProperty.greeting) setGreeting(firstProperty.greeting);
+    }
+  }, [properties, selectedPropertyId]);
+
+  // Update settings when property changes
+  const handlePropertyChange = (propertyId: string) => {
+    setSelectedPropertyId(propertyId);
+    const property = properties.find(p => p.id === propertyId);
+    if (property) {
+      if (property.widget_color) setPrimaryColor(property.widget_color);
+      if (property.greeting) setGreeting(property.greeting);
+    }
+  };
+
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
   const extractBrandColors = async () => {
     if (!websiteUrl.trim()) {
@@ -95,7 +127,7 @@ const WidgetPreview = () => {
     }
   };
 
-  const widgetScript = `<!-- LiveChat Widget -->
+  const widgetScript = selectedPropertyId ? `<!-- LiveChat Widget -->
 <script>
   (function(w,d,s,o,f,js,fjs){
     w['LiveChat']=o;w[o]=w[o]||function(){(w[o].q=w[o].q||[]).push(arguments)};
@@ -103,19 +135,68 @@ const WidgetPreview = () => {
     js.id=o;js.src=f;js.async=1;fjs.parentNode.insertBefore(js,fjs);
   }(window,document,'script','lc','https://your-domain.com/widget.js'));
   lc('init', {
-    propertyId: '${propertyId}',
+    propertyId: '${selectedPropertyId}',
     primaryColor: '${primaryColor}',
     agentName: '${agentName}',
     greeting: '${greeting}'
   });
-</script>`;
+</script>` : '// Select a property to generate embed code';
 
   const handleCopy = () => {
+    if (!selectedPropertyId) {
+      toast.error('Please select a property first');
+      return;
+    }
     navigator.clipboard.writeText(widgetScript);
     setCopied(true);
     toast.success('Widget code copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary/30 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (properties.length === 0) {
+    return (
+      <div className="min-h-screen bg-secondary/30">
+        <header className="bg-card border-b border-border">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="icon">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">Widget Customization</h1>
+                  <p className="text-sm text-muted-foreground">Customize and embed your chat widget</p>
+                </div>
+              </div>
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h2 className="text-lg font-semibold text-foreground mb-2">No Properties Yet</h2>
+            <p className="text-muted-foreground mb-4">
+              Create a property first to customize your widget.
+            </p>
+            <Link to="/dashboard">
+              <Button>Go to Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -134,7 +215,23 @@ const WidgetPreview = () => {
                 <p className="text-sm text-muted-foreground">Customize and embed your chat widget</p>
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              {/* Property Selector */}
+              <Select value={selectedPropertyId} onValueChange={handlePropertyChange}>
+                <SelectTrigger className="w-[220px]">
+                  <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <SelectValue placeholder="Select property" />
+                </SelectTrigger>
+                <SelectContent>
+                  {properties.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>
@@ -259,6 +356,11 @@ const WidgetPreview = () => {
                 <CardTitle className="text-base flex items-center gap-2">
                   <Code className="h-5 w-5" />
                   Embed Code
+                  {selectedProperty && (
+                    <span className="text-xs font-normal text-muted-foreground ml-2">
+                      for {selectedProperty.name}
+                    </span>
+                  )}
                 </CardTitle>
                 <CardDescription>
                   Add this code to your website's HTML, just before the closing &lt;/body&gt; tag
@@ -274,6 +376,7 @@ const WidgetPreview = () => {
                     size="sm"
                     variant="secondary"
                     className="absolute top-2 right-2"
+                    disabled={!selectedPropertyId}
                   >
                     {copied ? (
                       <>
@@ -318,7 +421,7 @@ const WidgetPreview = () => {
                   {/* Widget positioned in preview */}
                   <div className="absolute bottom-4 right-4">
                     <ChatWidget
-                      propertyId={propertyId}
+                      propertyId={selectedPropertyId || ''}
                       primaryColor={primaryColor}
                       agentName={agentName}
                       greeting={greeting}
