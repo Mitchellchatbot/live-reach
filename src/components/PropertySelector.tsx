@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Building2, Trash2 } from 'lucide-react';
+import { Building2, Trash2, ChevronDown, Check } from 'lucide-react';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { DbProperty } from '@/hooks/useConversations';
+import { cn } from '@/lib/utils';
 
 interface PropertySelectorProps {
   properties: DbProperty[];
@@ -42,12 +42,19 @@ export const PropertySelector = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<DbProperty | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleDeleteClick = (e: React.MouseEvent, property: DbProperty) => {
     e.preventDefault();
     e.stopPropagation();
+    setOpen(false);
     setPropertyToDelete(property);
     setDeleteDialogOpen(true);
+  };
+
+  const handleSelectProperty = (property: DbProperty) => {
+    onPropertyChange(property.id);
+    setOpen(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -75,31 +82,56 @@ export const PropertySelector = ({
     return showDomain ? `${property.name} (${property.domain})` : property.name;
   };
 
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
   return (
     <>
-      <Select value={selectedPropertyId} onValueChange={onPropertyChange}>
-        <SelectTrigger className={className}>
-          {showIcon && <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />}
-          <SelectValue placeholder="Select property" />
-        </SelectTrigger>
-        <SelectContent>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn('justify-between', className)}
+          >
+            <span className="flex items-center gap-2 truncate">
+              {showIcon && <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />}
+              <span className="truncate">
+                {selectedProperty ? getPropertyLabel(selectedProperty) : 'Select property'}
+              </span>
+            </span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[280px]">
           {properties.map((property) => (
-            <SelectItem key={property.id} value={property.id} className="pr-2">
-              <div className="flex items-center justify-between w-full gap-2">
+            <DropdownMenuItem
+              key={property.id}
+              className="flex items-center justify-between gap-2 cursor-pointer"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <div 
+                className="flex items-center gap-2 flex-1 min-w-0"
+                onClick={() => handleSelectProperty(property)}
+              >
+                {selectedPropertyId === property.id && (
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                )}
+                {selectedPropertyId !== property.id && (
+                  <span className="w-4 shrink-0" />
+                )}
                 <span className="truncate">{getPropertyLabel(property)}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
-                  onClick={(e) => handleDeleteClick(e, property)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
               </div>
-            </SelectItem>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                onClick={(e) => handleDeleteClick(e, property)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuItem>
           ))}
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
