@@ -463,24 +463,36 @@ const WidgetPreview = () => {
                 <CardTitle className="text-base">Live Preview</CardTitle>
                 <CardDescription className="flex items-center gap-2">
                   <Sparkles className="h-3 w-3" />
-                  We automatically extract colors and fonts from your website to match your brand
+                  {selectedProperty?.domain 
+                    ? `Preview on ${selectedProperty.domain}`
+                    : 'Select a property to see a live preview'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="relative h-[600px] bg-gradient-to-br from-secondary to-muted">
-                  {/* Mock website content */}
-                  <div className="p-8">
-                    <div className="h-8 w-48 bg-foreground/10 rounded mb-6" />
-                    <div className="space-y-3">
-                      <div className="h-4 w-full bg-foreground/5 rounded" />
-                      <div className="h-4 w-5/6 bg-foreground/5 rounded" />
-                      <div className="h-4 w-4/6 bg-foreground/5 rounded" />
+                <div className="relative h-[600px] bg-gradient-to-br from-secondary to-muted overflow-hidden">
+                  {/* Website iframe preview */}
+                  {selectedProperty?.domain ? (
+                    <iframe
+                      src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`}
+                      className="w-full h-full border-0 pointer-events-none"
+                      title={`Preview of ${selectedProperty.name}`}
+                      sandbox="allow-scripts allow-same-origin"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="p-8">
+                      <div className="h-8 w-48 bg-foreground/10 rounded mb-6" />
+                      <div className="space-y-3">
+                        <div className="h-4 w-full bg-foreground/5 rounded" />
+                        <div className="h-4 w-5/6 bg-foreground/5 rounded" />
+                        <div className="h-4 w-4/6 bg-foreground/5 rounded" />
+                      </div>
+                      <div className="mt-8 grid grid-cols-2 gap-4">
+                        <div className="h-32 bg-foreground/5 rounded-lg" />
+                        <div className="h-32 bg-foreground/5 rounded-lg" />
+                      </div>
                     </div>
-                    <div className="mt-8 grid grid-cols-2 gap-4">
-                      <div className="h-32 bg-foreground/5 rounded-lg" />
-                      <div className="h-32 bg-foreground/5 rounded-lg" />
-                    </div>
-                  </div>
+                  )}
 
                   {/* Widget positioned in preview */}
                   <div className="absolute bottom-4 right-4">
