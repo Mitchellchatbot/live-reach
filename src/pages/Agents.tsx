@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw } from 'lucide-react';
+import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -37,6 +37,7 @@ const Agents = () => {
   const [isInviting, setIsInviting] = useState(false);
   const [deleteAgentId, setDeleteAgentId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAgents();
@@ -81,28 +82,70 @@ const Agents = () => {
     setLoading(false);
   };
 
+  const sendInvitationEmail = async (agentId: string, agentName: string, agentEmail: string) => {
+    // Get inviter's name
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('user_id', user?.id)
+      .maybeSingle();
+
+    const { data, error } = await supabase.functions.invoke('send-agent-invitation', {
+      body: {
+        agentId,
+        agentName,
+        agentEmail,
+        inviterName: profile?.full_name || 'A team member',
+        appUrl: window.location.origin,
+      },
+    });
+
+    if (error) {
+      console.error('Error sending invitation:', error);
+      throw error;
+    }
+
+    return data;
+  };
+
   const handleInviteAgent = async () => {
     if (!inviteEmail.trim() || !inviteName.trim() || !user) return;
 
     setIsInviting(true);
 
     try {
+      // Check if email already exists as an agent for this client
+      const { data: existingAgent } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('email', inviteEmail.trim())
+        .eq('invited_by', user.id)
+        .maybeSingle();
+
+      if (existingAgent) {
+        toast.error('This email has already been invited');
+        setIsInviting(false);
+        return;
+      }
+
+      // Check if user already has an account
       const { data: existingProfile } = await supabase
         .from('profiles')
         .select('user_id')
         .eq('email', inviteEmail.trim())
         .maybeSingle();
 
-      let agentUserId = existingProfile?.user_id;
+      const isExistingUser = !!existingProfile;
 
+      // Create agent record
       const { data: newAgent, error: agentError } = await supabase
         .from('agents')
         .insert({
           name: inviteName.trim(),
           email: inviteEmail.trim(),
-          user_id: agentUserId || user.id,
+          user_id: existingProfile?.user_id || user.id,
           invited_by: user.id,
-          invitation_status: existingProfile ? 'accepted' : 'pending',
+          invitation_status: isExistingUser ? 'accepted' : 'pending',
           status: 'offline',
         })
         .select()
@@ -114,6 +157,7 @@ const Agents = () => {
         return;
       }
 
+      // Assign to selected properties
       if (selectedPropertyIds.length > 0 && newAgent) {
         const assignments = selectedPropertyIds.map(propertyId => ({
           agent_id: newAgent.id,
@@ -123,17 +167,28 @@ const Agents = () => {
         await supabase.from('property_agents').insert(assignments);
       }
 
-      if (existingProfile) {
+      // If existing user, update their role
+      if (isExistingUser && existingProfile) {
         await supabase
           .from('user_roles')
-          .update({ role: 'agent' })
-          .eq('user_id', existingProfile.user_id);
+          .upsert({ 
+            user_id: existingProfile.user_id, 
+            role: 'agent' 
+          }, { 
+            onConflict: 'user_id' 
+          });
+        
+        toast.success('Agent added successfully! They can now access conversations.');
+      } else {
+        // Send invitation email for new users
+        try {
+          await sendInvitationEmail(newAgent.id, inviteName.trim(), inviteEmail.trim());
+          toast.success('Invitation sent! They will receive an email to join.');
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+          toast.warning('Agent created but email failed to send. Try resending.');
+        }
       }
-
-      toast.success(existingProfile 
-        ? 'Agent added successfully' 
-        : 'Agent invited! They will receive an email to join.'
-      );
 
       setIsInviteDialogOpen(false);
       setInviteEmail('');
@@ -146,6 +201,20 @@ const Agents = () => {
     }
 
     setIsInviting(false);
+  };
+
+  const handleResendInvitation = async (agent: Agent) => {
+    setResendingId(agent.id);
+    
+    try {
+      await sendInvitationEmail(agent.id, agent.name, agent.email);
+      toast.success('Invitation resent successfully!');
+    } catch (error) {
+      console.error('Failed to resend invitation:', error);
+      toast.error('Failed to resend invitation');
+    }
+
+    setResendingId(null);
   };
 
   const handleRemoveAgent = async () => {
@@ -233,7 +302,7 @@ const Agents = () => {
                 <DialogHeader>
                   <DialogTitle>Invite Agent</DialogTitle>
                   <DialogDescription>
-                    Add a team member who can respond to chat conversations
+                    Add a team member who can respond to chat conversations. They'll receive an email to create their account.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -378,14 +447,31 @@ const Agents = () => {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteAgentId(agent.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            {agent.invitation_status === 'pending' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleResendInvitation(agent)}
+                                disabled={resendingId === agent.id}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                {resendingId === agent.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Send className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteAgentId(agent.id)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
