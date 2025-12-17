@@ -520,7 +520,7 @@ export const ChatWidget = ({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="h-16 w-16 flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 animate-breathe"
+          className="h-16 w-16 flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
           style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
         >
           <MessageCircle className="h-7 w-7" />
