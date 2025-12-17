@@ -29,7 +29,8 @@ import {
   Plus,
   Save,
   Loader2,
-  Trash2
+  Trash2,
+  Users
 } from 'lucide-react';
 import {
   Dialog,
@@ -40,6 +41,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { TeamManagement } from '@/components/settings/TeamManagement';
 
 interface PropertySettings {
   id: string;
@@ -302,7 +304,7 @@ const Settings = () => {
 
           {settings && (
             <Tabs defaultValue="behavior" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="behavior">
                   <Clock className="mr-2 h-4 w-4" />
                   Response Timing
@@ -314,6 +316,10 @@ const Settings = () => {
                 <TabsTrigger value="engagement">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Engagement
+                </TabsTrigger>
+                <TabsTrigger value="team">
+                  <Users className="mr-2 h-4 w-4" />
+                  Team
                 </TabsTrigger>
               </TabsList>
 
@@ -595,6 +601,11 @@ const Settings = () => {
                     )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Team Management Tab */}
+              <TabsContent value="team" className="space-y-6">
+                <TeamManagement properties={properties} />
               </TabsContent>
             </Tabs>
           )}
