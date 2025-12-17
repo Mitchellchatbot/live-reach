@@ -20,7 +20,9 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invitation_expires_at: string | null
           invitation_status: string | null
+          invitation_token: string | null
           invited_by: string | null
           name: string
           status: string
@@ -32,7 +34,9 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          invitation_expires_at?: string | null
           invitation_status?: string | null
+          invitation_token?: string | null
           invited_by?: string | null
           name: string
           status?: string
@@ -44,7 +48,9 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          invitation_expires_at?: string | null
           invitation_status?: string | null
+          invitation_token?: string | null
           invited_by?: string | null
           name?: string
           status?: string

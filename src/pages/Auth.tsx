@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
 const loginSchema = z.object({
@@ -21,6 +22,13 @@ const signupSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+interface InvitationData {
+  agentName: string;
+  agentEmail: string;
+  inviterName: string;
+  isExpired: boolean;
+}
+
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
@@ -28,16 +36,87 @@ export default function Auth() {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [invitationData, setInvitationData] = useState<InvitationData | null>(null);
+  const [activeTab, setActiveTab] = useState('login');
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, role, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
+  const inviteToken = searchParams.get('invite');
+
+  // Fetch invitation data if token exists
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
+    const fetchInvitation = async () => {
+      if (!inviteToken) return;
+
+      const { data: agent, error } = await supabase
+        .from('agents')
+        .select('name, email, invitation_expires_at, invited_by')
+        .eq('invitation_token', inviteToken)
+        .eq('invitation_status', 'pending')
+        .maybeSingle();
+
+      if (error || !agent) {
+        toast({
+          title: 'Invalid Invitation',
+          description: 'This invitation link is invalid or has already been used.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Check if expired
+      const isExpired = agent.invitation_expires_at 
+        ? new Date(agent.invitation_expires_at) < new Date()
+        : false;
+
+      if (isExpired) {
+        toast({
+          title: 'Invitation Expired',
+          description: 'This invitation has expired. Please ask for a new one.',
+          variant: 'destructive',
+        });
+      }
+
+      // Fetch inviter name
+      const { data: inviterProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', agent.invited_by)
+        .maybeSingle();
+
+      setInvitationData({
+        agentName: agent.name,
+        agentEmail: agent.email,
+        inviterName: inviterProfile?.full_name || 'A team member',
+        isExpired,
+      });
+
+      // Pre-fill signup form
+      setSignupName(agent.name);
+      setSignupEmail(agent.email);
+      setActiveTab('signup');
+    };
+
+    fetchInvitation();
+  }, [inviteToken, toast]);
+
+  // Redirect based on role after login
+  useEffect(() => {
+    if (loading) return;
+    
+    if (user && role) {
+      if (role === 'agent') {
+        navigate('/conversations');
+      } else if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  }, [user, navigate]);
+  }, [user, role, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +163,15 @@ export default function Auth() {
       return;
     }
 
+    if (invitationData?.isExpired) {
+      toast({
+        title: 'Invitation Expired',
+        description: 'Please ask for a new invitation.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     const { error } = await signUp(signupEmail, signupPassword, signupName);
     setIsLoading(false);
@@ -101,7 +189,9 @@ export default function Auth() {
     } else {
       toast({
         title: 'Account Created',
-        description: 'You can now access your dashboard.',
+        description: invitationData 
+          ? 'Welcome to the team! Redirecting to your dashboard...'
+          : 'You can now access your dashboard.',
       });
     }
   };
@@ -123,15 +213,21 @@ export default function Auth() {
           </div>
           <div className="space-y-2">
             <CardTitle className="text-2xl font-semibold tracking-tight">
-              Welcome to Scaled Bot
+              {invitationData ? 'Accept Your Invitation' : 'Welcome to Scaled Bot'}
             </CardTitle>
             <CardDescription className="text-muted-foreground/80 text-base leading-relaxed">
-              Compassionate support, one conversation at a time
+              {invitationData ? (
+                <>
+                  <span className="font-medium text-foreground">{invitationData.inviterName}</span> invited you to join as an agent
+                </>
+              ) : (
+                'Compassionate support, one conversation at a time'
+              )}
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8 h-12 rounded-xl bg-muted/60">
               <TabsTrigger value="login" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all duration-300">
                 Sign In
@@ -193,7 +289,8 @@ export default function Auth() {
                     value={signupName}
                     onChange={(e) => setSignupName(e.target.value)}
                     required
-                    className="h-12 rounded-xl border-border/60 focus:border-primary/50 transition-colors"
+                    disabled={!!invitationData}
+                    className="h-12 rounded-xl border-border/60 focus:border-primary/50 transition-colors disabled:bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
@@ -205,7 +302,8 @@ export default function Auth() {
                     value={signupEmail}
                     onChange={(e) => setSignupEmail(e.target.value)}
                     required
-                    className="h-12 rounded-xl border-border/60 focus:border-primary/50 transition-colors"
+                    disabled={!!invitationData}
+                    className="h-12 rounded-xl border-border/60 focus:border-primary/50 transition-colors disabled:bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
@@ -223,21 +321,24 @@ export default function Auth() {
                 <Button 
                   type="submit" 
                   className="w-full h-12 rounded-xl text-base font-medium shadow-md hover:shadow-lg transition-all duration-300 mt-2" 
-                  disabled={isLoading}
+                  disabled={isLoading || invitationData?.isExpired}
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                       Creating account...
                     </span>
-                  ) : 'Create Account'}
+                  ) : invitationData ? 'Join Team' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
           
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Your journey to healing starts here
+            {invitationData 
+              ? 'Create your account to start helping visitors'
+              : 'Your journey to healing starts here'
+            }
           </p>
         </CardContent>
       </Card>
