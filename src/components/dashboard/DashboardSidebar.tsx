@@ -131,7 +131,6 @@ export const DashboardSidebar = () => {
         </SidebarSection>
 
         <SidebarSection title="Manage" collapsed={collapsed}>
-          <SidebarItem to="/dashboard/properties" icon={Globe} label="Properties" collapsed={collapsed} />
           <SidebarItem to="/dashboard/agents" icon={Users} label="Agents" collapsed={collapsed} />
           <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} />
         </SidebarSection>

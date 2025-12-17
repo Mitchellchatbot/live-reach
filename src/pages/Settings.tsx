@@ -326,49 +326,31 @@ const Settings = () => {
                       Add a random delay to AI responses to feel more human-like
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label>Minimum Delay</Label>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {(settings.ai_response_delay_min_ms / 1000).toFixed(1)}s
-                        </span>
-                      </div>
-                      <Slider
-                        value={[settings.ai_response_delay_min_ms]}
-                        onValueChange={([val]) => setSettings({
-                          ...settings,
-                          ai_response_delay_min_ms: val,
-                          ai_response_delay_max_ms: Math.max(val, settings.ai_response_delay_max_ms),
-                        })}
-                        min={0}
-                        max={5000}
-                        step={100}
-                      />
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Delay Range</Label>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {(settings.ai_response_delay_min_ms / 1000).toFixed(1)}s – {(settings.ai_response_delay_max_ms / 1000).toFixed(1)}s
+                      </span>
                     </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label>Maximum Delay</Label>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {(settings.ai_response_delay_max_ms / 1000).toFixed(1)}s
-                        </span>
-                      </div>
-                      <Slider
-                        value={[settings.ai_response_delay_max_ms]}
-                        onValueChange={([val]) => setSettings({
-                          ...settings,
-                          ai_response_delay_max_ms: val,
-                          ai_response_delay_min_ms: Math.min(val, settings.ai_response_delay_min_ms),
-                        })}
-                        min={0}
-                        max={5000}
-                        step={100}
-                      />
+                    <Slider
+                      value={[settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms]}
+                      onValueChange={([min, max]) => setSettings({
+                        ...settings,
+                        ai_response_delay_min_ms: min,
+                        ai_response_delay_max_ms: max,
+                      })}
+                      min={0}
+                      max={5000}
+                      step={100}
+                      minStepsBetweenThumbs={1}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>0s</span>
+                      <span>5s</span>
                     </div>
-
                     <p className="text-sm text-muted-foreground">
-                      Response will appear after a random delay between {(settings.ai_response_delay_min_ms / 1000).toFixed(1)}s and {(settings.ai_response_delay_max_ms / 1000).toFixed(1)}s
+                      Response will appear after a random delay in this range
                     </p>
                   </CardContent>
                 </Card>
@@ -380,49 +362,31 @@ const Settings = () => {
                       How long the "typing" bubble shows before the AI response appears
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label>Minimum Duration</Label>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {(settings.typing_indicator_min_ms / 1000).toFixed(1)}s
-                        </span>
-                      </div>
-                      <Slider
-                        value={[settings.typing_indicator_min_ms]}
-                        onValueChange={([val]) => setSettings({
-                          ...settings,
-                          typing_indicator_min_ms: val,
-                          typing_indicator_max_ms: Math.max(val, settings.typing_indicator_max_ms),
-                        })}
-                        min={500}
-                        max={5000}
-                        step={100}
-                      />
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label>Duration Range</Label>
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {(settings.typing_indicator_min_ms / 1000).toFixed(1)}s – {(settings.typing_indicator_max_ms / 1000).toFixed(1)}s
+                      </span>
                     </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label>Maximum Duration</Label>
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {(settings.typing_indicator_max_ms / 1000).toFixed(1)}s
-                        </span>
-                      </div>
-                      <Slider
-                        value={[settings.typing_indicator_max_ms]}
-                        onValueChange={([val]) => setSettings({
-                          ...settings,
-                          typing_indicator_max_ms: val,
-                          typing_indicator_min_ms: Math.min(val, settings.typing_indicator_min_ms),
-                        })}
-                        min={500}
-                        max={5000}
-                        step={100}
-                      />
+                    <Slider
+                      value={[settings.typing_indicator_min_ms, settings.typing_indicator_max_ms]}
+                      onValueChange={([min, max]) => setSettings({
+                        ...settings,
+                        typing_indicator_min_ms: min,
+                        typing_indicator_max_ms: max,
+                      })}
+                      min={500}
+                      max={5000}
+                      step={100}
+                      minStepsBetweenThumbs={1}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>0.5s</span>
+                      <span>5s</span>
                     </div>
-
                     <p className="text-sm text-muted-foreground">
-                      Typing indicator will show for {(settings.typing_indicator_min_ms / 1000).toFixed(1)}s to {(settings.typing_indicator_max_ms / 1000).toFixed(1)}s
+                      Typing indicator will show for a random duration in this range
                     </p>
                   </CardContent>
                 </Card>
