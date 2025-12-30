@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Copy, Check, ArrowLeft, Code, Palette, Loader2, Building2, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,9 @@ const WidgetPreview = () => {
   const { properties, loading, deleteProperty } = useConversations();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
   const [primaryColor, setPrimaryColor] = useState('hsl(150, 25%, 45%)');
+  const [textColor, setTextColor] = useState('hsl(0, 0%, 100%)');
+  const [borderColor, setBorderColor] = useState('hsl(0, 0%, 0%, 0.1)');
+  const [widgetSize, setWidgetSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [agentName, setAgentName] = useState('Support Team');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");
   const [copied, setCopied] = useState(false);
@@ -169,6 +173,9 @@ const WidgetPreview = () => {
   sb('init', {
     propertyId: '${selectedPropertyId}',
     primaryColor: '${primaryColor}',
+    textColor: '${textColor}',
+    borderColor: '${borderColor}',
+    widgetSize: '${widgetSize}',
     borderRadius: ${borderRadius},
     agentName: '${agentName}',
     greeting: '${greeting}'
@@ -365,6 +372,120 @@ const WidgetPreview = () => {
                   </CardContent>
                 </Card>
 
+                {/* Text & Border Colors */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Text & Border</CardTitle>
+                    <CardDescription>Customize text and border colors</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Text Color (on primary)</Label>
+                      <div className="flex gap-2">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setTextColor('hsl(0, 0%, 100%)')}
+                            className={cn(
+                              "h-10 w-10 rounded-full border-2 transition-transform hover:scale-110",
+                              textColor === 'hsl(0, 0%, 100%)' ? "ring-2 ring-ring ring-offset-2" : ""
+                            )}
+                            style={{ backgroundColor: 'white', borderColor: 'hsl(0, 0%, 80%)' }}
+                            title="White"
+                          />
+                          <button
+                            onClick={() => setTextColor('hsl(0, 0%, 0%)')}
+                            className={cn(
+                              "h-10 w-10 rounded-full border-2 transition-transform hover:scale-110",
+                              textColor === 'hsl(0, 0%, 0%)' ? "ring-2 ring-ring ring-offset-2" : ""
+                            )}
+                            style={{ backgroundColor: 'black', borderColor: 'hsl(0, 0%, 30%)' }}
+                            title="Black"
+                          />
+                        </div>
+                        <Input
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          placeholder="Custom (HSL)"
+                          className="font-mono text-sm flex-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Border Color</Label>
+                      <div className="flex gap-2">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setBorderColor('hsl(0, 0%, 0%, 0.1)')}
+                            className={cn(
+                              "h-10 w-10 rounded-full border-2 transition-transform hover:scale-110",
+                              borderColor === 'hsl(0, 0%, 0%, 0.1)' ? "ring-2 ring-ring ring-offset-2" : ""
+                            )}
+                            style={{ backgroundColor: 'hsl(0, 0%, 90%)', borderColor: 'hsl(0, 0%, 70%)' }}
+                            title="Light"
+                          />
+                          <button
+                            onClick={() => setBorderColor('hsl(0, 0%, 0%, 0.3)')}
+                            className={cn(
+                              "h-10 w-10 rounded-full border-2 transition-transform hover:scale-110",
+                              borderColor === 'hsl(0, 0%, 0%, 0.3)' ? "ring-2 ring-ring ring-offset-2" : ""
+                            )}
+                            style={{ backgroundColor: 'hsl(0, 0%, 70%)', borderColor: 'hsl(0, 0%, 50%)' }}
+                            title="Medium"
+                          />
+                          <button
+                            onClick={() => setBorderColor('transparent')}
+                            className={cn(
+                              "h-10 w-10 rounded-full border-2 border-dashed transition-transform hover:scale-110",
+                              borderColor === 'transparent' ? "ring-2 ring-ring ring-offset-2" : ""
+                            )}
+                            style={{ borderColor: 'hsl(0, 0%, 60%)' }}
+                            title="None"
+                          />
+                        </div>
+                        <Input
+                          value={borderColor}
+                          onChange={(e) => setBorderColor(e.target.value)}
+                          placeholder="Custom (HSL)"
+                          className="font-mono text-sm flex-1"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Widget Size */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Widget Size</CardTitle>
+                    <CardDescription>Choose the size of your chat widget</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-3">
+                      {(['small', 'medium', 'large'] as const).map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setWidgetSize(size)}
+                          className={cn(
+                            "flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all",
+                            widgetSize === size 
+                              ? "border-primary bg-primary/5" 
+                              : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div 
+                            className="bg-muted rounded"
+                            style={{
+                              width: size === 'small' ? 32 : size === 'medium' ? 44 : 56,
+                              height: size === 'small' ? 32 : size === 'medium' ? 44 : 56,
+                            }}
+                          />
+                          <span className="text-sm font-medium capitalize">{size}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Widget Settings */}
                 <Card>
                   <CardHeader>
@@ -502,6 +623,9 @@ const WidgetPreview = () => {
                     <ChatWidget
                       propertyId={selectedPropertyId || ''}
                       primaryColor={primaryColor}
+                      textColor={textColor}
+                      borderColor={borderColor}
+                      widgetSize={widgetSize}
                       borderRadius={borderRadius}
                       agentName={agentName}
                       greeting={greeting}
@@ -585,6 +709,9 @@ const WidgetPreview = () => {
                     <ChatWidget
                       propertyId={selectedPropertyId || ''}
                       primaryColor={primaryColor}
+                      textColor={textColor}
+                      borderColor={borderColor}
+                      widgetSize={widgetSize}
                       borderRadius={borderRadius}
                       agentName={agentName}
                       greeting={greeting}

@@ -8,6 +8,9 @@ import { useWidgetChat } from '@/hooks/useWidgetChat';
 interface ChatWidgetProps {
   propertyId?: string;
   primaryColor?: string;
+  textColor?: string;
+  borderColor?: string;
+  widgetSize?: 'small' | 'medium' | 'large';
   borderRadius?: number;
   greeting?: string;
   agentName?: string;
@@ -18,6 +21,9 @@ interface ChatWidgetProps {
 export const ChatWidget = ({
   propertyId = 'demo',
   primaryColor = 'hsl(172, 66%, 50%)',
+  textColor = 'hsl(0, 0%, 100%)',
+  borderColor = 'hsl(0, 0%, 0%, 0.1)',
+  widgetSize = 'medium',
   borderRadius = 24,
   greeting = "Hi there! 👋 How can I help you today?",
   agentName = "Support",
@@ -127,9 +133,19 @@ export const ChatWidget = ({
   const messageRadiusLarge = `${Math.min(borderRadius, 24)}px`;
   const messageRadiusSmall = `${Math.max(borderRadius / 3, 4)}px`;
 
+  // Widget size dimensions
+  const sizeConfig = {
+    small: { width: 320, height: 440, button: 48 },
+    medium: { width: 380, height: 520, button: 56 },
+    large: { width: 440, height: 600, button: 64 },
+  };
+  const currentSize = sizeConfig[widgetSize];
+
   // Convert HSL string to ensure compatibility
   const widgetStyle = {
     '--widget-primary': primaryColor,
+    '--widget-text': textColor,
+    '--widget-border': borderColor,
     '--widget-radius': panelRadius,
     '--widget-button-radius': buttonRadius,
     '--widget-message-radius-lg': messageRadiusLarge,
@@ -184,8 +200,8 @@ export const ChatWidget = ({
       {/* Video Call Panel */}
       {showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col border border-border/30"
-          style={{ width: '380px', height: '520px', borderRadius: panelRadius }}
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col"
+          style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Video Call Header */}
           <div 
@@ -305,8 +321,8 @@ export const ChatWidget = ({
       {/* Chat Panel */}
       {isOpen && !showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col border border-border/30"
-          style={{ width: '380px', height: '520px', borderRadius: panelRadius }}
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col"
+          style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Header */}
           <div 
@@ -320,38 +336,47 @@ export const ChatWidget = ({
             />
             <div className="flex items-center gap-3 relative z-10">
               <div 
-                className="h-11 w-11 bg-white/20 backdrop-blur-sm flex items-center justify-center"
-                style={{ borderRadius: buttonRadius }}
+                className="h-11 w-11 backdrop-blur-sm flex items-center justify-center"
+                style={{ borderRadius: buttonRadius, background: `color-mix(in srgb, ${textColor} 20%, transparent)` }}
               >
-                <MessageCircle className="h-5 w-5 text-white" />
+                <MessageCircle className="h-5 w-5" style={{ color: textColor }} />
               </div>
               <div>
-                <h3 className="font-semibold text-white">{agentName}</h3>
+                <h3 className="font-semibold" style={{ color: textColor }}>{agentName}</h3>
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                  <span className="text-xs text-white/80">Here to help</span>
+                  <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: textColor }} />
+                  <span className="text-xs" style={{ color: textColor, opacity: 0.8 }}>Here to help</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-1 relative z-10">
               <button 
                 onClick={handleStartVideoCall}
-                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
+                style={{ background: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 title="Start video call"
               >
-                <Video className="h-4 w-4 text-white" />
+                <Video className="h-4 w-4" style={{ color: textColor }} />
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
+                style={{ background: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <Minimize2 className="h-4 w-4 text-white" />
+                <Minimize2 className="h-4 w-4" style={{ color: textColor }} />
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="h-9 w-9 rounded-full hover:bg-white/20 flex items-center justify-center transition-all duration-300"
+                className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
+                style={{ background: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <X className="h-4 w-4 text-white" />
+                <X className="h-4 w-4" style={{ color: textColor }} />
               </button>
             </div>
           </div>
@@ -520,10 +545,18 @@ export const ChatWidget = ({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="h-16 w-16 flex items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
-          style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
+          className="flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+          style={{ 
+            background: 'var(--widget-primary)', 
+            borderRadius: buttonRadius,
+            width: `${currentSize.button}px`,
+            height: `${currentSize.button}px`,
+            color: textColor,
+          }}
         >
-          <MessageCircle className="h-7 w-7" />
+          <MessageCircle className={cn(
+            widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
+          )} />
         </button>
       )}
     </div>
