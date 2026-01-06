@@ -31,9 +31,13 @@ import {
   Save,
   Loader2,
   Trash2,
-  Cloud
+  Cloud,
+  MessageCircle,
+  Mail
 } from 'lucide-react';
 import { SalesforceSettings } from '@/components/settings/SalesforceSettings';
+import { SlackSettings } from '@/components/settings/SlackSettings';
+import { EmailSettings } from '@/components/settings/EmailSettings';
 import {
   Dialog,
   DialogContent,
@@ -302,18 +306,26 @@ const Settings = () => {
 
           {settings && (
             <Tabs defaultValue="behavior" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="behavior">
                   <Clock className="mr-2 h-4 w-4" />
-                  Response Timing
+                  Timing
                 </TabsTrigger>
                 <TabsTrigger value="ai">
                   <Bot className="mr-2 h-4 w-4" />
-                  AI & Escalation
+                  AI
                 </TabsTrigger>
                 <TabsTrigger value="engagement">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Engagement
+                </TabsTrigger>
+                <TabsTrigger value="slack">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Slack
+                </TabsTrigger>
+                <TabsTrigger value="email">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email
                 </TabsTrigger>
                 <TabsTrigger value="salesforce">
                   <Cloud className="mr-2 h-4 w-4" />
@@ -599,6 +611,16 @@ const Settings = () => {
                     )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Slack Tab */}
+              <TabsContent value="slack">
+                <SlackSettings propertyId={selectedPropertyId} />
+              </TabsContent>
+
+              {/* Email Tab */}
+              <TabsContent value="email">
+                <EmailSettings propertyId={selectedPropertyId} />
               </TabsContent>
 
               {/* Salesforce Tab */}
