@@ -6,6 +6,8 @@ interface Message {
   content: string;
   sender_type: 'agent' | 'visitor';
   created_at: string;
+  agent_name?: string;
+  agent_avatar?: string | null;
 }
 
 export interface AIAgent {
@@ -261,7 +263,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const proactiveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const aiAgentIndexRef = useRef(0);
 
-  // Fetch AI agents for this property
+  // Fetch AI agents for this property - ONLY assigned agents, no fallback
   const fetchAiAgents = useCallback(async () => {
     if (!propertyId || propertyId === 'demo') return;
 
@@ -272,25 +274,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       .eq('property_id', propertyId);
 
     if (assignError || !assignments || assignments.length === 0) {
-      // If no assigned AI agents, get all AI agents owned by the property owner
-      const { data: property } = await supabase
-        .from('properties')
-        .select('user_id')
-        .eq('id', propertyId)
-        .single();
-
-      if (property) {
-        const { data: agents } = await supabase
-          .from('ai_agents')
-          .select('id, name, avatar_url, personality_prompt')
-          .eq('owner_id', property.user_id)
-          .eq('status', 'active');
-
-        if (agents && agents.length > 0) {
-          setAiAgents(agents);
-          setCurrentAiAgent(agents[0]);
-        }
-      }
+      // No AI agents assigned - leave empty
+      setAiAgents([]);
+      setCurrentAiAgent(null);
       return;
     }
 
@@ -304,6 +290,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     if (!error && agents && agents.length > 0) {
       setAiAgents(agents);
       setCurrentAiAgent(agents[0]);
+    } else {
+      setAiAgents([]);
+      setCurrentAiAgent(null);
     }
   }, [propertyId]);
 
@@ -516,12 +505,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         await fetchAiAgents();
       }
       // Just add the greeting and use AI without database
+      const greetingAgent = aiAgents.length > 0 ? aiAgents[0] : null;
       if (greeting || settings.greeting) {
         setMessages([{
           id: 'greeting',
           content: greeting || settings.greeting || '',
           sender_type: 'agent',
           created_at: new Date().toISOString(),
+          agent_name: greetingAgent?.name,
+          agent_avatar: greetingAgent?.avatar_url,
         }]);
       }
       setLoading(false);
@@ -607,12 +599,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         sender_type: m.sender_type as 'agent' | 'visitor',
       })));
     } else if (settings.greeting || greeting) {
-      // Add greeting for new conversations
+      // Add greeting for new conversations - use first AI agent if available
+      const greetingAgent = aiAgents.length > 0 ? aiAgents[0] : null;
       setMessages([{
         id: 'greeting',
         content: settings.greeting || greeting || '',
         sender_type: 'agent',
         created_at: new Date().toISOString(),
+        agent_name: greetingAgent?.name,
+        agent_avatar: greetingAgent?.avatar_url,
       }]);
     }
 
@@ -709,11 +704,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const aiMessageId = `ai-${Date.now()}`;
     let aiContent = '';
 
+    // Store current agent for this message (before cycling)
+    const respondingAgent = currentAiAgent;
+
     // Stream AI response with current AI agent's personality
     await streamAIResponse({
       messages: conversationHistory,
-      personalityPrompt: currentAiAgent?.personality_prompt,
-      agentName: currentAiAgent?.name,
+      personalityPrompt: respondingAgent?.personality_prompt,
+      agentName: respondingAgent?.name,
       onDelta: (delta) => {
         aiContent += delta;
         setMessages(prev => {
@@ -726,6 +724,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               content: aiContent,
               sender_type: 'agent' as const,
               created_at: new Date().toISOString(),
+              agent_name: respondingAgent?.name,
+              agent_avatar: respondingAgent?.avatar_url,
             }];
           }
         });
