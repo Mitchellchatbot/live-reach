@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   MessageSquare,
@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -80,7 +81,7 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
 );
 
 export const DashboardSidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed } = useSidebarState();
   const navigate = useNavigate();
   const { profile } = useUserProfile();
   const { signOut, user, isClient, isAgent, isAdmin } = useAuth();

@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SidebarStateProvider, useSidebarState } from '@/hooks/useSidebarState';
 
 type FilterStatus = 'all' | 'active' | 'pending' | 'closed';
 
@@ -57,12 +58,12 @@ const toUiConversation = (dbConv: DbConversation): Conversation & { isTest?: boo
   isTest: dbConv.is_test || false,
 });
 
-const Dashboard = () => {
+const DashboardContent = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { conversations: dbConversations, properties, loading: dataLoading, sendMessage, markMessagesAsRead, closeConversation } = useConversations();
-  
+  const { setCollapsed } = useSidebarState();
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
@@ -135,6 +136,7 @@ const Dashboard = () => {
 
   const handleSelectConversation = async (conversation: Conversation) => {
     setSelectedConversationId(conversation.id);
+    setCollapsed(true); // Auto-collapse sidebar when selecting a conversation
     await markMessagesAsRead(conversation.id);
   };
 
@@ -301,5 +303,11 @@ const Dashboard = () => {
     </div>
   );
 };
+
+const Dashboard = () => (
+  <SidebarStateProvider>
+    <DashboardContent />
+  </SidebarStateProvider>
+);
 
 export default Dashboard;
