@@ -3,11 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, Eye, EyeOff, Link2, Unlink, ExternalLink } from 'lucide-react';
+import { Loader2, Save, Unlink } from 'lucide-react';
 
 interface SlackSettingsProps {
   propertyId: string;
@@ -16,13 +15,10 @@ interface SlackSettingsProps {
 interface SlackConfig {
   id: string;
   enabled: boolean;
-  client_id: string;
-  client_secret: string;
   access_token: string | null;
   team_id: string | null;
   team_name: string | null;
   incoming_webhook_channel: string | null;
-  channel_name: string;
   notify_on_new_conversation: boolean;
   notify_on_escalation: boolean;
 }
@@ -31,7 +27,7 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
   const [config, setConfig] = useState<SlackConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showClientSecret, setShowClientSecret] = useState(false);
+  const [connecting, setConnecting] = useState(false);
 
   // Listen for OAuth callback messages from popup
   useEffect(() => {
@@ -39,8 +35,10 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
       if (event.data?.type === 'slack-oauth-success') {
         toast.success(`Connected to ${event.data.team || 'Slack'}!`);
         fetchSettings(); // Refresh settings
+        setConnecting(false);
       } else if (event.data?.type === 'slack-oauth-error') {
         toast.error(`Slack connection failed: ${event.data.error}`);
+        setConnecting(false);
       }
     };
 
@@ -72,13 +70,10 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
       setConfig({
         id: data.id,
         enabled: data.enabled,
-        client_id: data.client_id || '',
-        client_secret: data.client_secret || '',
         access_token: data.access_token,
         team_id: data.team_id,
         team_name: data.team_name,
         incoming_webhook_channel: data.incoming_webhook_channel,
-        channel_name: data.channel_name || '',
         notify_on_new_conversation: data.notify_on_new_conversation,
         notify_on_escalation: data.notify_on_escalation,
       });
@@ -94,9 +89,6 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
     const settingsData = {
       property_id: propertyId,
       enabled: config?.enabled ?? false,
-      client_id: config?.client_id || null,
-      client_secret: config?.client_secret || null,
-      channel_name: config?.channel_name || null,
       notify_on_new_conversation: config?.notify_on_new_conversation ?? true,
       notify_on_escalation: config?.notify_on_escalation ?? true,
     };
@@ -134,22 +126,28 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
   };
 
   const handleConnectSlack = async () => {
-    if (!config?.client_id) {
-      toast.error('Please enter your Slack Client ID first');
-      return;
+    setConnecting(true);
+
+    try {
+      // Call edge function to get OAuth URL
+      const { data, error } = await supabase.functions.invoke('slack-oauth-start', {
+        body: { propertyId },
+      });
+
+      if (error || !data?.url) {
+        console.error('Failed to get Slack OAuth URL:', error);
+        toast.error('Failed to start Slack connection');
+        setConnecting(false);
+        return;
+      }
+
+      // Open OAuth popup
+      window.open(data.url, '_blank', 'width=600,height=700');
+    } catch (err) {
+      console.error('Error connecting to Slack:', err);
+      toast.error('Failed to connect to Slack');
+      setConnecting(false);
     }
-
-    // Save settings first to ensure client_id and client_secret are stored
-    await handleSave();
-
-    // Build the Slack OAuth URL using the edge function as redirect
-    const redirectUri = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/slack-oauth-callback`;
-    const scopes = 'incoming-webhook,chat:write,channels:read';
-    const state = btoa(JSON.stringify({ propertyId }));
-
-    const slackAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${encodeURIComponent(config.client_id)}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}`;
-
-    window.open(slackAuthUrl, '_blank', 'width=600,height=700');
   };
 
   const handleDisconnect = async () => {
@@ -211,73 +209,6 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* OAuth Credentials */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="slack_client_id">Client ID</Label>
-              <Input
-                id="slack_client_id"
-                type="text"
-                placeholder="Enter your Slack App Client ID"
-                value={config?.client_id || ''}
-                onChange={(e) => setConfig(prev => prev ? { ...prev, client_id: e.target.value } : {
-                  id: '',
-                  enabled: false,
-                  client_id: e.target.value,
-                  client_secret: '',
-                  access_token: null,
-                  team_id: null,
-                  team_name: null,
-                  incoming_webhook_channel: null,
-                  channel_name: '',
-                  notify_on_new_conversation: true,
-                  notify_on_escalation: true,
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="slack_client_secret">Client Secret</Label>
-              <div className="relative">
-                <Input
-                  id="slack_client_secret"
-                  type={showClientSecret ? 'text' : 'password'}
-                  placeholder="Enter your Slack App Client Secret"
-                  value={config?.client_secret || ''}
-                  onChange={(e) => setConfig(prev => prev ? { ...prev, client_secret: e.target.value } : {
-                    id: '',
-                    enabled: false,
-                    client_id: '',
-                    client_secret: e.target.value,
-                    access_token: null,
-                    team_id: null,
-                    team_name: null,
-                    incoming_webhook_channel: null,
-                    channel_name: '',
-                    notify_on_new_conversation: true,
-                    notify_on_escalation: true,
-                  })}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowClientSecret(!showClientSecret)}
-                >
-                  {showClientSecret ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Create a Slack App at api.slack.com/apps to get these credentials
-              </p>
-            </div>
-          </div>
-
           {/* Connection Status */}
           {isConnected ? (
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
@@ -295,38 +226,25 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4 py-4 border rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground text-center">
-                Enter your OAuth credentials above, save, then connect your workspace.
-              </p>
-              <Button 
-                disabled={!config?.client_id || !config?.client_secret}
-                onClick={handleConnectSlack}
-              >
-                <Link2 className="mr-2 h-4 w-4" />
-                Connect Slack
+            <div className="flex flex-col items-center gap-4 py-6 border rounded-lg bg-muted/50">
+              <div className="text-center">
+                <p className="font-medium mb-1">Connect to Slack</p>
+                <p className="text-sm text-muted-foreground">
+                  Click the button below to connect your Slack workspace
+                </p>
+              </div>
+              <Button onClick={handleConnectSlack} disabled={connecting}>
+                {connecting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                  </svg>
+                )}
+                Add Slack Account
               </Button>
             </div>
           )}
-
-          {/* Help link */}
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <Link2 className="h-4 w-4 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground flex-1">
-              Need help creating a Slack App?
-            </p>
-            <Button variant="outline" size="sm" asChild>
-              <a 
-                href="https://api.slack.com/apps" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1"
-              >
-                Create Slack App
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
@@ -351,13 +269,10 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
               onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, enabled: checked } : {
                 id: '',
                 enabled: checked,
-                client_id: '',
-                client_secret: '',
                 access_token: null,
                 team_id: null,
                 team_name: null,
                 incoming_webhook_channel: null,
-                channel_name: '',
                 notify_on_new_conversation: true,
                 notify_on_escalation: true,
               })}
