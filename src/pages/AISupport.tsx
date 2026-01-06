@@ -44,6 +44,7 @@ interface PropertySettings {
   proactive_message_delay_seconds: number;
   proactive_message_enabled: boolean;
   ai_base_prompt: string | null;
+  greeting: string | null;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -129,6 +130,7 @@ const AISupport = () => {
         proactive_message_delay_seconds: data.proactive_message_delay_seconds ?? 30,
         proactive_message_enabled: data.proactive_message_enabled ?? false,
         ai_base_prompt: data.ai_base_prompt ?? null,
+        greeting: data.greeting ?? null,
       });
     };
 
@@ -374,6 +376,7 @@ const AISupport = () => {
         proactive_message_delay_seconds: settings.proactive_message_delay_seconds,
         proactive_message_enabled: settings.proactive_message_enabled,
         ai_base_prompt: settings.ai_base_prompt,
+        greeting: settings.greeting,
       })
       .eq('id', settings.id);
 
@@ -845,6 +848,23 @@ const AISupport = () => {
                         require_email_before_chat: checked,
                       })}
                     />
+                  </div>
+
+                  {/* Greeting Message */}
+                  <div className="space-y-2">
+                    <Label htmlFor="greeting">Welcome Message</Label>
+                    <Input
+                      id="greeting"
+                      placeholder="Hi there! How can we help you today?"
+                      value={settings.greeting || ''}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        greeting: e.target.value || null,
+                      })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      The first message visitors see when they open the chat widget
+                    </p>
                   </div>
 
                   <div className="border-t pt-6">
