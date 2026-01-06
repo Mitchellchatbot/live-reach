@@ -47,47 +47,36 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Get credentials from backend secrets (Zapier-style - single app for all users)
+    const clientId = Deno.env.get('SLACK_CLIENT_ID');
+    const clientSecret = Deno.env.get('SLACK_CLIENT_SECRET');
+
+    if (!clientId || !clientSecret) {
+      console.error('Missing Slack credentials in backend secrets');
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({ type: 'slack-oauth-error', error: 'Integration not configured' }, '*'); window.close();</script><p>Error: Slack integration not configured. You can close this window.</p></body></html>`,
+        { headers: { ...corsHeaders, 'Content-Type': 'text/html' } }
+      );
+    }
+
     // Create Supabase client with service role
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Get the Slack settings for this property to retrieve client_id and client_secret
-    const { data: settings, error: settingsError } = await supabase
-      .from('slack_notification_settings')
-      .select('id, client_id, client_secret')
-      .eq('property_id', propertyId)
-      .single();
-
-    if (settingsError || !settings) {
-      console.error('Failed to get Slack settings:', settingsError);
-      return new Response(
-        `<html><body><script>window.opener?.postMessage({ type: 'slack-oauth-error', error: 'Settings not found' }, '*'); window.close();</script><p>Error: Settings not found. You can close this window.</p></body></html>`,
-        { headers: { ...corsHeaders, 'Content-Type': 'text/html' } }
-      );
-    }
-
-    if (!settings.client_id || !settings.client_secret) {
-      console.error('Missing client credentials');
-      return new Response(
-        `<html><body><script>window.opener?.postMessage({ type: 'slack-oauth-error', error: 'Missing OAuth credentials' }, '*'); window.close();</script><p>Error: Missing OAuth credentials. You can close this window.</p></body></html>`,
-        { headers: { ...corsHeaders, 'Content-Type': 'text/html' } }
-      );
-    }
-
     // Get the redirect URI (should match what was used in the authorization request)
     const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/slack-oauth-callback`;
 
-    // Exchange code for access token
+    // Exchange code for access token using backend secrets
     const tokenResponse = await fetch('https://slack.com/api/oauth.v2.access', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        client_id: settings.client_id,
-        client_secret: settings.client_secret,
+        client_id: clientId,
+        client_secret: clientSecret,
         code,
         redirect_uri: redirectUri,
       }),
@@ -104,21 +93,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update the Slack settings with the access token and team info
-    const { error: updateError } = await supabase
+    // Upsert the Slack settings with the access token and team info
+    const { error: upsertError } = await supabase
       .from('slack_notification_settings')
-      .update({
+      .upsert({
+        property_id: propertyId,
         access_token: tokenData.access_token,
         team_id: tokenData.team?.id,
         team_name: tokenData.team?.name,
         bot_user_id: tokenData.bot_user_id,
         incoming_webhook_url: tokenData.incoming_webhook?.url,
         incoming_webhook_channel: tokenData.incoming_webhook?.channel,
-      })
-      .eq('id', settings.id);
+        enabled: true,
+      }, { onConflict: 'property_id' });
 
-    if (updateError) {
-      console.error('Failed to update Slack settings:', updateError);
+    if (upsertError) {
+      console.error('Failed to save Slack settings:', upsertError);
       return new Response(
         `<html><body><script>window.opener?.postMessage({ type: 'slack-oauth-error', error: 'Failed to save' }, '*'); window.close();</script><p>Error: Failed to save. You can close this window.</p></body></html>`,
         { headers: { ...corsHeaders, 'Content-Type': 'text/html' } }
