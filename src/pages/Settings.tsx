@@ -4,17 +4,15 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
   Globe, 
   Plus,
-  Save,
   Loader2,
   Cloud,
   MessageCircle,
@@ -33,22 +31,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-interface PropertyInfo {
-  id: string;
-  name: string;
-  domain: string;
-  greeting: string | null;
-  offline_message: string | null;
-}
-
 const Settings = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { properties, createProperty, deleteProperty } = useConversations();
   
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
-  const [propertyInfo, setPropertyInfo] = useState<PropertyInfo | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   
   // New property dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -69,53 +57,6 @@ const Settings = () => {
     }
   }, [properties, selectedPropertyId]);
 
-  // Fetch property info
-  useEffect(() => {
-    const fetchPropertyInfo = async () => {
-      if (!selectedPropertyId) return;
-
-      const { data, error } = await supabase
-        .from('properties')
-        .select('id, name, domain, greeting, offline_message')
-        .eq('id', selectedPropertyId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching property info:', error);
-        return;
-      }
-
-      setPropertyInfo(data);
-    };
-
-    fetchPropertyInfo();
-  }, [selectedPropertyId]);
-
-  const handleSave = async () => {
-    if (!propertyInfo) return;
-
-    setIsSaving(true);
-    const { error } = await supabase
-      .from('properties')
-      .update({
-        name: propertyInfo.name,
-        domain: propertyInfo.domain,
-        greeting: propertyInfo.greeting,
-        offline_message: propertyInfo.offline_message,
-      })
-      .eq('id', propertyInfo.id);
-
-    setIsSaving(false);
-
-    if (error) {
-      toast.error('Failed to save settings');
-      console.error('Error saving settings:', error);
-      return;
-    }
-
-    toast.success('Settings saved successfully');
-  };
-
   const handleCreateProperty = async () => {
     if (!newPropertyName.trim() || !newPropertyDomain.trim()) return;
 
@@ -128,6 +69,7 @@ const Settings = () => {
       setNewPropertyName('');
       setNewPropertyDomain('');
       setSelectedPropertyId(property.id);
+      toast.success('Property created successfully');
     }
   };
 
@@ -146,19 +88,9 @@ const Settings = () => {
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-              <p className="text-muted-foreground">Manage properties and integrations</p>
-            </div>
-            <Button onClick={handleSave} disabled={isSaving || !propertyInfo}>
-              {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save Changes
-            </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+            <p className="text-muted-foreground">Manage properties and integrations</p>
           </div>
 
           {/* Property Selector */}
@@ -231,13 +163,9 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {propertyInfo && (
-            <Tabs defaultValue="property" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="property">
-                  <Globe className="mr-2 h-4 w-4" />
-                  Property
-                </TabsTrigger>
+          {selectedPropertyId && (
+            <Tabs defaultValue="slack" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="slack">
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Slack
@@ -251,73 +179,6 @@ const Settings = () => {
                   Salesforce
                 </TabsTrigger>
               </TabsList>
-
-              {/* Property Tab */}
-              <TabsContent value="property" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Property Details</CardTitle>
-                    <CardDescription>
-                      Basic information about this property
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="property-name">Property Name</Label>
-                        <Input
-                          id="property-name"
-                          value={propertyInfo.name}
-                          onChange={(e) => setPropertyInfo({ ...propertyInfo, name: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="property-domain">Domain</Label>
-                        <Input
-                          id="property-domain"
-                          value={propertyInfo.domain}
-                          onChange={(e) => setPropertyInfo({ ...propertyInfo, domain: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Chat Messages</CardTitle>
-                    <CardDescription>
-                      Default messages shown in the chat widget
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="greeting">Greeting Message</Label>
-                      <Input
-                        id="greeting"
-                        placeholder="Hi there! How can we help you today?"
-                        value={propertyInfo.greeting || ''}
-                        onChange={(e) => setPropertyInfo({ ...propertyInfo, greeting: e.target.value })}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        First message visitors see when they open the chat
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="offline-message">Offline Message</Label>
-                      <Input
-                        id="offline-message"
-                        placeholder="We're currently offline. Leave a message!"
-                        value={propertyInfo.offline_message || ''}
-                        onChange={(e) => setPropertyInfo({ ...propertyInfo, offline_message: e.target.value })}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Shown when no agents are available
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
 
               {/* Slack Tab */}
               <TabsContent value="slack">
@@ -335,14 +196,6 @@ const Settings = () => {
               </TabsContent>
 
             </Tabs>
-          )}
-
-          {!propertyInfo && selectedPropertyId && (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </CardContent>
-            </Card>
           )}
 
           {properties.length === 0 && (
