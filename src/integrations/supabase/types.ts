@@ -114,6 +114,47 @@ export type Database = {
           },
         ]
       }
+      email_notification_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          notification_emails: string[] | null
+          notify_on_escalation: boolean
+          notify_on_new_conversation: boolean
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notification_emails?: string[] | null
+          notify_on_escalation?: boolean
+          notify_on_new_conversation?: boolean
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notification_emails?: string[] | null
+          notify_on_escalation?: boolean
+          notify_on_new_conversation?: boolean
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_notification_settings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -412,6 +453,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "salesforce_settings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slack_notification_settings: {
+        Row: {
+          channel_name: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          notify_on_escalation: boolean
+          notify_on_new_conversation: boolean
+          property_id: string
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          channel_name?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notify_on_escalation?: boolean
+          notify_on_new_conversation?: boolean
+          property_id: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          channel_name?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          notify_on_escalation?: boolean
+          notify_on_new_conversation?: boolean
+          property_id?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_notification_settings_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: true
             referencedRelation: "properties"
