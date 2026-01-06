@@ -17,6 +17,7 @@ export type Database = {
       agents: {
         Row: {
           avatar: string | null
+          avatar_url: string | null
           created_at: string
           email: string
           id: string
@@ -31,6 +32,7 @@ export type Database = {
         }
         Insert: {
           avatar?: string | null
+          avatar_url?: string | null
           created_at?: string
           email: string
           id?: string
@@ -45,6 +47,7 @@ export type Database = {
         }
         Update: {
           avatar?: string | null
+          avatar_url?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -56,6 +59,75 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      ai_agent_properties: {
+        Row: {
+          ai_agent_id: string
+          created_at: string
+          id: string
+          property_id: string
+        }
+        Insert: {
+          ai_agent_id: string
+          created_at?: string
+          id?: string
+          property_id: string
+        }
+        Update: {
+          ai_agent_id?: string
+          created_at?: string
+          id?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_properties_ai_agent_id_fkey"
+            columns: ["ai_agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          personality_prompt: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          personality_prompt?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          personality_prompt?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
