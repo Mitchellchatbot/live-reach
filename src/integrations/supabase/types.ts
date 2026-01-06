@@ -465,8 +465,6 @@ export type Database = {
           access_token: string | null
           bot_user_id: string | null
           channel_name: string | null
-          client_id: string | null
-          client_secret: string | null
           created_at: string
           enabled: boolean
           id: string
@@ -484,8 +482,6 @@ export type Database = {
           access_token?: string | null
           bot_user_id?: string | null
           channel_name?: string | null
-          client_id?: string | null
-          client_secret?: string | null
           created_at?: string
           enabled?: boolean
           id?: string
@@ -503,8 +499,6 @@ export type Database = {
           access_token?: string | null
           bot_user_id?: string | null
           channel_name?: string | null
-          client_id?: string | null
-          client_secret?: string | null
           created_at?: string
           enabled?: boolean
           id?: string
