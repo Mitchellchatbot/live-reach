@@ -455,68 +455,92 @@ export const ChatWidget = ({
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
-                {messages.map((msg, index) => (
-                  <div
-                    key={msg.id}
-                    className={cn(
-                      "flex gap-3 animate-fade-in",
-                      msg.sender_type === 'visitor' ? "flex-row-reverse" : "flex-row"
-                    )}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {msg.sender_type === 'agent' && (
-                      <div 
-                        className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm"
-                        style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
-                      >
-                        <MessageCircle className="h-4 w-4 text-white" />
-                      </div>
-                    )}
+                {messages.map((msg, index) => {
+                  // For agent messages, use per-message agent info or fall back to current
+                  const msgAgentName = msg.agent_name || displayName;
+                  const msgAgentAvatar = msg.agent_avatar || displayAvatar;
+                  
+                  return (
                     <div
+                      key={msg.id}
                       className={cn(
-                        "max-w-[75%] px-4 py-3 shadow-sm",
-                        msg.sender_type === 'visitor'
-                          ? ""
-                          : "bg-card border border-border/30"
+                        "flex gap-3 animate-fade-in",
+                        msg.sender_type === 'visitor' ? "flex-row-reverse" : "flex-row"
                       )}
-                      style={msg.sender_type === 'visitor' 
-                        ? { 
-                            background: 'var(--widget-primary)', 
-                            color: 'white',
-                            borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}`
-                          } 
-                        : {
-                            borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}`
-                          }
-                      }
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      <p className={cn(
-                        "text-xs mt-1.5",
-                        msg.sender_type === 'visitor' ? "text-white/70" : "text-muted-foreground"
-                      )}>
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
+                      {msg.sender_type === 'agent' && (
+                        <div 
+                          className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                          style={{ background: msgAgentAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                        >
+                          {msgAgentAvatar ? (
+                            <img src={msgAgentAvatar} alt={msgAgentName} className="h-full w-full object-cover" />
+                          ) : (
+                            <MessageCircle className="h-4 w-4 text-white" />
+                          )}
+                        </div>
+                      )}
+                      <div className={cn("max-w-[75%]", msg.sender_type === 'agent' && "flex flex-col")}>
+                        {msg.sender_type === 'agent' && msgAgentName && (
+                          <span className="text-xs text-muted-foreground mb-1 ml-1">{msgAgentName}</span>
+                        )}
+                        <div
+                          className={cn(
+                            "px-4 py-3 shadow-sm",
+                            msg.sender_type === 'visitor'
+                              ? ""
+                              : "bg-card border border-border/30"
+                          )}
+                          style={msg.sender_type === 'visitor' 
+                            ? { 
+                                background: 'var(--widget-primary)', 
+                                color: 'white',
+                                borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}`
+                              } 
+                            : {
+                                borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}`
+                              }
+                          }
+                        >
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                          <p className={cn(
+                            "text-xs mt-1.5",
+                            msg.sender_type === 'visitor' ? "text-white/70" : "text-muted-foreground"
+                          )}>
+                            {format(new Date(msg.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {isTyping && (
                   <div className="flex gap-3 items-end animate-fade-in">
                     <div 
-                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm"
-                      style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
                     >
-                      <MessageCircle className="h-4 w-4 text-white" />
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
                     </div>
-                    <div 
-                      className="bg-card px-4 py-3 shadow-sm border border-border/30"
-                      style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
-                    >
-                      <div className="flex gap-1.5">
-                        <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
-                        <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
-                        <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="flex flex-col">
+                      {displayName && (
+                        <span className="text-xs text-muted-foreground mb-1 ml-1">{displayName}</span>
+                      )}
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        <div className="flex gap-1.5">
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
                       </div>
                     </div>
                   </div>
