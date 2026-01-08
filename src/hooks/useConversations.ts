@@ -188,6 +188,23 @@ export const useConversations = () => {
     return true;
   };
 
+  const closeConversations = async (conversationIds: string[]) => {
+    const { error } = await supabase
+      .from('conversations')
+      .update({ status: 'closed' })
+      .in('id', conversationIds);
+
+    if (error) {
+      console.error('Error closing conversations:', error);
+      toast.error('Failed to close conversations');
+      return false;
+    }
+
+    toast.success(`${conversationIds.length} conversation${conversationIds.length > 1 ? 's' : ''} closed`);
+    await fetchConversations();
+    return true;
+  };
+
   const deleteConversation = async (conversationId: string) => {
     // First delete all messages for this conversation
     const { error: messagesError } = await supabase
@@ -214,6 +231,36 @@ export const useConversations = () => {
     }
 
     toast.success('Conversation deleted');
+    await fetchConversations();
+    return true;
+  };
+
+  const deleteConversations = async (conversationIds: string[]) => {
+    // First delete all messages for these conversations
+    const { error: messagesError } = await supabase
+      .from('messages')
+      .delete()
+      .in('conversation_id', conversationIds);
+
+    if (messagesError) {
+      console.error('Error deleting messages:', messagesError);
+      toast.error('Failed to delete conversations');
+      return false;
+    }
+
+    // Then delete the conversations
+    const { error } = await supabase
+      .from('conversations')
+      .delete()
+      .in('id', conversationIds);
+
+    if (error) {
+      console.error('Error deleting conversations:', error);
+      toast.error('Failed to delete conversations');
+      return false;
+    }
+
+    toast.success(`${conversationIds.length} conversation${conversationIds.length > 1 ? 's' : ''} deleted`);
     await fetchConversations();
     return true;
   };
@@ -351,7 +398,9 @@ export const useConversations = () => {
     sendMessage,
     markMessagesAsRead,
     closeConversation,
+    closeConversations,
     deleteConversation,
+    deleteConversations,
     createProperty,
     deleteProperty,
     refetch: fetchConversations,

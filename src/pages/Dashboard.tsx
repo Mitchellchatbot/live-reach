@@ -67,7 +67,7 @@ const DashboardContent = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { conversations: dbConversations, properties, loading: dataLoading, sendMessage, markMessagesAsRead, closeConversation, deleteConversation } = useConversations();
+  const { conversations: dbConversations, properties, loading: dataLoading, sendMessage, markMessagesAsRead, closeConversation, closeConversations, deleteConversation, deleteConversations } = useConversations();
   const { setCollapsed } = useSidebarState();
   
   // Determine filter from path
@@ -170,6 +170,20 @@ const DashboardContent = () => {
       setSelectedConversationId(null);
     }
     await deleteConversation(conversationId);
+  };
+
+  const handleBulkClose = async (conversationIds: string[]) => {
+    if (selectedConversationId && conversationIds.includes(selectedConversationId)) {
+      setSelectedConversationId(null);
+    }
+    return await closeConversations(conversationIds);
+  };
+
+  const handleBulkDelete = async (conversationIds: string[]) => {
+    if (selectedConversationId && conversationIds.includes(selectedConversationId)) {
+      setSelectedConversationId(null);
+    }
+    return await deleteConversations(conversationIds);
   };
 
   const handleCreateTestConversation = async () => {
@@ -313,6 +327,9 @@ const DashboardContent = () => {
             onSelect={handleSelectConversation}
             showDelete={isClosedView}
             onDelete={handleDeleteConversation}
+            onBulkClose={handleBulkClose}
+            onBulkDelete={handleBulkDelete}
+            showBulkActions={true}
           />
         </div>
 
