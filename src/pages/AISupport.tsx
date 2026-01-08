@@ -35,6 +35,7 @@ interface PropertySettings {
   ai_response_delay_max_ms: number;
   typing_indicator_min_ms: number;
   typing_indicator_max_ms: number;
+  smart_typing_enabled: boolean;
   max_ai_messages_before_escalation: number;
   escalation_keywords: string[];
   auto_escalation_enabled: boolean;
@@ -136,6 +137,7 @@ const AISupport = () => {
         ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? 2500,
         typing_indicator_min_ms: data.typing_indicator_min_ms ?? 1500,
         typing_indicator_max_ms: data.typing_indicator_max_ms ?? 3000,
+        smart_typing_enabled: data.smart_typing_enabled ?? false,
         max_ai_messages_before_escalation: data.max_ai_messages_before_escalation ?? 5,
         escalation_keywords: data.escalation_keywords ?? ['crisis', 'emergency', 'suicide', 'help me', 'urgent'],
         auto_escalation_enabled: data.auto_escalation_enabled ?? true,
@@ -382,6 +384,7 @@ const AISupport = () => {
         ai_response_delay_max_ms: settings.ai_response_delay_max_ms,
         typing_indicator_min_ms: settings.typing_indicator_min_ms,
         typing_indicator_max_ms: settings.typing_indicator_max_ms,
+        smart_typing_enabled: settings.smart_typing_enabled,
         max_ai_messages_before_escalation: settings.max_ai_messages_before_escalation,
         escalation_keywords: settings.escalation_keywords,
         auto_escalation_enabled: settings.auto_escalation_enabled,
@@ -716,7 +719,23 @@ const AISupport = () => {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label>Typing Indicator Duration</Label>
+                      <div className="space-y-0.5">
+                        <Label>Smart Typing Duration</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Calculate typing time based on response length
+                        </p>
+                      </div>
+                      <Switch
+                        checked={settings.smart_typing_enabled}
+                        onCheckedChange={(checked) => setSettings({
+                          ...settings,
+                          smart_typing_enabled: checked,
+                        })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label>{settings.smart_typing_enabled ? 'Minimum Typing Duration' : 'Typing Indicator Duration'}</Label>
                       <span className="text-sm font-medium text-muted-foreground">
                         {(settings.typing_indicator_min_ms / 1000).toFixed(1)}s – {(settings.typing_indicator_max_ms / 1000).toFixed(1)}s
                       </span>
@@ -733,6 +752,11 @@ const AISupport = () => {
                       step={100}
                       minStepsBetweenThumbs={1}
                     />
+                    {settings.smart_typing_enabled && (
+                      <p className="text-xs text-muted-foreground">
+                        Uses ~40 WPM average typing speed. If calculated time is less than minimum, minimum is used.
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
