@@ -20,7 +20,7 @@ interface OnboardingData {
   aiTone: 'friendly' | 'hopeful' | 'caring' | null;
 }
 
-const defaultGreeting = "Hi there! How can we help you today?";
+const defaultGreeting = "You've taken a brave first step. We're here to help — how can we support you today?";
 
 const aiTonePrompts = {
   friendly: "You are a warm, conversational assistant. Use casual language, emojis occasionally, and make visitors feel like they're chatting with a helpful friend.",
@@ -206,9 +206,9 @@ const Onboarding = () => {
 
               <div className="flex flex-wrap gap-2 justify-center">
                 {[
-                  { label: 'Friendly', value: "Hi there! 👋 How can I help you today?" },
-                  { label: 'Professional', value: "Welcome. How may I assist you?" },
-                  { label: 'Welcoming', value: "Hello! We're glad you're here. What can we help with?" },
+                  { label: 'Hopeful', value: "You've taken a brave first step. We're here to help — how can we support you today?" },
+                  { label: 'Caring', value: "We're so glad you reached out. You're not alone in this. How can we help?" },
+                  { label: 'Encouraging', value: "Recovery is possible, and it starts with a conversation. What's on your mind?" },
                 ].map((preset) => (
                   <Button
                     key={preset.label}
