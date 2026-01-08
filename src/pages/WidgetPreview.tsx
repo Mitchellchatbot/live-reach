@@ -68,14 +68,17 @@ const hexToHsl = (hex: string): string => {
 const DisplaySettingsCard = ({ 
   greeting, 
   setGreeting, 
-  extractedFont 
+  extractedFont,
+  propertyId
 }: { 
   greeting: string; 
   setGreeting: (value: string) => void; 
   extractedFont: string | null;
+  propertyId: string | undefined;
 }) => {
   const [localGreeting, setLocalGreeting] = useState(greeting);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setLocalGreeting(greeting);
@@ -87,10 +90,26 @@ const DisplaySettingsCard = ({
     setHasChanges(value !== greeting);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!propertyId) return;
+    
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('properties')
+      .update({ greeting: localGreeting || null })
+      .eq('id', propertyId);
+    
+    setIsSaving(false);
+    
+    if (error) {
+      toast.error('Failed to save settings');
+      console.error('Error saving greeting:', error);
+      return;
+    }
+    
     setGreeting(localGreeting);
     setHasChanges(false);
-    toast.success('Display settings saved!');
+    toast.success('Welcome message saved!');
   };
 
   return (
@@ -108,6 +127,9 @@ const DisplaySettingsCard = ({
             onChange={(e) => handleGreetingChange(e.target.value)}
             placeholder="Hi there! How can I help?"
           />
+          <p className="text-xs text-muted-foreground">
+            This message is shared with AI Support settings
+          </p>
         </div>
         {extractedFont && (
           <div className="p-3 bg-muted/50 rounded-lg">
@@ -119,10 +141,11 @@ const DisplaySettingsCard = ({
         )}
         <Button 
           onClick={handleSave} 
-          disabled={!hasChanges}
+          disabled={!hasChanges || isSaving || !propertyId}
           className="w-full"
         >
-          Save Display Settings
+          {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          Save Welcome Message
         </Button>
       </CardContent>
     </Card>
@@ -663,6 +686,7 @@ const WidgetPreview = () => {
               greeting={greeting}
               setGreeting={setGreeting}
               extractedFont={extractedFont}
+              propertyId={selectedPropertyId}
             />
           </div>
         </div>

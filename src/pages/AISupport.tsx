@@ -41,6 +41,7 @@ interface PropertySettings {
   auto_escalation_enabled: boolean;
   require_email_before_chat: boolean;
   require_name_before_chat: boolean;
+  require_phone_before_chat: boolean;
   proactive_message: string | null;
   proactive_message_delay_seconds: number;
   proactive_message_enabled: boolean;
@@ -143,6 +144,7 @@ const AISupport = () => {
         auto_escalation_enabled: data.auto_escalation_enabled ?? true,
         require_email_before_chat: data.require_email_before_chat ?? false,
         require_name_before_chat: data.require_name_before_chat ?? false,
+        require_phone_before_chat: data.require_phone_before_chat ?? false,
         proactive_message: data.proactive_message ?? null,
         proactive_message_delay_seconds: data.proactive_message_delay_seconds ?? 30,
         proactive_message_enabled: data.proactive_message_enabled ?? false,
@@ -390,6 +392,7 @@ const AISupport = () => {
         auto_escalation_enabled: settings.auto_escalation_enabled,
         require_email_before_chat: settings.require_email_before_chat,
         require_name_before_chat: settings.require_name_before_chat,
+        require_phone_before_chat: settings.require_phone_before_chat,
         proactive_message: settings.proactive_message,
         proactive_message_delay_seconds: settings.proactive_message_delay_seconds,
         proactive_message_enabled: settings.proactive_message_enabled,
@@ -885,6 +888,22 @@ const AISupport = () => {
                       onCheckedChange={(checked) => setSettings({
                         ...settings,
                         require_email_before_chat: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Require Phone</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Ask for visitor's phone number before chat
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.require_phone_before_chat}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        require_phone_before_chat: checked,
                       })}
                     />
                   </div>
