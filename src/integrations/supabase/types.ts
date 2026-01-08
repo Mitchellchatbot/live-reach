@@ -350,6 +350,7 @@ export type Database = {
           require_email_before_chat: boolean | null
           require_name_before_chat: boolean | null
           require_phone_before_chat: boolean | null
+          smart_typing_enabled: boolean | null
           typing_indicator_max_ms: number | null
           typing_indicator_min_ms: number | null
           updated_at: string
@@ -375,6 +376,7 @@ export type Database = {
           require_email_before_chat?: boolean | null
           require_name_before_chat?: boolean | null
           require_phone_before_chat?: boolean | null
+          smart_typing_enabled?: boolean | null
           typing_indicator_max_ms?: number | null
           typing_indicator_min_ms?: number | null
           updated_at?: string
@@ -400,6 +402,7 @@ export type Database = {
           require_email_before_chat?: boolean | null
           require_name_before_chat?: boolean | null
           require_phone_before_chat?: boolean | null
+          smart_typing_enabled?: boolean | null
           typing_indicator_max_ms?: number | null
           typing_indicator_min_ms?: number | null
           updated_at?: string

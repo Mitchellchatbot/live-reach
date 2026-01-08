@@ -22,6 +22,7 @@ interface PropertySettings {
   ai_response_delay_max_ms: number;
   typing_indicator_min_ms: number;
   typing_indicator_max_ms: number;
+  smart_typing_enabled: boolean;
   max_ai_messages_before_escalation: number;
   escalation_keywords: string[];
   auto_escalation_enabled: boolean;
@@ -45,6 +46,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   ai_response_delay_max_ms: 2500,
   typing_indicator_min_ms: 1500,
   typing_indicator_max_ms: 3000,
+  smart_typing_enabled: false,
   max_ai_messages_before_escalation: 5,
   escalation_keywords: ['crisis', 'emergency', 'suicide', 'help me', 'urgent'],
   auto_escalation_enabled: true,
@@ -320,6 +322,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         ai_response_delay_max_ms,
         typing_indicator_min_ms,
         typing_indicator_max_ms,
+        smart_typing_enabled,
         max_ai_messages_before_escalation,
         escalation_keywords,
         auto_escalation_enabled,
@@ -340,6 +343,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? DEFAULT_SETTINGS.ai_response_delay_max_ms,
         typing_indicator_min_ms: data.typing_indicator_min_ms ?? DEFAULT_SETTINGS.typing_indicator_min_ms,
         typing_indicator_max_ms: data.typing_indicator_max_ms ?? DEFAULT_SETTINGS.typing_indicator_max_ms,
+        smart_typing_enabled: data.smart_typing_enabled ?? DEFAULT_SETTINGS.smart_typing_enabled,
         max_ai_messages_before_escalation: data.max_ai_messages_before_escalation ?? DEFAULT_SETTINGS.max_ai_messages_before_escalation,
         escalation_keywords: data.escalation_keywords ?? DEFAULT_SETTINGS.escalation_keywords,
         auto_escalation_enabled: data.auto_escalation_enabled ?? DEFAULT_SETTINGS.auto_escalation_enabled,
@@ -696,13 +700,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
     // Now show typing indicator
     setIsTyping(true);
-    
-    // Apply typing indicator duration (how long they "type" before response appears)
-    const typingDuration = randomInRange(
-      settings.typing_indicator_min_ms,
-      settings.typing_indicator_max_ms
-    );
-    await sleep(typingDuration);
+    const typingStartTime = Date.now();
 
     // Create placeholder for AI response
     const aiMessageId = `ai-${Date.now()}`;
@@ -711,59 +709,142 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // Store current agent for this message (before cycling)
     const respondingAgent = currentAiAgent;
 
-    // Stream AI response with current AI agent's personality
-    await streamAIResponse({
-      messages: conversationHistory,
-      personalityPrompt: respondingAgent?.personality_prompt,
-      agentName: respondingAgent?.name,
-      basePrompt: settings.ai_base_prompt,
-      onDelta: (delta) => {
-        aiContent += delta;
-        setMessages(prev => {
-          const existing = prev.find(m => m.id === aiMessageId);
-          if (existing) {
-            return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
-          } else {
-            return [...prev, {
-              id: aiMessageId,
-              content: aiContent,
-              sender_type: 'agent' as const,
-              created_at: new Date().toISOString(),
-              agent_name: respondingAgent?.name,
-              agent_avatar: respondingAgent?.avatar_url,
-            }];
+    // Calculate typing time based on word count (average ~40 WPM = 0.67 words per second)
+    const calculateTypingTimeMs = (text: string): number => {
+      const wordCount = text.trim().split(/\s+/).length;
+      const wordsPerSecond = 40 / 60; // 40 WPM
+      return Math.ceil((wordCount / wordsPerSecond) * 1000);
+    };
+
+    if (settings.smart_typing_enabled) {
+      // Smart typing: buffer the response, then reveal after calculated time
+      await streamAIResponse({
+        messages: conversationHistory,
+        personalityPrompt: respondingAgent?.personality_prompt,
+        agentName: respondingAgent?.name,
+        basePrompt: settings.ai_base_prompt,
+        onDelta: (delta) => {
+          aiContent += delta;
+          // Don't update UI yet - just buffer
+        },
+        onDone: async () => {
+          // Calculate how long it would take to type this response
+          const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+          const minTypingTime = randomInRange(
+            settings.typing_indicator_min_ms,
+            settings.typing_indicator_max_ms
+          );
+          
+          // Use the longer of calculated time or minimum time
+          const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+          
+          // Calculate how long we've already been showing the typing indicator
+          const elapsedTime = Date.now() - typingStartTime;
+          const remainingTime = targetTypingTime - elapsedTime;
+          
+          // Wait remaining time if any
+          if (remainingTime > 0) {
+            await sleep(remainingTime);
           }
-        });
-      },
-      onDone: async () => {
-        setIsTyping(false);
-        
-        // Increment AI message count
-        aiMessageCountRef.current += 1;
+          
+          // Now reveal the full response
+          setMessages(prev => [...prev, {
+            id: aiMessageId,
+            content: aiContent,
+            sender_type: 'agent' as const,
+            created_at: new Date().toISOString(),
+            agent_name: respondingAgent?.name,
+            agent_avatar: respondingAgent?.avatar_url,
+          }]);
+          
+          setIsTyping(false);
+          
+          // Increment AI message count
+          aiMessageCountRef.current += 1;
 
-        // Cycle to next AI agent for next response
-        cycleToNextAgent();
+          // Cycle to next AI agent for next response
+          cycleToNextAgent();
 
-        // Check if should auto-escalate based on message count
-        if (
-          settings.auto_escalation_enabled && 
-          aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
-        ) {
-          await triggerEscalation();
-        }
-      },
-      onError: (error) => {
-        setIsTyping(false);
-        console.error('AI Error:', error);
-        // Add error message
-        setMessages(prev => [...prev, {
-          id: `error-${Date.now()}`,
-          content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
-          sender_type: 'agent',
-          created_at: new Date().toISOString(),
-        }]);
-      },
-    });
+          // Check if should auto-escalate based on message count
+          if (
+            settings.auto_escalation_enabled && 
+            aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
+          ) {
+            await triggerEscalation();
+          }
+        },
+        onError: (error) => {
+          setIsTyping(false);
+          console.error('AI Error:', error);
+          setMessages(prev => [...prev, {
+            id: `error-${Date.now()}`,
+            content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
+            sender_type: 'agent',
+            created_at: new Date().toISOString(),
+          }]);
+        },
+      });
+    } else {
+      // Standard mode: wait fixed duration then stream
+      const typingDuration = randomInRange(
+        settings.typing_indicator_min_ms,
+        settings.typing_indicator_max_ms
+      );
+      await sleep(typingDuration);
+
+      // Stream AI response with current AI agent's personality
+      await streamAIResponse({
+        messages: conversationHistory,
+        personalityPrompt: respondingAgent?.personality_prompt,
+        agentName: respondingAgent?.name,
+        basePrompt: settings.ai_base_prompt,
+        onDelta: (delta) => {
+          aiContent += delta;
+          setMessages(prev => {
+            const existing = prev.find(m => m.id === aiMessageId);
+            if (existing) {
+              return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
+            } else {
+              return [...prev, {
+                id: aiMessageId,
+                content: aiContent,
+                sender_type: 'agent' as const,
+                created_at: new Date().toISOString(),
+                agent_name: respondingAgent?.name,
+                agent_avatar: respondingAgent?.avatar_url,
+              }];
+            }
+          });
+        },
+        onDone: async () => {
+          setIsTyping(false);
+          
+          // Increment AI message count
+          aiMessageCountRef.current += 1;
+
+          // Cycle to next AI agent for next response
+          cycleToNextAgent();
+
+          // Check if should auto-escalate based on message count
+          if (
+            settings.auto_escalation_enabled && 
+            aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
+          ) {
+            await triggerEscalation();
+          }
+        },
+        onError: (error) => {
+          setIsTyping(false);
+          console.error('AI Error:', error);
+          setMessages(prev => [...prev, {
+            id: `error-${Date.now()}`,
+            content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
+            sender_type: 'agent',
+            created_at: new Date().toISOString(),
+          }]);
+        },
+      });
+    }
 
     // If connected to a real property (not preview mode), also save to database
     if (propertyId && propertyId !== 'demo' && !isPreview && visitorId) {
