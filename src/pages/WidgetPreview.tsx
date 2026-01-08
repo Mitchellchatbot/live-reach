@@ -115,8 +115,8 @@ const DisplaySettingsCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Display Settings</CardTitle>
-        <CardDescription>Configure how your widget appears to visitors</CardDescription>
+        <CardTitle className="text-base">Welcome Message</CardTitle>
+        <CardDescription>The first message visitors see when they open the chat</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
