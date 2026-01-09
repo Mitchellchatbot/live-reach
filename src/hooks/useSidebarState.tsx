@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+
+const SIDEBAR_STORAGE_KEY = 'sidebar-collapsed';
 
 interface SidebarStateContextType {
   collapsed: boolean;
@@ -9,9 +11,25 @@ interface SidebarStateContextType {
 const SidebarStateContext = createContext<SidebarStateContextType | undefined>(undefined);
 
 export const SidebarStateProvider = ({ children }: { children: ReactNode }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  // Initialize from localStorage
+  const [collapsed, setCollapsedState] = useState(() => {
+    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    return stored === 'true';
+  });
 
-  const toggleCollapsed = useCallback(() => setCollapsed(prev => !prev), []);
+  // Persist to localStorage when changed
+  const setCollapsed = useCallback((value: boolean) => {
+    setCollapsedState(value);
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(value));
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsedState(prev => {
+      const newValue = !prev;
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(newValue));
+      return newValue;
+    });
+  }, []);
 
   return (
     <SidebarStateContext.Provider value={{ collapsed, setCollapsed, toggleCollapsed }}>
@@ -21,11 +39,27 @@ export const SidebarStateProvider = ({ children }: { children: ReactNode }) => {
 };
 
 // Hook that works both with and without a provider
-// When used without provider, it manages local state instead
+// When used without provider, it manages local state with localStorage persistence
 export const useSidebarState = () => {
   const context = useContext(SidebarStateContext);
-  const [localCollapsed, setLocalCollapsed] = useState(false);
-  const toggleLocal = useCallback(() => setLocalCollapsed(prev => !prev), []);
+  
+  const [localCollapsed, setLocalCollapsedState] = useState(() => {
+    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    return stored === 'true';
+  });
+  
+  const setLocalCollapsed = useCallback((value: boolean) => {
+    setLocalCollapsedState(value);
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(value));
+  }, []);
+  
+  const toggleLocal = useCallback(() => {
+    setLocalCollapsedState(prev => {
+      const newValue = !prev;
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(newValue));
+      return newValue;
+    });
+  }, []);
   
   // If we have a context, use it; otherwise use local state
   if (context !== undefined) {
