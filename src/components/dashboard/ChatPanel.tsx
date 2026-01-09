@@ -77,14 +77,29 @@ const EmptyState = () => (
   </div>
 );
 
-// Compact visitor info item
-const InfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) => (
-  <div className="flex items-center gap-2 py-1.5">
-    <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-    <span className="text-xs text-muted-foreground min-w-[50px]">{label}:</span>
-    <span className="text-xs text-foreground truncate">{value}</span>
-  </div>
-);
+// Compact visitor info item with expandable tooltip
+const InfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isTruncated = value.length > 20;
+  
+  return (
+    <div className="flex items-start gap-2 py-1.5">
+      <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <span className="text-xs text-muted-foreground min-w-[50px]">{label}:</span>
+      <span 
+        className={cn(
+          "text-xs text-foreground",
+          isTruncated && "cursor-pointer hover:text-primary",
+          expanded ? "whitespace-pre-wrap break-words" : "truncate"
+        )}
+        onClick={() => isTruncated && setExpanded(!expanded)}
+        title={isTruncated ? (expanded ? "Click to collapse" : "Click to expand") : undefined}
+      >
+        {value}
+      </span>
+    </div>
+  );
+};
 
 // Collapsible visitor info sidebar
 const VisitorInfoSidebar = ({ visitor, assignedAgent }: { visitor: any; assignedAgent: any }) => {
