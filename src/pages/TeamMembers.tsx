@@ -14,7 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload } from 'lucide-react';
+import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Agent {
   id: string;
@@ -42,10 +43,33 @@ const TeamMembers = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [uploadingAvatarFor, setUploadingAvatarFor] = useState<string | null>(null);
+  const [creatingAIForId, setCreatingAIForId] = useState<string | null>(null);
+  const [linkedAIAgents, setLinkedAIAgents] = useState<Record<string, string>>({}); // agent_id -> ai_name
 
   useEffect(() => {
     fetchAgents();
+    fetchLinkedAIAgents();
   }, [user]);
+
+  const fetchLinkedAIAgents = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('ai_agents')
+      .select('id, name, linked_agent_id')
+      .eq('owner_id', user.id)
+      .not('linked_agent_id', 'is', null);
+
+    if (!error && data) {
+      const map: Record<string, string> = {};
+      data.forEach(ai => {
+        if (ai.linked_agent_id) {
+          map[ai.linked_agent_id] = ai.name;
+        }
+      });
+      setLinkedAIAgents(map);
+    }
+  };
 
   const fetchAgents = async () => {
     if (!user) return;
@@ -324,6 +348,46 @@ const TeamMembers = () => {
     }
   };
 
+  const handleCreateAIFromAgent = async (agent: Agent) => {
+    if (!user) return;
+
+    // Check if AI already linked to this agent
+    if (linkedAIAgents[agent.id]) {
+      toast.error(`AI persona "${linkedAIAgents[agent.id]}" is already linked to this agent`);
+      return;
+    }
+
+    setCreatingAIForId(agent.id);
+
+    try {
+      const { data: newAI, error } = await supabase
+        .from('ai_agents')
+        .insert({
+          name: agent.name,
+          avatar_url: agent.avatar_url || null,
+          owner_id: user.id,
+          status: 'active',
+          linked_agent_id: agent.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error('Failed to create AI persona: ' + error.message);
+        setCreatingAIForId(null);
+        return;
+      }
+
+      toast.success(`AI persona "${agent.name}" created!`);
+      fetchLinkedAIAgents();
+    } catch (error) {
+      console.error('Error creating AI from agent:', error);
+      toast.error('Failed to create AI persona');
+    }
+
+    setCreatingAIForId(null);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-green-500';
@@ -542,6 +606,34 @@ const TeamMembers = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            {/* Create AI button */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleCreateAIFromAgent(agent)}
+                                  disabled={creatingAIForId === agent.id || !!linkedAIAgents[agent.id]}
+                                  className={linkedAIAgents[agent.id] 
+                                    ? "text-primary/50" 
+                                    : "text-muted-foreground hover:text-primary"
+                                  }
+                                >
+                                  {creatingAIForId === agent.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Bot className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {linkedAIAgents[agent.id] 
+                                  ? `AI "${linkedAIAgents[agent.id]}" linked` 
+                                  : "Create AI Persona"
+                                }
+                              </TooltipContent>
+                            </Tooltip>
+
                             {agent.invitation_status === 'pending' && (
                               <Button
                                 variant="ghost"

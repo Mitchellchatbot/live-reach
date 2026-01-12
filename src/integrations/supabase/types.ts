@@ -103,6 +103,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          linked_agent_id: string | null
           name: string
           owner_id: string
           personality_prompt: string | null
@@ -113,6 +114,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          linked_agent_id?: string | null
           name: string
           owner_id: string
           personality_prompt?: string | null
@@ -123,13 +125,22 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          linked_agent_id?: string | null
           name?: string
           owner_id?: string
           personality_prompt?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_linked_agent_id_fkey"
+            columns: ["linked_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
