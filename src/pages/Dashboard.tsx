@@ -291,10 +291,10 @@ const DashboardContent = () => {
   }
 
   return (
-    <div ref={containerRef} className="flex h-screen bg-gradient-subtle">
+    <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden">
       <DashboardSidebar />
       
-      <div className="flex-1 flex min-w-0">
+      <div className="flex-1 flex min-w-0 overflow-hidden">
         {/* Conversation List */}
         <div ref={listRef} className="w-80 border-r border-border/30 flex flex-col glass">
           {/* Header - Simplified */}
