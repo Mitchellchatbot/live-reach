@@ -429,7 +429,7 @@ const TeamMembers = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 p-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
