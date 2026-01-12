@@ -18,7 +18,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { PropertySelector } from '@/components/PropertySelector';
-import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText } from 'lucide-react';
+import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 interface AIAgent {
   id: string;
@@ -27,6 +34,14 @@ interface AIAgent {
   personality_prompt?: string;
   status: string;
   assigned_properties: string[];
+  linked_agent_id?: string;
+}
+
+interface HumanAgent {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
 }
 
 interface PropertySettings {
@@ -98,7 +113,10 @@ const AISupport = () => {
   const [isDeletingAI, setIsDeletingAI] = useState(false);
   const [editingAIAgent, setEditingAIAgent] = useState<AIAgent | null>(null);
   const [uploadingAvatarFor, setUploadingAvatarFor] = useState<string | null>(null);
-
+  
+  // Human agents for import
+  const [humanAgents, setHumanAgents] = useState<HumanAgent[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
   // AI Settings state
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
   const [settings, setSettings] = useState<PropertySettings | null>(null);
@@ -108,7 +126,21 @@ const AISupport = () => {
 
   useEffect(() => {
     fetchAIAgents();
+    fetchHumanAgents();
   }, [user]);
+
+  const fetchHumanAgents = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('agents')
+      .select('id, name, email, avatar_url')
+      .eq('invited_by', user.id);
+
+    if (!error && data) {
+      setHumanAgents(data);
+    }
+  };
 
   // Set first property as default for AI settings
   useEffect(() => {
@@ -189,11 +221,53 @@ const AISupport = () => {
         personality_prompt: agent.personality_prompt,
         status: agent.status,
         assigned_properties: assignments.map(a => a.property_id),
+        linked_agent_id: agent.linked_agent_id || undefined,
       };
     });
 
     setAIAgents(aiAgentsWithAssignments);
     setAILoading(false);
+  };
+
+  const handleImportFromTeam = async (humanAgent: HumanAgent) => {
+    if (!user) return;
+
+    // Check if AI already linked to this agent
+    const existingLink = aiAgents.find(ai => ai.linked_agent_id === humanAgent.id);
+    if (existingLink) {
+      toast.error(`An AI persona "${existingLink.name}" is already linked to ${humanAgent.name}`);
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      const { data: newAgent, error } = await supabase
+        .from('ai_agents')
+        .insert({
+          name: humanAgent.name,
+          avatar_url: humanAgent.avatar_url || null,
+          owner_id: user.id,
+          status: 'active',
+          linked_agent_id: humanAgent.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error('Failed to create AI persona: ' + error.message);
+        setIsImporting(false);
+        return;
+      }
+
+      toast.success(`AI persona "${humanAgent.name}" created from team member!`);
+      fetchAIAgents();
+    } catch (error) {
+      console.error('Error importing from team:', error);
+      toast.error('Failed to import from team');
+    }
+
+    setIsImporting(false);
   };
 
   const handleCreateAIAgent = async () => {
@@ -489,21 +563,70 @@ const AISupport = () => {
                   Create virtual agents with unique personalities
                 </CardDescription>
               </div>
-              <Dialog open={isAIDialogOpen} onOpenChange={(open) => {
-                setIsAIDialogOpen(open);
-                if (!open) {
-                  setEditingAIAgent(null);
-                  setAIAgentName('');
-                  setAIAgentPersonality('');
-                  setAISelectedPropertyIds([]);
-                }
-              }}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Bot className="mr-2 h-4 w-4" />
-                    Create Persona
-                  </Button>
-                </DialogTrigger>
+              <div className="flex items-center gap-2">
+                {/* Import from Team Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" disabled={isImporting || humanAgents.length === 0}>
+                      {isImporting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Users className="mr-2 h-4 w-4" />
+                      )}
+                      Import from Team
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    {humanAgents.length === 0 ? (
+                      <DropdownMenuItem disabled>
+                        No team members available
+                      </DropdownMenuItem>
+                    ) : (
+                      humanAgents.map((agent) => {
+                        const isAlreadyLinked = aiAgents.some(ai => ai.linked_agent_id === agent.id);
+                        return (
+                          <DropdownMenuItem
+                            key={agent.id}
+                            onClick={() => handleImportFromTeam(agent)}
+                            disabled={isAlreadyLinked}
+                            className="flex items-center gap-2"
+                          >
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={agent.avatar_url} />
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                {agent.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <span className="truncate block">{agent.name}</span>
+                              {isAlreadyLinked && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Link className="h-3 w-3" /> Already linked
+                                </span>
+                              )}
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Dialog open={isAIDialogOpen} onOpenChange={(open) => {
+                  setIsAIDialogOpen(open);
+                  if (!open) {
+                    setEditingAIAgent(null);
+                    setAIAgentName('');
+                    setAIAgentPersonality('');
+                    setAISelectedPropertyIds([]);
+                  }
+                }}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Bot className="mr-2 h-4 w-4" />
+                      Create Persona
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-lg">
                   <DialogHeader>
                     <DialogTitle>{editingAIAgent ? 'Edit AI Persona' : 'Create AI Persona'}</DialogTitle>
@@ -574,6 +697,7 @@ const AISupport = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               {aiLoading ? (
