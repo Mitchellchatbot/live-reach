@@ -545,7 +545,7 @@ const AISupport = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6 space-y-6">
+        <div className="flex-1 p-6 space-y-6">
           {/* Property Selector for AI Settings */}
           <PropertySelector
             properties={properties}

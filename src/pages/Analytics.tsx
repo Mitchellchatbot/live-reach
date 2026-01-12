@@ -50,7 +50,7 @@ const Analytics = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
             {loading ? (
               <div className="flex items-center justify-center py-20">
