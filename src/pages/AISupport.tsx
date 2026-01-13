@@ -510,12 +510,7 @@ const AISupport = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500';
-      default: return 'bg-gray-400';
-    }
-  };
+  // Status color removed - no longer using online indicators for AI
 
   return (
     <div className="flex h-screen bg-gradient-subtle">
@@ -749,11 +744,9 @@ const AISupport = () => {
                                   }}
                                 />
                               </label>
-                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(agent.status)}`} />
                             </div>
                             <div>
                               <p className="font-medium">{agent.name}</p>
-                              <Badge variant="secondary" className="text-xs">AI</Badge>
                             </div>
                           </div>
                         </TableCell>

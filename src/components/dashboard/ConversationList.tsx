@@ -90,14 +90,14 @@ const ConversationItem = ({
               "text-sm font-medium",
               isTest ? "bg-amber-500/10 text-amber-600" :
               status === 'active' ? "bg-primary/10 text-primary" :
-              status === 'pending' ? "bg-status-away/10 text-status-away" :
+              status === 'pending' ? "bg-primary/10 text-primary" :
               "bg-muted text-muted-foreground"
             )}>
               {isTest ? <FlaskConical className="h-4 w-4" /> : initials}
             </AvatarFallback>
           </Avatar>
           {status === 'active' && (
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-status-online rounded-full border-2 border-background" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-primary rounded-full border-2 border-background" />
           )}
         </div>
 
@@ -174,7 +174,7 @@ const ConversationItem = ({
           </p>
 
           {status === 'pending' && (
-            <Badge variant="outline" className="text-status-away border-status-away/30 bg-status-away/10 text-xs py-0 w-fit">
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-xs py-0 w-fit">
               <Clock className="h-3 w-3 mr-1" />
               Pending
             </Badge>
