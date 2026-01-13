@@ -396,17 +396,17 @@ const TeamMembers = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case 'online': return 'bg-primary';
+      case 'away': return 'bg-primary/60';
+      default: return 'bg-muted-foreground/40';
     }
   };
 
   const getInvitationBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Pending</Badge>;
-      case 'accepted': return <Badge variant="outline" className="text-green-600 border-green-600">Active</Badge>;
-      case 'revoked': return <Badge variant="outline" className="text-red-600 border-red-600">Revoked</Badge>;
+      case 'pending': return <Badge variant="outline" className="text-primary border-primary">Pending</Badge>;
+      case 'accepted': return <Badge variant="outline" className="text-primary border-primary">Active</Badge>;
+      case 'revoked': return <Badge variant="outline" className="text-destructive border-destructive">Revoked</Badge>;
       default: return null;
     }
   };
@@ -575,7 +575,6 @@ const TeamMembers = () => {
                                   }}
                                 />
                               </label>
-                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(agent.status)}`} />
                             </div>
                             <div>
                               <p className="font-medium">{agent.name}</p>
