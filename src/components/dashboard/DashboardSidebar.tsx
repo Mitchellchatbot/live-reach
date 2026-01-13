@@ -44,8 +44,8 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed }: SidebarItemPro
         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
         "hover:bg-sidebar-accent group",
         isActive 
-          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-          : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
+          ? "bg-sidebar-accent text-foreground font-semibold" 
+          : "text-foreground/90 hover:text-foreground"
       )}
     >
       <Icon className={cn(
@@ -54,7 +54,7 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed }: SidebarItemPro
       )} />
       {!collapsed && (
         <>
-          <span className="font-medium flex-1">{label}</span>
+          <span className="flex-1">{label}</span>
           {badge && badge > 0 && (
             <span className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
               {badge}
