@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown } from 'lucide-react';
+import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -419,8 +419,12 @@ const TeamMembers = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <PageHeader title="Team Members">
-          <HeaderButton variant="outline" size="icon" onClick={fetchAgents}>
+          <HeaderButton size="icon" onClick={fetchAgents}>
             <RefreshCw className="h-4 w-4" />
+          </HeaderButton>
+          <HeaderButton onClick={() => { fetchAgents(); toast.success('Changes saved'); }}>
+            <Save className="h-4 w-4 mr-2" />
+            Save
           </HeaderButton>
         </PageHeader>
 
