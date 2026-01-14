@@ -44,8 +44,8 @@ const Analytics = () => {
         </PageHeader>
 
         {/* Content */}
-        <div className="flex-1 p-2 overflow-auto">
-          <div className="h-full rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
+        <div className="flex-1 p-2 overflow-hidden">
+          <div className="h-full overflow-auto rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
             <div className="max-w-4xl mx-auto">
             {loading ? (
               <div className="flex items-center justify-center py-20">
