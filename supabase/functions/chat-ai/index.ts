@@ -47,28 +47,38 @@ Never give medical advice. If crisis, suggest calling a helpline.`;
     // Build natural lead capture instructions if fields are specified
     let leadCaptureInstructions = '';
     if (naturalLeadCaptureFields && naturalLeadCaptureFields.length > 0) {
-      const fieldDescriptions: Record<string, string> = {
-        name: 'their name',
-        email: 'their email address',
-        phone: 'their phone number',
-        insurance_card: 'a photo of their insurance card (front and back) - mention they can tap the image button to upload',
-      };
+      const hasEmail = naturalLeadCaptureFields.includes('email');
+      const hasPhone = naturalLeadCaptureFields.includes('phone');
+      const hasName = naturalLeadCaptureFields.includes('name');
+      const hasInsurance = naturalLeadCaptureFields.includes('insurance_card');
       
-      const fieldsList = naturalLeadCaptureFields
-        .map((f: string) => fieldDescriptions[f] || f)
-        .join(', ');
+      let fieldInstructions = [];
+      if (hasName) fieldInstructions.push('- Ask for their name first');
+      if (hasEmail && hasPhone) {
+        fieldInstructions.push('- Ask for email AND phone number together in the same message');
+      } else if (hasEmail) {
+        fieldInstructions.push('- Ask for their email address');
+      } else if (hasPhone) {
+        fieldInstructions.push('- Ask for their phone number');
+      }
+      if (hasInsurance) {
+        fieldInstructions.push('- Ask for a photo of the FRONT of their insurance card (mention they can tap the image button to upload). If they decline or refuse to upload the front, do NOT ask for the back.');
+      }
       
       leadCaptureInstructions = `
 
 CRITICAL - LEAD CAPTURE PRIORITY:
-Your primary goal is to collect: ${fieldsList}.
-After listening to what the visitor says and giving a short helpful response, ask for ONE of these pieces of information.
-Ask for each field in SEPARATE messages, not all at once.
-Be warm and natural. Example flow:
-- First response: Address their concern briefly, then ask for their name
-- Next response: Thank them, help a bit more, then ask for email or phone
-- Continue until you have all the information
-Never pressure. If hesitant, reassure and try again later.`;
+Your goal is to naturally collect visitor contact information during the conversation.
+After listening to what the visitor says and giving a short helpful response, gently ask for information.
+
+Collection order:
+${fieldInstructions.join('\n')}
+
+IMPORTANT RULES:
+- If the visitor declines to provide ANY piece of information, respect that and STOP asking for more details. Move on and just help them.
+- Never pressure or repeat asks. One gentle attempt per field is enough.
+- Be warm and conversational, not robotic.
+- If they share info voluntarily, acknowledge it warmly.`;
     }
 
     // Build system prompt - combine base prompt with personality if provided
