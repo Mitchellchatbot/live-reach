@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { Conversation } from '@/types/chat';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -185,7 +186,96 @@ const ConversationItem = ({
   );
 };
 
-export const ConversationList = ({ 
+// Animated empty state component
+const EmptyConversationState = () => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, scale: 0.95 },
+      { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.5)' }
+    );
+  }, []);
+
+  return (
+    <div ref={ref} className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+        <MessageSquare className="h-8 w-8 text-muted-foreground" />
+      </div>
+      <h3 className="font-medium text-foreground mb-1">No conversations</h3>
+      <p className="text-sm text-muted-foreground">
+        Conversations will appear here when visitors start chatting
+      </p>
+    </div>
+  );
+};
+
+// Animated conversation list wrapper
+const ConversationListAnimated = ({
+  conversations,
+  selectedId,
+  selectedIds,
+  selectionMode,
+  onSelect,
+  onCheckChange,
+  showDelete,
+  onDelete
+}: {
+  conversations: Conversation[];
+  selectedId?: string;
+  selectedIds: Set<string>;
+  selectionMode: boolean;
+  onSelect: (conversation: Conversation) => void;
+  onCheckChange: (id: string, checked: boolean) => void;
+  showDelete?: boolean;
+  onDelete?: (conversationId: string) => void;
+}) => {
+  const listRef = useRef<HTMLDivElement>(null);
+  const hasAnimatedRef = useRef(false);
+
+  useEffect(() => {
+    if (!listRef.current || hasAnimatedRef.current) return;
+    
+    const items = listRef.current.querySelectorAll('.conversation-item');
+    if (items.length === 0) return;
+    
+    hasAnimatedRef.current = true;
+    gsap.fromTo(
+      items,
+      { opacity: 0, x: -15 },
+      { 
+        opacity: 1, 
+        x: 0, 
+        duration: 0.3, 
+        stagger: 0.05,
+        ease: 'power2.out' 
+      }
+    );
+  }, [conversations.length]);
+
+  return (
+    <div ref={listRef} className="overflow-y-auto flex-1 scrollbar-thin">
+      {conversations.map((conversation) => (
+        <div key={conversation.id} className="conversation-item">
+          <ConversationItem
+            conversation={conversation}
+            isSelected={conversation.id === selectedId}
+            isChecked={selectedIds.has(conversation.id)}
+            selectionMode={selectionMode}
+            onClick={() => onSelect(conversation)}
+            onCheckChange={(checked) => onCheckChange(conversation.id, checked)}
+            showDelete={showDelete}
+            onDelete={onDelete}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export const ConversationList = ({
   conversations, 
   selectedId, 
   onSelect, 
@@ -248,17 +338,7 @@ export const ConversationList = ({
   };
 
   if (conversations.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-          <MessageSquare className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="font-medium text-foreground mb-1">No conversations</h3>
-        <p className="text-sm text-muted-foreground">
-          Conversations will appear here when visitors start chatting
-        </p>
-      </div>
-    );
+    return <EmptyConversationState />;
   }
 
   return (
@@ -333,21 +413,16 @@ export const ConversationList = ({
       )}
 
       {/* Conversation List */}
-      <div className="overflow-y-auto flex-1 scrollbar-thin">
-        {conversations.map((conversation) => (
-          <ConversationItem
-            key={conversation.id}
-            conversation={conversation}
-            isSelected={conversation.id === selectedId}
-            isChecked={selectedIds.has(conversation.id)}
-            selectionMode={selectionMode}
-            onClick={() => onSelect(conversation)}
-            onCheckChange={(checked) => handleCheckChange(conversation.id, checked)}
-            showDelete={showDelete}
-            onDelete={onDelete}
-          />
-        ))}
-      </div>
+      <ConversationListAnimated
+        conversations={conversations}
+        selectedId={selectedId}
+        selectedIds={selectedIds}
+        selectionMode={selectionMode}
+        onSelect={onSelect}
+        onCheckChange={handleCheckChange}
+        showDelete={showDelete}
+        onDelete={onDelete}
+      />
 
       {/* Bulk Close Confirmation */}
       <AlertDialog open={showBulkCloseDialog} onOpenChange={setShowBulkCloseDialog}>
