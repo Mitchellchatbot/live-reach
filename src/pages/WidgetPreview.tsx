@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
-import { InfoIndicator } from '@/components/docs/InfoIndicator';
+
 const colorPresets = [{
   name: 'Sage',
   color: 'hsl(150, 25%, 45%)'
@@ -312,7 +312,7 @@ const WidgetPreview = () => {
       <DashboardSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <PageHeader title="Widget Customization">
+        <PageHeader title="Widget Customization" docsLink="/documentation/widget/customization">
           <PropertySelector properties={properties} selectedPropertyId={selectedPropertyId} onPropertyChange={handlePropertyChange} onDeleteProperty={deleteProperty} variant="header" />
         </PageHeader>
 

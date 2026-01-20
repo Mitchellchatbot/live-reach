@@ -17,7 +17,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { InfoIndicator } from '@/components/docs/InfoIndicator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -419,7 +418,7 @@ const TeamMembers = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Team Members">
+        <PageHeader title="Team Members" docsLink="/documentation/team/inviting-agents">
           <HeaderButton size="icon" onClick={fetchAgents}>
             <RefreshCw className="h-4 w-4" />
           </HeaderButton>
@@ -435,14 +434,11 @@ const TeamMembers = () => {
             <div className="max-w-4xl mx-auto">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div>
-                  <CardTitle>Team Members</CardTitle>
-                  <CardDescription>
-                    Agents can respond to conversations on assigned properties
-                  </CardDescription>
-                </div>
-                <InfoIndicator to="/documentation/team/inviting-agents" />
+              <div>
+                <CardTitle>Team Members</CardTitle>
+                <CardDescription>
+                  Agents can respond to conversations on assigned properties
+                </CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleCreateTestAgent} className="text-xs">

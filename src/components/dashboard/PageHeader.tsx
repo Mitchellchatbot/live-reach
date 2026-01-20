@@ -1,13 +1,15 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { InfoIndicator } from '@/components/docs/InfoIndicator';
 
 interface PageHeaderProps {
   title: string;
   children?: React.ReactNode;
   className?: string;
+  docsLink?: string;
 }
 
-export const PageHeader = ({ title, children, className }: PageHeaderProps) => {
+export const PageHeader = ({ title, children, className, docsLink }: PageHeaderProps) => {
   return (
     <div 
       className={cn(
@@ -16,7 +18,10 @@ export const PageHeader = ({ title, children, className }: PageHeaderProps) => {
         className
       )}
     >
-      <h1 className="text-xl font-semibold text-sidebar-foreground">{title}</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-semibold text-sidebar-foreground">{title}</h1>
+        {docsLink && <InfoIndicator to={docsLink} size="md" />}
+      </div>
       {children && (
         <div className="flex items-center gap-2">
           {children}

@@ -16,7 +16,6 @@ import {
   Loader2,
 } from 'lucide-react';
 import { SalesforceSettings } from '@/components/settings/SalesforceSettings';
-import { InfoIndicator } from '@/components/docs/InfoIndicator';
 import {
   Dialog,
   DialogContent,
@@ -83,7 +82,7 @@ const Salesforce = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Salesforce" />
+        <PageHeader title="Salesforce" docsLink="/documentation/integrations/salesforce" />
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
