@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle } from 'lucide-react';
 import gsap from 'gsap';
@@ -48,15 +48,30 @@ const MessageBubble = ({
       </p>
     </div>
   </div>;
-const EmptyState = () => <div className="flex flex-col items-center justify-center h-full text-center p-8">
-    <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
-      <MessageSquare className="h-10 w-10 text-muted-foreground" />
+const EmptyState = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!ref.current) return;
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, scale: 0.95 },
+      { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.5)' }
+    );
+  }, []);
+
+  return (
+    <div ref={ref} className="flex flex-col items-center justify-center h-full text-center p-8">
+      <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+        <MessageSquare className="h-10 w-10 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-medium text-foreground mb-2">Select a conversation</h3>
+      <p className="text-sm text-muted-foreground max-w-xs">
+        Choose a conversation from the list to start chatting with visitors
+      </p>
     </div>
-    <h3 className="text-lg font-medium text-foreground mb-2">Select a conversation</h3>
-    <p className="text-sm text-muted-foreground max-w-xs">
-      Choose a conversation from the list to start chatting with visitors
-    </p>
-  </div>;
+  );
+};
 
 // Compact visitor info item with expandable tooltip
 const InfoItem = ({
@@ -103,8 +118,19 @@ const VisitorInfoSidebar = ({
     }
     return <Badge variant="secondary" className="text-xs">{urgency}</Badge>;
   };
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!sidebarRef.current) return;
+    gsap.fromTo(
+      sidebarRef.current,
+      { opacity: 0, x: 20 },
+      { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out' }
+    );
+  }, []);
+
   return (
-    <div className={cn("border-l border-border/30 hidden lg:flex flex-col transition-all duration-200 bg-card w-64")}>
+    <div ref={sidebarRef} className={cn("border-l border-border/30 hidden lg:flex flex-col transition-all duration-200 bg-card w-64")}>
       <div className="flex-1 overflow-y-auto">
 
         {/* Personal Info Section */}
@@ -260,9 +286,20 @@ export const ChatPanel = ({
   } = conversation;
   const visitorName = visitor.name || `Visitor ${visitor.sessionId.slice(-4)}`;
   const assignedAgent = assignedAgentId ? mockAgents.find(a => a.id === assignedAgentId) : null;
+  const chatAreaRef = useRef<HTMLDivElement>(null);
+  
+  useLayoutEffect(() => {
+    if (!chatAreaRef.current) return;
+    gsap.fromTo(
+      chatAreaRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, ease: 'power2.out' }
+    );
+  }, [conversation?.id]);
+
   return <div className="flex h-full bg-gradient-subtle">
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div ref={chatAreaRef} className="flex-1 flex flex-col min-w-0">
 
         {/* Messages */}
         <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
