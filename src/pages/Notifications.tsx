@@ -19,7 +19,6 @@ import {
   Mail
 } from 'lucide-react';
 import { SlackSettings } from '@/components/settings/SlackSettings';
-import { InfoIndicator } from '@/components/docs/InfoIndicator';
 import { EmailSettings } from '@/components/settings/EmailSettings';
 import {
   Dialog,
@@ -87,7 +86,7 @@ const Notifications = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Notifications" />
+        <PageHeader title="Notifications" docsLink="/documentation/integrations/slack" />
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
@@ -170,12 +169,10 @@ const Notifications = () => {
                     <TabsTrigger value="slack" className="gap-2">
                       <MessageCircle className="h-4 w-4" />
                       Slack
-                      <InfoIndicator to="/documentation/integrations/slack" size="sm" />
                     </TabsTrigger>
                     <TabsTrigger value="email" className="gap-2">
                       <Mail className="h-4 w-4" />
                       Email
-                      <InfoIndicator to="/documentation/integrations/email" size="sm" />
                     </TabsTrigger>
                   </TabsList>
 
