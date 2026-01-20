@@ -3,11 +3,17 @@ import { DocsSidebar } from './DocsSidebar';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSlideIn, useFadeIn } from '@/hooks/useGSAP';
 
 export const DocsLayout = () => {
+  const sidebarRef = useSlideIn<HTMLDivElement>('left');
+  const contentRef = useFadeIn<HTMLDivElement>();
+
   return (
     <div className="flex h-screen bg-background">
-      <DocsSidebar />
+      <div ref={sidebarRef}>
+        <DocsSidebar />
+      </div>
       
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -22,7 +28,7 @@ export const DocsLayout = () => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main ref={contentRef} className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
       </div>

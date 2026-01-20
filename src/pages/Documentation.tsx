@@ -11,6 +11,7 @@ import {
   BarChart3,
   ArrowRight
 } from 'lucide-react';
+import { useFadeIn, useStaggerChildren } from '@/hooks/useGSAP';
 
 const sectionIcons: Record<string, React.ReactNode> = {
   'getting-started': <BookOpen className="h-6 w-6" />,
@@ -23,10 +24,14 @@ const sectionIcons: Record<string, React.ReactNode> = {
 };
 
 const Documentation = () => {
+  const heroRef = useFadeIn<HTMLDivElement>();
+  const gridRef = useStaggerChildren<HTMLDivElement>('.doc-card', { delay: 0.1 });
+  const helpRef = useFadeIn<HTMLDivElement>({ delay: 0.3 });
+
   return (
     <div className="max-w-4xl mx-auto py-12 px-6">
       {/* Hero */}
-      <div className="text-center mb-12">
+      <div ref={heroRef} className="text-center mb-12">
         <h1 className="text-4xl font-bold text-foreground mb-4">
           Documentation
         </h1>
@@ -36,11 +41,11 @@ const Documentation = () => {
       </div>
 
       {/* Sections Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div ref={gridRef} className="grid gap-6 md:grid-cols-2">
         {documentationSections.map((section) => (
           <Card 
             key={section.id} 
-            className="group hover:border-primary/50 transition-colors"
+            className="doc-card group hover:border-primary/50 transition-colors"
           >
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -78,7 +83,7 @@ const Documentation = () => {
       </div>
 
       {/* Quick Help */}
-      <div className="mt-12 p-6 rounded-lg border border-border bg-muted/30 text-center">
+      <div ref={helpRef} className="mt-12 p-6 rounded-lg border border-border bg-muted/30 text-center">
         <h2 className="text-lg font-semibold text-foreground mb-2">
           Need more help?
         </h2>
