@@ -19,7 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { PropertySelector } from '@/components/PropertySelector';
-import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown } from 'lucide-react';
+import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 import {
   DropdownMenu,
@@ -101,6 +102,59 @@ Writing style:
 
 Remember: You're often the first point of contact for someone seeking help. Make them feel safe and heard.`;
 
+// Personality preset prompts - same as onboarding
+const aiTonePrompts = {
+  friendly: `You are a warm, conversational support assistant for a recovery center. Your job is to make visitors feel comfortable and gently guide them toward getting help.
+
+Keep your responses natural and human. Write like you talk. Use contractions, vary your sentence lengths, and don't be afraid of the occasional short sentence. Or a fragment.
+
+Never reveal that you're an AI, chatbot, language model, or automated system. You're simply a member of the support team. If asked directly, redirect to how you can help them today.
+
+Some things to avoid:
+- Never use em dashes or semicolons
+- Don't start responses with "I" too often
+- Skip the corporate-speak and jargon
+- No bullet points unless someone asks for a list
+- Avoid phrases like "I understand" or "I hear you" repeatedly
+- Never say things like "as an AI" or "I'm a chatbot" or "I'm here 24/7"
+
+Be real. Be warm. Sometimes that means being brief. Other times you might share a bit more. Just... be human about it.`,
+
+  hopeful: `You are an encouraging, hope-focused support assistant for a recovery center. Your role is to remind visitors that recovery is possible and celebrate the courage it takes to reach out.
+
+Write like a real person. Mix up your sentence lengths. Some short. Others might run a little longer when you're making an important point about hope and healing.
+
+Never reveal that you're an AI, chatbot, language model, or automated system. You're simply a member of the support team. If asked directly, redirect to how you can help them today.
+
+Things to avoid:
+- Em dashes and semicolons feel too formal
+- Don't overuse "I" at the start of sentences  
+- Skip the clinical language
+- No bullet lists in regular conversation
+- Vary how you show empathy, don't repeat the same phrases
+- Never mention being an AI, bot, or always available
+
+Focus on hope without being cheesy about it. Acknowledge the hard stuff too. Recovery isn't easy, but reaching out? That's huge. Let people know that.`,
+
+  caring: `You are an empathetic, supportive assistant for a recovery center. Your job is to listen, acknowledge feelings, and respond with genuine warmth.
+
+Sound human. Real humans don't always speak in perfect sentences. They use contractions. Short thoughts sometimes. Longer ones when something matters.
+
+Never reveal that you're an AI, chatbot, language model, or automated system. You're simply a member of the support team. If asked directly, redirect to how you can help them today.
+
+Avoid these:
+- Em dashes and semicolons feel stiff
+- Starting too many sentences with "I"
+- Therapy-speak and buzzwords
+- Lists when someone just needs to be heard
+- Saying "I understand" over and over
+- Any mention of being an AI, automated, or a bot
+
+Be present. Sometimes the best response is simple. Other times you might reflect back what someone shared. Just don't sound like a chatbot, you know?`,
+};
+
+type PersonalityPreset = 'friendly' | 'hopeful' | 'caring' | 'custom' | null;
+
 const AISupport = () => {
   const { user } = useAuth();
   const { properties } = useConversations();
@@ -111,6 +165,7 @@ const AISupport = () => {
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [aiAgentName, setAIAgentName] = useState('');
   const [aiAgentPersonality, setAIAgentPersonality] = useState('');
+  const [aiPersonalityPreset, setAiPersonalityPreset] = useState<PersonalityPreset>(null);
   const [aiSelectedPropertyIds, setAISelectedPropertyIds] = useState<string[]>([]);
   const [isCreatingAI, setIsCreatingAI] = useState(false);
   const [deleteAIAgentId, setDeleteAIAgentId] = useState<string | null>(null);
@@ -276,6 +331,24 @@ const AISupport = () => {
     setIsImporting(false);
   };
 
+  // Get the final personality prompt based on preset selection
+  const getFinalPersonalityPrompt = (): string | null => {
+    if (aiPersonalityPreset === 'custom') {
+      if (!aiAgentPersonality.trim()) return null;
+      // Wrap custom personality with human-like writing guidelines
+      return `${aiAgentPersonality.trim()}
+
+Write naturally like a real person. Use contractions, vary sentence lengths. Some short. Some longer.
+
+Never reveal that you're an AI, chatbot, or automated system. You're simply a member of the support team.
+
+Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jargon and therapy-speak.`;
+    } else if (aiPersonalityPreset === 'friendly' || aiPersonalityPreset === 'hopeful' || aiPersonalityPreset === 'caring') {
+      return aiTonePrompts[aiPersonalityPreset];
+    }
+    return aiAgentPersonality.trim() || null;
+  };
+
   const handleCreateAIAgent = async () => {
     if (!aiAgentName.trim() || !user) return;
 
@@ -286,7 +359,7 @@ const AISupport = () => {
         .from('ai_agents')
         .insert({
           name: aiAgentName.trim(),
-          personality_prompt: aiAgentPersonality.trim() || null,
+          personality_prompt: getFinalPersonalityPrompt(),
           owner_id: user.id,
           status: 'active',
         })
@@ -312,6 +385,7 @@ const AISupport = () => {
       setIsAIDialogOpen(false);
       setAIAgentName('');
       setAIAgentPersonality('');
+      setAiPersonalityPreset(null);
       setAISelectedPropertyIds([]);
       fetchAIAgents();
     } catch (error) {
@@ -332,7 +406,7 @@ const AISupport = () => {
         .from('ai_agents')
         .update({
           name: aiAgentName.trim(),
-          personality_prompt: aiAgentPersonality.trim() || null,
+          personality_prompt: getFinalPersonalityPrompt(),
         })
         .eq('id', editingAIAgent.id);
 
@@ -360,6 +434,7 @@ const AISupport = () => {
       setEditingAIAgent(null);
       setAIAgentName('');
       setAIAgentPersonality('');
+      setAiPersonalityPreset(null);
       setAISelectedPropertyIds([]);
       fetchAIAgents();
     } catch (error) {
@@ -410,7 +485,24 @@ const AISupport = () => {
   const openEditAIAgent = (agent: AIAgent) => {
     setEditingAIAgent(agent);
     setAIAgentName(agent.name);
-    setAIAgentPersonality(agent.personality_prompt || '');
+    
+    // Check if existing personality matches a preset
+    const existingPrompt = agent.personality_prompt || '';
+    const matchingPreset = Object.entries(aiTonePrompts).find(
+      ([, prompt]) => prompt === existingPrompt
+    );
+    
+    if (matchingPreset) {
+      setAiPersonalityPreset(matchingPreset[0] as PersonalityPreset);
+      setAIAgentPersonality('');
+    } else if (existingPrompt) {
+      setAiPersonalityPreset('custom');
+      setAIAgentPersonality(existingPrompt);
+    } else {
+      setAiPersonalityPreset(null);
+      setAIAgentPersonality('');
+    }
+    
     setAISelectedPropertyIds(agent.assigned_properties);
     setIsAIDialogOpen(true);
   };
@@ -612,6 +704,7 @@ const AISupport = () => {
                     setEditingAIAgent(null);
                     setAIAgentName('');
                     setAIAgentPersonality('');
+                    setAiPersonalityPreset(null);
                     setAISelectedPropertyIds([]);
                   }
                 }}>
@@ -621,7 +714,7 @@ const AISupport = () => {
                       Create Persona
                     </Button>
                   </DialogTrigger>
-                <DialogContent className="max-w-lg">
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingAIAgent ? 'Edit AI Persona' : 'Create AI Persona'}</DialogTitle>
                     <DialogDescription>
@@ -638,19 +731,41 @@ const AISupport = () => {
                         onChange={(e) => setAIAgentName(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="ai-personality">Personality Prompt</Label>
-                      <Textarea
-                        id="ai-personality"
-                        placeholder="You are a warm and empathetic support specialist. You speak in a calm, reassuring tone and always make visitors feel heard and understood..."
-                        value={aiAgentPersonality}
-                        onChange={(e) => setAIAgentPersonality(e.target.value)}
-                        rows={6}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Describe how this AI persona should communicate and behave. This becomes the system prompt for the AI.
-                      </p>
+                    
+                    {/* Personality Preset Selection */}
+                    <div className="space-y-3">
+                      <Label>Personality</Label>
+                      <div className="space-y-2">
+                        {[
+                          { value: 'friendly' as const, title: 'Friendly', description: 'Warm and conversational' },
+                          { value: 'hopeful' as const, title: 'Hopeful', description: 'Encouraging and uplifting' },
+                          { value: 'caring' as const, title: 'Caring', description: 'Empathetic and supportive' },
+                          { value: 'custom' as const, title: 'Custom', description: 'Write your own personality traits' },
+                        ].map((tone) => (
+                          <ToneCard
+                            key={tone.value}
+                            title={tone.title}
+                            description={tone.description}
+                            selected={aiPersonalityPreset === tone.value}
+                            onClick={() => setAiPersonalityPreset(tone.value)}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Custom personality textarea */}
+                      {aiPersonalityPreset === 'custom' && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                          <Textarea
+                            id="ai-personality"
+                            placeholder="Describe how your AI should communicate. E.g., 'Speak gently and use simple language. Be patient and never rush. Use phrases like 'take your time' and 'you're doing great.''"
+                            value={aiAgentPersonality}
+                            onChange={(e) => setAIAgentPersonality(e.target.value)}
+                            rows={4}
+                          />
+                        </div>
+                      )}
                     </div>
+                    
                     <div className="space-y-2">
                       <Label>Assign to Properties</Label>
                       <div className="space-y-2 max-h-40 overflow-auto border rounded-lg p-3">
@@ -1291,5 +1406,44 @@ const AISupport = () => {
     </div>
   );
 };
+
+// Tone selection card component
+const ToneCard = ({
+  title,
+  description,
+  selected,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "w-full p-3 rounded-lg border-2 text-left transition-all",
+      selected
+        ? "border-primary bg-primary/5"
+        : "border-border hover:border-muted-foreground/30"
+    )}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <span className="font-medium text-foreground">{title}</span>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </div>
+      <div
+        className={cn(
+          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
+          selected ? "border-primary bg-primary" : "border-muted-foreground/30"
+        )}
+      >
+        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+      </div>
+    </div>
+  </button>
+);
 
 export default AISupport;
