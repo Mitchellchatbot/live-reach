@@ -19,12 +19,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
   TooltipContent,
@@ -110,7 +110,7 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
 export const DashboardSidebar = () => {
   const { collapsed, setCollapsed } = useSidebarState();
   const navigate = useNavigate();
-  const { profile } = useUserProfile();
+  const { profile, updateAvatarUrl } = useUserProfile();
   const { signOut, user, isClient, isAgent, isAdmin } = useAuth();
   const { conversations } = useConversations();
   
@@ -237,23 +237,30 @@ export const DashboardSidebar = () => {
               {collapsed ? (
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
-                    <Avatar className="h-9 w-9 cursor-default">
-                      <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div>
+                      <UserAvatarUpload
+                        userId={user?.id || ''}
+                        avatarUrl={profile?.avatar_url}
+                        initials={initials}
+                        onAvatarUpdate={updateAvatarUrl}
+                        size="sm"
+                      />
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     <p className="font-medium">{displayName}</p>
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Click to change photo</p>
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-sm">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatarUpload
+                  userId={user?.id || ''}
+                  avatarUrl={profile?.avatar_url}
+                  initials={initials}
+                  onAvatarUpdate={updateAvatarUrl}
+                  size="sm"
+                />
               )}
             </div>
             {!collapsed && (

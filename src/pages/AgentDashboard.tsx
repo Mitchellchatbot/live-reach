@@ -1,23 +1,26 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatPanel } from '@/components/dashboard/ChatPanel';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { LogOut, MessageSquare, User, RefreshCw } from 'lucide-react';
+import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
+import { LogOut, MessageSquare, RefreshCw } from 'lucide-react';
 import type { Conversation, Message, Visitor } from '@/types/chat';
 
 export default function AgentDashboard() {
   const { user, isAgent, loading, signOut, role } = useAuth();
+  const { profile, updateAvatarUrl } = useUserProfile();
   const navigate = useNavigate();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'away'>('online');
-  const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
 
   // Redirect if not agent
@@ -40,12 +43,17 @@ export default function AgentDashboard() {
       
       const { data: agentData } = await supabase
         .from('agents')
-        .select('id, name, email, status')
+        .select('id, name, email, status, avatar_url')
         .eq('user_id', user.id)
         .single();
       
       if (agentData) {
-        setAgentProfile({ id: agentData.id, name: agentData.name, email: agentData.email });
+        setAgentProfile({ 
+          id: agentData.id, 
+          name: agentData.name, 
+          email: agentData.email,
+          avatar_url: agentData.avatar_url 
+        });
         setAgentStatus(agentData.status as 'online' | 'offline' | 'away');
 
         // Fetch assigned properties
@@ -302,9 +310,13 @@ export default function AgentDashboard() {
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
-              </div>
+              <UserAvatarUpload
+                userId={user?.id || ''}
+                avatarUrl={profile?.avatar_url || agentProfile?.avatar_url}
+                initials={agentProfile?.name?.charAt(0).toUpperCase() || 'A'}
+                onAvatarUpdate={updateAvatarUrl}
+                size="md"
+              />
               <div>
                 <p className="font-medium text-sm">{agentProfile?.name || 'Agent'}</p>
                 <p className="text-xs text-muted-foreground">{agentProfile?.email}</p>
