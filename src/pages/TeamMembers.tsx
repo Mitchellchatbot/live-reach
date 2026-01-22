@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save } from 'lucide-react';
+import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save, KeyRound } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -42,10 +42,16 @@ const TeamMembers = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
+  const [createEmail, setCreateEmail] = useState('');
+  const [createName, setCreateName] = useState('');
+  const [createPassword, setCreatePassword] = useState('');
+  const [createPropertyIds, setCreatePropertyIds] = useState<string[]>([]);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   const [isInviting, setIsInviting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [deleteAgentId, setDeleteAgentId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -219,6 +225,50 @@ const TeamMembers = () => {
     }
 
     setIsInviting(false);
+  };
+
+  const handleCreateAccount = async () => {
+    if (!createEmail.trim() || !createName.trim() || !createPassword.trim() || !user) return;
+
+    setIsCreating(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-agent-account', {
+        body: {
+          agentName: createName.trim(),
+          agentEmail: createEmail.trim().toLowerCase(),
+          password: createPassword,
+          invitedBy: user.id,
+          propertyIds: createPropertyIds,
+        },
+      });
+
+      if (error) {
+        console.error('Error creating account:', error);
+        toast.error('Failed to create account: ' + error.message);
+        setIsCreating(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        setIsCreating(false);
+        return;
+      }
+
+      toast.success(`Agent account created! They can now sign in with email: ${createEmail.trim()} and the password you set.`);
+      setIsCreateDialogOpen(false);
+      setCreateEmail('');
+      setCreateName('');
+      setCreatePassword('');
+      setCreatePropertyIds([]);
+      fetchAgents();
+    } catch (error) {
+      console.error('Error creating account:', error);
+      toast.error('Failed to create agent account');
+    }
+
+    setIsCreating(false);
   };
 
   const handleResendInvitation = async (agent: Agent) => {
@@ -444,6 +494,103 @@ const TeamMembers = () => {
                 <Button variant="outline" size="sm" onClick={handleCreateTestAgent} className="text-xs">
                   + Test Agent
                 </Button>
+                
+                {/* Create Account Dialog */}
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      Create Account
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create Agent Account</DialogTitle>
+                      <DialogDescription>
+                        Create login credentials for an agent. They can sign in immediately with these details.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="create-name">Name</Label>
+                        <Input
+                          id="create-name"
+                          placeholder="John Smith"
+                          value={createName}
+                          onChange={(e) => setCreateName(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="create-email">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="create-email"
+                            type="email"
+                            placeholder="agent@company.com"
+                            className="pl-10"
+                            value={createEmail}
+                            onChange={(e) => setCreateEmail(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="create-password">Password</Label>
+                        <div className="relative">
+                          <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="create-password"
+                            type="password"
+                            placeholder="At least 6 characters"
+                            className="pl-10"
+                            value={createPassword}
+                            onChange={(e) => setCreatePassword(e.target.value)}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">Share this password securely with the agent</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Assign to Properties</Label>
+                        <div className="space-y-2 max-h-40 overflow-auto border rounded-lg p-3">
+                          {properties.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No properties available</p>
+                          ) : (
+                            properties.map((prop) => (
+                              <label key={prop.id} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={createPropertyIds.includes(prop.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setCreatePropertyIds([...createPropertyIds, prop.id]);
+                                    } else {
+                                      setCreatePropertyIds(createPropertyIds.filter(id => id !== prop.id));
+                                    }
+                                  }}
+                                />
+                                <span className="text-sm">{prop.name}</span>
+                                <span className="text-xs text-muted-foreground">({prop.domain})</span>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleCreateAccount} 
+                        disabled={isCreating || !createEmail.trim() || !createName.trim() || createPassword.length < 6}
+                      >
+                        {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Create Account
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Invite Agent Dialog */}
                 <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -455,7 +602,7 @@ const TeamMembers = () => {
                     <DialogHeader>
                       <DialogTitle>Invite Agent</DialogTitle>
                       <DialogDescription>
-                        Add a team member who can respond to chat conversations.
+                        Send an email invitation. The agent will create their own password.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
