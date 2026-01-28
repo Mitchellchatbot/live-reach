@@ -16,11 +16,18 @@ const WidgetEmbed = () => {
 
   // Make the entire page transparent for iframe embedding
   useEffect(() => {
-    document.body.style.background = 'transparent';
-    document.documentElement.style.background = 'transparent';
+    // Force transparency with !important to override any CSS
+    document.body.style.setProperty('background', 'transparent', 'important');
+    document.documentElement.style.setProperty('background', 'transparent', 'important');
+    // Also remove the dark class if present to prevent dark mode styles
+    document.documentElement.classList.remove('dark');
+    // Add a class to identify embed mode
+    document.body.classList.add('widget-embed-mode');
+    
     return () => {
       document.body.style.background = '';
       document.documentElement.style.background = '';
+      document.body.classList.remove('widget-embed-mode');
     };
   }, []);
 

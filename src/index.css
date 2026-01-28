@@ -134,6 +134,14 @@
   }
 }
 
+/* Widget embed mode - force full transparency */
+body.widget-embed-mode,
+body.widget-embed-mode html,
+.widget-embed-mode {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -142,6 +150,10 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+  }
+  
+  body.widget-embed-mode {
+    background: transparent !important;
   }
 }
 
