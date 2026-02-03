@@ -19,6 +19,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+const formatSelectedCount = (count: number) => {
+  if (count <= 0) return '0';
+  if (count > 99) return '99+';
+  return String(count);
+};
+
 interface ConversationListProps {
   conversations: Conversation[];
   selectedId?: string;
@@ -290,6 +296,9 @@ export const ConversationList = ({
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showBulkCloseDialog, setShowBulkCloseDialog] = useState(false);
 
+  const selectedCount = selectedIds.size;
+  const selectedCountLabel = formatSelectedCount(selectedCount);
+
   const handleCheckChange = (id: string, checked: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -346,7 +355,7 @@ export const ConversationList = ({
       {/* Bulk Actions Toolbar */}
       {showBulkActions && (
         <div className={cn(
-          "flex items-center gap-1.5 px-3 py-2 border-b border-border transition-colors duration-200",
+          "relative z-20 shrink-0 flex items-center gap-1.5 px-3 py-2 border-b border-border transition-colors duration-200",
           selectionMode && selectedIds.size > 0 ? "bg-primary/5" : "bg-muted/30"
         )}>
           {selectionMode ? (
@@ -354,7 +363,11 @@ export const ConversationList = ({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={exitSelectionMode}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  exitSelectionMode();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                 title="Cancel selection"
               >
@@ -366,53 +379,82 @@ export const ConversationList = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleSelectAll}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectAll();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
                 className="h-7 px-2 text-xs"
               >
                 {selectedIds.size === conversations.length ? 'None' : 'All'}
               </Button>
 
-              {selectedIds.size > 0 && (
-                <>
-                  <Badge 
-                    variant="secondary" 
-                    className="h-5 min-w-[20px] px-1.5 text-xs font-medium bg-primary/10 text-primary border-0"
-                  >
-                    {selectedIds.size}
-                  </Badge>
-                  
-                  <div className="flex-1" />
-                  
-                  {onBulkClose && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowBulkCloseDialog(true)}
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent"
-                      title={`Close ${selectedIds.size} conversation${selectedIds.size > 1 ? 's' : ''}`}
-                    >
-                      <Archive className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {onBulkDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowBulkDeleteDialog(true)}
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      title={`Delete ${selectedIds.size} conversation${selectedIds.size > 1 ? 's' : ''}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </>
+              <div className="flex-1" />
+
+              {/* Selection count (bounded) */}
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "h-5 max-w-[44px] px-1.5 text-xs font-medium border-0 overflow-hidden truncate tabular-nums transition-opacity",
+                  selectedCount > 0 ? "bg-primary/10 text-primary opacity-100" : "bg-muted text-muted-foreground opacity-70"
+                )}
+                title={`${selectedCount} selected`}
+              >
+                {selectedCountLabel}
+              </Badge>
+
+              {onBulkClose && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedCount === 0) return;
+                    setShowBulkCloseDialog(true);
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  disabled={selectedCount === 0}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-40"
+                  title={
+                    selectedCount === 0
+                      ? 'Select conversations to close'
+                      : `Close ${selectedCount} conversation${selectedCount > 1 ? 's' : ''}`
+                  }
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+              )}
+              {onBulkDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedCount === 0) return;
+                    setShowBulkDeleteDialog(true);
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  disabled={selectedCount === 0}
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-40"
+                  title={
+                    selectedCount === 0
+                      ? 'Select conversations to delete'
+                      : `Delete ${selectedCount} conversation${selectedCount > 1 ? 's' : ''}`
+                  }
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               )}
             </>
           ) : (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSelectionMode(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectionMode(true);
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <CheckSquare className="h-3.5 w-3.5 mr-1" />
@@ -445,7 +487,12 @@ export const ConversationList = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkClose}>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBulkClose();
+              }}
+            >
               Close Conversations
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -464,7 +511,10 @@ export const ConversationList = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleBulkDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBulkDelete();
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete Conversations
