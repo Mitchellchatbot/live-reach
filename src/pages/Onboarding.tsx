@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useConversations } from '@/hooks/useConversations';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 import { cn } from '@/lib/utils';
 
@@ -154,6 +155,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
     setIsCreating(false);
 
     if (property) {
+      // Mark onboarding as complete in the database
+      if (user) {
+        await supabase.rpc('mark_onboarding_complete', { user_uuid: user.id });
+      }
       setStep('complete');
     }
   };
@@ -180,13 +185,39 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
   const [searchParams] = useSearchParams();
   const isDevMode = searchParams.get('dev') === '1';
 
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+
+  // Check if onboarding is already complete using secure RPC
   useEffect(() => {
-    if (!isDevMode && !authLoading && user && !dataLoading && properties.length > 0) {
+    const checkOnboarding = async () => {
+      if (!user) {
+        setOnboardingComplete(false);
+        return;
+      }
+      
+      const { data, error } = await supabase.rpc('check_onboarding_complete', { user_uuid: user.id });
+      if (error) {
+        console.error('Error checking onboarding status:', error);
+        // Fall back to checking properties
+        setOnboardingComplete(properties.length > 0);
+      } else {
+        setOnboardingComplete(data === true);
+      }
+    };
+    
+    if (!authLoading && user) {
+      checkOnboarding();
+    }
+  }, [authLoading, user, properties.length]);
+
+  // Redirect to dashboard if onboarding is complete
+  useEffect(() => {
+    if (!isDevMode && onboardingComplete === true) {
       navigate('/dashboard', { replace: true });
     }
-  }, [authLoading, user, dataLoading, properties.length, navigate, isDevMode]);
+  }, [onboardingComplete, navigate, isDevMode]);
 
-  if (authLoading || dataLoading) {
+  if (authLoading || dataLoading || onboardingComplete === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
