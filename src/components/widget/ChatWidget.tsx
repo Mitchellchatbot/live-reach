@@ -406,7 +406,7 @@ export const ChatWidget = ({
       {/* Chat Panel */}
       {isOpen && !showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg overflow-hidden flex flex-col pointer-events-auto"
           style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Header */}
@@ -696,7 +696,7 @@ export const ChatWidget = ({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto"
+          className="flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto"
           style={{ 
             background: 'var(--widget-primary)', 
             borderRadius: buttonRadius,
