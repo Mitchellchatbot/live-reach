@@ -242,13 +242,13 @@ export const ChatWidget = ({
 
   return (
     <div 
-      className={cn("z-50 font-sans", isPreview ? "relative" : "fixed bottom-4 right-4")}
-      style={widgetStyle}
+      className={cn("z-50 font-sans pointer-events-none", isPreview ? "relative" : "fixed bottom-4 right-4")}
+      style={{ ...widgetStyle, background: 'transparent' }}
     >
       {/* Incoming Call Notification */}
       {hasIncomingCall && (
         <div 
-          className="absolute bottom-20 right-0 w-80 bg-card/95 backdrop-blur-lg shadow-xl border border-border/50 p-5 animate-fade-in"
+          className="absolute bottom-20 right-0 w-80 bg-card/95 backdrop-blur-lg shadow-xl border border-border/50 p-5 animate-fade-in pointer-events-auto"
           style={{ borderRadius: panelRadius }}
         >
           <div className="flex items-center gap-4 mb-4">
@@ -285,7 +285,7 @@ export const ChatWidget = ({
       {/* Video Call Panel */}
       {showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col"
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
           style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Video Call Header */}
@@ -406,7 +406,7 @@ export const ChatWidget = ({
       {/* Chat Panel */}
       {isOpen && !showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col"
+          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
           style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Header */}
@@ -696,7 +696,7 @@ export const ChatWidget = ({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+          className="flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto"
           style={{ 
             background: 'var(--widget-primary)', 
             borderRadius: buttonRadius,
