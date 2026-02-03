@@ -389,7 +389,62 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
   const lastSeqRef = useRef<number>(0); // Track last sequence number for message polling
-  const humanHasTakenOverRef = useRef(false); // Ref to avoid stale closure in sendMessage
+  const humanHasTakenOverRef = useRef(false); // True only when a human agent has actually responded
+  const aiEnabledRef = useRef<boolean>(true); // Tracks dashboard AI toggle (do not conflate with human takeover)
+  const prevAiEnabledRef = useRef<boolean | null>(null);
+  const autoReplyInFlightRef = useRef(false);
+  const lastAutoReplyVisitorSeqRef = useRef<number>(0);
+
+  const calculateTypingTimeMs = useCallback((text: string): number => {
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+    const wordsPerSecond = (settings.typing_wpm || DEFAULT_SETTINGS.typing_wpm) / 60;
+    return Math.ceil((wordCount / wordsPerSecond) * 1000);
+  }, [settings.typing_wpm]);
+
+  const toAiHistoryFromDb = useCallback((dbMessages: { sender_type: string; content: string }[]) => {
+    // Keep greeting/proactive out of the AI history; proactive is UI-only anyway.
+    return dbMessages
+      .filter(m => String(m.content || '').trim() !== '')
+      .map(m => ({
+        role: m.sender_type === 'visitor' ? 'user' as const : 'assistant' as const,
+        content: String(m.content),
+      }));
+  }, []);
+
+  const refreshAiEnabledFromServer = useCallback(async (): Promise<boolean> => {
+    // Only meaningful for real embeds.
+    if (isPreview || !propertyId || propertyId === 'demo') return true;
+    const convId = conversationIdRef.current;
+    const vId = visitorIdRef.current;
+    if (!convId || !vId) return aiEnabledRef.current;
+
+    const sessionId = getOrCreateSessionId();
+    try {
+      const resp = await fetch(GET_MESSAGES_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          conversationId: convId,
+          visitorId: vId,
+          sessionId,
+          // Keep it small; we only need aiEnabled.
+          afterSequence: lastSeqRef.current,
+        }),
+      });
+
+      if (!resp.ok) return aiEnabledRef.current;
+      const data = await resp.json();
+      const next = (data?.aiEnabled ?? true) as boolean;
+      aiEnabledRef.current = next;
+      prevAiEnabledRef.current = next;
+      return next;
+    } catch {
+      return aiEnabledRef.current;
+    }
+  }, [isPreview, propertyId]);
 
   // Fetch AI agents for this property via edge function (works without auth)
   const fetchAiAgents = useCallback(async (): Promise<AIAgent[]> => {
@@ -581,6 +636,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           if (msgResponse.ok) {
             const msgData = await msgResponse.json();
             const existingMessages = msgData.messages || [];
+            // Track current AI enabled state from server.
+            aiEnabledRef.current = (msgData?.aiEnabled ?? true) as boolean;
+            prevAiEnabledRef.current = aiEnabledRef.current;
             
             if (existingMessages.length > 0) {
               // Map DB messages to UI format
@@ -751,6 +809,217 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // The conversation is now in 'active' status so human agents can see and respond
   }, [isEscalated, propertyId, humanEscalationTracked, conversationId, isPreview, messages, visitorId]);
 
+  const autoReplyIfPending = useCallback(async () => {
+    if (autoReplyInFlightRef.current) return;
+    if (isTyping) return;
+    if (isPreview || !propertyId || propertyId === 'demo') return;
+
+    const convId = conversationIdRef.current;
+    const vId = visitorIdRef.current;
+    if (!convId || !vId) return;
+
+    const sessionId = getOrCreateSessionId();
+    autoReplyInFlightRef.current = true;
+
+    try {
+      const response = await fetch(GET_MESSAGES_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          conversationId: convId,
+          visitorId: vId,
+          sessionId,
+        }),
+      });
+
+      if (!response.ok) return;
+      const data = await response.json();
+      const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
+      aiEnabledRef.current = serverAiEnabled;
+      prevAiEnabledRef.current = serverAiEnabled;
+      if (!serverAiEnabled) return;
+      if (humanHasTakenOverRef.current) return; // human override still wins
+
+      const dbMessages = (data?.messages ?? []) as Array<{
+        sender_type: 'agent' | 'visitor';
+        content: string;
+        sequence_number?: number;
+      }>;
+
+      if (dbMessages.length === 0) return;
+      const last = dbMessages[dbMessages.length - 1];
+      if (last.sender_type !== 'visitor') return;
+      const lastVisitorSeq = typeof last.sequence_number === 'number' ? last.sequence_number : 0;
+      if (lastVisitorSeq <= lastAutoReplyVisitorSeqRef.current) return;
+
+      // Mark handled so we don't auto-reply repeatedly on subsequent polls.
+      lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
+
+      // Simulate reading delay, then respond using the full DB history.
+      const responseDelay = randomInRange(
+        settings.ai_response_delay_min_ms,
+        settings.ai_response_delay_max_ms,
+      );
+      await sleep(responseDelay);
+
+      setIsTyping(true);
+      const typingStartTime = Date.now();
+
+      const aiMessageId = `ai-auto-${Date.now()}`;
+      let aiContent = '';
+      const respondingAgent = currentAiAgent;
+
+      const naturalLeadCaptureFields: string[] = [];
+      if (settings.natural_lead_capture_enabled) {
+        if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
+        if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
+        if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
+        if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
+      }
+
+      const aiHistory = toAiHistoryFromDb(dbMessages);
+
+      const saveAiToDb = async (finalContent: string) => {
+        const saveResp = await fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            conversationId: convId,
+            visitorId: vId,
+            sessionId,
+            senderType: 'agent',
+            content: finalContent,
+          }),
+        });
+
+        if (!saveResp.ok) {
+          console.error('Failed to save auto AI message:', await saveResp.text());
+        }
+      };
+
+      if (settings.smart_typing_enabled) {
+        await streamAIResponse({
+          messages: aiHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          onDelta: (delta) => {
+            aiContent += delta;
+          },
+          onDone: async () => {
+            const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+            const minTypingTime = randomInRange(
+              settings.typing_indicator_min_ms,
+              settings.typing_indicator_max_ms,
+            );
+            const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+            const elapsedTime = Date.now() - typingStartTime;
+            const remainingTime = targetTypingTime - elapsedTime;
+            if (remainingTime > 0) await sleep(remainingTime);
+
+            setMessages(prev => [...prev, {
+              id: aiMessageId,
+              content: aiContent,
+              sender_type: 'agent' as const,
+              created_at: new Date().toISOString(),
+              agent_name: respondingAgent?.name,
+              agent_avatar: respondingAgent?.avatar_url,
+            }]);
+
+            setIsTyping(false);
+
+            aiMessageCountRef.current += 1;
+            cycleToNextAgent();
+
+            if (aiContent) await saveAiToDb(aiContent);
+
+            if (
+              settings.auto_escalation_enabled &&
+              aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
+            ) {
+              await triggerEscalation();
+            }
+          },
+          onError: (error) => {
+            setIsTyping(false);
+            console.error('AI Error:', error);
+          },
+        });
+      } else {
+        const typingDuration = randomInRange(
+          settings.typing_indicator_min_ms,
+          settings.typing_indicator_max_ms,
+        );
+        await sleep(typingDuration);
+
+        await streamAIResponse({
+          messages: aiHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          onDelta: (delta) => {
+            aiContent += delta;
+            setMessages(prev => {
+              const existing = prev.find(m => m.id === aiMessageId);
+              if (existing) {
+                return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
+              }
+              return [...prev, {
+                id: aiMessageId,
+                content: aiContent,
+                sender_type: 'agent' as const,
+                created_at: new Date().toISOString(),
+                agent_name: respondingAgent?.name,
+                agent_avatar: respondingAgent?.avatar_url,
+              }];
+            });
+          },
+          onDone: async () => {
+            setIsTyping(false);
+
+            aiMessageCountRef.current += 1;
+            cycleToNextAgent();
+
+            if (aiContent) await saveAiToDb(aiContent);
+
+            if (
+              settings.auto_escalation_enabled &&
+              aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
+            ) {
+              await triggerEscalation();
+            }
+          },
+          onError: (error) => {
+            setIsTyping(false);
+            console.error('AI Error:', error);
+          },
+        });
+      }
+    } catch (e) {
+      console.error('autoReplyIfPending error:', e);
+    } finally {
+      autoReplyInFlightRef.current = false;
+    }
+  }, [
+    isTyping,
+    isPreview,
+    propertyId,
+    settings,
+    currentAiAgent,
+    calculateTypingTimeMs,
+    cycleToNextAgent,
+    toAiHistoryFromDb,
+    triggerEscalation,
+  ]);
+
   // Start proactive message timer
   const startProactiveTimer = useCallback(() => {
     if (!settings.proactive_message_enabled || !settings.proactive_message) return;
@@ -861,9 +1130,16 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Don't return - let AI continue responding until human takes over
     }
 
-    // Only stop AI if human has actually taken over (not just escalated)
-    // Use ref to avoid stale closure issues
-    if (humanHasTakenOverRef.current) {
+    // If AI was previously off, refresh aiEnabled right now (avoids race where user toggles on + immediately sends).
+    let aiEnabledNow = aiEnabledRef.current;
+    if (!aiEnabledNow) {
+      aiEnabledNow = await refreshAiEnabledFromServer();
+    }
+
+    // Stop AI if either:
+    // - dashboard has AI disabled, OR
+    // - a human agent has actually responded
+    if (!aiEnabledNow || humanHasTakenOverRef.current) {
       // Just save the message to DB - human agent is handling
       if (!isPreview && propertyId && propertyId !== 'demo') {
         const convId = conversationIdRef.current || conversationId;
@@ -930,12 +1206,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const respondingAgent = currentAiAgent;
 
     // Calculate typing time based on word count using configured WPM
-    const calculateTypingTimeMs = (text: string): number => {
-      const wordCount = text.trim().split(/\s+/).length;
-      const wordsPerSecond = settings.typing_wpm / 60;
-      return Math.ceil((wordCount / wordsPerSecond) * 1000);
-    };
-
     // Build natural lead capture fields list
     const naturalLeadCaptureFields: string[] = [];
     if (settings.natural_lead_capture_enabled) {
@@ -1237,17 +1507,16 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
         const data = await response.json();
         const fetchedMessages = data.messages || [];
-        const serverAiEnabled = data.aiEnabled;
+        const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
 
-        // If AI has been re-enabled from dashboard, allow AI to respond again
-        if (serverAiEnabled === true && humanHasTakenOverRef.current) {
-          setHumanHasTakenOver(false);
-          humanHasTakenOverRef.current = false;
-        }
-        // If AI has been disabled from dashboard, mark human as taken over
-        if (serverAiEnabled === false && !humanHasTakenOverRef.current) {
-          setHumanHasTakenOver(true);
-          humanHasTakenOverRef.current = true;
+        // Track dashboard AI enable/disable separately from human takeover.
+        const prev = prevAiEnabledRef.current;
+        aiEnabledRef.current = serverAiEnabled;
+        prevAiEnabledRef.current = serverAiEnabled;
+
+        // If AI was turned back on, respond to the last visitor message (if any) using full chat history.
+        if (prev === false && serverAiEnabled === true) {
+          void autoReplyIfPending();
         }
 
         if (fetchedMessages.length === 0) return;
@@ -1262,11 +1531,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         for (const rawMsg of fetchedMessages) {
           // Only add agent messages that aren't from AI (human agent override)
           if (rawMsg.sender_type === 'agent' && rawMsg.sender_id !== 'ai-bot') {
-          // Mark human has taken over - AI should stop responding
-          if (!humanHasTakenOverRef.current) {
-            setHumanHasTakenOver(true);
-            humanHasTakenOverRef.current = true;
-          }
+            // Mark human has taken over - AI should stop responding
+            if (!humanHasTakenOverRef.current) {
+              setHumanHasTakenOver(true);
+              humanHasTakenOverRef.current = true;
+            }
             if (!isEscalated) {
               setIsEscalated(true);
             }
@@ -1304,7 +1573,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [conversationId, humanEscalationTracked, propertyId, isEscalated, humanHasTakenOver, isPreview]);
+  }, [conversationId, humanEscalationTracked, propertyId, isEscalated, isPreview, autoReplyIfPending]);
 
   return {
     messages,
