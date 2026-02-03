@@ -262,7 +262,7 @@ const ConversationListAnimated = ({
   }, [conversations.length]);
 
   return (
-    <div ref={listRef} className="overflow-y-auto flex-1 scrollbar-thin">
+    <div ref={listRef} className="overflow-y-auto flex-1 min-h-0 scrollbar-thin">
       {conversations.map((conversation) => (
         <div key={conversation.id} className="conversation-item">
           <ConversationItem
@@ -351,7 +351,7 @@ export const ConversationList = ({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Bulk Actions Toolbar */}
       {showBulkActions && (
         <div className={cn(
