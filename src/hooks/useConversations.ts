@@ -402,41 +402,53 @@ export const useConversations = () => {
   useEffect(() => {
     if (!user) return;
 
+    console.log('[useConversations] Setting up realtime subscriptions');
+
     const messagesChannel = supabase
       .channel(`messages-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'messages' },
-        () => {
+        (payload) => {
+          console.log('[useConversations] Messages change detected:', payload);
           fetchConversations();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[useConversations] Messages channel status:', status);
+      });
 
     const conversationsChannel = supabase
       .channel(`conversations-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'conversations' },
-        () => {
+        (payload) => {
+          console.log('[useConversations] Conversations change detected:', payload);
           fetchConversations();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[useConversations] Conversations channel status:', status);
+      });
 
     // Subscribe to visitor updates (for AI-extracted info)
     const visitorsChannel = supabase
       .channel(`visitors-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'visitors' },
-        () => {
+        { event: '*', schema: 'public', table: 'visitors' },
+        (payload) => {
+          console.log('[useConversations] Visitors change detected:', payload);
           fetchConversations();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[useConversations] Visitors channel status:', status);
+      });
 
     return () => {
+      console.log('[useConversations] Cleaning up realtime subscriptions');
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(conversationsChannel);
       supabase.removeChannel(visitorsChannel);
