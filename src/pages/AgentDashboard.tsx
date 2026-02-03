@@ -7,7 +7,7 @@ import { ChatPanel } from '@/components/dashboard/ChatPanel';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ThemeToggle } from '@/components/ThemeToggle';
+
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import { LogOut, MessageSquare, RefreshCw } from 'lucide-react';
 import type { Conversation, Message, Visitor } from '@/types/chat';
@@ -355,7 +355,6 @@ export default function AgentDashboard() {
                 <p className="text-xs text-muted-foreground">{agentProfile?.email}</p>
               </div>
             </div>
-            <ThemeToggle />
           </div>
           
           {/* Status Selector */}

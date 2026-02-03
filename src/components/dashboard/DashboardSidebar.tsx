@@ -23,7 +23,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
 import { useSidebarState } from '@/hooks/useSidebarState';
-import { ThemeToggle } from '@/components/ThemeToggle';
+
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
@@ -271,7 +271,6 @@ export const DashboardSidebar = () => {
             )}
             {!collapsed && (
               <div className="flex items-center gap-1 flex-shrink-0">
-                <ThemeToggle />
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -284,16 +283,6 @@ export const DashboardSidebar = () => {
             )}
             {collapsed && (
               <div className="flex flex-col items-center gap-1">
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <ThemeToggle />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Toggle theme
-                  </TooltipContent>
-                </Tooltip>
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <Button 
