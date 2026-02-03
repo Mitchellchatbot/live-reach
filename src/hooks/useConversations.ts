@@ -292,6 +292,9 @@ export const useConversations = () => {
       collectName?: boolean;
       collectPhone?: boolean;
       basePrompt?: string;
+      // AI Agent info from onboarding
+      agentName?: string;
+      agentAvatarUrl?: string;
     }
   ) => {
     if (!user) return null;
@@ -315,6 +318,37 @@ export const useConversations = () => {
       console.error('Error creating property:', error);
       toast.error('Failed to create property');
       return null;
+    }
+
+    // Create AI agent if name was provided during onboarding
+    const agentNameToUse = options?.agentName?.trim() || 'Support Assistant';
+    const { data: aiAgent, error: agentError } = await supabase
+      .from('ai_agents')
+      .insert({
+        owner_id: user.id,
+        name: agentNameToUse,
+        avatar_url: options?.agentAvatarUrl || null,
+        personality_prompt: options?.basePrompt || null,
+        status: 'active',
+      })
+      .select()
+      .single();
+
+    if (agentError) {
+      console.error('Error creating AI agent:', agentError);
+      // Don't fail the whole operation, just log the error
+    } else if (aiAgent) {
+      // Link AI agent to property
+      const { error: linkError } = await supabase
+        .from('ai_agent_properties')
+        .insert({
+          ai_agent_id: aiAgent.id,
+          property_id: data.id,
+        });
+
+      if (linkError) {
+        console.error('Error linking AI agent to property:', linkError);
+      }
     }
 
     toast.success('Property created successfully');
