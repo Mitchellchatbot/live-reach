@@ -175,11 +175,21 @@ export const useConversations = () => {
       return null;
     }
 
-    // Update conversation status to active
+    // Update conversation: set status to active, disable AI when human agent sends a message
+    // This ensures the widget knows a human has taken over and won't generate AI responses.
     await supabase
       .from('conversations')
-      .update({ status: 'active', updated_at: new Date().toISOString() })
+      .update({ 
+        status: 'active', 
+        updated_at: new Date().toISOString(),
+        ai_enabled: false,
+      })
       .eq('id', conversationId);
+
+    // Update local state immediately
+    setConversations(prev => 
+      prev.map(c => c.id === conversationId ? { ...c, ai_enabled: false, status: 'active' as const } : c)
+    );
 
     return data;
   };
