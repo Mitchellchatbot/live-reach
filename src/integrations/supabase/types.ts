@@ -787,6 +787,14 @@ export type Database = {
         Returns: undefined
       }
       property_exists: { Args: { property_uuid: string }; Returns: boolean }
+      user_is_agent_for_property: {
+        Args: { property_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
+      user_owns_property: {
+        Args: { property_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       visitor_matches_session: {
         Args: { visitor_session_id: string; visitor_uuid: string }
         Returns: boolean
