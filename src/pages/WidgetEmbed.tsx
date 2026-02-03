@@ -44,8 +44,8 @@ const WidgetEmbed = () => {
 
   return (
     <div 
-      className="w-full h-full overflow-hidden"
-      style={{ background: 'transparent' }}
+      className="w-full h-full overflow-hidden pointer-events-none"
+      style={{ background: 'transparent', backgroundColor: 'transparent' }}
     >
       <ChatWidget
         propertyId={propertyId}
