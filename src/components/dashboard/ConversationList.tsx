@@ -345,54 +345,64 @@ export const ConversationList = ({
     <div className="flex flex-col h-full">
       {/* Bulk Actions Toolbar */}
       {showBulkActions && (
-        <div className="flex items-center gap-2 p-2 border-b border-border bg-muted/30">
+        <div className={cn(
+          "flex items-center gap-1.5 px-3 py-2 border-b border-border transition-colors duration-200",
+          selectionMode && selectedIds.size > 0 ? "bg-primary/5" : "bg-muted/30"
+        )}>
           {selectionMode ? (
             <>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={exitSelectionMode}
-                className="h-8"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                title="Cancel selection"
               >
-                <X className="h-4 w-4 mr-1" />
-                Cancel
+                <X className="h-4 w-4" />
               </Button>
+              
+              <div className="h-4 w-px bg-border" />
+              
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSelectAll}
-                className="h-8"
+                className="h-7 px-2 text-xs"
               >
-                <CheckSquare className="h-4 w-4 mr-1" />
-                {selectedIds.size === conversations.length ? 'Deselect All' : 'Select All'}
+                {selectedIds.size === conversations.length ? 'None' : 'All'}
               </Button>
+
               {selectedIds.size > 0 && (
                 <>
-                  <div className="h-4 w-px bg-border mx-1" />
-                  <span className="text-xs text-muted-foreground">
-                    {selectedIds.size} selected
-                  </span>
+                  <Badge 
+                    variant="secondary" 
+                    className="h-5 min-w-[20px] px-1.5 text-xs font-medium bg-primary/10 text-primary border-0"
+                  >
+                    {selectedIds.size}
+                  </Badge>
+                  
                   <div className="flex-1" />
+                  
                   {onBulkClose && (
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setShowBulkCloseDialog(true)}
-                      className="h-8"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-accent"
+                      title={`Close ${selectedIds.size} conversation${selectedIds.size > 1 ? 's' : ''}`}
                     >
-                      <Archive className="h-4 w-4 mr-1" />
-                      Close
+                      <Archive className="h-4 w-4" />
                     </Button>
                   )}
                   {onBulkDelete && (
                     <Button
-                      variant="destructive"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setShowBulkDeleteDialog(true)}
-                      className="h-8"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      title={`Delete ${selectedIds.size} conversation${selectedIds.size > 1 ? 's' : ''}`}
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </>
@@ -403,9 +413,9 @@ export const ConversationList = ({
               variant="ghost"
               size="sm"
               onClick={() => setSelectionMode(true)}
-              className="h-8 text-muted-foreground"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
-              <CheckSquare className="h-4 w-4 mr-1" />
+              <CheckSquare className="h-3.5 w-3.5 mr-1" />
               Select
             </Button>
           )}
