@@ -12,47 +12,25 @@ const WidgetEmbed = () => {
   const widgetSize = (searchParams.get('widgetSize') as 'small' | 'medium' | 'large') || 'medium';
   const borderRadius = parseInt(searchParams.get('borderRadius') || '16', 10);
   const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
-  const autoOpen = searchParams.get('autoOpen') !== 'false'; // Default to true for embeds
+  const autoOpen = searchParams.get('autoOpen') !== 'false';
 
-  // Force light mode and transparency for widget embed
+  // Ensure transparency is maintained (WidgetApp already sets initial styles)
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
 
-    // Add embed mode class immediately
+    // Reinforce embed mode class and transparency
     html.classList.add('widget-embed-mode');
-    body.classList.add('widget-embed-mode');
-
-    // Remove dark class immediately
     html.classList.remove('dark');
-
-    // Force transparency via inline styles
+    
     html.style.setProperty('background', 'transparent', 'important');
     html.style.setProperty('background-color', 'transparent', 'important');
     body.style.setProperty('background', 'transparent', 'important');
     body.style.setProperty('background-color', 'transparent', 'important');
     body.style.setProperty('overflow', 'hidden', 'important');
 
-    // Create a MutationObserver to prevent dark class from being added
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-          }
-        }
-      });
-    });
-
-    observer.observe(html, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
     return () => {
-      observer.disconnect();
       html.classList.remove('widget-embed-mode');
-      body.classList.remove('widget-embed-mode');
       html.style.background = '';
       html.style.backgroundColor = '';
       body.style.background = '';
