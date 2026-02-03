@@ -147,6 +147,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       collectName: data.collectName,
       collectPhone: data.collectPhone,
       basePrompt,
+      agentName: data.agentName,
+      agentAvatarUrl: data.agentAvatarUrl,
     });
     
     setIsCreating(false);
