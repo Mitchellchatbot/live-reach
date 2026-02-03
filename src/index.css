@@ -137,8 +137,10 @@
 /* Widget embed mode - force light theme + full transparency */
 html.widget-embed-mode,
 html.widget-embed-mode body,
+html.widget-embed-mode #root,
 html.widget-embed-mode.dark,
-html.widget-embed-mode.dark body {
+html.widget-embed-mode.dark body,
+html.widget-embed-mode.dark #root {
   /* Force light mode CSS variables */
   --background: 0 0% 100% !important;
   --foreground: 0 0% 8% !important;
