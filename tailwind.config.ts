@@ -120,6 +120,17 @@ export default {
           "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.4" },
           "30%": { transform: "translateY(-4px)", opacity: "1" },
         },
+        "scale-out": {
+          from: { opacity: "1", transform: "scale(1) translateY(0)" },
+          to: { opacity: "0", transform: "scale(0.95) translateY(16px)" },
+        },
+        "attention-bounce": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "15%": { transform: "translateY(-12px)" },
+          "30%": { transform: "translateY(0)" },
+          "45%": { transform: "translateY(-6px)" },
+          "60%": { transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -129,6 +140,8 @@ export default {
         "slide-up": "slide-up 0.3s ease-out",
         "breathe": "breathe 2.5s ease-in-out infinite",
         "typing-bounce": "typing-bounce 1.4s ease-in-out infinite",
+        "scale-out": "scale-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "attention-bounce": "attention-bounce 0.8s ease-out",
       },
     },
   },
