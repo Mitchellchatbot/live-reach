@@ -1514,8 +1514,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         aiEnabledRef.current = serverAiEnabled;
         prevAiEnabledRef.current = serverAiEnabled;
 
-        // If AI was turned back on, respond to the last visitor message (if any) using full chat history.
+        // If AI was turned back on, reset humanHasTakenOver so AI can respond again.
+        // The humanHasTakenOver flag is only meaningful while AI is disabled;
+        // re-enabling AI signals the operator wants AI to resume.
         if (prev === false && serverAiEnabled === true) {
+          if (humanHasTakenOverRef.current) {
+            setHumanHasTakenOver(false);
+            humanHasTakenOverRef.current = false;
+          }
           void autoReplyIfPending();
         }
 

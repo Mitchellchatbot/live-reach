@@ -260,6 +260,20 @@ export default function AgentDashboard() {
       return;
     }
 
+    // IMPORTANT: When a human agent sends a message, disable AI for this conversation
+    // so the widget knows a human has taken over and won't generate AI responses.
+    await supabase
+      .from('conversations')
+      .update({ ai_enabled: false })
+      .eq('id', selectedConversation.id);
+    
+    // Update local state to reflect AI is now disabled
+    setConversations(prev => prev.map(c => 
+      c.id === selectedConversation.id 
+        ? { ...c, ai_enabled: false } as any
+        : c
+    ));
+
     // Update conversation status to active if pending
     if (selectedConversation.status === 'pending') {
       await supabase
