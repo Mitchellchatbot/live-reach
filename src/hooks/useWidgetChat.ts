@@ -389,6 +389,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
   const lastSeqRef = useRef<number>(0); // Track last sequence number for message polling
+  const humanHasTakenOverRef = useRef(false); // Ref to avoid stale closure in sendMessage
 
   // Fetch AI agents for this property via edge function (works without auth)
   const fetchAiAgents = useCallback(async (): Promise<AIAgent[]> => {
@@ -607,6 +608,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               );
               if (humanAgentMsg) {
                 setHumanHasTakenOver(true);
+                humanHasTakenOverRef.current = true;
               }
             }
           }
@@ -860,7 +862,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
 
     // Only stop AI if human has actually taken over (not just escalated)
-    if (humanHasTakenOver) {
+    // Use ref to avoid stale closure issues
+    if (humanHasTakenOverRef.current) {
       // Just save the message to DB - human agent is handling
       if (!isPreview && propertyId && propertyId !== 'demo') {
         const convId = conversationIdRef.current || conversationId;
@@ -1237,12 +1240,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const serverAiEnabled = data.aiEnabled;
 
         // If AI has been re-enabled from dashboard, allow AI to respond again
-        if (serverAiEnabled === true && humanHasTakenOver) {
+        if (serverAiEnabled === true && humanHasTakenOverRef.current) {
           setHumanHasTakenOver(false);
+          humanHasTakenOverRef.current = false;
         }
         // If AI has been disabled from dashboard, mark human as taken over
-        if (serverAiEnabled === false && !humanHasTakenOver) {
+        if (serverAiEnabled === false && !humanHasTakenOverRef.current) {
           setHumanHasTakenOver(true);
+          humanHasTakenOverRef.current = true;
         }
 
         if (fetchedMessages.length === 0) return;
@@ -1257,10 +1262,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         for (const rawMsg of fetchedMessages) {
           // Only add agent messages that aren't from AI (human agent override)
           if (rawMsg.sender_type === 'agent' && rawMsg.sender_id !== 'ai-bot') {
-            // Mark human has taken over - AI should stop responding
-            if (!humanHasTakenOver) {
-              setHumanHasTakenOver(true);
-            }
+          // Mark human has taken over - AI should stop responding
+          if (!humanHasTakenOverRef.current) {
+            setHumanHasTakenOver(true);
+            humanHasTakenOverRef.current = true;
+          }
             if (!isEscalated) {
               setIsEscalated(true);
             }
