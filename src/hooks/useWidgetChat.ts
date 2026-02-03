@@ -1234,6 +1234,16 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
         const data = await response.json();
         const fetchedMessages = data.messages || [];
+        const serverAiEnabled = data.aiEnabled;
+
+        // If AI has been re-enabled from dashboard, allow AI to respond again
+        if (serverAiEnabled === true && humanHasTakenOver) {
+          setHumanHasTakenOver(false);
+        }
+        // If AI has been disabled from dashboard, mark human as taken over
+        if (serverAiEnabled === false && !humanHasTakenOver) {
+          setHumanHasTakenOver(true);
+        }
 
         if (fetchedMessages.length === 0) return;
 
