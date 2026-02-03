@@ -226,6 +226,24 @@ export default function AgentDashboard() {
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user || !agentProfile) return;
 
+    // IMPORTANT: The widget polling relies on monotonically increasing sequence_number.
+    // If we omit it, messages default to 1 and will never be picked up once the visitor
+    // has already advanced the sequence.
+    const { data: maxSeqData, error: maxSeqError } = await supabase
+      .from('messages')
+      .select('sequence_number')
+      .eq('conversation_id', selectedConversation.id)
+      .order('sequence_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (maxSeqError) {
+      console.error('Error fetching max sequence_number:', maxSeqError);
+      return;
+    }
+
+    const nextSeq = (maxSeqData?.sequence_number || 0) + 1;
+
     const { error } = await supabase
       .from('messages')
       .insert({
@@ -233,6 +251,8 @@ export default function AgentDashboard() {
         sender_id: agentProfile.id,
         sender_type: 'agent',
         content,
+        read: true,
+        sequence_number: nextSeq,
       });
 
     if (error) {
@@ -244,7 +264,17 @@ export default function AgentDashboard() {
     if (selectedConversation.status === 'pending') {
       await supabase
         .from('conversations')
-        .update({ status: 'active', assigned_agent_id: agentProfile.id })
+        .update({
+          status: 'active',
+          assigned_agent_id: agentProfile.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedConversation.id);
+    } else {
+      // Always bump updated_at so inbox ordering stays correct.
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
         .eq('id', selectedConversation.id);
     }
 
@@ -253,7 +283,7 @@ export default function AgentDashboard() {
       .from('messages')
       .select('*')
       .eq('conversation_id', selectedConversation.id)
-      .order('created_at', { ascending: true });
+      .order('sequence_number', { ascending: true });
 
     if (messagesData) {
       const messages: Message[] = messagesData.map((m: any) => ({
