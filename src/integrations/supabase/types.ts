@@ -325,6 +325,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          onboarding_complete: boolean
           updated_at: string
           user_id: string
         }
@@ -335,6 +336,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id?: string
+          onboarding_complete?: boolean
           updated_at?: string
           user_id: string
         }
@@ -345,6 +347,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          onboarding_complete?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -767,6 +770,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_onboarding_complete: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       conversation_exists: { Args: { conv_uuid: string }; Returns: boolean }
       has_role: {
         Args: {
@@ -774,6 +781,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      mark_onboarding_complete: {
+        Args: { user_uuid: string }
+        Returns: undefined
       }
       property_exists: { Args: { property_uuid: string }; Returns: boolean }
       visitor_matches_session: {
