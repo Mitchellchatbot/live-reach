@@ -453,16 +453,6 @@ export const ChatWidget = ({
             </div>
             <div className="flex items-center gap-1 relative z-10">
               <button 
-                onClick={handleStartVideoCall}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
-                style={{ background: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                title="Start video call"
-              >
-                <Video className="h-4 w-4" style={{ color: textColor }} />
-              </button>
-              <button 
                 onClick={() => setIsClosing(true)}
                 className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
                 style={{ background: 'transparent' }}
