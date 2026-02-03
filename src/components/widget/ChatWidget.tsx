@@ -34,6 +34,8 @@ export const ChatWidget = ({
   autoOpen = false,
 }: ChatWidgetProps) => {
   const [isOpen, setIsOpen] = useState(autoOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const [showAttentionBounce, setShowAttentionBounce] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [hasIncomingCall, setHasIncomingCall] = useState(false);
@@ -404,9 +406,18 @@ export const ChatWidget = ({
       )}
 
       {/* Chat Panel */}
-      {isOpen && !showVideoCall && (
+      {(isOpen || isClosing) && !showVideoCall && (
         <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg overflow-hidden flex flex-col pointer-events-auto"
+          className={cn(
+            "mb-4 bg-card/95 backdrop-blur-lg overflow-hidden flex flex-col pointer-events-auto",
+            isClosing ? "animate-scale-out" : "animate-scale-in"
+          )}
+          onAnimationEnd={() => {
+            if (isClosing) {
+              setIsClosing(false);
+              setIsOpen(false);
+            }
+          }}
           style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
         >
           {/* Header */}
@@ -452,7 +463,7 @@ export const ChatWidget = ({
                 <Video className="h-4 w-4" style={{ color: textColor }} />
               </button>
               <button 
-                onClick={() => setIsOpen(false)}
+                onClick={() => setIsClosing(true)}
                 className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
                 style={{ background: 'transparent' }}
                 onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
@@ -461,7 +472,7 @@ export const ChatWidget = ({
                 <Minimize2 className="h-4 w-4" style={{ color: textColor }} />
               </button>
               <button 
-                onClick={() => setIsOpen(false)}
+                onClick={() => setIsClosing(true)}
                 className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
                 style={{ background: 'transparent' }}
                 onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
@@ -693,10 +704,17 @@ export const ChatWidget = ({
       )}
 
       {/* Floating Button */}
-      {!isOpen && (
+      {!isOpen && !isClosing && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto"
+          onClick={() => {
+            setShowAttentionBounce(false);
+            setIsOpen(true);
+          }}
+          className={cn(
+            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto",
+            showAttentionBounce && "animate-attention-bounce"
+          )}
+          onAnimationEnd={() => setShowAttentionBounce(false)}
           style={{ 
             background: 'var(--widget-primary)', 
             borderRadius: buttonRadius,
