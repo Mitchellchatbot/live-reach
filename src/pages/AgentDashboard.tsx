@@ -22,7 +22,7 @@ export default function AgentDashboard() {
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'away'>('online');
   const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
-  const [aiEnabledMap, setAiEnabledMap] = useState<Record<string, boolean>>({});
+  
 
   // Redirect if not agent
   useEffect(() => {
@@ -125,7 +125,7 @@ export default function AgentDashboard() {
 
           const unreadCount = messages.filter(m => !m.read && m.senderType === 'visitor').length;
 
-          const conversation: Conversation = {
+          const conversation: Conversation & { ai_enabled?: boolean } = {
             id: c.id,
             visitorId: c.visitor_id,
             propertyId: c.property_id,
@@ -137,6 +137,7 @@ export default function AgentDashboard() {
             messages,
             lastMessage: messages.length > 0 ? messages[messages.length - 1] : undefined,
             unreadCount,
+            ai_enabled: c.ai_enabled ?? true,
           };
 
           return conversation;
@@ -295,15 +296,35 @@ export default function AgentDashboard() {
     ));
   };
 
-  // AI toggle for conversations
-  const isAIEnabled = selectedConversation?.id ? (aiEnabledMap[selectedConversation.id] ?? true) : true;
+  // AI toggle for conversations - use persisted value from database
+  const isAIEnabled = selectedConversation ? 
+    (conversations.find(c => c.id === selectedConversation.id) as any)?.ai_enabled ?? true : true;
   
-  const handleToggleAI = () => {
+  const handleToggleAI = async () => {
     if (!selectedConversation?.id) return;
-    setAiEnabledMap(prev => ({
-      ...prev,
-      [selectedConversation.id]: !(prev[selectedConversation.id] ?? true)
-    }));
+    const newValue = !isAIEnabled;
+    
+    // Update local state immediately for responsive UI
+    setConversations(prev => prev.map(c => 
+      c.id === selectedConversation.id 
+        ? { ...c, ai_enabled: newValue } as any
+        : c
+    ));
+    
+    const { error } = await supabase
+      .from('conversations')
+      .update({ ai_enabled: newValue })
+      .eq('id', selectedConversation.id);
+
+    if (error) {
+      console.error('Error toggling AI:', error);
+      // Revert on error
+      setConversations(prev => prev.map(c => 
+        c.id === selectedConversation.id 
+          ? { ...c, ai_enabled: !newValue } as any
+          : c
+      ));
+    }
   };
 
   if (loading || !isAgent) {

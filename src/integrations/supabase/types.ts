@@ -144,6 +144,7 @@ export type Database = {
       }
       conversations: {
         Row: {
+          ai_enabled: boolean
           assigned_agent_id: string | null
           created_at: string
           id: string
@@ -154,6 +155,7 @@ export type Database = {
           visitor_id: string
         }
         Insert: {
+          ai_enabled?: boolean
           assigned_agent_id?: string | null
           created_at?: string
           id?: string
@@ -164,6 +166,7 @@ export type Database = {
           visitor_id: string
         }
         Update: {
+          ai_enabled?: boolean
           assigned_agent_id?: string | null
           created_at?: string
           id?: string

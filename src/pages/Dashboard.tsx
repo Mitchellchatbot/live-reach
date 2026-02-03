@@ -80,7 +80,8 @@ const DashboardContent = () => {
     closeConversation,
     closeConversations,
     deleteConversation,
-    deleteConversations
+    deleteConversations,
+    toggleAI
   } = useConversations();
   const {
     setCollapsed
@@ -118,7 +119,6 @@ const DashboardContent = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
-  const [aiEnabledMap, setAiEnabledMap] = useState<Record<string, boolean>>({});
 
   // Convert DB conversations to UI format
   const conversations = useMemo(() => dbConversations.map(toUiConversation), [dbConversations]);
@@ -245,15 +245,13 @@ const DashboardContent = () => {
     }
   };
 
-  // AI toggle for conversations
-  const isAIEnabled = selectedConversationId ? (aiEnabledMap[selectedConversationId] ?? true) : true;
+  // AI toggle for conversations - use persisted value from database
+  const selectedDbConversation = dbConversations.find(c => c.id === selectedConversationId);
+  const isAIEnabled = selectedDbConversation?.ai_enabled ?? true;
   
-  const handleToggleAI = () => {
+  const handleToggleAI = async () => {
     if (!selectedConversationId) return;
-    setAiEnabledMap(prev => ({
-      ...prev,
-      [selectedConversationId]: !(prev[selectedConversationId] ?? true)
-    }));
+    await toggleAI(selectedConversationId, !isAIEnabled);
   };
   const getStatusTitle = () => {
     switch (statusFilter) {

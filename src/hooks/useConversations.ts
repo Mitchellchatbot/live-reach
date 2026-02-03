@@ -53,6 +53,7 @@ export interface DbConversation {
   assigned_agent_id: string | null;
   status: 'active' | 'closed' | 'pending';
   is_test: boolean;
+  ai_enabled: boolean;
   created_at: string;
   updated_at: string;
   visitor?: DbVisitor;
@@ -373,6 +374,25 @@ export const useConversations = () => {
     return true;
   };
 
+  const toggleAI = async (conversationId: string, enabled: boolean) => {
+    const { error } = await supabase
+      .from('conversations')
+      .update({ ai_enabled: enabled })
+      .eq('id', conversationId);
+
+    if (error) {
+      console.error('Error toggling AI:', error);
+      toast.error('Failed to update AI setting');
+      return false;
+    }
+
+    // Update local state immediately
+    setConversations(prev => 
+      prev.map(c => c.id === conversationId ? { ...c, ai_enabled: enabled } : c)
+    );
+    return true;
+  };
+
   useEffect(() => {
     if (!user) {
       setConversations([]);
@@ -467,6 +487,7 @@ export const useConversations = () => {
     deleteConversations,
     createProperty,
     deleteProperty,
+    toggleAI,
     refetch: fetchConversations,
   };
 };
