@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, Video, Phone, PhoneOff, Mic, MicOff, VideoOff, User, Mail, ImagePlus } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Phone, PhoneOff, Mic, MicOff, Video, VideoOff, User, Mail, ImagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useVideoChat } from '@/hooks/useVideoChat';
@@ -82,7 +82,8 @@ export const ChatWidget = ({
     return () => clearTimeout(timer);
   }, [isOpen, showVideoCall, messages.length]);
 
-  const handleStartVideoCall = async () => {
+  // Video call handler (currently disabled in UI but kept for future use)
+  const _handleStartVideoCall = async () => {
     setShowVideoCall(true);
     await videoChat.initiateCall();
   };
