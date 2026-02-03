@@ -26,10 +26,10 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Validate conversation belongs to visitor
+    // Validate conversation belongs to visitor and get ai_enabled status
     const { data: conv, error: convErr } = await supabase
       .from("conversations")
-      .select("id,visitor_id")
+      .select("id,visitor_id,ai_enabled")
       .eq("id", conversationId)
       .maybeSingle();
 
@@ -46,6 +46,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const aiEnabled = conv.ai_enabled ?? true;
 
     // Validate session matches visitor
     const { data: visitor, error: visitorErr } = await supabase
@@ -89,7 +91,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ messages: messages || [] }), {
+    return new Response(JSON.stringify({ messages: messages || [], aiEnabled }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
