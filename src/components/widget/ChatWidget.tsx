@@ -702,30 +702,21 @@ export const ChatWidget = ({
             setIsOpen(true);
           }}
           className={cn(
-            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto overflow-hidden",
+            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto",
             showAttentionBounce && "animate-attention-bounce"
           )}
           onAnimationEnd={() => setShowAttentionBounce(false)}
           style={{ 
-            background: displayAvatar ? 'transparent' : 'var(--widget-primary)', 
+            background: 'var(--widget-primary)', 
             borderRadius: buttonRadius,
             width: `${currentSize.button}px`,
             height: `${currentSize.button}px`,
             color: textColor,
           }}
         >
-          {displayAvatar ? (
-            <img 
-              src={displayAvatar} 
-              alt={displayName} 
-              className="h-full w-full object-cover"
-              style={{ borderRadius: buttonRadius }}
-            />
-          ) : (
-            <MessageCircle className={cn(
-              widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
-            )} />
-          )}
+          <MessageCircle className={cn(
+            widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
+          )} />
         </button>
       )}
     </div>
