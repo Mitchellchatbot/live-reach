@@ -14,27 +14,50 @@ const WidgetEmbed = () => {
   const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
   const autoOpen = searchParams.get('autoOpen') !== 'false'; // Default to true for embeds
 
-  // Make the entire page transparent for iframe embedding
+  // Force light mode and transparency for widget embed
   useEffect(() => {
-    // Force transparency with !important to override any CSS
-    document.body.style.setProperty('background', 'transparent', 'important');
-    document.documentElement.style.setProperty('background', 'transparent', 'important');
-    document.body.style.setProperty('background-color', 'transparent', 'important');
-    document.documentElement.style.setProperty('background-color', 'transparent', 'important');
-    // Also remove the dark class if present to prevent dark mode styles
-    document.documentElement.classList.remove('dark');
-    // Add a class to identify embed mode
-    document.body.classList.add('widget-embed-mode');
-    document.documentElement.classList.add('widget-embed-mode');
-    // Prevent scrollbars in small iframe sizes
-    document.body.style.setProperty('overflow', 'hidden', 'important');
-    
+    const html = document.documentElement;
+    const body = document.body;
+
+    // Add embed mode class immediately
+    html.classList.add('widget-embed-mode');
+    body.classList.add('widget-embed-mode');
+
+    // Remove dark class immediately
+    html.classList.remove('dark');
+
+    // Force transparency via inline styles
+    html.style.setProperty('background', 'transparent', 'important');
+    html.style.setProperty('background-color', 'transparent', 'important');
+    body.style.setProperty('background', 'transparent', 'important');
+    body.style.setProperty('background-color', 'transparent', 'important');
+    body.style.setProperty('overflow', 'hidden', 'important');
+
+    // Create a MutationObserver to prevent dark class from being added
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+          }
+        }
+      });
+    });
+
+    observer.observe(html, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
     return () => {
-      document.body.style.background = '';
-      document.documentElement.style.background = '';
-      document.body.classList.remove('widget-embed-mode');
-      document.documentElement.classList.remove('widget-embed-mode');
-      document.body.style.overflow = '';
+      observer.disconnect();
+      html.classList.remove('widget-embed-mode');
+      body.classList.remove('widget-embed-mode');
+      html.style.background = '';
+      html.style.backgroundColor = '';
+      body.style.background = '';
+      body.style.backgroundColor = '';
+      body.style.overflow = '';
     };
   }, []);
 
