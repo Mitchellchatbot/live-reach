@@ -23,6 +23,8 @@ interface OnboardingData {
   customPersonality: string;
   agentName: string;
   agentAvatarUrl: string | null;
+  agentAvatarFile: File | null; // Actual file for upload
+  agentAvatarPreview: string | null; // Blob URL for preview only
 }
 
 const greetingPresets = [
@@ -102,6 +104,8 @@ const Onboarding = () => {
     customPersonality: '',
     agentName: '',
     agentAvatarUrl: null,
+    agentAvatarFile: null,
+    agentAvatarPreview: null,
   });
 
   const isValidDomain = (input: string) => {
@@ -127,6 +131,33 @@ const Onboarding = () => {
     setIsCreating(true);
     const domain = extractDomain(data.websiteUrl);
     
+    // Upload avatar to Supabase Storage if a file was selected
+    let finalAvatarUrl: string | null = null;
+    if (data.agentAvatarFile && user) {
+      try {
+        const file = data.agentAvatarFile;
+        const fileExt = file.name.split('.').pop() || 'png';
+        const fileName = `ai-agent-${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('agent-avatars')
+          .upload(filePath, file, { upsert: true });
+
+        if (uploadError) {
+          console.error('Error uploading avatar:', uploadError);
+          // Continue without avatar if upload fails
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('agent-avatars')
+            .getPublicUrl(filePath);
+          finalAvatarUrl = urlData.publicUrl;
+        }
+      } catch (err) {
+        console.error('Error uploading avatar:', err);
+      }
+    }
+
     // Determine the base prompt to use
     let basePrompt: string | undefined;
     if (data.aiTone === 'custom' && data.customPersonality.trim()) {
@@ -149,7 +180,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       collectPhone: data.collectPhone,
       basePrompt,
       agentName: data.agentName,
-      agentAvatarUrl: data.agentAvatarUrl,
+      agentAvatarUrl: finalAvatarUrl,
     });
     
     setIsCreating(false);
@@ -423,11 +454,11 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center transition-all overflow-hidden",
-                    data.agentAvatarUrl ? "border-primary" : "border-muted-foreground/30 hover:border-muted-foreground/50"
+                    data.agentAvatarPreview ? "border-primary" : "border-muted-foreground/30 hover:border-muted-foreground/50"
                   )}
                 >
-                  {data.agentAvatarUrl ? (
-                    <img src={data.agentAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  {data.agentAvatarPreview ? (
+                    <img src={data.agentAvatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center">
                       <User className="h-6 w-6 mx-auto text-muted-foreground" />
@@ -443,8 +474,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const url = URL.createObjectURL(file);
-                      setData({ ...data, agentAvatarUrl: url });
+                      // Create preview URL for immediate display
+                      const previewUrl = URL.createObjectURL(file);
+                      // Store the file for later upload and the preview URL for display
+                      setData({ ...data, agentAvatarFile: file, agentAvatarPreview: previewUrl });
                     }
                   }}
                 />
