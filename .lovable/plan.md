@@ -1,42 +1,37 @@
 
+## Fix: Eliminate Black Rectangle Background from Widget Embed
 
-## Fix: Remove Black Background from Widget Embed
+The widget continues to display inside a persistent black rectangle. This happens because:
 
-The widget is now rendering in light mode (white content), but the iframe still shows a black rectangular background. This is because the `ThemeProvider` from `next-themes` wraps the entire app, including the widget embed route, and applies background styling before our override code runs.
+1. **CSS specificity issue**: The `bg-background` Tailwind class is applied to `body` via `@layer base`, which gets resolved to `hsl(var(--background))`. Even though we override `--background`, the dark mode value (`0 0% 4%`) is being used first.
 
----
+2. **Missing selectors**: The `#root` div inside the iframe also needs to be transparent, and is not being targeted.
 
-### Root Cause
-
-The `ThemeProvider` in `App.tsx` wraps all routes, including `/widget-embed/:propertyId`. When a user's system prefers dark mode, `next-themes`:
-1. Adds the `dark` class to `<html>` 
-2. Applies CSS variables that set `--background` to a dark color
-3. The body gets `bg-background` which translates to dark background color
-
-Our current fix in `WidgetEmbed.tsx` runs in a `useEffect`, which happens **after** the initial render. There's a brief moment where the dark theme styles are applied before we override them, causing a flash of black background.
+3. **Class mismatch**: The CSS rule `body.widget-embed-mode` won't work because the class is added to `html`, not `body`.
 
 ---
 
 ### Solution
 
-Create a **separate entry point** for the widget embed that bypasses `ThemeProvider` entirely. This ensures the widget never receives dark mode styling.
+**1. Update the iframe embed code** in `WidgetPreview.tsx` to explicitly set a transparent background on the iframe (which it already does, but needs double-checking).
 
----
+**2. Add CSS rules that target all elements** in embed mode, including `#root`:
 
-### Implementation Steps
+```css
+html.widget-embed-mode,
+html.widget-embed-mode body,
+html.widget-embed-mode #root,
+html.widget-embed-mode.dark,
+html.widget-embed-mode.dark body,
+html.widget-embed-mode.dark #root {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+```
 
-**1. Create a new Widget App component (`src/WidgetApp.tsx`)**
-- A minimal app that renders only the widget embed route
-- No ThemeProvider wrapper
-- Immediately applies light mode and transparency
+**3. Update `WidgetApp.tsx`** to apply transparency to the `#root` element as well before React renders.
 
-**2. Update `src/main.tsx` to detect widget embed route**
-- Check if the current path starts with `/widget-embed/`
-- If yes, render `WidgetApp` instead of the full `App`
-- This prevents ThemeProvider from ever loading for widget embeds
-
-**3. Update `src/index.css`**
-- Add additional CSS rules for `html:not(.dark)` when in widget-embed-mode to ensure no dark styles leak through
+**4. Add inline styles to `index.html`** via a script that runs before any CSS loads, to ensure the elements are transparent from the very start.
 
 ---
 
@@ -44,66 +39,79 @@ Create a **separate entry point** for the widget embed that bypasses `ThemeProvi
 
 | File | Changes |
 |------|---------|
-| `src/WidgetApp.tsx` | **New file** - Minimal app for widget embed without ThemeProvider |
-| `src/main.tsx` | Check path and conditionally render WidgetApp for widget embeds |
-| `src/pages/WidgetEmbed.tsx` | Simplify since it no longer needs to fight ThemeProvider |
+| `src/index.css` | Add `#root` to widget-embed-mode selectors |
+| `src/WidgetApp.tsx` | Also set transparency on `#root` element |
+| `index.html` | Add early inline script to set transparency for widget-embed routes |
 
 ---
 
-### Code Changes
+### Technical Implementation
 
-**`src/WidgetApp.tsx` (new file):**
-```tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import WidgetEmbed from "./pages/WidgetEmbed";
-
-// Minimal app specifically for widget embed - no ThemeProvider
-const WidgetApp = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/widget-embed/:propertyId" element={<WidgetEmbed />} />
-    </Routes>
-  </BrowserRouter>
-);
-
-export default WidgetApp;
+**`index.html`** - Add an inline script that runs immediately:
+```html
+<script>
+  // Early transparency for widget embed
+  if (window.location.pathname.startsWith('/widget-embed/')) {
+    document.documentElement.classList.add('widget-embed-mode');
+    document.documentElement.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+  }
+</script>
 ```
 
-**`src/main.tsx` changes:**
-```tsx
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import WidgetApp from './WidgetApp.tsx';
-import './index.css';
-
-// Detect if we're loading the widget embed route
-const isWidgetEmbed = window.location.pathname.startsWith('/widget-embed/');
-
-// Use minimal WidgetApp for embed (no ThemeProvider = no dark mode issues)
-createRoot(document.getElementById("root")!).render(
-  isWidgetEmbed ? <WidgetApp /> : <App />
-);
+**`src/index.css`** - Update the widget-embed-mode selectors to include `#root`:
+```css
+html.widget-embed-mode,
+html.widget-embed-mode body,
+html.widget-embed-mode #root,
+html.widget-embed-mode.dark,
+html.widget-embed-mode.dark body,
+html.widget-embed-mode.dark #root {
+  background: transparent !important;
+  background-color: transparent !important;
+}
 ```
 
-**`src/pages/WidgetEmbed.tsx` simplification:**
-- Remove the MutationObserver since ThemeProvider won't be adding dark class
-- Keep the transparency styling for safety
-- Add immediate class application (no useEffect delay needed for initial render)
+**`src/WidgetApp.tsx`** - Also set transparency on the root element:
+```typescript
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  rootElement.style.setProperty('background', 'transparent', 'important');
+}
+```
 
 ---
 
-### Why This Works
+### Flow Diagram
 
 ```text
-BEFORE:
-  main.tsx → App.tsx → ThemeProvider (applies dark) → WidgetEmbed → useEffect (too late!)
-                             ↓
-                        Black background flashes
+BEFORE (current problem):
+  [Browser loads iframe]
+       ↓
+  [index.html loads]
+       ↓
+  [CSS loads with bg-background = dark]  ← BLACK BACKGROUND APPEARS
+       ↓
+  [main.tsx detects widget route]
+       ↓
+  [WidgetApp.tsx adds classes]
+       ↓
+  [CSS overrides attempted]  ← TOO LATE, black already visible
 
-AFTER:
-  main.tsx → detects /widget-embed/ → WidgetApp (no ThemeProvider) → WidgetEmbed
-                                           ↓
-                                     No dark theme ever applied
-                                     Transparent from the start
+AFTER (with fix):
+  [Browser loads iframe]
+       ↓
+  [index.html inline script runs FIRST]  ← SETS TRANSPARENT IMMEDIATELY
+       ↓
+  [CSS loads but transparency enforced]
+       ↓
+  [WidgetApp.tsx reinforces transparency]
+       ↓
+  [Widget renders in transparent container]
 ```
 
+---
+
+### Summary
+
+The fix adds transparency enforcement at the earliest possible moment (inline script in HTML) and ensures all container elements (`html`, `body`, and `#root`) are explicitly targeted in the CSS rules.
