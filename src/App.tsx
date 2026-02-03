@@ -32,9 +32,14 @@ const queryClient = new QueryClient();
 
 // Route guard for clients only
 const RequireClient = ({ children }: { children: React.ReactNode }) => {
-  const { isClient, isAdmin, loading } = useAuth();
+  const { user, isClient, isAdmin, loading } = useAuth();
   
   if (loading) return null;
+  
+  // Redirect to auth if not logged in
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
   
   if (!isClient && !isAdmin) {
     return <Navigate to="/conversations" replace />;
@@ -45,9 +50,14 @@ const RequireClient = ({ children }: { children: React.ReactNode }) => {
 
 // Route guard for agents only
 const RequireAgent = ({ children }: { children: React.ReactNode }) => {
-  const { isAgent, loading } = useAuth();
+  const { user, isAgent, loading } = useAuth();
   
   if (loading) return null;
+  
+  // Redirect to auth if not logged in
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
   
   if (!isAgent) {
     return <Navigate to="/dashboard" replace />;

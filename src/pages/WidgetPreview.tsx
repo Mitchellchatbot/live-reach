@@ -254,7 +254,7 @@ const WidgetPreview = () => {
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
 <iframe 
   id="scaledbot-widget"
-  src="https://visitor-talk-now.lovable.app/widget-embed/${selectedPropertyId}?primaryColor=${encodeURIComponent(primaryColor)}&textColor=${encodeURIComponent(textColor)}&borderColor=${encodeURIComponent(borderColor)}&widgetSize=${widgetSize}&borderRadius=${borderRadius}&greeting=${encodeURIComponent(greeting)}&autoOpen=true"
+  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?primaryColor=${encodeURIComponent(primaryColor)}&textColor=${encodeURIComponent(textColor)}&borderColor=${encodeURIComponent(borderColor)}&widgetSize=${widgetSize}&borderRadius=${borderRadius}&greeting=${encodeURIComponent(greeting)}&autoOpen=true"
   style="position: fixed; bottom: 0; right: 0; width: 88px; height: 88px; border: none; z-index: 9999; background: transparent; overflow: hidden;"
   allow="camera; microphone"
   allowtransparency="true"

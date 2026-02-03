@@ -107,9 +107,9 @@ const Index = () => {
               assign agents, and start chatting with visitors instantly.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={getDashboardRoute()}>
+              <Link to={user ? getDashboardRoute() : '/auth'}>
                 <Button size="lg" className="chat-gradient text-primary-foreground hover:opacity-90 gap-2">
-                  Open Dashboard
+                  {user ? 'Open Dashboard' : 'Sign In to Dashboard'}
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
