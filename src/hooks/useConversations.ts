@@ -134,7 +134,12 @@ export const useConversations = () => {
       })
     );
 
-    setConversations(conversationsWithMessages as DbConversation[]);
+    // Filter out conversations that have no messages (visitors who never sent anything)
+    const conversationsWithAtLeastOneMessage = conversationsWithMessages.filter(
+      (conv) => conv.messages && conv.messages.length > 0
+    );
+
+    setConversations(conversationsWithAtLeastOneMessage as DbConversation[]);
     setConversationsLoaded(true);
   }, [user]);
 
