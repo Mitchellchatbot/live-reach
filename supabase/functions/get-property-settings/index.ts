@@ -27,6 +27,7 @@ type PropertySettings = {
   proactive_message_delay_seconds: number | null;
   greeting: string | null;
   ai_base_prompt: string | null;
+  widget_icon: string | null;
 };
 
 serve(async (req) => {
@@ -71,6 +72,7 @@ serve(async (req) => {
           "proactive_message_delay_seconds",
           "greeting",
           "ai_base_prompt",
+          "widget_icon",
         ].join(",")
       )
       .eq("id", propertyId)

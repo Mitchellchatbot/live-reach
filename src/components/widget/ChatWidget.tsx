@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, Phone, PhoneOff, Mic, MicOff, Video, VideoOff, User, Mail, ImagePlus } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Phone, PhoneOff, Mic, MicOff, Video, VideoOff, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useVideoChat } from '@/hooks/useVideoChat';
@@ -57,6 +57,21 @@ export const ChatWidget = ({
     currentAiAgent,
     aiAgents,
   } = useWidgetChat({ propertyId, greeting, isPreview });
+
+  // Widget icon mapping
+  const widgetIconMap: Record<string, LucideIcon> = {
+    'message-circle': MessageCircle,
+    'message-square': MessageSquare,
+    'messages-square': MessagesSquare,
+    'headphones': Headphones,
+    'help-circle': HelpCircle,
+    'heart': Heart,
+    'sparkles': Sparkles,
+    'bot': Bot,
+  };
+
+  // Get the icon component from settings
+  const WidgetIconComponent = widgetIconMap[settings?.widget_icon || 'message-circle'] || MessageCircle;
 
   // Use AI agent info if available, otherwise use props
   const displayName = currentAiAgent?.name || agentName;
@@ -714,7 +729,7 @@ export const ChatWidget = ({
             color: textColor,
           }}
         >
-          <MessageCircle className={cn(
+          <WidgetIconComponent className={cn(
             widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
           )} />
         </button>

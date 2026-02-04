@@ -44,6 +44,7 @@ interface PropertySettings {
   proactive_message_delay_seconds: number;
   greeting: string | null;
   ai_base_prompt: string | null;
+  widget_icon: string | null;
 }
 
 interface WidgetChatConfig {
@@ -72,6 +73,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   proactive_message_delay_seconds: 30,
   greeting: null,
   ai_base_prompt: null,
+  widget_icon: 'message-circle',
 };
 
 const getOrCreateSessionId = (): string => {
