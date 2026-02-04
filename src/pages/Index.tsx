@@ -391,22 +391,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Bar - Light themed */}
-      <section className="relative py-12 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-y border-primary/10">
-        <div className="container mx-auto px-4">
+      {/* Stats Bar - Dark themed */}
+      <section className="relative py-14 bg-foreground overflow-hidden">
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--background)/0.05)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--background)/0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
+        
+        <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: '47%', label: 'More leads captured', icon: '📈' },
-              { value: '<5s', label: 'Response time', icon: '⚡' },
-              { value: '24/7', label: 'Always available', icon: '🌙' },
-              { value: '100+', label: 'Treatment centers', icon: '🏥' },
+              { value: '47%', label: 'More leads captured' },
+              { value: '<5s', label: 'Response time' },
+              { value: '24/7', label: 'Always available' },
+              { value: '100+', label: 'Treatment centers' },
             ].map((stat, index) => (
               <div key={index} className="group cursor-default">
-                <div className="text-4xl md:text-5xl font-extrabold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary group-hover:scale-105 transition-transform duration-300 inline-block">
                   {stat.value}
                 </div>
-                <div className="text-sm text-muted-foreground mt-2 font-semibold flex items-center justify-center gap-1.5">
-                  <span>{stat.icon}</span> {stat.label}
+                <div className="text-sm text-background/70 mt-2 font-medium">
+                  {stat.label}
                 </div>
               </div>
             ))}
@@ -415,16 +418,16 @@ const Index = () => {
       </section>
 
       {/* Key Benefits Bar */}
-      <section className="relative py-12 border-y border-border/50 bg-muted/30">
+      <section className="relative py-14 border-b border-border/50 bg-background">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {keyBenefits.map((benefit, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div key={index} className="flex items-center gap-4 group cursor-default">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                   <benefit.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{benefit.title}</p>
+                  <p className="text-sm font-bold text-foreground">{benefit.title}</p>
                   <p className="text-xs text-muted-foreground">{benefit.desc}</p>
                 </div>
               </div>
@@ -434,29 +437,32 @@ const Index = () => {
       </section>
 
       {/* Social Proof Section */}
-      <section className="relative py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-10">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Trusted by Leading Treatment Centers</p>
+      <section className="relative py-20 bg-muted/30">
+        {/* Grid background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.4)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.4)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-12">
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Trusted by Leading Treatment Centers</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="bg-card/80 backdrop-blur-sm p-6 rounded-2xl border border-border/50 hover:shadow-lg transition-all duration-300"
+                className="bg-card p-8 rounded-2xl border border-border/50 hover:shadow-xl hover:border-primary/20 transition-all duration-300 group"
               >
-                <div className="flex gap-0.5 mb-3">
+                <div className="flex gap-1 mb-5">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-primary fill-primary" />
+                    <Star key={i} className="h-5 w-5 text-primary fill-primary" />
                   ))}
                 </div>
-                <p className="text-foreground/90 mb-4 leading-relaxed">"{testimonial.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <p className="text-foreground text-base leading-relaxed mb-6 font-medium">"{testimonial.quote}"</p>
+                <div className="flex items-center gap-3 pt-4 border-t border-border/50">
+                  <div className="h-11 w-11 rounded-full bg-primary/15 flex items-center justify-center ring-2 ring-primary/20">
                     <span className="text-sm font-bold text-primary">{testimonial.author.split(' ').map(n => n[0]).join('')}</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{testimonial.author}</p>
+                    <p className="text-sm font-bold text-foreground">{testimonial.author}</p>
                     <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
                   </div>
                 </div>
