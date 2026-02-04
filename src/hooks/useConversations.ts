@@ -306,6 +306,7 @@ export const useConversations = () => {
       // AI Agent info from onboarding
       agentName?: string;
       agentAvatarUrl?: string;
+      widgetIcon?: string;
     }
   ) => {
     if (!user) return null;
@@ -321,6 +322,7 @@ export const useConversations = () => {
         require_name_before_chat: options?.collectName,
         require_phone_before_chat: options?.collectPhone,
         ai_base_prompt: options?.basePrompt,
+        widget_icon: options?.widgetIcon || 'message-circle',
       })
       .select()
       .single();

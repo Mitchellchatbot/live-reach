@@ -382,6 +382,7 @@ export type Database = {
           updated_at: string
           user_id: string
           widget_color: string | null
+          widget_icon: string | null
         }
         Insert: {
           ai_base_prompt?: string | null
@@ -411,6 +412,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           widget_color?: string | null
+          widget_icon?: string | null
         }
         Update: {
           ai_base_prompt?: string | null
@@ -440,6 +442,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           widget_color?: string | null
+          widget_icon?: string | null
         }
         Relationships: []
       }

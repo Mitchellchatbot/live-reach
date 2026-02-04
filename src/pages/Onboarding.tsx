@@ -230,6 +230,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       basePrompt,
       agentName: data.agentName,
       agentAvatarUrl: finalAvatarUrl,
+      widgetIcon: data.widgetIcon,
     });
     
     setIsCreating(false);
