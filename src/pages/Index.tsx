@@ -132,32 +132,42 @@ const Index = () => {
               <img src={scaledBotLogo} alt="Care Assist" className="h-10 w-10 rounded-xl shadow-sm" />
               <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Link to="/documentation">
-                <Button variant="ghost" className="font-medium">Docs</Button>
-              </Link>
+            
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-1">
+              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">
+                Integrations
+              </Button>
+              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">
+                Resources
+              </Button>
+              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">
+                Pricing
+              </Button>
+              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">
+                Contact
+              </Button>
+            </div>
+
+            {/* Auth Actions */}
+            <div className="flex items-center gap-2">
               {user ? (
                 <>
                   <Link to={getDashboardRoute()}>
                     <Button variant="ghost" className="font-medium">Dashboard</Button>
                   </Link>
-                  {isAdmin && (
-                    <Link to="/admin">
-                      <Button variant="ghost" className="font-medium">Admin</Button>
-                    </Link>
-                  )}
                   <Button variant="outline" onClick={signOut} className="font-medium">
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link to="/widget-preview">
-                    <Button variant="ghost" className="font-medium">Widget Demo</Button>
+                  <Link to="/auth">
+                    <Button variant="ghost" className="font-medium">Login</Button>
                   </Link>
                   <Link to="/auth">
                     <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium px-6">
-                      Sign In
+                      Start Free
                     </Button>
                   </Link>
                 </>
