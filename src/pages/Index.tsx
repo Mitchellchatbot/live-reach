@@ -179,15 +179,15 @@ const Index = () => {
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
       
       {/* Navigation */}
-      <nav className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
+      <nav className="relative border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-40">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img src={scaledBotLogo} alt="Care Assist" className="h-10 w-10 rounded-xl shadow-sm" />
+              <img src={scaledBotLogo} alt="Care Assist" className="h-10 w-10 rounded-full shadow-sm" />
               <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             
-            {/* Navigation Links */}
+            {/* Center Navigation Links */}
             <div className="hidden md:flex items-center gap-1">
               <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">
                 Integrations
@@ -203,24 +203,24 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Auth Actions */}
-            <div className="flex items-center gap-2">
+            {/* Right Auth Actions */}
+            <div className="flex items-center gap-3">
               {user ? (
                 <>
                   <Link to={getDashboardRoute()}>
-                    <Button variant="ghost" className="font-medium">Dashboard</Button>
+                    <Button variant="ghost" className="font-medium text-foreground">Dashboard</Button>
                   </Link>
-                  <Button variant="outline" onClick={signOut} className="font-medium">
+                  <Button variant="outline" onClick={signOut} className="font-medium rounded-full px-5">
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <>
                   <Link to="/auth">
-                    <Button variant="ghost" className="font-medium">Login</Button>
+                    <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground">Login</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium px-6">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-semibold px-6 rounded-full">
                       Start Free
                     </Button>
                   </Link>
