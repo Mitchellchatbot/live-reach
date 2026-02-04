@@ -160,9 +160,15 @@ const CustomTooltip = ({
         
         {isAISettings ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Customize your AI assistant's personality, response style, and behavior. Make it sound just like your brand.
-            </p>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Sparkles className="h-4 w-4 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">AI Personality</p>
+                <p className="text-xs text-muted-foreground">Customize your AI's tone, style, and conversation approach to match your brand voice.</p>
+              </div>
+            </div>
             <Button 
               onClick={onSetupAI}
               className="w-full"
@@ -174,9 +180,15 @@ const CustomTooltip = ({
           </div>
         ) : isTeamMembers ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Invite team members to help manage conversations. They'll get their own login to respond to visitors.
-            </p>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <div className="p-2 rounded-full bg-blue-500/10">
+                <Users className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Collaborate Together</p>
+                <p className="text-xs text-muted-foreground">Invite team members with their own login credentials. Assign conversations and share the workload.</p>
+              </div>
+            </div>
             <Button 
               onClick={onSetupTeam}
               className="w-full"
@@ -188,9 +200,15 @@ const CustomTooltip = ({
           </div>
         ) : isSalesforce ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Connect Salesforce to automatically sync visitor leads with your CRM and track conversions.
-            </p>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+              <div className="p-2 rounded-full bg-cyan-500/10">
+                <Cloud className="h-4 w-4 text-cyan-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">CRM Sync</p>
+                <p className="text-xs text-muted-foreground">Auto-export visitor leads to Salesforce. Track conversions and keep your sales team in the loop.</p>
+              </div>
+            </div>
             <Button 
               onClick={onSetupSalesforce}
               className="w-full"
@@ -202,9 +220,15 @@ const CustomTooltip = ({
           </div>
         ) : isNotifications ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Set up email and Slack notifications so you never miss an important conversation or lead.
-            </p>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+              <div className="p-2 rounded-full bg-amber-500/10">
+                <Bell className="h-4 w-4 text-amber-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Stay Informed</p>
+                <p className="text-xs text-muted-foreground">Get instant alerts via email or Slack when new conversations start or when AI escalates to a human.</p>
+              </div>
+            </div>
             <Button 
               onClick={onSetupNotifications}
               className="w-full"
@@ -216,9 +240,15 @@ const CustomTooltip = ({
           </div>
         ) : isWidgetCode ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Copy the embed code to add the chat widget to your website. It only takes a minute!
-            </p>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+              <div className="p-2 rounded-full bg-green-500/10">
+                <Code className="h-4 w-4 text-green-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Go Live</p>
+                <p className="text-xs text-muted-foreground">Copy a single line of code to your website. Your chat widget will be live and ready to engage visitors.</p>
+              </div>
+            </div>
             <Button 
               onClick={onSetupWidget}
               className="w-full"
