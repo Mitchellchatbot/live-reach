@@ -61,14 +61,14 @@
     --offline: 220 9% 70%;
     --away: 45 93% 47%;
 
-    /* Sidebar - dark with orange accents */
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
+    /* Sidebar - clean light theme with orange accents */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 15%;
     --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 24 80% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
+    --sidebar-accent: 24 100% 96%;
+    --sidebar-accent-foreground: 24 95% 40%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 24 95% 53%;
 
     /* Enhanced shadows & effects */
