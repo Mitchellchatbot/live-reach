@@ -157,7 +157,7 @@ export const DashboardSidebar = () => {
           )}
         >
           {!collapsed && (
-            <span className="font-bold text-lg text-sidebar-foreground">Scaled Bot</span>
+            <span className="font-bold text-lg text-sidebar-foreground">Care Assist</span>
           )}
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
