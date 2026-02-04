@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,7 +44,20 @@ interface OnboardingData {
   agentAvatarUrl: string | null;
   agentAvatarFile: File | null; // Actual file for upload
   agentAvatarPreview: string | null; // Blob URL for preview only
+  widgetIcon: string;
 }
+
+// Widget icon options
+const widgetIconOptions = [
+  { id: 'message-circle', label: 'Bubble', icon: MessageCircle },
+  { id: 'message-square', label: 'Square', icon: MessageSquare },
+  { id: 'messages-square', label: 'Chat', icon: MessagesSquare },
+  { id: 'headphones', label: 'Support', icon: Headphones },
+  { id: 'help-circle', label: 'Help', icon: HelpCircle },
+  { id: 'heart', label: 'Heart', icon: Heart },
+  { id: 'sparkles', label: 'Sparkles', icon: Sparkles },
+  { id: 'bot', label: 'Bot', icon: Bot },
+];
 
 const greetingPresets = [
   { label: 'Hopeful', value: "You've taken a brave first step. We're here to help. How can we support you today?" },
@@ -141,6 +154,7 @@ const Onboarding = () => {
     agentAvatarUrl: null,
     agentAvatarFile: null,
     agentAvatarPreview: null,
+    widgetIcon: 'message-circle',
   });
 
   const isValidDomain = (input: string) => {
@@ -582,6 +596,44 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     />
                   </div>
                 )}
+              </div>
+
+              {/* Widget Icon Selection */}
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground text-center">Choose your chat widget icon</p>
+                <div className="grid grid-cols-4 gap-3">
+                  {widgetIconOptions.map((option) => {
+                    const IconComponent = option.icon;
+                    const isSelected = data.widgetIcon === option.id;
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => setData({ ...data, widgetIcon: option.id })}
+                        className={cn(
+                          "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-2",
+                          isSelected
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-muted-foreground/30"
+                        )}
+                      >
+                        <div 
+                          className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          )}
+                        >
+                          <IconComponent className="h-5 w-5" />
+                        </div>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isSelected ? "text-primary" : "text-muted-foreground"
+                        )}>
+                          {option.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="space-y-3">
