@@ -146,6 +146,105 @@ Some things to avoid:
 Be uplifting. Be warm. Bring quiet confidence. Sometimes that means being brief. Other times you might share a bit more. Just... be human about it.`,
 };
 
+// Analysis progress steps
+const analysisSteps = [
+  { label: 'Connecting to website...', duration: 1500 },
+  { label: 'Scanning page content...', duration: 2000 },
+  { label: 'Extracting business info...', duration: 2500 },
+  { label: 'Generating personalized settings...', duration: 2000 },
+  { label: 'Finalizing configuration...', duration: 1500 },
+];
+
+// ExtractingStep component with progress
+const ExtractingStep = ({ websiteUrl }: { websiteUrl: string }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Animate progress bar
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return prev;
+        return prev + 1;
+      });
+    }, 100);
+
+    // Cycle through analysis steps
+    let stepIndex = 0;
+    const stepInterval = setInterval(() => {
+      stepIndex = (stepIndex + 1) % analysisSteps.length;
+      setCurrentStep(stepIndex);
+    }, 2000);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(stepInterval);
+    };
+  }, []);
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-300">
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+        </div>
+        <h1 className="text-2xl font-semibold text-foreground">Analyzing your website...</h1>
+        <p className="text-muted-foreground">
+          We're extracting information about your business to personalize your chat experience.
+        </p>
+      </div>
+      
+      <div className="bg-muted/50 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <Globe className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <span className="text-sm text-foreground font-medium truncate">{websiteUrl}</span>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary rounded-full transition-all duration-300 ease-out" 
+            style={{ width: `${progress}%` }} 
+          />
+        </div>
+
+        {/* Current step indicator */}
+        <div className="space-y-3 pt-2">
+          {analysisSteps.map((step, index) => (
+            <div 
+              key={step.label}
+              className={cn(
+                "flex items-center gap-3 transition-all duration-300",
+                index === currentStep ? "opacity-100" : index < currentStep ? "opacity-50" : "opacity-30"
+              )}
+            >
+              {index < currentStep ? (
+                <div className="w-5 h-5 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-3 w-3 text-status-online" />
+                </div>
+              ) : index === currentStep ? (
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                </div>
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                </div>
+              )}
+              <span className={cn(
+                "text-sm transition-colors duration-300",
+                index === currentStep ? "text-foreground font-medium" : "text-muted-foreground"
+              )}>
+                {step.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -441,27 +540,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
 
           {/* Extracting step - loading state */}
           {step === 'extracting' && (
-            <div className="space-y-8 animate-in fade-in duration-300">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                </div>
-                <h1 className="text-2xl font-semibold text-foreground">Analyzing your website...</h1>
-                <p className="text-muted-foreground">
-                  We're extracting information about your business to personalize your chat experience.
-                </p>
-              </div>
-              
-              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Globe className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{data.websiteUrl}</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
-                </div>
-              </div>
-            </div>
+            <ExtractingStep websiteUrl={data.websiteUrl} />
           )}
 
           {/* Confirm step - show extracted info */}
