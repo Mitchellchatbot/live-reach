@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Settings } from 'lucide-react';
+import { ArrowRight, Settings, Users } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
@@ -45,9 +45,10 @@ const tourSteps: Step[] = [
   },
   {
     target: '[data-tour="team-members"]',
-    content: "Invite team members to help manage conversations. They'll get their own login to respond to visitors.",
+    content: "team-members-special", // Special marker for custom content
     title: "Build Your Team",
     placement: 'right',
+    data: { isTeamMembers: true },
   },
   {
     target: '[data-tour="widget-code"]',
@@ -69,8 +70,10 @@ const CustomTooltip = ({
   isLastStep,
   size,
   onSetupAI,
-}: TooltipRenderProps & { onSetupAI: () => void }) => {
+  onSetupTeam,
+}: TooltipRenderProps & { onSetupAI: () => void; onSetupTeam: () => void }) => {
   const isAISettings = step.data?.isAISettings;
+  const isTeamMembers = step.data?.isTeamMembers;
 
   return (
     <div
@@ -93,6 +96,20 @@ const CustomTooltip = ({
           >
             <Settings className="mr-2 h-4 w-4" />
             Set Up AI Now
+          </Button>
+        </div>
+      ) : isTeamMembers ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Invite team members to help manage conversations. They'll get their own login to respond to visitors.
+          </p>
+          <Button 
+            onClick={onSetupTeam}
+            className="w-full"
+            size="sm"
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Add Team Members Now
           </Button>
         </div>
       ) : (
@@ -163,6 +180,22 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     navigate('/ai-support');
   };
 
+  const handleSetupTeam = async () => {
+    // End the tour and navigate to Team Members
+    setRun(false);
+    searchParams.delete('tour');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+
+    navigate('/team-members');
+  };
+
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, action, type, index } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -204,7 +237,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       disableOverlayClose
       spotlightClicks
       callback={handleJoyrideCallback}
-      tooltipComponent={(props) => <CustomTooltip {...props} onSetupAI={handleSetupAI} />}
+      tooltipComponent={(props) => <CustomTooltip {...props} onSetupAI={handleSetupAI} onSetupTeam={handleSetupTeam} />}
       styles={{
         options: {
           primaryColor: 'hsl(var(--primary))',
