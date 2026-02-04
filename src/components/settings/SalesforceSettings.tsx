@@ -251,6 +251,23 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       authUrl.searchParams.set('code_challenge', codeChallenge);
       authUrl.searchParams.set('code_challenge_method', 'S256');
 
+      // Listen for OAuth result message from popup
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'salesforce-oauth-success') {
+          toast.success('Successfully connected to Salesforce!');
+          setConnecting(false);
+          fetchSettings();
+          window.removeEventListener('message', handleMessage);
+          sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
+        } else if (event.data?.type === 'salesforce-oauth-error') {
+          toast.error(`Salesforce connection failed: ${event.data.error || 'Unknown error'}`);
+          setConnecting(false);
+          window.removeEventListener('message', handleMessage);
+          sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
+        }
+      };
+      window.addEventListener('message', handleMessage);
+
       // Open OAuth popup
       const width = 600;
       const height = 700;
@@ -263,14 +280,17 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         `width=${width},height=${height},left=${left},top=${top},popup=1`
       );
 
-      // Listen for popup close and refetch settings
+      // Fallback: check if popup closed without message
       const checkPopup = setInterval(() => {
         if (!popup || popup.closed) {
           clearInterval(checkPopup);
-          setConnecting(false);
-          fetchSettings();
-          // Clean up stored verifier
-          sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
+          // Give a bit of time for message to arrive
+          setTimeout(() => {
+            window.removeEventListener('message', handleMessage);
+            setConnecting(false);
+            fetchSettings();
+            sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
+          }, 500);
         }
       }, 500);
     } catch (error) {
@@ -278,6 +298,29 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       toast.error('Failed to start OAuth flow');
       setConnecting(false);
     }
+  };
+
+  const handleDisconnect = async () => {
+    if (!config?.id) return;
+    
+    const { error } = await supabase
+      .from('salesforce_settings')
+      .update({
+        access_token: null,
+        refresh_token: null,
+        instance_url: null,
+        token_expires_at: null,
+        enabled: false,
+      })
+      .eq('id', config.id);
+
+    if (error) {
+      toast.error('Failed to disconnect Salesforce');
+      return;
+    }
+
+    toast.success('Salesforce disconnected');
+    fetchSettings();
   };
 
   const addMapping = () => {
@@ -395,7 +438,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
                 <p className="font-medium">Connected to Salesforce</p>
                 <p className="text-sm text-muted-foreground">{config.instance_url}</p>
               </div>
-              <Button variant="outline" size="sm" className="text-destructive">
+              <Button variant="outline" size="sm" className="text-destructive" onClick={handleDisconnect}>
                 <Unlink className="mr-2 h-4 w-4" />
                 Disconnect
               </Button>
