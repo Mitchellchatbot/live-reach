@@ -73,6 +73,16 @@ const AppRoutes = () => {
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/conversations" element={<RequireAgent><AgentDashboard /></RequireAgent>} />
       <Route path="/onboarding" element={<Onboarding />} />
+
+      {/* Legacy redirects */}
+      <Route
+        path="/team-members"
+        element={
+          <RequireClient>
+            <Navigate to="/dashboard/team" replace />
+          </RequireClient>
+        }
+      />
       
       {/* Client routes */}
       <Route path="/dashboard" element={<RequireClient><Dashboard /></RequireClient>} />
