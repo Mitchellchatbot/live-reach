@@ -111,24 +111,54 @@ const FloatingTestimonial = ({ testimonial, className, style }: { testimonial: t
   </div>
 );
 
-// Animated chat message component
+// Typing indicator component
+const TypingIndicator = ({ visible }: { visible: boolean }) => {
+  if (!visible) return null;
+  return (
+    <div className="flex justify-start animate-fade-in">
+      <div className="bg-card rounded-2xl rounded-tl-sm shadow-sm border border-border/50 px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-primary/60 typing-dot" />
+          <span className="h-2 w-2 rounded-full bg-primary/60 typing-dot" />
+          <span className="h-2 w-2 rounded-full bg-primary/60 typing-dot" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Animated chat message component with typing
 const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.ReactNode; delay: number; isBot: boolean }) => {
+  const [showTyping, setShowTyping] = useState(false);
   const [visible, setVisible] = useState(false);
   
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), delay * 1000);
-    return () => clearTimeout(timer);
-  }, [delay]);
+    if (isBot) {
+      const typingTimer = setTimeout(() => setShowTyping(true), (delay - 0.8) * 1000);
+      const messageTimer = setTimeout(() => {
+        setShowTyping(false);
+        setVisible(true);
+      }, delay * 1000);
+      return () => {
+        clearTimeout(typingTimer);
+        clearTimeout(messageTimer);
+      };
+    } else {
+      const timer = setTimeout(() => setVisible(true), delay * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [delay, isBot]);
   
+  if (isBot && showTyping) return <TypingIndicator visible />;
   if (!visible) return null;
   
   return (
-    <div className={`flex ${isBot ? 'justify-start' : 'justify-end'} animate-fade-in`}>
+    <div className={`flex ${isBot ? 'justify-start' : 'justify-end'} animate-scale-in`}>
       <div className={`${isBot 
-        ? 'bg-card rounded-2xl rounded-tl-sm shadow-sm border border-border/50' 
-        : 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
-      } px-4 py-3 max-w-[85%]`}>
-        <p className={`text-sm ${isBot ? 'text-foreground' : ''}`}>{children}</p>
+        ? 'bg-card rounded-2xl rounded-tl-sm shadow-md border border-border/50' 
+        : 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-tr-sm shadow-lg shadow-primary/20'
+      } px-4 py-3 max-w-[85%] transform transition-all duration-300 hover:scale-[1.02]`}>
+        <p className={`text-sm font-medium ${isBot ? 'text-foreground' : ''}`}>{children}</p>
       </div>
     </div>
   );
@@ -210,156 +240,176 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left - Animated Chat Mockup */}
             <div className="relative order-2 lg:order-1">
-              {/* Floating stat badges */}
-              <div className="absolute -top-4 -right-4 bg-card rounded-2xl px-4 py-3 shadow-xl border border-border/50 animate-fade-in z-10">
+              {/* Floating stat badges with bounce animation */}
+              <div className="absolute -top-4 -right-4 bg-gradient-to-br from-card to-card/95 rounded-2xl px-4 py-3 shadow-xl border border-status-online/30 animate-fade-in z-10 hover:scale-105 transition-transform">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-status-online animate-pulse" />
-                  <span className="text-sm font-semibold text-foreground">Lead Captured!</span>
+                  <div className="h-3 w-3 rounded-full bg-status-online animate-pulse shadow-md shadow-status-online/50" />
+                  <span className="text-sm font-bold text-status-online">Lead Captured!</span>
                 </div>
               </div>
               
-              <div className="absolute -bottom-4 -left-4 bg-card rounded-2xl px-4 py-3 shadow-xl border border-border/50 animate-fade-in z-10" style={{ animationDelay: '2s' }}>
+              <div className="absolute -bottom-4 -left-4 bg-gradient-to-br from-card to-card/95 rounded-2xl px-4 py-3 shadow-xl border border-primary/30 animate-fade-in z-10 hover:scale-105 transition-transform" style={{ animationDelay: '2s' }}>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold text-foreground">Avg. 4 sec response</span>
+                  <Clock className="h-4 w-4 text-primary animate-pulse" />
+                  <span className="text-sm font-bold text-foreground">Avg. <span className="text-primary">4 sec</span> response</span>
+                </div>
+              </div>
+              
+              {/* New floating badge */}
+              <div className="absolute top-1/2 -right-8 lg:-right-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl px-3 py-2 shadow-lg border border-primary/20 animate-fade-in z-10 hidden lg:block" style={{ animationDelay: '3s' }}>
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+                  <span className="text-xs font-bold text-primary">AI Powered</span>
                 </div>
               </div>
 
-              <div className="relative bg-card rounded-3xl shadow-2xl border border-border overflow-hidden max-w-md mx-auto lg:mx-0 transform hover:scale-[1.02] transition-transform duration-500">
+              <div className="relative bg-card rounded-3xl shadow-2xl border border-border overflow-hidden max-w-md mx-auto lg:mx-0 transform hover:scale-[1.02] hover:shadow-3xl transition-all duration-500 group">
+                {/* Glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                
                 {/* Chat Header */}
-                <div className="bg-gradient-to-r from-primary to-primary/90 px-5 py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-full bg-primary-foreground/20 flex items-center justify-center ring-2 ring-primary-foreground/30">
+                <div className="bg-gradient-to-r from-primary via-primary to-primary/90 px-5 py-4 flex items-center justify-between relative overflow-hidden">
+                  {/* Animated gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  
+                  <div className="flex items-center gap-3 relative">
+                    <div className="h-12 w-12 rounded-full bg-primary-foreground/20 flex items-center justify-center ring-2 ring-primary-foreground/30 shadow-lg">
                       <Bot className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div>
-                      <p className="text-primary-foreground font-bold text-sm">Care Assist</p>
+                      <p className="text-primary-foreground font-bold text-base">Care Assist</p>
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                        <p className="text-primary-foreground/80 text-xs">Online • Responds instantly</p>
+                        <span className="h-2.5 w-2.5 rounded-full bg-status-online animate-pulse shadow-md shadow-status-online/50" />
+                        <p className="text-primary-foreground/90 text-xs font-medium">Online • Responds instantly</p>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 {/* Chat Messages - Animated */}
-                <div className="p-5 space-y-4 bg-gradient-to-b from-muted/20 to-muted/40 min-h-[360px]">
-                  <AnimatedChatMessage delay={0} isBot>
+                <div className="p-5 space-y-4 bg-gradient-to-b from-muted/10 via-muted/20 to-muted/30 min-h-[360px]">
+                  <AnimatedChatMessage delay={0.5} isBot>
                     Hi! I'm here to help. Are you looking for treatment options for yourself or a loved one?
                   </AnimatedChatMessage>
                   
-                  <AnimatedChatMessage delay={1.5} isBot={false}>
+                  <AnimatedChatMessage delay={2.5} isBot={false}>
                     For my brother. He's struggling with addiction.
                   </AnimatedChatMessage>
                   
-                  <AnimatedChatMessage delay={3} isBot>
+                  <AnimatedChatMessage delay={4.5} isBot>
                     I'm so glad you reached out. That takes courage. We have programs that can help. What's the best number to reach you?
                   </AnimatedChatMessage>
                   
-                  <AnimatedChatMessage delay={4.5} isBot={false}>
+                  <AnimatedChatMessage delay={6.5} isBot={false}>
                     555-123-4567
                   </AnimatedChatMessage>
                   
-                  <AnimatedChatMessage delay={6} isBot>
+                  <AnimatedChatMessage delay={8.5} isBot>
                     <span className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-status-online" />
-                      Got it! Someone from our team will call you shortly.
+                      <CheckCircle2 className="h-4 w-4 text-status-online animate-pulse" />
+                      <span>Got it! Someone from our team will call you shortly.</span>
                     </span>
                   </AnimatedChatMessage>
                 </div>
                 
                 {/* Chat Input */}
-                <div className="p-4 border-t border-border bg-card">
-                  <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-3">
-                    <span className="text-sm text-muted-foreground flex-1">Type a message...</span>
-                    <Send className="h-5 w-5 text-primary" />
+                <div className="p-4 border-t border-border bg-card relative">
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-muted/50 to-muted/30 rounded-xl px-4 py-3.5 border border-border/50 group-hover:border-primary/30 transition-colors">
+                    <span className="text-sm text-muted-foreground flex-1 font-medium">Type a message...</span>
+                    <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/30 group-hover:shadow-lg group-hover:shadow-primary/40 transition-shadow">
+                      <Send className="h-4 w-4 text-primary-foreground" />
+                    </div>
                   </div>
                 </div>
               </div>
               
-              {/* Decorative elements */}
-              <div className="absolute -z-10 -top-16 -left-16 w-48 h-48 bg-primary/15 rounded-full blur-3xl" />
-              <div className="absolute -z-10 -bottom-16 -right-16 w-56 h-56 bg-primary/15 rounded-full blur-3xl" />
+              {/* Decorative elements - more vibrant */}
+              <div className="absolute -z-10 -top-20 -left-20 w-56 h-56 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
+              <div className="absolute -z-10 -bottom-20 -right-20 w-64 h-64 bg-primary/15 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
+              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
             </div>
 
             {/* Right - Content */}
             <div className="order-1 lg:order-2">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6">
-                <Sparkles className="h-4 w-4" />
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/15 to-primary/5 text-primary px-5 py-2.5 rounded-full text-sm font-bold mb-6 border border-primary/20 shadow-sm animate-fade-in">
+                <Sparkles className="h-4 w-4 animate-pulse" />
                 AI-Powered for Behavioral Health
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
-                Never lose another
-                <span className="block text-primary mt-1">lead to slow response.</span>
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.08] tracking-tight">
+                <span className="bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">Never lose another</span>
+                <span className="block bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent mt-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>lead to slow response.</span>
               </h1>
               
-              <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-lg">
-                AI chat that engages treatment seekers 24/7, captures their info naturally, and alerts your team—all while staying HIPAA compliant.
+              <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg font-medium">
+                AI chat that engages treatment seekers <span className="text-foreground font-semibold">24/7</span>, captures their info naturally, and alerts your team—all while staying <span className="text-primary font-semibold">HIPAA compliant</span>.
               </p>
               
               {/* Checklist Benefits */}
-              <div className="mt-8 space-y-3">
+              <div className="mt-8 space-y-4">
                 {[
-                  'Capture 47% more leads on average',
-                  'Respond in seconds, not hours',
-                  'Crisis detection & instant escalation',
-                  'HIPAA compliant & medically safe'
+                  { text: 'Capture 47% more leads', highlight: '47% more' },
+                  { text: 'Respond in seconds, not hours', highlight: 'seconds' },
+                  { text: 'Crisis detection & instant escalation', highlight: 'Crisis detection' },
+                  { text: 'HIPAA compliant & medically safe', highlight: 'HIPAA compliant' }
                 ].map((benefit, index) => (
-                  <div key={index} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <div className="h-6 w-6 rounded-full bg-status-online flex items-center justify-center flex-shrink-0">
+                  <div 
+                    key={index} 
+                    className="flex items-center gap-3 animate-fade-in group cursor-default" 
+                    style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                  >
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-status-online to-status-online/80 flex items-center justify-center flex-shrink-0 shadow-md shadow-status-online/30 group-hover:scale-110 transition-transform">
                       <CheckCircle2 className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-foreground font-medium">{benefit}</span>
+                    <span className="text-foreground font-semibold text-base group-hover:text-primary transition-colors">{benefit.text}</span>
                   </div>
                 ))}
               </div>
 
               {/* CTA Buttons */}
-              <div className="mt-10 flex flex-col sm:flex-row gap-4">
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
                 <Link to="/auth">
-                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl w-full sm:w-auto">
+                  <Button size="lg" className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:from-primary/95 hover:to-primary/85 shadow-xl shadow-primary/30 gap-2 px-8 h-14 text-base font-bold rounded-xl w-full sm:w-auto group transition-all duration-300 hover:shadow-2xl hover:shadow-primary/40 hover:-translate-y-0.5">
                     Start Free Trial
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/widget-preview">
-                  <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2 w-full sm:w-auto">
-                    <MessageSquare className="h-5 w-5" />
+                  <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-bold rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 w-full sm:w-auto group transition-all duration-300">
+                    <MessageSquare className="h-5 w-5 group-hover:scale-110 transition-transform" />
                     See Demo
                   </Button>
                 </Link>
               </div>
               
-              <p className="mt-4 text-sm text-muted-foreground">
-                Free 14-day trial • No credit card required • Setup in 5 minutes
+              <p className="mt-5 text-sm text-muted-foreground font-medium animate-fade-in" style={{ animationDelay: '0.7s' }}>
+                ✓ Free 14-day trial &nbsp;•&nbsp; ✓ No credit card &nbsp;•&nbsp; ✓ 5 min setup
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="relative py-10 bg-foreground text-background">
+      {/* Stats Bar - Light themed */}
+      <section className="relative py-12 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-y border-primary/10">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary">47%</div>
-              <div className="text-sm text-background/70 mt-1">More leads captured</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary">&lt;5s</div>
-              <div className="text-sm text-background/70 mt-1">Response time</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary">24/7</div>
-              <div className="text-sm text-background/70 mt-1">Always available</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary">100+</div>
-              <div className="text-sm text-background/70 mt-1">Treatment centers</div>
-            </div>
+            {[
+              { value: '47%', label: 'More leads captured', icon: '📈' },
+              { value: '<5s', label: 'Response time', icon: '⚡' },
+              { value: '24/7', label: 'Always available', icon: '🌙' },
+              { value: '100+', label: 'Treatment centers', icon: '🏥' },
+            ].map((stat, index) => (
+              <div key={index} className="group cursor-default">
+                <div className="text-4xl md:text-5xl font-extrabold bg-gradient-to-br from-primary to-primary/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300 inline-block">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-muted-foreground mt-2 font-semibold flex items-center justify-center gap-1.5">
+                  <span>{stat.icon}</span> {stat.label}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
