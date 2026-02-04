@@ -50,31 +50,42 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour }: Side
       to={to}
       data-tour={dataTour}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative",
-        "hover:bg-sidebar-accent/80 group",
+        "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group",
+        "hover:bg-sidebar-accent",
         isActive 
-          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-          : "text-sidebar-foreground/80 hover:text-sidebar-foreground"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" 
+          : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
       )}
     >
+      {/* Active indicator bar */}
+      {isActive && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-sidebar-primary rounded-full" />
+      )}
       <Icon
         className={cn(
-          "h-5 w-5 flex-shrink-0 transition-colors",
-          isActive ? "text-sidebar-primary" : "text-sidebar-foreground/80 group-hover:text-sidebar-primary"
+          "h-5 w-5 flex-shrink-0 transition-all duration-200",
+          isActive 
+            ? "text-sidebar-primary" 
+            : "text-sidebar-foreground/50 group-hover:text-sidebar-primary group-hover:scale-110"
         )}
       />
       {!collapsed && (
         <>
-          <span className={cn("flex-1", isActive ? "font-semibold" : "font-medium")}>{label}</span>
+          <span className={cn(
+            "flex-1 transition-colors", 
+            isActive ? "font-semibold text-sidebar-foreground" : "font-medium"
+          )}>
+            {label}
+          </span>
           {badge && badge > 0 && (
-            <span className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold px-2 py-0.5 rounded-full">
+            <span className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full min-w-[24px] text-center shadow-sm">
               {badge}
             </span>
           )}
         </>
       )}
       {collapsed && badge && badge > 0 && (
-        <span className="absolute -top-1 -right-1 bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
+        <span className="absolute -top-1 -right-1 bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm animate-pulse">
           {badge}
         </span>
       )}
@@ -101,9 +112,12 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour }: Side
 const SidebarSection = ({ title, children, collapsed }: { title: string; children: React.ReactNode; collapsed: boolean }) => (
   <div className="space-y-1">
     {!collapsed && (
-      <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50 mb-2">
-        {title}
-      </h3>
+      <div className="flex items-center gap-2 px-3 mb-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-sidebar-foreground/40">
+          {title}
+        </h3>
+        <div className="flex-1 h-px bg-sidebar-border/50" />
+      </div>
     )}
     {children}
   </div>
@@ -144,42 +158,73 @@ export const DashboardSidebar = () => {
     <TooltipProvider>
       <aside 
         className={cn(
-          "h-screen flex flex-col transition-all duration-300 bg-sidebar text-sidebar-foreground",
-          collapsed ? "w-[68px]" : "w-64"
+          "h-screen flex flex-col transition-all duration-300 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm",
+          collapsed ? "w-[72px]" : "w-72"
         )}
       >
         {/* Logo */}
         <div 
           data-tour="sidebar-logo"
           className={cn(
-            "h-16 flex items-center border-b border-sidebar-border/80 px-4",
+            "h-16 flex items-center border-b border-sidebar-border px-4",
             collapsed ? "justify-center" : "justify-between"
           )}
         >
           {!collapsed && (
-            <span className="font-bold text-lg text-sidebar-foreground">Care Assist</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <MessageSquare className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-lg text-sidebar-foreground">Care Assist</span>
+            </div>
           )}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setCollapsed(!collapsed)}
-                className="text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/80"
-              >
-                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            {collapsed && (
+          {collapsed && (
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-primary-foreground" />
+            </div>
+          )}
+          {!collapsed && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent h-8 w-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Collapse sidebar
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        
+        {/* Expand button when collapsed */}
+        {collapsed && (
+          <div className="flex justify-center py-2 border-b border-sidebar-border">
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed(false)}
+                  className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
               <TooltipContent side="right">
                 Expand sidebar
               </TooltipContent>
-            )}
-          </Tooltip>
-        </div>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6 scrollbar-thin">
+        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-thin">
           {/* Inbox - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <div data-tour="inbox-section">
