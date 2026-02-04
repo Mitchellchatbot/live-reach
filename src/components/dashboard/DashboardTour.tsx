@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Settings, Users } from 'lucide-react';
+import { ArrowRight, Settings, Users, Cloud, Bell, Code } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
@@ -51,10 +51,25 @@ const tourSteps: Step[] = [
     data: { isTeamMembers: true },
   },
   {
+    target: '[data-tour="salesforce"]',
+    content: "salesforce-special", // Special marker for custom content
+    title: "Salesforce Integration",
+    placement: 'right',
+    data: { isSalesforce: true },
+  },
+  {
+    target: '[data-tour="notifications"]',
+    content: "notifications-special", // Special marker for custom content
+    title: "Notifications",
+    placement: 'right',
+    data: { isNotifications: true },
+  },
+  {
     target: '[data-tour="widget-code"]',
-    content: "Copy the embed code to add the chat widget to your website. It only takes a minute!",
+    content: "widget-code-special", // Special marker for custom content
     title: "Get Your Widget",
     placement: 'right',
+    data: { isWidgetCode: true },
   },
 ];
 
@@ -71,9 +86,21 @@ const CustomTooltip = ({
   size,
   onSetupAI,
   onSetupTeam,
-}: TooltipRenderProps & { onSetupAI: () => void; onSetupTeam: () => void }) => {
+  onSetupSalesforce,
+  onSetupNotifications,
+  onSetupWidget,
+}: TooltipRenderProps & { 
+  onSetupAI: () => void; 
+  onSetupTeam: () => void;
+  onSetupSalesforce: () => void;
+  onSetupNotifications: () => void;
+  onSetupWidget: () => void;
+}) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
+  const isSalesforce = step.data?.isSalesforce;
+  const isNotifications = step.data?.isNotifications;
+  const isWidgetCode = step.data?.isWidgetCode;
 
   return (
     <div
@@ -110,6 +137,48 @@ const CustomTooltip = ({
           >
             <Users className="mr-2 h-4 w-4" />
             Add Team Members Now
+          </Button>
+        </div>
+      ) : isSalesforce ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Connect Salesforce to automatically sync visitor leads with your CRM and track conversions.
+          </p>
+          <Button 
+            onClick={onSetupSalesforce}
+            className="w-full"
+            size="sm"
+          >
+            <Cloud className="mr-2 h-4 w-4" />
+            Connect Salesforce Now
+          </Button>
+        </div>
+      ) : isNotifications ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Set up email and Slack notifications so you never miss an important conversation or lead.
+          </p>
+          <Button 
+            onClick={onSetupNotifications}
+            className="w-full"
+            size="sm"
+          >
+            <Bell className="mr-2 h-4 w-4" />
+            Set Up Notifications Now
+          </Button>
+        </div>
+      ) : isWidgetCode ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Copy the embed code to add the chat widget to your website. It only takes a minute!
+          </p>
+          <Button 
+            onClick={onSetupWidget}
+            className="w-full"
+            size="sm"
+          >
+            <Code className="mr-2 h-4 w-4" />
+            Get Widget Code Now
           </Button>
         </div>
       ) : (
@@ -196,6 +265,51 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     navigate('/team-members');
   };
 
+  const handleSetupSalesforce = async () => {
+    setRun(false);
+    searchParams.delete('tour');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+
+    navigate('/dashboard/salesforce');
+  };
+
+  const handleSetupNotifications = async () => {
+    setRun(false);
+    searchParams.delete('tour');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+
+    navigate('/dashboard/notifications');
+  };
+
+  const handleSetupWidget = async () => {
+    setRun(false);
+    searchParams.delete('tour');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+
+    navigate('/widget-code');
+  };
+
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, action, type, index } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -237,7 +351,16 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       disableOverlayClose
       spotlightClicks
       callback={handleJoyrideCallback}
-      tooltipComponent={(props) => <CustomTooltip {...props} onSetupAI={handleSetupAI} onSetupTeam={handleSetupTeam} />}
+      tooltipComponent={(props) => (
+        <CustomTooltip 
+          {...props} 
+          onSetupAI={handleSetupAI} 
+          onSetupTeam={handleSetupTeam}
+          onSetupSalesforce={handleSetupSalesforce}
+          onSetupNotifications={handleSetupNotifications}
+          onSetupWidget={handleSetupWidget}
+        />
+      )}
       styles={{
         options: {
           primaryColor: 'hsl(var(--primary))',

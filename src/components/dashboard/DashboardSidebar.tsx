@@ -38,15 +38,17 @@ interface SidebarItemProps {
   label: string;
   badge?: number;
   collapsed: boolean;
+  dataTour?: string;
 }
 
-const SidebarItem = ({ to, icon: Icon, label, badge, collapsed }: SidebarItemProps) => {
+const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour }: SidebarItemProps) => {
   const location = useLocation();
   const isActive = location.pathname === to;
 
   const linkContent = (
     <NavLink
       to={to}
+      data-tour={dataTour}
       className={cn(
         "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative",
         "hover:bg-sidebar-accent/80 group",
@@ -216,8 +218,8 @@ export const DashboardSidebar = () => {
           {/* Integrations - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Integrations" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/salesforce" icon={Cloud} label="Salesforce" collapsed={collapsed} />
-              <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
+              <SidebarItem to="/dashboard/salesforce" icon={Cloud} label="Salesforce" collapsed={collapsed} dataTour="salesforce" />
+              <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} dataTour="notifications" />
             </SidebarSection>
           )}
 
