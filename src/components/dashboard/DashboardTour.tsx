@@ -246,7 +246,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
 
-    navigate('/ai-support');
+    navigate('/dashboard/ai-support');
   };
 
   const handleSetupTeam = async () => {
@@ -262,7 +262,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
 
-    navigate('/team-members');
+    navigate('/dashboard/team');
   };
 
   const handleSetupSalesforce = async () => {
@@ -307,7 +307,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
 
-    navigate('/widget-code');
+    navigate('/dashboard/widget');
   };
 
   const handleJoyrideCallback = async (data: CallBackProps) => {
