@@ -723,7 +723,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 <p className="text-muted-foreground">Your chat widget is ready to go</p>
               </div>
 
-              <Button onClick={() => navigate('/dashboard')} className="w-full h-12">
+              <Button onClick={() => navigate('/dashboard?tour=1')} className="w-full h-12">
                 Go to Dashboard
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

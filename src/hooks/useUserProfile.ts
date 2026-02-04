@@ -9,6 +9,8 @@ export interface UserProfile {
   full_name: string | null;
   company_name: string | null;
   avatar_url: string | null;
+  onboarding_complete: boolean;
+  dashboard_tour_complete: boolean;
   created_at: string;
   updated_at: string;
 }

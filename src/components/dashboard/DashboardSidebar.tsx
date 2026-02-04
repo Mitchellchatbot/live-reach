@@ -147,10 +147,13 @@ export const DashboardSidebar = () => {
         )}
       >
         {/* Logo */}
-        <div className={cn(
-          "h-16 flex items-center border-b border-sidebar-border/80 px-4",
-          collapsed ? "justify-center" : "justify-between"
-        )}>
+        <div 
+          data-tour="sidebar-logo"
+          className={cn(
+            "h-16 flex items-center border-b border-sidebar-border/80 px-4",
+            collapsed ? "justify-center" : "justify-between"
+          )}
+        >
           {!collapsed && (
             <span className="font-bold text-lg text-sidebar-foreground">Scaled Bot</span>
           )}
@@ -177,18 +180,26 @@ export const DashboardSidebar = () => {
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-6 scrollbar-thin">
           {/* Inbox - Available to clients and admins */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Inbox" collapsed={collapsed}>
-              <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={badgeCounts.all > 0 ? badgeCounts.all : undefined} collapsed={collapsed} />
-              <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={badgeCounts.active > 0 ? badgeCounts.active : undefined} collapsed={collapsed} />
-              <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} />
-            </SidebarSection>
+            <div data-tour="inbox-section">
+              <SidebarSection title="Inbox" collapsed={collapsed}>
+                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={badgeCounts.all > 0 ? badgeCounts.all : undefined} collapsed={collapsed} />
+                <div data-tour="active-filter">
+                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={badgeCounts.active > 0 ? badgeCounts.active : undefined} collapsed={collapsed} />
+                </div>
+                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} />
+              </SidebarSection>
+            </div>
           )}
 
           {/* Manage - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Manage" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} />
-              <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} />
+              <div data-tour="team-members">
+                <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} />
+              </div>
+              <div data-tour="ai-support">
+                <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} />
+              </div>
               <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} />
             </SidebarSection>
           )}
@@ -196,7 +207,9 @@ export const DashboardSidebar = () => {
           {/* Setup - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Setup" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} />
+              <div data-tour="widget-code">
+                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} />
+              </div>
             </SidebarSection>
           )}
 
