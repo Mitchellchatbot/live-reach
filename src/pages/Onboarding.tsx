@@ -1062,10 +1062,10 @@ const ToneCard = ({
   <button
     onClick={onClick}
     className={cn(
-      "w-full p-4 rounded-xl border-2 text-left transition-all",
+      "w-full p-4 rounded-xl border-2 text-left transition-all duration-200",
       selected
-        ? "border-primary bg-primary/5"
-        : "border-border hover:border-muted-foreground/30"
+        ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+        : "border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm hover:scale-[1.01]"
     )}
   >
     <div className="flex items-center justify-between gap-3">
