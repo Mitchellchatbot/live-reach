@@ -796,13 +796,14 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
 
           {/* Step 5: Widget Icon Selection */}
           {step === 5 && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">Choose your chat widget style</h1>
                 <p className="text-muted-foreground">Pick an icon for your chat launcher button</p>
               </div>
 
-              <div className="grid grid-cols-4 gap-4">
+              {/* Icon grid - more compact 2 rows of 4 */}
+              <div className="grid grid-cols-4 gap-2">
                 {widgetIconOptions.map((option, index) => {
                   const IconComponent = option.icon;
                   const isSelected = data.widgetIcon === option.id;
@@ -811,61 +812,44 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                       key={option.id}
                       onClick={() => setData({ ...data, widgetIcon: option.id })}
                       className={cn(
-                        "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 group",
+                        "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1.5",
                         "animate-in fade-in zoom-in-95",
                         isSelected
-                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
-                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                          ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/50"
                       )}
                       style={{ 
-                        animationDelay: `${index * 50}ms`,
+                        animationDelay: `${index * 30}ms`,
                         animationFillMode: 'backwards'
                       }}
                     >
-                      <div 
-                        className={cn(
-                          "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
-                          isSelected 
-                            ? "bg-primary text-primary-foreground scale-110 shadow-lg" 
-                            : "bg-muted text-muted-foreground group-hover:scale-105 group-hover:bg-primary/20 group-hover:text-primary"
-                        )}
-                      >
-                        <IconComponent className={cn(
-                          "h-7 w-7 transition-transform duration-300",
-                          isSelected && "animate-bounce"
-                        )} 
-                        style={{ 
-                          animationDuration: isSelected ? '1s' : '0s',
-                          animationIterationCount: isSelected ? '1' : '0'
-                        }}
-                        />
-                      </div>
+                      <IconComponent className={cn(
+                        "h-6 w-6 transition-transform duration-200",
+                        isSelected ? "scale-110" : ""
+                      )} />
                       <span className={cn(
-                        "text-sm font-medium transition-colors",
-                        isSelected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                        "text-xs font-medium",
+                        isSelected ? "" : "text-muted-foreground"
                       )}>
                         {option.label}
                       </span>
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center animate-in zoom-in duration-200">
-                          <Check className="h-3 w-3 text-primary-foreground" />
-                        </div>
-                      )}
                     </button>
                   );
                 })}
               </div>
 
-
               {/* Interactive Chat Widget Preview */}
-              <WidgetPreviewDemo 
-                widgetIcon={data.widgetIcon}
-                agentName={data.agentName || 'Support'}
-                agentAvatar={data.agentAvatarPreview}
-                greeting={data.greeting}
-              />
+              <div className="pt-2">
+                <p className="text-xs text-muted-foreground text-center mb-3">Preview</p>
+                <WidgetPreviewDemo 
+                  widgetIcon={data.widgetIcon}
+                  agentName={data.agentName || 'Support'}
+                  agentAvatar={data.agentAvatarPreview}
+                  greeting={data.greeting}
+                />
+              </div>
 
-              <div className="space-y-3 pt-4">
+              <div className="space-y-3">
                 <Button onClick={nextStep} disabled={isCreating} className="w-full h-12">
                   {isCreating ? (
                     <>
