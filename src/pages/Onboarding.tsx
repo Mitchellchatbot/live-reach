@@ -614,7 +614,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">Collect visitor info</h1>
                 <p className="text-muted-foreground">
-                  Details like name, email, and phone are <span className="text-foreground font-medium">automatically extracted</span> when visitors share them naturally in conversation.
+                  Details like name, email, and phone are <span className="text-foreground font-medium">automatically extracted</span> within the first few messages of conversation.
                 </p>
               </div>
 
@@ -630,19 +630,20 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   description="Required before chat starts"
                   checked={data.collectEmail}
                   onChange={(checked) => setData({ ...data, collectEmail: checked })}
-                  recommended
                 />
                 <ToggleCard
                   title="Ask for name"
-                  description="Required before chat starts"
+                  description="Required before chat starts (Recommended)"
                   checked={data.collectName}
                   onChange={(checked) => setData({ ...data, collectName: checked })}
+                  recommended
                 />
                 <ToggleCard
                   title="Ask for phone"
                   description="Required before chat starts (Recommended)"
                   checked={data.collectPhone}
                   onChange={(checked) => setData({ ...data, collectPhone: checked })}
+                  recommended
                 />
               </div>
 
