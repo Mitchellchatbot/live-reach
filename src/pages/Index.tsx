@@ -67,6 +67,9 @@ const Index = () => {
               <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             <div className="flex items-center gap-3">
+              <Link to="/documentation">
+                <Button variant="ghost" className="font-medium">Docs</Button>
+              </Link>
               {user ? (
                 <>
                   <Link to={getDashboardRoute()}>
