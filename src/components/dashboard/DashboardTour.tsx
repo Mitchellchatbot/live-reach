@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joyride';
+import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS, TooltipRenderProps } from 'react-joyride';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Settings } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
@@ -36,9 +38,10 @@ const tourSteps: Step[] = [
   },
   {
     target: '[data-tour="ai-support"]',
-    content: "Customize your AI assistant's personality and behavior. Make it sound just like your brand.",
+    content: "ai-settings-special", // Special marker for custom content
     title: "AI Settings",
     placement: 'right',
+    data: { isAISettings: true },
   },
   {
     target: '[data-tour="team-members"]',
@@ -53,6 +56,77 @@ const tourSteps: Step[] = [
     placement: 'right',
   },
 ];
+
+// Custom tooltip component
+const CustomTooltip = ({
+  continuous,
+  index,
+  step,
+  backProps,
+  primaryProps,
+  skipProps,
+  tooltipProps,
+  isLastStep,
+  size,
+  onSetupAI,
+}: TooltipRenderProps & { onSetupAI: () => void }) => {
+  const isAISettings = step.data?.isAISettings;
+
+  return (
+    <div
+      {...tooltipProps}
+      className="bg-background rounded-xl p-5 shadow-2xl max-w-sm"
+    >
+      {step.title && (
+        <h3 className="text-lg font-semibold text-foreground mb-2">{step.title}</h3>
+      )}
+      
+      {isAISettings ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Customize your AI assistant's personality, response style, and behavior. Make it sound just like your brand.
+          </p>
+          <Button 
+            onClick={onSetupAI}
+            className="w-full"
+            size="sm"
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Set Up AI Now
+          </Button>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
+      )}
+
+      <div className="flex items-center justify-between mt-5 pt-4 border-t border-border">
+        <button
+          {...skipProps}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Skip Tour
+        </button>
+        <div className="flex items-center gap-2">
+          {index > 0 && (
+            <button
+              {...backProps}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5"
+            >
+              Back
+            </button>
+          )}
+          <Button
+            {...primaryProps}
+            size="sm"
+          >
+            {isLastStep ? 'Get Started!' : `Next (Step ${index + 1} of ${size})`}
+            {!isLastStep && <ArrowRight className="ml-1.5 h-3.5 w-3.5" />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const [run, setRun] = useState(false);
@@ -72,6 +146,22 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       return () => clearTimeout(timer);
     }
   }, [searchParams]);
+
+  const handleSetupAI = async () => {
+    // End the tour and navigate to AI Support
+    setRun(false);
+    searchParams.delete('tour');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+
+    navigate('/ai-support');
+  };
 
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, action, type, index } = data;
@@ -114,6 +204,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       disableOverlayClose
       spotlightClicks
       callback={handleJoyrideCallback}
+      tooltipComponent={(props) => <CustomTooltip {...props} onSetupAI={handleSetupAI} />}
       styles={{
         options: {
           primaryColor: 'hsl(var(--primary))',
@@ -122,38 +213,6 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           arrowColor: 'hsl(var(--background))',
           overlayColor: 'rgba(0, 0, 0, 0.75)',
           zIndex: 10000,
-        },
-        tooltip: {
-          borderRadius: '12px',
-          padding: '20px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        },
-        tooltipTitle: {
-          fontSize: '18px',
-          fontWeight: 600,
-          marginBottom: '8px',
-        },
-        tooltipContent: {
-          fontSize: '14px',
-          lineHeight: '1.6',
-          padding: '8px 0 0 0',
-        },
-        buttonNext: {
-          backgroundColor: 'hsl(var(--primary))',
-          color: 'hsl(var(--primary-foreground))',
-          borderRadius: '8px',
-          padding: '8px 16px',
-          fontSize: '14px',
-          fontWeight: 500,
-        },
-        buttonBack: {
-          color: 'hsl(var(--muted-foreground))',
-          marginRight: '8px',
-          fontSize: '14px',
-        },
-        buttonSkip: {
-          color: 'hsl(var(--muted-foreground))',
-          fontSize: '14px',
         },
         spotlight: {
           borderRadius: '12px',
