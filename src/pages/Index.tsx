@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock } from 'lucide-react';
+import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { useAuth } from '@/hooks/useAuth';
@@ -110,6 +111,29 @@ const FloatingTestimonial = ({ testimonial, className, style }: { testimonial: t
   </div>
 );
 
+// Animated chat message component
+const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.ReactNode; delay: number; isBot: boolean }) => {
+  const [visible, setVisible] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), delay * 1000);
+    return () => clearTimeout(timer);
+  }, [delay]);
+  
+  if (!visible) return null;
+  
+  return (
+    <div className={`flex ${isBot ? 'justify-start' : 'justify-end'} animate-fade-in`}>
+      <div className={`${isBot 
+        ? 'bg-card rounded-2xl rounded-tl-sm shadow-sm border border-border/50' 
+        : 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
+      } px-4 py-3 max-w-[85%]`}>
+        <p className={`text-sm ${isBot ? 'text-foreground' : ''}`}>{children}</p>
+      </div>
+    </div>
+  );
+};
+
 const Index = () => {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   
@@ -178,125 +202,164 @@ const Index = () => {
       </nav>
 
       {/* Hero - Split Layout */}
-      <section className="relative py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left - Chat Mockup */}
+      <section className="relative py-16 lg:py-24 overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Left - Animated Chat Mockup */}
             <div className="relative order-2 lg:order-1">
-              <div className="relative bg-card rounded-3xl shadow-2xl border border-border/50 overflow-hidden max-w-md mx-auto lg:mx-0">
+              {/* Floating stat badges */}
+              <div className="absolute -top-4 -right-4 bg-card rounded-2xl px-4 py-3 shadow-xl border border-border/50 animate-fade-in z-10">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-status-online animate-pulse" />
+                  <span className="text-sm font-semibold text-foreground">Lead Captured!</span>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -left-4 bg-card rounded-2xl px-4 py-3 shadow-xl border border-border/50 animate-fade-in z-10" style={{ animationDelay: '2s' }}>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-foreground">Avg. 4 sec response</span>
+                </div>
+              </div>
+
+              <div className="relative bg-card rounded-3xl shadow-2xl border border-border overflow-hidden max-w-md mx-auto lg:mx-0 transform hover:scale-[1.02] transition-transform duration-500">
                 {/* Chat Header */}
-                <div className="bg-primary px-5 py-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-primary-foreground font-semibold text-sm">Care Assist</p>
-                    <p className="text-primary-foreground/70 text-xs">Online • Responds instantly</p>
+                <div className="bg-gradient-to-r from-primary to-primary/90 px-5 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-full bg-primary-foreground/20 flex items-center justify-center ring-2 ring-primary-foreground/30">
+                      <Bot className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-primary-foreground font-bold text-sm">Care Assist</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                        <p className="text-primary-foreground/80 text-xs">Online • Responds instantly</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                {/* Chat Messages */}
-                <div className="p-5 space-y-4 bg-muted/30 min-h-[320px]">
-                  <div className="flex justify-start">
-                    <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm border border-border/50">
-                      <p className="text-sm text-foreground">Hi! I'm here to help. Are you looking for treatment options for yourself or a loved one?</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
-                      <p className="text-sm">For my brother. He's struggling with addiction.</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm border border-border/50">
-                      <p className="text-sm text-foreground">I'm so glad you reached out. That takes courage. We have programs that can help. What's the best number to reach you?</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
-                      <p className="text-sm">555-123-4567</p>
-                    </div>
-                  </div>
+                {/* Chat Messages - Animated */}
+                <div className="p-5 space-y-4 bg-gradient-to-b from-muted/20 to-muted/40 min-h-[360px]">
+                  <AnimatedChatMessage delay={0} isBot>
+                    Hi! I'm here to help. Are you looking for treatment options for yourself or a loved one?
+                  </AnimatedChatMessage>
+                  
+                  <AnimatedChatMessage delay={1.5} isBot={false}>
+                    For my brother. He's struggling with addiction.
+                  </AnimatedChatMessage>
+                  
+                  <AnimatedChatMessage delay={3} isBot>
+                    I'm so glad you reached out. That takes courage. We have programs that can help. What's the best number to reach you?
+                  </AnimatedChatMessage>
+                  
+                  <AnimatedChatMessage delay={4.5} isBot={false}>
+                    555-123-4567
+                  </AnimatedChatMessage>
+                  
+                  <AnimatedChatMessage delay={6} isBot>
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-status-online" />
+                      Got it! Someone from our team will call you shortly.
+                    </span>
+                  </AnimatedChatMessage>
                 </div>
                 
                 {/* Chat Input */}
-                <div className="p-4 border-t border-border/50 bg-card">
+                <div className="p-4 border-t border-border bg-card">
                   <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-3">
-                    <span className="text-sm text-muted-foreground">Type a message...</span>
+                    <span className="text-sm text-muted-foreground flex-1">Type a message...</span>
+                    <Send className="h-5 w-5 text-primary" />
                   </div>
                 </div>
               </div>
               
               {/* Decorative elements */}
-              <div className="absolute -z-10 -top-8 -left-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl" />
-              <div className="absolute -z-10 -bottom-8 -right-8 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
+              <div className="absolute -z-10 -top-16 -left-16 w-48 h-48 bg-primary/15 rounded-full blur-3xl" />
+              <div className="absolute -z-10 -bottom-16 -right-16 w-56 h-56 bg-primary/15 rounded-full blur-3xl" />
             </div>
 
             {/* Right - Content */}
             <div className="order-1 lg:order-2">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                <Sparkles className="h-4 w-4" />
+                AI-Powered for Behavioral Health
+              </div>
+              
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
-                The AI chat for
-                <span className="block">behavioral health</span>
-                <span className="block text-primary">that converts.</span>
+                Never lose another
+                <span className="block text-primary mt-1">lead to slow response.</span>
               </h1>
               
+              <p className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-lg">
+                AI chat that engages treatment seekers 24/7, captures their info naturally, and alerts your team—all while staying HIPAA compliant.
+              </p>
+              
               {/* Checklist Benefits */}
-              <div className="mt-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-4 w-4 text-status-online" />
+              <div className="mt-8 space-y-3">
+                {[
+                  'Capture 47% more leads on average',
+                  'Respond in seconds, not hours',
+                  'Crisis detection & instant escalation',
+                  'HIPAA compliant & medically safe'
+                ].map((benefit, index) => (
+                  <div key={index} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <div className="h-6 w-6 rounded-full bg-status-online flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-foreground font-medium">{benefit}</span>
                   </div>
-                  <span className="text-lg text-foreground">Capture more leads 24/7</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-4 w-4 text-status-online" />
-                  </div>
-                  <span className="text-lg text-foreground">Respond in seconds, not hours</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-4 w-4 text-status-online" />
-                  </div>
-                  <span className="text-lg text-foreground">HIPAA compliant & crisis-aware</span>
-                </div>
+                ))}
               </div>
 
-              {/* Email Signup */}
-              <div className="mt-10">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input 
-                    type="email" 
-                    placeholder="Enter your business email"
-                    className="flex-1 h-14 px-5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  />
-                  <Link to="/auth">
-                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-base font-semibold rounded-xl whitespace-nowrap">
-                      Sign up free
-                    </Button>
-                  </Link>
-                </div>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Free 14-day trial • No credit card required
-                </p>
+              {/* CTA Buttons */}
+              <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                <Link to="/auth">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl w-full sm:w-auto">
+                    Start Free Trial
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/widget-preview">
+                  <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2 w-full sm:w-auto">
+                    <MessageSquare className="h-5 w-5" />
+                    See Demo
+                  </Button>
+                </Link>
               </div>
+              
+              <p className="mt-4 text-sm text-muted-foreground">
+                Free 14-day trial • No credit card required • Setup in 5 minutes
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Logo Bar */}
-      <section className="relative py-12 border-y border-border/50">
+      {/* Stats Bar */}
+      <section className="relative py-10 bg-foreground text-background">
         <div className="container mx-auto px-4">
-          <p className="text-center text-sm text-muted-foreground mb-8">
-            <span className="font-semibold text-foreground">100+ treatment centers</span> trust Care Assist to help more people find recovery
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
-            <span className="text-xl font-bold text-foreground/70">Recovery First</span>
-            <span className="text-xl font-bold text-foreground/70">Serenity Health</span>
-            <span className="text-xl font-bold text-foreground/70">New Horizons</span>
-            <span className="text-xl font-bold text-foreground/70">Pathways</span>
-            <span className="text-xl font-bold text-foreground/70">Clarity Center</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">47%</div>
+              <div className="text-sm text-background/70 mt-1">More leads captured</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">&lt;5s</div>
+              <div className="text-sm text-background/70 mt-1">Response time</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">24/7</div>
+              <div className="text-sm text-background/70 mt-1">Always available</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-primary">100+</div>
+              <div className="text-sm text-background/70 mt-1">Treatment centers</div>
+            </div>
           </div>
         </div>
       </section>
