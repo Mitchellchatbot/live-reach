@@ -8,7 +8,26 @@ import { useConversations } from '@/hooks/useConversations';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
+import emilyAvatar from '@/assets/personas/emily.jpg';
+import sarahAvatar from '@/assets/personas/sarah.jpg';
+import michaelAvatar from '@/assets/personas/michael.jpg';
+import danielAvatar from '@/assets/personas/daniel.jpg';
 import { cn } from '@/lib/utils';
+
+// Persona avatar mapping
+const personaAvatars: Record<string, string> = {
+  emily: emilyAvatar,
+  sarah: sarahAvatar,
+  michael: michaelAvatar,
+  daniel: danielAvatar,
+};
+
+const personaNames: Record<string, string> = {
+  emily: 'Emily',
+  sarah: 'Sarah',
+  michael: 'Michael',
+  daniel: 'Daniel',
+};
 
 type OnboardingStep = 1 | 2 | 3 | 4 | 'complete';
 
@@ -524,7 +543,30 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                       title={tone.title}
                       description={tone.description}
                       selected={data.aiTone === tone.value}
-                      onClick={() => setData({ ...data, aiTone: tone.value })}
+                      onClick={() => {
+                        if (tone.value !== 'custom' && personaNames[tone.value]) {
+                          // Auto-fill name and avatar for preset personas
+                          setData({ 
+                            ...data, 
+                            aiTone: tone.value,
+                            agentName: personaNames[tone.value],
+                            agentAvatarPreview: personaAvatars[tone.value],
+                            agentAvatarFile: null, // Clear any custom file
+                            agentAvatarUrl: personaAvatars[tone.value], // Use the imported asset URL
+                          });
+                        } else {
+                          // Custom: clear auto-filled values if switching from preset
+                          setData({ 
+                            ...data, 
+                            aiTone: tone.value,
+                            agentName: data.aiTone && data.aiTone !== 'custom' ? '' : data.agentName,
+                            agentAvatarPreview: data.aiTone && data.aiTone !== 'custom' ? null : data.agentAvatarPreview,
+                            agentAvatarFile: data.aiTone && data.aiTone !== 'custom' ? null : data.agentAvatarFile,
+                            agentAvatarUrl: null,
+                          });
+                        }
+                      }}
+                      avatarSrc={tone.value !== 'custom' ? personaAvatars[tone.value] : undefined}
                     />
                   ))}
                 </div>
@@ -654,11 +696,13 @@ const ToneCard = ({
   description,
   selected,
   onClick,
+  avatarSrc,
 }: {
   title: string;
   description: string;
   selected: boolean;
   onClick: () => void;
+  avatarSrc?: string;
 }) => (
   <button
     onClick={onClick}
@@ -669,14 +713,21 @@ const ToneCard = ({
         : "border-border hover:border-muted-foreground/30"
     )}
   >
-    <div className="flex items-center justify-between">
-      <div>
+    <div className="flex items-center justify-between gap-3">
+      {avatarSrc && (
+        <img 
+          src={avatarSrc} 
+          alt={title} 
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        />
+      )}
+      <div className="flex-1 min-w-0">
         <span className="font-medium text-foreground">{title}</span>
         <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
       </div>
       <div
         className={cn(
-          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
           selected ? "border-primary bg-primary" : "border-muted-foreground/30"
         )}
       >

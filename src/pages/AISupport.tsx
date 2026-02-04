@@ -21,6 +21,10 @@ import { Slider } from '@/components/ui/slider';
 import { PropertySelector } from '@/components/PropertySelector';
 import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import emilyAvatar from '@/assets/personas/emily.jpg';
+import sarahAvatar from '@/assets/personas/sarah.jpg';
+import michaelAvatar from '@/assets/personas/michael.jpg';
+import danielAvatar from '@/assets/personas/daniel.jpg';
 
 import {
   DropdownMenu,
@@ -29,6 +33,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+
+// Persona avatar mapping
+const personaAvatars: Record<string, string> = {
+  emily: emilyAvatar,
+  sarah: sarahAvatar,
+  michael: michaelAvatar,
+  daniel: danielAvatar,
+};
 
 interface AIAgent {
   id: string;
@@ -765,6 +777,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             description={tone.description}
                             selected={aiPersonalityPreset === tone.value}
                             onClick={() => setAiPersonalityPreset(tone.value)}
+                            avatarSrc={tone.value !== 'custom' ? personaAvatars[tone.value] : undefined}
                           />
                         ))}
                       </div>
@@ -1430,11 +1443,13 @@ const ToneCard = ({
   description,
   selected,
   onClick,
+  avatarSrc,
 }: {
   title: string;
   description: string;
   selected: boolean;
   onClick: () => void;
+  avatarSrc?: string;
 }) => (
   <button
     type="button"
@@ -1446,8 +1461,15 @@ const ToneCard = ({
         : "border-border hover:border-muted-foreground/30"
     )}
   >
-    <div className="flex items-center justify-between">
-      <div>
+    <div className="flex items-center justify-between gap-3">
+      {avatarSrc && (
+        <img 
+          src={avatarSrc} 
+          alt={title} 
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        />
+      )}
+      <div className="flex-1 min-w-0">
         <span className="font-medium text-foreground">{title}</span>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
