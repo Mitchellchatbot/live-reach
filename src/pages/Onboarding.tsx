@@ -160,8 +160,8 @@ const Onboarding = () => {
     greeting: defaultGreeting,
     greetingPreset: 'Hopeful',
     collectEmail: true,
-    collectName: false,
-    collectPhone: false,
+    collectName: true,
+    collectPhone: true,
     aiTone: null,
     customPersonality: '',
     agentName: '',
@@ -518,8 +518,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
 
                 {/* Extracted info summary */}
                 {data.extractedInfo && (
-                  <div className="bg-muted/30 rounded-xl p-4 space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Detected</p>
+                  <div className="bg-muted/30 rounded-xl p-4 space-y-3">
+                    {data.extractedInfo.description && (
+                      <p className="text-sm text-foreground leading-relaxed">{data.extractedInfo.description}</p>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full capitalize">
                         {data.extractedInfo.businessType} business
@@ -530,7 +532,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             className="w-3 h-3 rounded-full" 
                             style={{ backgroundColor: data.extractedInfo.primaryColor }}
                           />
-                          Brand color detected
+                          Brand color
                         </span>
                       )}
                     </div>
@@ -638,7 +640,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 />
                 <ToggleCard
                   title="Ask for phone"
-                  description="Required before chat starts"
+                  description="Required before chat starts (Recommended)"
                   checked={data.collectPhone}
                   onChange={(checked) => setData({ ...data, collectPhone: checked })}
                 />
