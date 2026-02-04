@@ -177,92 +177,128 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative py-24 lg:py-32 min-h-[85vh] flex items-center">
+      {/* Hero - Split Layout */}
+      <section className="relative py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          {/* Floating badges */}
-          <FloatingBadge className="hidden xl:flex items-center gap-2 left-8 top-12 -rotate-3 animate-fade-in">
-            <Phone className="h-4 w-4 text-status-online" />
-            <span className="text-sm font-medium text-foreground">24/7 Response</span>
-          </FloatingBadge>
-          
-          <FloatingBadge className="hidden xl:flex items-center gap-2 right-8 top-8 rotate-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">HIPAA Compliant</span>
-          </FloatingBadge>
-          
-          <FloatingBadge className="hidden xl:flex items-center gap-2 left-16 bottom-32 rotate-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Heart className="h-4 w-4 text-destructive" />
-            <span className="text-sm font-medium text-foreground">500+ Lives Impacted</span>
-          </FloatingBadge>
-
-          {/* Floating Testimonials */}
-          <FloatingTestimonial 
-            testimonial={testimonials[0]} 
-            className="hidden 2xl:block left-4 top-48 -rotate-2 animate-fade-in" 
-            style={{ animationDelay: '0.3s' }}
-          />
-          <FloatingTestimonial 
-            testimonial={testimonials[1]} 
-            className="hidden 2xl:block right-4 top-64 rotate-2 animate-fade-in" 
-            style={{ animationDelay: '0.4s' }}
-          />
-
-          <div className="max-w-4xl mx-auto text-center relative">
-            {/* Stats badge */}
-            <div className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-sm border border-primary/20 text-foreground px-5 py-2.5 rounded-full text-sm font-medium mb-8 shadow-sm">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              <span className="text-primary font-bold">47%</span>
-              <span className="text-muted-foreground">Average Admissions Increase</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight">
-              Never Miss a
-              <span className="block text-primary mt-2">Call for Help.</span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              AI-powered chat that engages visitors <span className="text-foreground font-semibold">24/7</span> with empathy, 
-              captures leads naturally, and helps more people start their <span className="text-primary font-semibold">recovery journey</span>.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={user ? getDashboardRoute() : '/auth'}>
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-10 h-14 text-base font-semibold rounded-xl">
-                  {user ? 'Open Dashboard' : 'Start Free Trial'}
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/widget-preview">
-                <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2 hover:bg-muted/50">
-                  <MessageSquare className="h-5 w-5" />
-                  See Live Demo
-                </Button>
-              </Link>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left - Chat Mockup */}
+            <div className="relative order-2 lg:order-1">
+              <div className="relative bg-card rounded-3xl shadow-2xl border border-border/50 overflow-hidden max-w-md mx-auto lg:mx-0">
+                {/* Chat Header */}
+                <div className="bg-primary px-5 py-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <Bot className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-primary-foreground font-semibold text-sm">Care Assist</p>
+                    <p className="text-primary-foreground/70 text-xs">Online • Responds instantly</p>
+                  </div>
+                </div>
+                
+                {/* Chat Messages */}
+                <div className="p-5 space-y-4 bg-muted/30 min-h-[320px]">
+                  <div className="flex justify-start">
+                    <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm border border-border/50">
+                      <p className="text-sm text-foreground">Hi! I'm here to help. Are you looking for treatment options for yourself or a loved one?</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                      <p className="text-sm">For my brother. He's struggling with addiction.</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-start">
+                    <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm border border-border/50">
+                      <p className="text-sm text-foreground">I'm so glad you reached out. That takes courage. We have programs that can help. What's the best number to reach you?</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                      <p className="text-sm">555-123-4567</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Chat Input */}
+                <div className="p-4 border-t border-border/50 bg-card">
+                  <div className="flex items-center gap-3 bg-muted/50 rounded-xl px-4 py-3">
+                    <span className="text-sm text-muted-foreground">Type a message...</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute -z-10 -top-8 -left-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl" />
+              <div className="absolute -z-10 -bottom-8 -right-8 w-40 h-40 bg-primary/10 rounded-full blur-2xl" />
             </div>
 
-            {/* Trust indicators */}
-            <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-status-online" />
-                <span>Setup in 5 minutes</span>
+            {/* Right - Content */}
+            <div className="order-1 lg:order-2">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
+                The AI chat for
+                <span className="block">behavioral health</span>
+                <span className="block text-primary">that converts.</span>
+              </h1>
+              
+              {/* Checklist Benefits */}
+              <div className="mt-8 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-status-online" />
+                  </div>
+                  <span className="text-lg text-foreground">Capture more leads 24/7</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-status-online" />
+                  </div>
+                  <span className="text-lg text-foreground">Respond in seconds, not hours</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-6 w-6 rounded-full bg-status-online/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-status-online" />
+                  </div>
+                  <span className="text-lg text-foreground">HIPAA compliant & crisis-aware</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-status-online" />
-                <span>No coding required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-status-online" />
-                <span>Cancel anytime</span>
+
+              {/* Email Signup */}
+              <div className="mt-10">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input 
+                    type="email" 
+                    placeholder="Enter your business email"
+                    className="flex-1 h-14 px-5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                  <Link to="/auth">
+                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-base font-semibold rounded-xl whitespace-nowrap">
+                      Sign up free
+                    </Button>
+                  </Link>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Free 14-day trial • No credit card required
+                </p>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/6 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-3xl pointer-events-none" />
+      </section>
+
+      {/* Logo Bar */}
+      <section className="relative py-12 border-y border-border/50">
+        <div className="container mx-auto px-4">
+          <p className="text-center text-sm text-muted-foreground mb-8">
+            <span className="font-semibold text-foreground">100+ treatment centers</span> trust Care Assist to help more people find recovery
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-60">
+            <span className="text-xl font-bold text-foreground/70">Recovery First</span>
+            <span className="text-xl font-bold text-foreground/70">Serenity Health</span>
+            <span className="text-xl font-bold text-foreground/70">New Horizons</span>
+            <span className="text-xl font-bold text-foreground/70">Pathways</span>
+            <span className="text-xl font-bold text-foreground/70">Clarity Center</span>
+          </div>
+        </div>
       </section>
 
       {/* Key Benefits Bar */}
