@@ -29,7 +29,7 @@ const personaNames: Record<string, string> = {
   daniel: 'Daniel',
 };
 
-type OnboardingStep = 1 | 2 | 3 | 4 | 'complete';
+type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 'complete';
 
 interface OnboardingData {
   websiteUrl: string;
@@ -245,7 +245,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
   };
 
   const nextStep = () => {
-    if (step === 4) {
+    if (step === 5) {
       handleComplete();
     } else if (typeof step === 'number') {
       setStep((step + 1) as OnboardingStep);
@@ -324,7 +324,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       {/* Progress dots */}
       {step !== 'complete' && (
         <div className="flex justify-center gap-2 py-4">
-          {[1, 2, 3, 4].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
               className={cn(
@@ -599,45 +599,105 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 )}
               </div>
 
-              {/* Widget Icon Selection */}
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground text-center">Choose your chat widget icon</p>
-                <div className="grid grid-cols-4 gap-3">
-                  {widgetIconOptions.map((option) => {
-                    const IconComponent = option.icon;
-                    const isSelected = data.widgetIcon === option.id;
-                    return (
-                      <button
-                        key={option.id}
-                        onClick={() => setData({ ...data, widgetIcon: option.id })}
+                <Button onClick={nextStep} className="w-full h-12">
+                  Continue
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <button
+                  onClick={skipToEnd}
+                  disabled={isCreating}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  Skip, use defaults
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Widget Icon Selection */}
+          {step === 5 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="text-center space-y-2">
+                <h1 className="text-2xl font-semibold text-foreground">Choose your chat widget style</h1>
+                <p className="text-muted-foreground">Pick an icon for your chat launcher button</p>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4">
+                {widgetIconOptions.map((option, index) => {
+                  const IconComponent = option.icon;
+                  const isSelected = data.widgetIcon === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => setData({ ...data, widgetIcon: option.id })}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 group",
+                        "animate-in fade-in zoom-in-95",
+                        isSelected
+                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      )}
+                      style={{ 
+                        animationDelay: `${index * 50}ms`,
+                        animationFillMode: 'backwards'
+                      }}
+                    >
+                      <div 
                         className={cn(
-                          "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-2",
-                          isSelected
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-muted-foreground/30"
+                          "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300",
+                          isSelected 
+                            ? "bg-primary text-primary-foreground scale-110 shadow-lg" 
+                            : "bg-muted text-muted-foreground group-hover:scale-105 group-hover:bg-primary/20 group-hover:text-primary"
                         )}
                       >
-                        <div 
-                          className={cn(
-                            "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          <IconComponent className="h-5 w-5" />
+                        <IconComponent className={cn(
+                          "h-7 w-7 transition-transform duration-300",
+                          isSelected && "animate-bounce"
+                        )} 
+                        style={{ 
+                          animationDuration: isSelected ? '1s' : '0s',
+                          animationIterationCount: isSelected ? '1' : '0'
+                        }}
+                        />
+                      </div>
+                      <span className={cn(
+                        "text-sm font-medium transition-colors",
+                        isSelected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                      )}>
+                        {option.label}
+                      </span>
+                      {isSelected && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                          <Check className="h-3 w-3 text-primary-foreground" />
                         </div>
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isSelected ? "text-primary" : "text-muted-foreground"
-                        )}>
-                          {option.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Live preview of selected icon */}
+              <div className="flex flex-col items-center gap-3 pt-4">
+                <p className="text-sm text-muted-foreground">Preview</p>
+                <div className="relative">
+                  <div 
+                    className={cn(
+                      "w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl transition-all duration-500",
+                      "animate-attention-bounce"
+                    )}
+                    key={data.widgetIcon}
+                  >
+                    {(() => {
+                      const SelectedIcon = widgetIconOptions.find(o => o.id === data.widgetIcon)?.icon || MessageCircle;
+                      return <SelectedIcon className="h-8 w-8" />;
+                    })()}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-status-online rounded-full border-2 border-background animate-pulse" />
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 pt-4">
                 <Button onClick={nextStep} disabled={isCreating} className="w-full h-12">
                   {isCreating ? (
                     <>
