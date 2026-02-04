@@ -105,109 +105,127 @@ const CustomTooltip = ({
   return (
     <div
       {...tooltipProps}
-      className="bg-background rounded-xl p-5 shadow-2xl max-w-sm"
+      className="bg-background rounded-2xl shadow-2xl max-w-sm overflow-hidden border border-border/50"
     >
-      {step.title && (
-        <h3 className="text-lg font-semibold text-foreground mb-2">{step.title}</h3>
-      )}
+      {/* Progress bar at top */}
+      <div className="h-1 bg-muted">
+        <div 
+          className="h-full bg-primary transition-all duration-300 ease-out"
+          style={{ width: `${((index + 1) / size) * 100}%` }}
+        />
+      </div>
       
-      {isAISettings ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Customize your AI assistant's personality, response style, and behavior. Make it sound just like your brand.
-          </p>
-          <Button 
-            onClick={onSetupAI}
-            className="w-full"
-            size="sm"
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            Set Up AI Now
-          </Button>
+      <div className="p-6">
+        {/* Step indicator */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            Step {index + 1} of {size}
+          </span>
         </div>
-      ) : isTeamMembers ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Invite team members to help manage conversations. They'll get their own login to respond to visitors.
-          </p>
-          <Button 
-            onClick={onSetupTeam}
-            className="w-full"
-            size="sm"
-          >
-            <Users className="mr-2 h-4 w-4" />
-            Add Team Members Now
-          </Button>
-        </div>
-      ) : isSalesforce ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Connect Salesforce to automatically sync visitor leads with your CRM and track conversions.
-          </p>
-          <Button 
-            onClick={onSetupSalesforce}
-            className="w-full"
-            size="sm"
-          >
-            <Cloud className="mr-2 h-4 w-4" />
-            Connect Salesforce Now
-          </Button>
-        </div>
-      ) : isNotifications ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Set up email and Slack notifications so you never miss an important conversation or lead.
-          </p>
-          <Button 
-            onClick={onSetupNotifications}
-            className="w-full"
-            size="sm"
-          >
-            <Bell className="mr-2 h-4 w-4" />
-            Set Up Notifications Now
-          </Button>
-        </div>
-      ) : isWidgetCode ? (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Copy the embed code to add the chat widget to your website. It only takes a minute!
-          </p>
-          <Button 
-            onClick={onSetupWidget}
-            className="w-full"
-            size="sm"
-          >
-            <Code className="mr-2 h-4 w-4" />
-            Get Widget Code Now
-          </Button>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
-      )}
-
-      <div className="flex items-center justify-between mt-5 pt-4 border-t border-border">
-        <button
-          {...skipProps}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Skip Tour
-        </button>
-        <div className="flex items-center gap-2">
-          {index > 0 && (
-            <button
-              {...backProps}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5"
+        
+        {step.title && (
+          <h3 className="text-xl font-bold text-foreground mb-3">{step.title}</h3>
+        )}
+        
+        {isAISettings ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Customize your AI assistant's personality, response style, and behavior. Make it sound just like your brand.
+            </p>
+            <Button 
+              onClick={onSetupAI}
+              className="w-full"
+              size="sm"
             >
-              Back
-            </button>
-          )}
-          <Button
-            {...primaryProps}
-            size="sm"
+              <Settings className="mr-2 h-4 w-4" />
+              Set Up AI Now
+            </Button>
+          </div>
+        ) : isTeamMembers ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Invite team members to help manage conversations. They'll get their own login to respond to visitors.
+            </p>
+            <Button 
+              onClick={onSetupTeam}
+              className="w-full"
+              size="sm"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Add Team Members Now
+            </Button>
+          </div>
+        ) : isSalesforce ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Connect Salesforce to automatically sync visitor leads with your CRM and track conversions.
+            </p>
+            <Button 
+              onClick={onSetupSalesforce}
+              className="w-full"
+              size="sm"
+            >
+              <Cloud className="mr-2 h-4 w-4" />
+              Connect Salesforce Now
+            </Button>
+          </div>
+        ) : isNotifications ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Set up email and Slack notifications so you never miss an important conversation or lead.
+            </p>
+            <Button 
+              onClick={onSetupNotifications}
+              className="w-full"
+              size="sm"
+            >
+              <Bell className="mr-2 h-4 w-4" />
+              Set Up Notifications Now
+            </Button>
+          </div>
+        ) : isWidgetCode ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Copy the embed code to add the chat widget to your website. It only takes a minute!
+            </p>
+            <Button 
+              onClick={onSetupWidget}
+              className="w-full"
+              size="sm"
+            >
+              <Code className="mr-2 h-4 w-4" />
+              Get Widget Code Now
+            </Button>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
+        )}
+
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/50">
+          <button
+            {...skipProps}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            {isLastStep ? 'Get Started!' : `Next (Step ${index + 1} of ${size})`}
-            {!isLastStep && <ArrowRight className="ml-1.5 h-3.5 w-3.5" />}
-          </Button>
+            Skip Tour
+          </button>
+          <div className="flex items-center gap-3">
+            {index > 0 && (
+              <button
+                {...backProps}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+              >
+                Back
+              </button>
+            )}
+            <Button
+              {...primaryProps}
+              size="sm"
+              className="gap-1.5 px-4"
+            >
+              {isLastStep ? 'Get Started!' : 'Next'}
+              {!isLastStep && <ArrowRight className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
