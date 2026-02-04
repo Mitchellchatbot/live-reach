@@ -32,7 +32,7 @@ const tourSteps: Step[] = [
     target: '[data-tour="conversation-list"]',
     content: "Click any conversation to open it. Unread ones are highlighted so they're easy to spot.",
     title: "Conversation List",
-    placement: 'right',
+    placement: 'right-start',
   },
   {
     target: '[data-tour="ai-support"]',
