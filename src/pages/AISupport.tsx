@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
@@ -669,7 +670,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           />
 
           {/* AI Personas Card */}
-          <Card>
+          <Card data-tour="ai-personas">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>AI Personas</CardTitle>
@@ -970,7 +971,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           {settings && (
             <>
               {/* Timing Settings */}
-              <Card>
+              <Card data-tour="ai-timing">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-muted-foreground" />
@@ -1065,7 +1066,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               </Card>
 
               {/* Escalation Settings */}
-              <Card>
+              <Card data-tour="ai-escalation">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Bot className="h-5 w-5 text-muted-foreground" />
@@ -1433,6 +1434,9 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Dashboard Tour */}
+      <DashboardTour />
     </div>
   );
 };

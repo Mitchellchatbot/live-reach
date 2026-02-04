@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS, TooltipRenderProps } from 'react-joyride';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Settings, Users, Cloud, Bell, Code } from 'lucide-react';
+import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
 }
 
-const tourSteps: Step[] = [
+// Dashboard tour steps (before AI Support)
+const dashboardSteps: Step[] = [
   {
     target: '[data-tour="sidebar-logo"]',
     content: "Welcome to your command center! Let me show you around so you can start helping visitors right away.",
@@ -38,35 +39,65 @@ const tourSteps: Step[] = [
   },
   {
     target: '[data-tour="ai-support"]',
-    content: "ai-settings-special", // Special marker for custom content
+    content: "ai-settings-special",
     title: "AI Settings",
     placement: 'right',
     data: { isAISettings: true },
   },
+];
+
+// AI Support page tour steps
+const aiSupportSteps: Step[] = [
+  {
+    target: '[data-tour="ai-personas"]',
+    content: "Create AI personas with unique personalities. Each persona can have different conversation styles and be assigned to specific properties.",
+    title: "AI Personas",
+    placement: 'bottom',
+    disableBeacon: true,
+    data: { icon: 'bot' },
+  },
+  {
+    target: '[data-tour="ai-timing"]',
+    content: "Make your AI feel more human by adding response delays and typing indicators. Visitors will see a natural conversation pace.",
+    title: "Response Timing",
+    placement: 'top',
+    data: { icon: 'clock' },
+  },
+  {
+    target: '[data-tour="ai-escalation"]',
+    content: "Set rules for when AI should hand off to a human agent. Trigger escalation after a number of messages or when specific keywords are detected.",
+    title: "Escalation Rules",
+    placement: 'top',
+    data: { icon: 'alert' },
+  },
+];
+
+// Remaining dashboard steps (after AI Support)
+const remainingDashboardSteps: Step[] = [
   {
     target: '[data-tour="team-members"]',
-    content: "team-members-special", // Special marker for custom content
+    content: "team-members-special",
     title: "Build Your Team",
     placement: 'right',
     data: { isTeamMembers: true },
   },
   {
     target: '[data-tour="salesforce"]',
-    content: "salesforce-special", // Special marker for custom content
+    content: "salesforce-special",
     title: "Salesforce Integration",
     placement: 'right',
     data: { isSalesforce: true },
   },
   {
     target: '[data-tour="notifications"]',
-    content: "notifications-special", // Special marker for custom content
+    content: "notifications-special",
     title: "Notifications",
     placement: 'right',
     data: { isNotifications: true },
   },
   {
     target: '[data-tour="widget-code"]',
-    content: "widget-code-special", // Special marker for custom content
+    content: "widget-code-special",
     title: "Get Your Widget",
     placement: 'right',
     data: { isWidgetCode: true },
@@ -237,7 +268,30 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  // Determine which steps to show based on current route
+  const isOnAISupport = location.pathname === '/dashboard/ai-support';
+  const tourPhase = searchParams.get('tourPhase') || 'dashboard';
+  
+  // Build the current tour steps based on phase
+  const currentSteps = useMemo(() => {
+    if (tourPhase === 'ai-support') {
+      return [...aiSupportSteps, ...remainingDashboardSteps];
+    }
+    return dashboardSteps;
+  }, [tourPhase]);
+
+  const totalSteps = dashboardSteps.length + aiSupportSteps.length + remainingDashboardSteps.length - 1; // -1 because AI Settings step transitions
+
+  // Calculate display step number
+  const getDisplayStepNumber = () => {
+    if (tourPhase === 'ai-support') {
+      return dashboardSteps.length + stepIndex; // Continue from where we left off
+    }
+    return stepIndex + 1;
+  };
 
   // Check for tour param and start tour
   useEffect(() => {
@@ -246,15 +300,24 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       // Small delay to ensure DOM elements are rendered
       const timer = setTimeout(() => {
         setRun(true);
+        setStepIndex(0);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchParams]);
+  }, [searchParams, location.pathname]);
 
-  const handleSetupAI = async () => {
-    // End the tour and navigate to AI Support
+  const handleSetupAI = () => {
+    // Navigate to AI Support and continue tour there
+    setRun(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('tourPhase', 'ai-support');
+    navigate(`/dashboard/ai-support?tour=1&tourPhase=ai-support`);
+  };
+
+  const endTourAndNavigate = async (path: string) => {
     setRun(false);
     searchParams.delete('tour');
+    searchParams.delete('tourPhase');
     setSearchParams(searchParams, { replace: true });
 
     if (user) {
@@ -264,84 +327,38 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
 
-    navigate('/dashboard/ai-support');
+    navigate(path);
   };
 
-  const handleSetupTeam = async () => {
-    // End the tour and navigate to Team Members
-    setRun(false);
-    searchParams.delete('tour');
-    setSearchParams(searchParams, { replace: true });
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ dashboard_tour_complete: true })
-        .eq('user_id', user.id);
-    }
-
-    navigate('/dashboard/team');
-  };
-
-  const handleSetupSalesforce = async () => {
-    setRun(false);
-    searchParams.delete('tour');
-    setSearchParams(searchParams, { replace: true });
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ dashboard_tour_complete: true })
-        .eq('user_id', user.id);
-    }
-
-    navigate('/dashboard/salesforce');
-  };
-
-  const handleSetupNotifications = async () => {
-    setRun(false);
-    searchParams.delete('tour');
-    setSearchParams(searchParams, { replace: true });
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ dashboard_tour_complete: true })
-        .eq('user_id', user.id);
-    }
-
-    navigate('/dashboard/notifications');
-  };
-
-  const handleSetupWidget = async () => {
-    setRun(false);
-    searchParams.delete('tour');
-    setSearchParams(searchParams, { replace: true });
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ dashboard_tour_complete: true })
-        .eq('user_id', user.id);
-    }
-
-    navigate('/dashboard/widget');
-  };
+  const handleSetupTeam = () => endTourAndNavigate('/dashboard/team');
+  const handleSetupSalesforce = () => endTourAndNavigate('/dashboard/salesforce');
+  const handleSetupNotifications = () => endTourAndNavigate('/dashboard/notifications');
+  const handleSetupWidget = () => endTourAndNavigate('/dashboard/widget');
 
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, action, type, index } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-      // Update step index
-      setStepIndex(index + (action === ACTIONS.PREV ? -1 : 1));
+      const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
+      
+      // Check if we're finishing AI Support steps and need to go back to dashboard
+      if (tourPhase === 'ai-support' && nextIndex >= aiSupportSteps.length && action !== ACTIONS.PREV) {
+        // We've finished AI Support steps, navigate back to dashboard for remaining steps
+        setRun(false);
+        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=${nextIndex - aiSupportSteps.length}`);
+        return;
+      }
+      
+      setStepIndex(nextIndex);
     }
 
     if (finishedStatuses.includes(status)) {
       setRun(false);
       
-      // Remove tour param from URL
+      // Remove tour params from URL
       searchParams.delete('tour');
+      searchParams.delete('tourPhase');
       setSearchParams(searchParams, { replace: true });
 
       // Mark tour as complete in database
@@ -356,9 +373,25 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   };
 
+  // Handle remaining phase navigation
+  useEffect(() => {
+    if (tourPhase === 'remaining') {
+      const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
+      setStepIndex(startIndex);
+    }
+  }, [tourPhase, searchParams]);
+
+  // Get the right steps for remaining phase
+  const stepsToUse = useMemo(() => {
+    if (tourPhase === 'remaining') {
+      return remainingDashboardSteps;
+    }
+    return currentSteps;
+  }, [tourPhase, currentSteps]);
+
   return (
     <Joyride
-      steps={tourSteps}
+      steps={stepsToUse}
       run={run}
       stepIndex={stepIndex}
       continuous
