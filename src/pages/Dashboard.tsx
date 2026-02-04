@@ -4,6 +4,7 @@ import { Search, Filter, Plus, MoreHorizontal, MoreVertical, Video, UserPlus, Ar
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { ChatPanel } from '@/components/dashboard/ChatPanel';
 import { useConversations, DbConversation } from '@/hooks/useConversations';
@@ -272,6 +273,7 @@ const DashboardContent = () => {
       </div>;
   }
   return <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden">
+      <DashboardTour />
       <DashboardSidebar />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -379,7 +381,7 @@ const DashboardContent = () => {
         <div className="flex flex-1 min-h-0 overflow-hidden p-2 bg-sidebar">
           <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm">
             {/* Conversation List Column */}
-            <div ref={listRef} className="w-80 border-r border-border/30 flex flex-col shrink-0">
+            <div ref={listRef} data-tour="conversation-list" className="w-80 border-r border-border/30 flex flex-col shrink-0">
               {/* Search - White/light background */}
               <div className="px-4 py-3 border-b border-border/30">
                 <div className="relative">
