@@ -674,64 +674,19 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">Create your AI persona</h1>
-                <p className="text-muted-foreground">Give your assistant a name and personality</p>
+                <p className="text-muted-foreground">Choose a preset personality or create your own</p>
               </div>
-
-              {/* Avatar upload */}
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    "w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center transition-all overflow-hidden",
-                    data.agentAvatarPreview ? "border-primary" : "border-muted-foreground/30 hover:border-muted-foreground/50"
-                  )}
-                >
-                  {data.agentAvatarPreview ? (
-                    <img src={data.agentAvatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-center">
-                      <User className="h-6 w-6 mx-auto text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground mt-1 block">Add photo</span>
-                    </div>
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      // Create preview URL for immediate display
-                      const previewUrl = URL.createObjectURL(file);
-                      // Store the file for later upload and the preview URL for display
-                      setData({ ...data, agentAvatarFile: file, agentAvatarPreview: previewUrl });
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Agent name */}
-              <Input
-                type="text"
-                placeholder="Assistant name (e.g., Hope, Alex)"
-                value={data.agentName}
-                onChange={(e) => setData({ ...data, agentName: e.target.value })}
-                className="h-12 text-center"
-              />
 
               {/* Personality selection */}
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground text-center">Choose a personality</p>
+                <p className="text-sm text-muted-foreground text-center">Select a personality</p>
                 <div className="space-y-3">
                   {[
                     { value: 'emily' as const, title: 'Emily', description: 'Warm & Reassuring – gentle, safe, supportive' },
                     { value: 'sarah' as const, title: 'Sarah', description: 'Kind & Encouraging – compassionate, optimistic' },
                     { value: 'michael' as const, title: 'Michael', description: 'Calm & Supportive – steady, patient, grounding' },
                     { value: 'daniel' as const, title: 'Daniel', description: 'Friendly & Uplifting – warm, confident, caring' },
-                    { value: 'custom' as const, title: 'Custom', description: 'Write your own personality traits' },
+                    { value: 'custom' as const, title: 'Custom', description: 'Use your own name, photo & personality' },
                   ].map((tone) => (
                     <ToneCard
                       key={tone.value}
@@ -766,9 +721,53 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   ))}
                 </div>
 
-                {/* Custom personality textarea */}
+                {/* Custom personality section */}
                 {data.aiTone === 'custom' && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-200 space-y-4 pt-2">
+                    {/* Custom avatar and name */}
+                    <div className="flex items-center gap-4 bg-muted/50 rounded-xl p-4">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                          "w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center transition-all overflow-hidden flex-shrink-0",
+                          data.agentAvatarPreview ? "border-primary" : "border-muted-foreground/30 hover:border-muted-foreground/50"
+                        )}
+                      >
+                        {data.agentAvatarPreview ? (
+                          <img src={data.agentAvatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-center">
+                            <Upload className="h-5 w-5 mx-auto text-muted-foreground" />
+                          </div>
+                        )}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const previewUrl = URL.createObjectURL(file);
+                            setData({ ...data, agentAvatarFile: file, agentAvatarPreview: previewUrl });
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
+                        <Input
+                          type="text"
+                          placeholder="Assistant name"
+                          value={data.agentName}
+                          onChange={(e) => setData({ ...data, agentName: e.target.value })}
+                          className="h-10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Click the circle to upload a photo</p>
+                      </div>
+                    </div>
+                    
+                    {/* Custom personality textarea */}
                     <Textarea
                       value={data.customPersonality}
                       onChange={(e) => setData({ ...data, customPersonality: e.target.value })}
