@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, X, Send, Globe, Building2, Pencil, RefreshCw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, X, Send, Globe, Building2, Pencil, RefreshCw, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -57,6 +57,8 @@ interface OnboardingData {
   agentAvatarFile: File | null; // Actual file for upload
   agentAvatarPreview: string | null; // Blob URL for preview only
   widgetIcon: string;
+  widgetIconFile: File | null; // Custom widget icon file
+  widgetIconPreview: string | null; // Preview URL for custom icon
   extractedInfo: ExtractedInfo | null;
 }
 
@@ -70,6 +72,7 @@ const widgetIconOptions = [
   { id: 'heart', label: 'Heart', icon: Heart },
   { id: 'sparkles', label: 'Sparkles', icon: Sparkles },
   { id: 'bot', label: 'Bot', icon: Bot },
+  { id: 'custom', label: 'Custom', icon: ImagePlus },
 ];
 
 const greetingPresets = [
@@ -253,6 +256,7 @@ const Onboarding = () => {
   const [step, setStep] = useState<OnboardingStep>(1);
   const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const widgetIconInputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<OnboardingData>({
     websiteUrl: '',
     companyName: '',
@@ -268,6 +272,8 @@ const Onboarding = () => {
     agentAvatarFile: null,
     agentAvatarPreview: null,
     widgetIcon: 'message-circle',
+    widgetIconFile: null,
+    widgetIconPreview: null,
     extractedInfo: null,
   });
 
@@ -892,31 +898,72 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 <p className="text-muted-foreground">Pick an icon for your chat launcher button</p>
               </div>
 
-              {/* Icon grid - more compact 2 rows of 4 */}
-              <div className="grid grid-cols-4 gap-2">
+              {/* Hidden file input for custom icon */}
+              <input
+                type="file"
+                ref={widgetIconInputRef}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const previewUrl = URL.createObjectURL(file);
+                    setData({ 
+                      ...data, 
+                      widgetIcon: 'custom',
+                      widgetIconFile: file,
+                      widgetIconPreview: previewUrl
+                    });
+                  }
+                }}
+                accept="image/*"
+                className="hidden"
+              />
+
+              {/* Icon grid - 3 rows */}
+              <div className="grid grid-cols-3 gap-2">
                 {widgetIconOptions.map((option, index) => {
                   const IconComponent = option.icon;
                   const isSelected = data.widgetIcon === option.id;
+                  const isCustomOption = option.id === 'custom';
+                  
                   return (
                     <button
                       key={option.id}
-                      onClick={() => setData({ ...data, widgetIcon: option.id })}
+                      onClick={() => {
+                        if (isCustomOption) {
+                          widgetIconInputRef.current?.click();
+                        } else {
+                          setData({ 
+                            ...data, 
+                            widgetIcon: option.id,
+                            widgetIconFile: null,
+                            widgetIconPreview: null
+                          });
+                        }
+                      }}
                       className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all gap-1.5",
+                        "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
                         "animate-in fade-in zoom-in-95",
                         isSelected
                           ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/50"
+                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
                       )}
                       style={{ 
                         animationDelay: `${index * 30}ms`,
                         animationFillMode: 'backwards'
                       }}
                     >
-                      <IconComponent className={cn(
-                        "h-6 w-6 transition-transform duration-200",
-                        isSelected ? "scale-110" : ""
-                      )} />
+                      {isCustomOption && data.widgetIconPreview ? (
+                        <img 
+                          src={data.widgetIconPreview} 
+                          alt="Custom icon" 
+                          className="h-6 w-6 rounded object-cover"
+                        />
+                      ) : (
+                        <IconComponent className={cn(
+                          "h-6 w-6 transition-transform duration-200",
+                          isSelected ? "scale-110" : ""
+                        )} />
+                      )}
                       <span className={cn(
                         "text-xs font-medium",
                         isSelected ? "" : "text-muted-foreground"
