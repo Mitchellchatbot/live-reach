@@ -546,89 +546,100 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           {/* Confirm step - show extracted info */}
           {step === 'confirm' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 mx-auto rounded-full bg-status-online/10 flex items-center justify-center mb-4">
-                  <Check className="h-6 w-6 text-status-online" />
+              {/* Success header with animated gradient ring */}
+              <div className="text-center space-y-3">
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-status-online/20 to-status-online/5 animate-pulse" />
+                  <div className="absolute inset-1 rounded-full bg-background flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-status-online/10 flex items-center justify-center">
+                      <Check className="h-6 w-6 text-status-online" />
+                    </div>
+                  </div>
                 </div>
-                <h1 className="text-2xl font-semibold text-foreground">We found your business!</h1>
+                <h1 className="text-2xl font-bold text-foreground">We found your business!</h1>
                 <p className="text-muted-foreground">Please confirm or edit the details below</p>
               </div>
 
-              <div className="space-y-4">
+              {/* Info card */}
+              <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
                 {/* Company Name */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                <div className="p-4 border-b border-border/50">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
+                    <Building2 className="h-3.5 w-3.5" />
                     Business Name
                   </label>
                   <Input
                     value={data.companyName}
                     onChange={(e) => setData({ ...data, companyName: e.target.value })}
                     placeholder="Your business name"
-                    className="h-11"
+                    className="h-11 bg-muted/30 border-0 focus-visible:ring-1"
                   />
                 </div>
 
                 {/* Website */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
+                <div className="p-4 border-b border-border/50">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
+                    <Globe className="h-3.5 w-3.5" />
                     Website
                   </label>
                   <Input
                     value={data.websiteUrl}
                     onChange={(e) => setData({ ...data, websiteUrl: e.target.value })}
                     placeholder="yourwebsite.com"
-                    className="h-11"
+                    className="h-11 bg-muted/30 border-0 focus-visible:ring-1"
                   />
                 </div>
 
                 {/* Suggested Greeting Preview */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                <div className="p-4">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
+                    <MessageCircle className="h-3.5 w-3.5" />
                     Suggested Greeting
                   </label>
-                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
-                    <p className="text-sm text-foreground">{data.greeting}</p>
+                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/10">
+                    <p className="text-sm text-foreground leading-relaxed">{data.greeting}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">You can customize this in the next step</p>
+                  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                    <Pencil className="h-3 w-3" />
+                    You can customize this in the next step
+                  </p>
                 </div>
-
-                {/* Extracted info summary */}
-                {data.extractedInfo && (
-                  <div className="bg-muted/30 rounded-xl p-4 space-y-3">
-                    {data.extractedInfo.description && (
-                      <p className="text-sm text-foreground leading-relaxed">{data.extractedInfo.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full capitalize">
-                        {data.extractedInfo.businessType} business
-                      </span>
-                      {data.extractedInfo.primaryColor && (
-                        <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full flex items-center gap-1.5">
-                          <span 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: data.extractedInfo.primaryColor }}
-                          />
-                          Brand color
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
 
+              {/* Extracted info summary */}
+              {data.extractedInfo && (
+                <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl p-5 border border-border/30 space-y-4">
+                  {data.extractedInfo.description && (
+                    <p className="text-sm text-foreground/80 leading-relaxed">{data.extractedInfo.description}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-full capitalize flex items-center gap-1.5">
+                      <Sparkles className="h-3 w-3" />
+                      {data.extractedInfo.businessType}
+                    </span>
+                    {data.extractedInfo.primaryColor && (
+                      <span className="text-xs font-medium bg-card text-muted-foreground px-3 py-1.5 rounded-full flex items-center gap-2 border border-border/50">
+                        <span 
+                          className="w-3.5 h-3.5 rounded-full ring-2 ring-white shadow-sm" 
+                          style={{ backgroundColor: data.extractedInfo.primaryColor }}
+                        />
+                        Brand color
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3 pt-2">
-                <Button onClick={nextStep} className="w-full h-12">
+                <Button onClick={nextStep} className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20">
                   Looks Good!
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <button
                   onClick={prevStep}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5 py-2"
                 >
-                  <ArrowLeft className="h-3 w-3" />
+                  <ArrowLeft className="h-3.5 w-3.5" />
                   Change website
                 </button>
               </div>
