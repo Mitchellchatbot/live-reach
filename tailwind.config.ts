@@ -69,6 +69,7 @@ export default {
           online: "hsl(var(--online))",
           offline: "hsl(var(--offline))",
           away: "hsl(var(--away))",
+          pending: "hsl(var(--pending))",
         },
         healing: "hsl(var(--online))",
         sidebar: {
