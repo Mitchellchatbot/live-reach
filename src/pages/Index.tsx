@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3 } from 'lucide-react';
+import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3, MessageSquare, CheckCircle2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,10 +38,15 @@ const features = [
   },
 ];
 
+const FloatingBadge = ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
+  <div className={`absolute bg-white rounded-xl px-4 py-2 shadow-lg border border-border/50 transform transition-transform hover:scale-105 ${className}`} style={style}>
+    {children}
+  </div>
+);
+
 const Index = () => {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   
-  // Determine the correct dashboard route based on user role
   const getDashboardRoute = () => {
     if (isAgent) return '/conversations';
     if (isAdmin) return '/admin';
@@ -49,37 +54,40 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
+      {/* Subtle grid background */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
+      
       {/* Navigation */}
-      <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+      <nav className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src={scaledBotLogo} alt="Scaled Bot" className="h-9 w-9 rounded-lg" />
-              <span className="font-bold text-xl text-foreground">Scaled Bot</span>
+            <div className="flex items-center gap-2.5">
+              <img src={scaledBotLogo} alt="Scaled Bot" className="h-10 w-10 rounded-xl shadow-sm" />
+              <span className="font-bold text-xl tracking-tight text-foreground">Scaled Bot</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {user ? (
                 <>
                   <Link to={getDashboardRoute()}>
-                    <Button variant="ghost">Dashboard</Button>
+                    <Button variant="ghost" className="font-medium">Dashboard</Button>
                   </Link>
                   {isAdmin && (
                     <Link to="/admin">
-                      <Button variant="ghost">Admin</Button>
+                      <Button variant="ghost" className="font-medium">Admin</Button>
                     </Link>
                   )}
-                  <Button variant="outline" onClick={signOut}>
+                  <Button variant="outline" onClick={signOut} className="font-medium">
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <>
                   <Link to="/widget-preview">
-                    <Button variant="ghost">Widget Demo</Button>
+                    <Button variant="ghost" className="font-medium">Widget Demo</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="chat-gradient text-primary-foreground hover:opacity-90">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 font-medium px-6">
                       Sign In
                     </Button>
                   </Link>
@@ -91,30 +99,51 @@ const Index = () => {
       </nav>
 
       {/* Hero */}
-      <section className="py-20 lg:py-32">
+      <section className="relative py-24 lg:py-36">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-accent/50 text-accent-foreground px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Zap className="h-4 w-4" />
-              Internal Live Chat Tool
+          {/* Floating badges */}
+          <FloatingBadge className="hidden lg:flex items-center gap-2 -left-4 top-32 -rotate-6 animate-fade-in">
+            <CheckCircle2 className="h-4 w-4 text-status-online" />
+            <span className="text-sm font-medium text-foreground">24/7 Support</span>
+          </FloatingBadge>
+          
+          <FloatingBadge className="hidden lg:flex items-center gap-2 -right-4 top-24 rotate-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <Star className="h-4 w-4 text-status-away fill-status-away" />
+            <span className="text-sm font-medium text-foreground">Trusted by 500+ teams</span>
+          </FloatingBadge>
+          
+          <FloatingBadge className="hidden lg:flex items-center gap-2 left-12 bottom-16 rotate-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <MessageSquare className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">AI-Powered</span>
+          </FloatingBadge>
+
+          <div className="max-w-4xl mx-auto text-center relative">
+            {/* Stats badge */}
+            <div className="inline-flex items-center gap-2 bg-muted/80 backdrop-blur-sm border border-border/50 text-foreground px-5 py-2.5 rounded-full text-sm font-medium mb-8 shadow-sm">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              <span className="text-primary font-semibold">1M+</span>
+              <span className="text-muted-foreground">Conversations Powered</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+            
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight">
               Connect with your visitors
-              <span className="block text-primary">in real-time</span>
+              <span className="block text-primary mt-2">in real-time.</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            
+            <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
               A multi-tenant live chat system for your websites. Create properties, 
-              assign agents, and start chatting with visitors instantly.
+              assign agents, and start chatting with visitors <span className="text-foreground font-medium">instantly</span>.
             </p>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={user ? getDashboardRoute() : '/auth'}>
-                <Button size="lg" className="chat-gradient text-primary-foreground hover:opacity-90 gap-2">
-                  {user ? 'Open Dashboard' : 'Sign In to Dashboard'}
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl">
+                  {user ? 'Open Dashboard' : 'Get Started Free'}
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/widget-preview">
-                <Button size="lg" variant="outline" className="gap-2">
+                <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2 hover:bg-muted/50">
                   <Code className="h-5 w-5" />
                   View Widget Demo
                 </Button>
@@ -122,47 +151,60 @@ const Index = () => {
             </div>
           </div>
         </div>
+        
+        {/* Gradient orbs */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       </section>
 
       {/* Features */}
-      <section className="py-20 bg-muted/30">
+      <section className="relative py-24 bg-gradient-to-b from-muted/30 to-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Built for scale</h2>
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+              <Zap className="h-4 w-4" />
+              Features
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Built for scale</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Everything you need to provide exceptional customer support across all your properties.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {features.map((feature) => (
+            {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="bg-card p-6 rounded-xl border border-border hover:border-primary/30 transition-colors"
+                className="group bg-card/80 backdrop-blur-sm p-7 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
                   <feature.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Architecture Preview */}
-      <section className="py-20">
+      {/* Future Features */}
+      <section className="relative py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">Ready for the future</h2>
+              <div className="inline-flex items-center gap-2 bg-status-online/10 text-status-online px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <CheckCircle2 className="h-4 w-4" />
+                Coming Soon
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Ready for the future</h2>
               <p className="text-lg text-muted-foreground">
                 Built with a modular architecture to support upcoming features.
               </p>
             </div>
 
-            <div className="bg-card rounded-xl border border-border p-8">
+            <div className="bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 p-8 shadow-lg">
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
                   'AI Auto-responses',
@@ -174,9 +216,9 @@ const Index = () => {
                   'WhatsApp Integration',
                   'And more...'
                 ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="h-2 w-2 rounded-full bg-primary/60" />
-                    <span className="text-foreground">{feature}</span>
+                  <div key={feature} className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="h-2.5 w-2.5 rounded-full bg-primary/60" />
+                    <span className="text-foreground font-medium">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -185,16 +227,36 @@ const Index = () => {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="relative py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-3xl p-12 border border-primary/10">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
+              Ready to transform your customer support?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Start connecting with your visitors in real-time today.
+            </p>
+            <Link to={user ? getDashboardRoute() : '/auth'}>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl">
+                {user ? 'Go to Dashboard' : 'Start Free Trial'}
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-border py-8">
+      <footer className="relative border-t border-border/50 py-10">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <img src={scaledBotLogo} alt="Scaled Bot" className="h-8 w-8 rounded-lg" />
+            <div className="flex items-center gap-2.5">
+              <img src={scaledBotLogo} alt="Scaled Bot" className="h-9 w-9 rounded-xl" />
               <span className="font-semibold text-foreground">Scaled Bot</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Internal tool for live customer support
+              © 2024 Scaled Bot. Internal tool for live customer support.
             </p>
           </div>
         </div>
