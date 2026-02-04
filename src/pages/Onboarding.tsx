@@ -258,7 +258,7 @@ const Onboarding = () => {
     companyName: '',
     greeting: defaultGreeting,
     greetingPreset: 'Hopeful',
-    collectEmail: true,
+    collectEmail: false,
     collectName: true,
     collectPhone: true,
     aiTone: null,
@@ -716,12 +716,6 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               
               <div className="space-y-3">
                 <ToggleCard
-                  title="Ask for email"
-                  description="Required before chat starts"
-                  checked={data.collectEmail}
-                  onChange={(checked) => setData({ ...data, collectEmail: checked })}
-                />
-                <ToggleCard
                   title="Ask for name"
                   description="Required before chat starts (Recommended)"
                   checked={data.collectName}
@@ -734,6 +728,12 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   checked={data.collectPhone}
                   onChange={(checked) => setData({ ...data, collectPhone: checked })}
                   recommended
+                />
+                <ToggleCard
+                  title="Ask for email"
+                  description="Required before chat starts"
+                  checked={data.collectEmail}
+                  onChange={(checked) => setData({ ...data, collectEmail: checked })}
                 />
               </div>
 
