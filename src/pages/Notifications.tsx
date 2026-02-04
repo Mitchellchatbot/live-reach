@@ -33,7 +33,7 @@ import {
 const Notifications = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { properties, createProperty, deleteProperty } = useConversations();
+  const { properties, loading: dataLoading, createProperty, deleteProperty } = useConversations();
   
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
   
@@ -72,10 +72,13 @@ const Notifications = () => {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading || dataLoading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="flex h-screen bg-sidebar">
+        <DashboardSidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
       </div>
     );
   }
