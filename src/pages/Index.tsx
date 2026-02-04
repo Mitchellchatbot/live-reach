@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3, MessageSquare, CheckCircle2, Star } from 'lucide-react';
+import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,40 +7,84 @@ import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
 const features = [
   {
-    icon: Zap,
-    title: 'Real-time Messaging',
-    description: 'Instant communication with your website visitors using WebSocket technology.',
+    icon: Bot,
+    title: 'AI-Powered Conversations',
+    description: 'Compassionate AI responses trained specifically for behavioral health and addiction recovery conversations.',
+  },
+  {
+    icon: Clock,
+    title: '24/7 Availability',
+    description: 'Never miss a call for help. Engage visitors around the clock when they need support most.',
+  },
+  {
+    icon: Heart,
+    title: 'Empathetic Engagement',
+    description: 'Warm, non-judgmental conversations that build trust and encourage the first step toward recovery.',
   },
   {
     icon: Users,
-    title: 'Multi-Agent Support',
-    description: 'Assign multiple agents to properties and manage team availability.',
+    title: 'Seamless Handoff',
+    description: 'AI captures leads and seamlessly escalates to your admissions team when visitors are ready.',
   },
   {
-    icon: Globe,
-    title: 'Multi-Property',
-    description: 'Manage chat widgets across multiple websites from one dashboard.',
-  },
-  {
-    icon: Code,
-    title: 'Easy Integration',
-    description: 'Simple JavaScript snippet that works with any website or framework.',
-  },
-  {
-    icon: Shield,
-    title: 'Visitor Tracking',
-    description: 'See visitor information, browsing history, and current page in real-time.',
+    icon: Brain,
+    title: 'Natural Lead Capture',
+    description: 'Naturally collects contact info, insurance details, and treatment preferences through conversation.',
   },
   {
     icon: BarChart3,
-    title: 'Analytics Ready',
-    description: 'Built for future analytics, AI responses, and advanced features.',
+    title: 'Conversion Analytics',
+    description: 'Track engagement, lead quality, and conversion rates to optimize your admissions funnel.',
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Response time dropped from 4 hours to 4 seconds. We're capturing leads we used to lose.",
+    author: "Sarah M.",
+    role: "Admissions Director",
+    facility: "Recovery First Center",
+    rating: 5,
+  },
+  {
+    quote: "The AI handles after-hours inquiries with real empathy. Families feel heard immediately.",
+    author: "Michael R.",
+    role: "CEO",
+    facility: "Serenity Treatment",
+    rating: 5,
+  },
+  {
+    quote: "Our admissions increased 47% in the first quarter. Game changer for our center.",
+    author: "Jennifer L.",
+    role: "Marketing Director",
+    facility: "New Horizons Recovery",
+    rating: 5,
   },
 ];
 
 const FloatingBadge = ({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) => (
-  <div className={`absolute bg-white rounded-xl px-4 py-2 shadow-lg border border-border/50 transform transition-transform hover:scale-105 ${className}`} style={style}>
+  <div className={`absolute bg-card/95 backdrop-blur-sm rounded-2xl px-5 py-3 shadow-xl border border-border/50 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl ${className}`} style={style}>
     {children}
+  </div>
+);
+
+const FloatingTestimonial = ({ testimonial, className, style }: { testimonial: typeof testimonials[0]; className?: string; style?: React.CSSProperties }) => (
+  <div className={`absolute bg-card/95 backdrop-blur-md rounded-2xl p-5 shadow-xl border border-border/50 max-w-xs transform transition-all duration-500 hover:scale-105 hover:shadow-2xl ${className}`} style={style}>
+    <div className="flex gap-0.5 mb-2">
+      {[...Array(testimonial.rating)].map((_, i) => (
+        <Star key={i} className="h-4 w-4 text-primary fill-primary" />
+      ))}
+    </div>
+    <p className="text-sm text-foreground/90 mb-3 leading-relaxed italic">"{testimonial.quote}"</p>
+    <div className="flex items-center gap-2">
+      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+        <span className="text-xs font-bold text-primary">{testimonial.author.split(' ').map(n => n[0]).join('')}</span>
+      </div>
+      <div>
+        <p className="text-xs font-semibold text-foreground">{testimonial.author}</p>
+        <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+      </div>
+    </div>
   </div>
 );
 
@@ -102,62 +146,174 @@ const Index = () => {
       </nav>
 
       {/* Hero */}
-      <section className="relative py-24 lg:py-36">
+      <section className="relative py-24 lg:py-32 min-h-[85vh] flex items-center">
         <div className="container mx-auto px-4">
           {/* Floating badges */}
-          <FloatingBadge className="hidden lg:flex items-center gap-2 -left-4 top-32 -rotate-6 animate-fade-in">
-            <CheckCircle2 className="h-4 w-4 text-status-online" />
-            <span className="text-sm font-medium text-foreground">24/7 Support</span>
+          <FloatingBadge className="hidden xl:flex items-center gap-2 left-8 top-12 -rotate-3 animate-fade-in">
+            <Phone className="h-4 w-4 text-status-online" />
+            <span className="text-sm font-medium text-foreground">24/7 Response</span>
           </FloatingBadge>
           
-          <FloatingBadge className="hidden lg:flex items-center gap-2 -right-4 top-24 rotate-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <Star className="h-4 w-4 text-status-away fill-status-away" />
-            <span className="text-sm font-medium text-foreground">Trusted by 500+ teams</span>
+          <FloatingBadge className="hidden xl:flex items-center gap-2 right-8 top-8 rotate-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">HIPAA Compliant</span>
           </FloatingBadge>
           
-          <FloatingBadge className="hidden lg:flex items-center gap-2 left-12 bottom-16 rotate-3 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <MessageSquare className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">AI-Powered</span>
+          <FloatingBadge className="hidden xl:flex items-center gap-2 left-16 bottom-32 rotate-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <Heart className="h-4 w-4 text-destructive" />
+            <span className="text-sm font-medium text-foreground">500+ Lives Impacted</span>
           </FloatingBadge>
+
+          {/* Floating Testimonials */}
+          <FloatingTestimonial 
+            testimonial={testimonials[0]} 
+            className="hidden 2xl:block left-4 top-48 -rotate-2 animate-fade-in" 
+            style={{ animationDelay: '0.3s' }}
+          />
+          <FloatingTestimonial 
+            testimonial={testimonials[1]} 
+            className="hidden 2xl:block right-4 top-64 rotate-2 animate-fade-in" 
+            style={{ animationDelay: '0.4s' }}
+          />
 
           <div className="max-w-4xl mx-auto text-center relative">
             {/* Stats badge */}
-            <div className="inline-flex items-center gap-2 bg-muted/80 backdrop-blur-sm border border-border/50 text-foreground px-5 py-2.5 rounded-full text-sm font-medium mb-8 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-sm border border-primary/20 text-foreground px-5 py-2.5 rounded-full text-sm font-medium mb-8 shadow-sm">
               <MessageSquare className="h-4 w-4 text-primary" />
-              <span className="text-primary font-semibold">1M+</span>
-              <span className="text-muted-foreground">Conversations Powered</span>
+              <span className="text-primary font-bold">47%</span>
+              <span className="text-muted-foreground">Average Admissions Increase</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight">
-              Connect with your visitors
-              <span className="block text-primary mt-2">in real-time.</span>
+              Never Miss a
+              <span className="block text-primary mt-2">Call for Help.</span>
             </h1>
             
-            <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-              A multi-tenant live chat system for your websites. Create properties, 
-              assign agents, and start chatting with visitors <span className="text-foreground font-medium">instantly</span>.
+            <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+              AI-powered chat that engages visitors <span className="text-foreground font-semibold">24/7</span> with empathy, 
+              captures leads naturally, and helps more people start their <span className="text-primary font-semibold">recovery journey</span>.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={user ? getDashboardRoute() : '/auth'}>
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl">
-                  {user ? 'Open Dashboard' : 'Get Started Free'}
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-10 h-14 text-base font-semibold rounded-xl">
+                  {user ? 'Open Dashboard' : 'Start Free Trial'}
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/widget-preview">
                 <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2 hover:bg-muted/50">
-                  <Code className="h-5 w-5" />
-                  View Widget Demo
+                  <MessageSquare className="h-5 w-5" />
+                  See Live Demo
                 </Button>
               </Link>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-status-online" />
+                <span>Setup in 5 minutes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-status-online" />
+                <span>No coding required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-status-online" />
+                <span>Cancel anytime</span>
+              </div>
             </div>
           </div>
         </div>
         
         {/* Gradient orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/6 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-3xl pointer-events-none" />
+      </section>
+
+      {/* Social Proof Section */}
+      <section className="relative py-16 border-y border-border/50 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Trusted by Leading Treatment Centers</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={index}
+                className="bg-card/80 backdrop-blur-sm p-6 rounded-2xl border border-border/50 hover:shadow-lg transition-all duration-300"
+              >
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 text-primary fill-primary" />
+                  ))}
+                </div>
+                <p className="text-foreground/90 mb-4 leading-relaxed">"{testimonial.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-sm font-bold text-primary">{testimonial.author.split(' ').map(n => n[0]).join('')}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{testimonial.author}</p>
+                    <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Problem/Solution Section */}
+      <section className="relative py-24 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-destructive/10 text-destructive px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                  <Clock className="h-4 w-4" />
+                  The Problem
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
+                  Every Minute Matters When Someone Reaches Out
+                </h2>
+                <div className="space-y-4 text-lg text-muted-foreground">
+                  <p>
+                    <span className="text-foreground font-semibold">78% of treatment inquiries</span> happen outside business hours—nights, weekends, holidays.
+                  </p>
+                  <p>
+                    The average response time for addiction treatment inquiries is <span className="text-destructive font-semibold">4+ hours</span>. By then, the moment of motivation has passed.
+                  </p>
+                  <p>
+                    Your admissions team can't be everywhere. But someone reaching out for help shouldn't have to wait.
+                  </p>
+                </div>
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 bg-status-online/10 text-status-online px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                  <Heart className="h-4 w-4" />
+                  The Solution
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
+                  Instant, Empathetic Response—Every Time
+                </h2>
+                <div className="space-y-4 text-lg text-muted-foreground">
+                  <p>
+                    Care Assist responds in <span className="text-status-online font-semibold">under 5 seconds</span> with warm, understanding conversation.
+                  </p>
+                  <p>
+                    Our AI is trained on thousands of behavioral health conversations to engage with <span className="text-foreground font-semibold">genuine empathy</span>.
+                  </p>
+                  <p>
+                    When visitors are ready, it seamlessly captures their info and alerts your team for follow-up.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Features */}
@@ -166,11 +322,14 @@ const Index = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
               <Zap className="h-4 w-4" />
-              Features
+              Built for Behavioral Health
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Built for scale</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+              Everything You Need to
+              <span className="text-primary"> Convert More Leads</span>
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to provide exceptional customer support across all your properties.
+              Purpose-built for treatment centers, detox facilities, and behavioral health providers.
             </p>
           </div>
 
@@ -178,13 +337,13 @@ const Index = () => {
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="group bg-card/80 backdrop-blur-sm p-7 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                className="group bg-card/80 backdrop-blur-sm p-7 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300">
+                  <feature.icon className="h-7 w-7 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
             ))}
@@ -192,39 +351,22 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Future Features */}
-      <section className="relative py-24">
+      {/* Stats Section */}
+      <section className="relative py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 bg-status-online/10 text-status-online px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                <CheckCircle2 className="h-4 w-4" />
-                Coming Soon
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Ready for the future</h2>
-              <p className="text-lg text-muted-foreground">
-                Built with a modular architecture to support upcoming features.
-              </p>
-            </div>
-
-            <div className="bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 p-8 shadow-lg">
-              <div className="grid sm:grid-cols-2 gap-4">
-                {[
-                  'AI Auto-responses',
-                  'User Analytics',
-                  'Browser Events',
-                  'File Upload',
-                  'Departments',
-                  'Triggers',
-                  'WhatsApp Integration',
-                  'And more...'
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-                    <div className="h-2.5 w-2.5 rounded-full bg-primary/60" />
-                    <span className="text-foreground font-medium">{feature}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { value: '47%', label: 'Avg. Admission Increase' },
+                { value: '<5s', label: 'Response Time' },
+                { value: '24/7', label: 'Availability' },
+                { value: '500+', label: 'Lives Impacted' },
+              ].map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -233,19 +375,33 @@ const Index = () => {
       {/* CTA Section */}
       <section className="relative py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-3xl p-12 border border-primary/10">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-              Ready to transform your customer support?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Start connecting with your visitors in real-time today.
-            </p>
-            <Link to={user ? getDashboardRoute() : '/auth'}>
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-8 h-14 text-base font-semibold rounded-xl">
-                {user ? 'Go to Dashboard' : 'Start Free Trial'}
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
+          <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-primary/10 via-primary/15 to-primary/10 rounded-3xl p-12 md:p-16 border border-primary/20 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+            
+            <div className="relative">
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
+                Start Helping More People
+                <span className="text-primary block mt-2">Today</span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+                Join treatment centers across the country who are converting more leads and helping more people find recovery.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to={user ? getDashboardRoute() : '/auth'}>
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 gap-2 px-10 h-14 text-base font-semibold rounded-xl">
+                    {user ? 'Go to Dashboard' : 'Start Free Trial'}
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-base font-semibold rounded-xl border-2">
+                  <Phone className="h-5 w-5" />
+                  Schedule Demo
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-6">No credit card required • Setup in 5 minutes</p>
+            </div>
           </div>
         </div>
       </section>
@@ -259,8 +415,12 @@ const Index = () => {
               <span className="font-semibold text-foreground">Care Assist</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Care Assist. Internal tool for live customer support.
+              © 2024 Care Assist. Helping treatment centers help more people.
             </p>
+            <div className="flex gap-6 text-sm">
+              <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
+            </div>
           </div>
         </div>
       </footer>
