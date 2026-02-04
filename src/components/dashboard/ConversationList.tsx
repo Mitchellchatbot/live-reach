@@ -97,7 +97,7 @@ const ConversationItem = ({
               "text-sm font-medium",
               isTest ? "bg-amber-500/10 text-amber-600" :
               status === 'active' ? "bg-primary/10 text-primary" :
-              status === 'pending' ? "bg-primary/10 text-primary" :
+              status === 'pending' ? "bg-status-pending/10 text-status-pending" :
               "bg-muted text-muted-foreground"
             )}>
               {isTest ? <FlaskConical className="h-4 w-4" /> : initials}
@@ -181,7 +181,7 @@ const ConversationItem = ({
           </p>
 
           {status === 'pending' && (
-            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10 text-xs py-0 w-fit">
+            <Badge variant="outline" className="text-status-pending border-status-pending/30 bg-status-pending/10 text-xs py-0 w-fit">
               <Clock className="h-3 w-3 mr-1" />
               Pending
             </Badge>
