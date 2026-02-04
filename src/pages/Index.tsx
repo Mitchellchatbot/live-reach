@@ -390,10 +390,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Bar - Dark themed */}
-      <section className="relative py-14 bg-foreground overflow-hidden">
+      {/* Stats Bar - Light gradient */}
+      <section className="relative py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background overflow-hidden border-y border-primary/10">
         {/* Subtle grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--background)/0.05)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--background)/0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.08)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.08)_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
         
         <div className="container mx-auto px-4 relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -407,7 +407,7 @@ const Index = () => {
                 <div className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary group-hover:scale-105 transition-transform duration-300 inline-block">
                   {stat.value}
                 </div>
-                <div className="text-sm text-background/70 mt-2 font-medium">
+                <div className="text-sm text-muted-foreground mt-2 font-semibold">
                   {stat.label}
                 </div>
               </div>
