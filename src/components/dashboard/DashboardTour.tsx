@@ -41,15 +41,15 @@ const tourSteps: Step[] = [
     placement: 'right',
   },
   {
-    target: '[data-tour="widget-code"]',
-    content: "Copy the embed code to add the chat widget to your website. It only takes a minute!",
-    title: "Get Your Widget",
-    placement: 'right',
-  },
-  {
     target: '[data-tour="team-members"]',
     content: "Invite team members to help manage conversations. They'll get their own login to respond to visitors.",
     title: "Build Your Team",
+    placement: 'right',
+  },
+  {
+    target: '[data-tour="widget-code"]',
+    content: "Copy the embed code to add the chat widget to your website. It only takes a minute!",
+    title: "Get Your Widget",
     placement: 'right',
   },
 ];
