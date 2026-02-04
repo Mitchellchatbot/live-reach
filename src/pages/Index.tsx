@@ -179,11 +179,10 @@ const Index = () => {
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
       
       {/* Navigation */}
-      <nav className="relative border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-0 z-40">
+      <nav className="relative bg-background/80 backdrop-blur-xl sticky top-0 z-40">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <img src={scaledBotLogo} alt="Care Assist" className="h-10 w-10 rounded-full shadow-sm" />
+            <div className="flex items-center">
               <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             
