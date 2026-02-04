@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Zap, Shield, Globe, ArrowRight, Code, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles } from 'lucide-react';
+import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,35 +7,57 @@ import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
 const features = [
   {
-    icon: Bot,
-    title: 'AI-Powered Conversations',
-    description: 'Compassionate AI responses trained specifically for behavioral health and addiction recovery conversations.',
+    icon: Shield,
+    title: 'Medical-Safe Responses',
+    description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
   },
   {
-    icon: Clock,
-    title: '24/7 Availability',
-    description: 'Never miss a call for help. Engage visitors around the clock when they need support most.',
-  },
-  {
-    icon: Heart,
-    title: 'Empathetic Engagement',
-    description: 'Warm, non-judgmental conversations that build trust and encourage the first step toward recovery.',
-  },
-  {
-    icon: Users,
-    title: 'Seamless Handoff',
-    description: 'AI captures leads and seamlessly escalates to your admissions team when visitors are ready.',
+    icon: AlertTriangle,
+    title: 'Crisis Detection',
+    description: 'Instantly detects crisis keywords and alerts your team for immediate human intervention.',
   },
   {
     icon: Brain,
     title: 'Natural Lead Capture',
-    description: 'Naturally collects contact info, insurance details, and treatment preferences through conversation.',
+    description: 'Collects visitor info through natural conversation—name, phone, insurance, and more.',
+  },
+  {
+    icon: UserCheck,
+    title: 'Qualified Handoffs',
+    description: 'Human agents start conversations informed with full context and visitor details.',
   },
   {
     icon: BarChart3,
     title: 'Conversion Analytics',
-    description: 'Track engagement, lead quality, and conversion rates to optimize your admissions funnel.',
+    description: 'Track chat-to-lead conversion, drop-off points, and peak inquiry times.',
   },
+  {
+    icon: Zap,
+    title: 'Salesforce Integration',
+    description: 'Export captured leads directly to Salesforce with one click.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Alerts',
+    description: 'Get notified on your phone and respond to visitors from anywhere.',
+  },
+  {
+    icon: Settings,
+    title: 'Fully Customizable',
+    description: 'Tailored to your facility\'s voice, services, and admission process.',
+  },
+  {
+    icon: Lock,
+    title: 'HIPAA Compliant',
+    description: 'Secure handling of sensitive health information and visitor data.',
+  },
+];
+
+const keyBenefits = [
+  { icon: Clock, title: '24/7 Availability', desc: 'Never miss an inquiry' },
+  { icon: Heart, title: 'Lead Retention', desc: 'Keep visitors engaged' },
+  { icon: Shield, title: 'Risk Reduction', desc: 'Safe, compliant responses' },
+  { icon: Users, title: 'Easy to Use', desc: 'Simple for your whole team' },
 ];
 
 const testimonials = [
@@ -233,8 +255,27 @@ const Index = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-3xl pointer-events-none" />
       </section>
 
+      {/* Key Benefits Bar */}
+      <section className="relative py-12 border-y border-border/50 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {keyBenefits.map((benefit, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <benefit.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{benefit.title}</p>
+                  <p className="text-xs text-muted-foreground">{benefit.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Social Proof Section */}
-      <section className="relative py-16 border-y border-border/50 bg-muted/30">
+      <section className="relative py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Trusted by Leading Treatment Centers</p>
@@ -321,30 +362,33 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
-              <Zap className="h-4 w-4" />
-              Built for Behavioral Health
+              <Sparkles className="h-4 w-4" />
+              Why Care Assist
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Everything You Need to
-              <span className="text-primary"> Convert More Leads</span>
+              Built Different for
+              <span className="text-primary"> Behavioral Health</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Purpose-built for treatment centers, detox facilities, and behavioral health providers.
+              Simple, powerful features designed specifically for treatment centers.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="group bg-card/80 backdrop-blur-sm p-7 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group bg-card p-6 rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300"
               >
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-300">
-                  <feature.icon className="h-7 w-7 text-primary group-hover:text-primary-foreground transition-colors" />
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                    <feature.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground mb-1">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
