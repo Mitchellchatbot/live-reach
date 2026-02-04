@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, X, Send } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, X, Send, Globe, Building2, Pencil, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,7 @@ import sarahAvatar from '@/assets/personas/sarah.jpg';
 import michaelAvatar from '@/assets/personas/michael.jpg';
 import danielAvatar from '@/assets/personas/daniel.jpg';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 // Persona avatar mapping
 const personaAvatars: Record<string, string> = {
@@ -29,10 +30,21 @@ const personaNames: Record<string, string> = {
   daniel: 'Daniel',
 };
 
-type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 'complete';
+type OnboardingStep = 1 | 'extracting' | 'confirm' | 2 | 3 | 4 | 5 | 'complete';
+
+interface ExtractedInfo {
+  companyName: string | null;
+  description: string | null;
+  suggestedGreeting: string;
+  businessType: string;
+  primaryColor: string | null;
+  logo: string | null;
+  sourceUrl: string;
+}
 
 interface OnboardingData {
   websiteUrl: string;
+  companyName: string;
   greeting: string;
   greetingPreset: string | null; // tracks which preset is selected, null = custom
   collectEmail: boolean;
@@ -45,6 +57,7 @@ interface OnboardingData {
   agentAvatarFile: File | null; // Actual file for upload
   agentAvatarPreview: string | null; // Blob URL for preview only
   widgetIcon: string;
+  extractedInfo: ExtractedInfo | null;
 }
 
 // Widget icon options
@@ -143,6 +156,7 @@ const Onboarding = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<OnboardingData>({
     websiteUrl: '',
+    companyName: '',
     greeting: defaultGreeting,
     greetingPreset: 'Hopeful',
     collectEmail: true,
@@ -155,6 +169,7 @@ const Onboarding = () => {
     agentAvatarFile: null,
     agentAvatarPreview: null,
     widgetIcon: 'message-circle',
+    extractedInfo: null,
   });
 
   const isValidDomain = (input: string) => {
@@ -244,8 +259,45 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
     }
   };
 
+  const extractWebsiteInfo = async () => {
+    setStep('extracting');
+    
+    try {
+      const { data: result, error } = await supabase.functions.invoke('extract-website-info', {
+        body: { url: data.websiteUrl },
+      });
+
+      if (error) {
+        console.error('Error extracting website info:', error);
+        toast.error('Could not analyze website. You can still continue manually.');
+        setStep('confirm');
+        return;
+      }
+
+      if (result?.success && result?.data) {
+        const extracted = result.data as ExtractedInfo;
+        setData(prev => ({
+          ...prev,
+          companyName: extracted.companyName || extractDomain(prev.websiteUrl),
+          greeting: extracted.suggestedGreeting || prev.greeting,
+          greetingPreset: null, // Mark as custom since it's AI-generated
+          extractedInfo: extracted,
+        }));
+      }
+      setStep('confirm');
+    } catch (err) {
+      console.error('Error extracting website info:', err);
+      toast.error('Could not analyze website. You can still continue manually.');
+      setStep('confirm');
+    }
+  };
+
   const nextStep = () => {
-    if (step === 5) {
+    if (step === 1) {
+      extractWebsiteInfo();
+    } else if (step === 'confirm') {
+      setStep(2);
+    } else if (step === 5) {
       handleComplete();
     } else if (typeof step === 'number') {
       setStep((step + 1) as OnboardingStep);
@@ -253,8 +305,14 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
   };
 
   const prevStep = () => {
-    if (typeof step === 'number' && step > 1) {
-      setStep((step - 1) as OnboardingStep);
+    if (step === 'confirm') {
+      setStep(1);
+    } else if (typeof step === 'number' && step > 1) {
+      if (step === 2) {
+        setStep('confirm');
+      } else {
+        setStep((step - 1) as OnboardingStep);
+      }
     }
   };
 
@@ -322,17 +380,21 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       </div>
 
       {/* Progress dots */}
-      {step !== 'complete' && (
+      {step !== 'complete' && step !== 'extracting' && (
         <div className="flex justify-center gap-2 py-4">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <div
-              key={s}
-              className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300",
-                s === step ? "bg-primary w-6" : s < step ? "bg-primary" : "bg-muted-foreground/30"
-              )}
-            />
-          ))}
+          {[1, 2, 3, 4, 5].map((s) => {
+            // Map current step to progress number
+            const currentProgress = step === 'confirm' ? 1 : (typeof step === 'number' ? step : 1);
+            return (
+              <div
+                key={s}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-300",
+                  s === currentProgress ? "bg-primary w-6" : s < currentProgress ? "bg-primary" : "bg-muted-foreground/30"
+                )}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -373,6 +435,121 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   Continue
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Extracting step - loading state */}
+          {step === 'extracting' && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                </div>
+                <h1 className="text-2xl font-semibold text-foreground">Analyzing your website...</h1>
+                <p className="text-muted-foreground">
+                  We're extracting information about your business to personalize your chat experience.
+                </p>
+              </div>
+              
+              <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">{data.websiteUrl}</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Confirm step - show extracted info */}
+          {step === 'confirm' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-full bg-status-online/10 flex items-center justify-center mb-4">
+                  <Check className="h-6 w-6 text-status-online" />
+                </div>
+                <h1 className="text-2xl font-semibold text-foreground">We found your business!</h1>
+                <p className="text-muted-foreground">Please confirm or edit the details below</p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Company Name */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    Business Name
+                  </label>
+                  <Input
+                    value={data.companyName}
+                    onChange={(e) => setData({ ...data, companyName: e.target.value })}
+                    placeholder="Your business name"
+                    className="h-11"
+                  />
+                </div>
+
+                {/* Website */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    Website
+                  </label>
+                  <Input
+                    value={data.websiteUrl}
+                    onChange={(e) => setData({ ...data, websiteUrl: e.target.value })}
+                    placeholder="yourwebsite.com"
+                    className="h-11"
+                  />
+                </div>
+
+                {/* Suggested Greeting Preview */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                    Suggested Greeting
+                  </label>
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <p className="text-sm text-foreground">{data.greeting}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">You can customize this in the next step</p>
+                </div>
+
+                {/* Extracted info summary */}
+                {data.extractedInfo && (
+                  <div className="bg-muted/30 rounded-xl p-4 space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Detected</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full capitalize">
+                        {data.extractedInfo.businessType} business
+                      </span>
+                      {data.extractedInfo.primaryColor && (
+                        <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full flex items-center gap-1.5">
+                          <span 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: data.extractedInfo.primaryColor }}
+                          />
+                          Brand color detected
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Button onClick={nextStep} className="w-full h-12">
+                  Looks Good!
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <button
+                  onClick={prevStep}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
+                >
+                  <ArrowLeft className="h-3 w-3" />
+                  Change website
+                </button>
               </div>
             </div>
           )}
