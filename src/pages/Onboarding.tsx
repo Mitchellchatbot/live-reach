@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, Check, Upload, User, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -677,25 +677,14 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 })}
               </div>
 
-              {/* Live preview of selected icon */}
-              <div className="flex flex-col items-center gap-3 pt-4">
-                <p className="text-sm text-muted-foreground">Preview</p>
-                <div className="relative">
-                  <div 
-                    className={cn(
-                      "w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl transition-all duration-500",
-                      "animate-attention-bounce"
-                    )}
-                    key={data.widgetIcon}
-                  >
-                    {(() => {
-                      const SelectedIcon = widgetIconOptions.find(o => o.id === data.widgetIcon)?.icon || MessageCircle;
-                      return <SelectedIcon className="h-8 w-8" />;
-                    })()}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-status-online rounded-full border-2 border-background animate-pulse" />
-                </div>
-              </div>
+
+              {/* Interactive Chat Widget Preview */}
+              <WidgetPreviewDemo 
+                widgetIcon={data.widgetIcon}
+                agentName={data.agentName || 'Support'}
+                agentAvatar={data.agentAvatarPreview}
+                greeting={data.greeting}
+              />
 
               <div className="space-y-3 pt-4">
                 <Button onClick={nextStep} disabled={isCreating} className="w-full h-12">
@@ -849,5 +838,168 @@ const ToneCard = ({
     </div>
   </button>
 );
+
+// Widget Preview Demo Component
+const WidgetPreviewDemo = ({
+  widgetIcon,
+  agentName,
+  agentAvatar,
+  greeting,
+}: {
+  widgetIcon: string;
+  agentName: string;
+  agentAvatar?: string | null;
+  greeting: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+
+  // Auto-open after a delay when component mounts
+  useEffect(() => {
+    const openTimer = setTimeout(() => setIsOpen(true), 600);
+    return () => clearTimeout(openTimer);
+  }, []);
+
+  // Show message after widget opens
+  useEffect(() => {
+    if (isOpen) {
+      const messageTimer = setTimeout(() => setShowMessage(true), 400);
+      return () => clearTimeout(messageTimer);
+    } else {
+      setShowMessage(false);
+    }
+  }, [isOpen]);
+
+  // Reset animation when icon changes
+  useEffect(() => {
+    setIsOpen(false);
+    setShowMessage(false);
+    const timer = setTimeout(() => setIsOpen(true), 300);
+    return () => clearTimeout(timer);
+  }, [widgetIcon]);
+
+  const iconMap: Record<string, typeof MessageCircle> = {
+    'message-circle': MessageCircle,
+    'message-square': MessageSquare,
+    'messages-square': MessagesSquare,
+    'headphones': Headphones,
+    'help-circle': HelpCircle,
+    'heart': Heart,
+    'sparkles': Sparkles,
+    'bot': Bot,
+  };
+
+  const SelectedIcon = iconMap[widgetIcon] || MessageCircle;
+
+  return (
+    <div className="flex flex-col items-center gap-3 pt-2">
+      <p className="text-sm text-muted-foreground">Live Preview</p>
+      
+      <div className="relative w-72 h-80 bg-gradient-to-br from-muted/30 to-muted/50 rounded-2xl border border-border overflow-hidden">
+        {/* Mock website background */}
+        <div className="absolute inset-0 p-4 opacity-30">
+          <div className="w-full h-3 bg-muted-foreground/20 rounded mb-2" />
+          <div className="w-3/4 h-3 bg-muted-foreground/20 rounded mb-4" />
+          <div className="w-full h-20 bg-muted-foreground/10 rounded mb-2" />
+          <div className="w-full h-3 bg-muted-foreground/20 rounded mb-2" />
+          <div className="w-5/6 h-3 bg-muted-foreground/20 rounded" />
+        </div>
+
+        {/* Chat Widget */}
+        <div className="absolute bottom-3 right-3">
+          {/* Opened Chat Window */}
+          {isOpen && (
+            <div 
+              className={cn(
+                "absolute bottom-14 right-0 w-56 bg-card rounded-2xl shadow-2xl border border-border overflow-hidden",
+                "animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+              )}
+            >
+              {/* Header */}
+              <div className="bg-primary p-3 flex items-center gap-2">
+                <div className="relative">
+                  {agentAvatar ? (
+                    <img 
+                      src={agentAvatar} 
+                      alt={agentName} 
+                      className="w-8 h-8 rounded-full object-cover border-2 border-primary-foreground/20"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-status-online rounded-full border-2 border-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-primary-foreground font-medium text-sm truncate">{agentName}</p>
+                  <p className="text-primary-foreground/70 text-xs">Online</p>
+                </div>
+                <button 
+                  onClick={() => setIsOpen(false)}
+                  className="text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div className="p-3 h-28 overflow-hidden">
+                {showMessage && (
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex gap-2">
+                      {agentAvatar ? (
+                        <img 
+                          src={agentAvatar} 
+                          alt={agentName}
+                          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <User className="h-3 w-3 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="bg-muted rounded-2xl rounded-tl-md px-3 py-2 max-w-[85%]">
+                        <p className="text-xs text-foreground leading-relaxed line-clamp-3">
+                          {greeting || "Hi there! 👋 How can I help you today?"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input */}
+              <div className="p-2 border-t border-border">
+                <div className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
+                  <span className="text-xs text-muted-foreground flex-1">Type a message...</span>
+                  <Send className="h-3.5 w-3.5 text-primary" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Launcher Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={cn(
+              "w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-all duration-300",
+              isOpen ? "rotate-0" : "animate-attention-bounce",
+              "hover:scale-105 active:scale-95"
+            )}
+          >
+            {isOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <SelectedIcon className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </div>
+      
+      <p className="text-xs text-muted-foreground text-center">Click the button to open/close</p>
+    </div>
+  );
+};
 
 export default Onboarding;
