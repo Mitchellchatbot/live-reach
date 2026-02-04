@@ -63,8 +63,8 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img src={scaledBotLogo} alt="Scaled Bot" className="h-10 w-10 rounded-xl shadow-sm" />
-              <span className="font-bold text-xl tracking-tight text-foreground">Scaled Bot</span>
+              <img src={scaledBotLogo} alt="Care Assist" className="h-10 w-10 rounded-xl shadow-sm" />
+              <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             <div className="flex items-center gap-3">
               {user ? (
@@ -252,11 +252,11 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <img src={scaledBotLogo} alt="Scaled Bot" className="h-9 w-9 rounded-xl" />
-              <span className="font-semibold text-foreground">Scaled Bot</span>
+              <img src={scaledBotLogo} alt="Care Assist" className="h-9 w-9 rounded-xl" />
+              <span className="font-semibold text-foreground">Care Assist</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Scaled Bot. Internal tool for live customer support.
+              © 2024 Care Assist. Internal tool for live customer support.
             </p>
           </div>
         </div>
