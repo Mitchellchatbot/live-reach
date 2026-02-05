@@ -379,16 +379,40 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         return;
       }
 
+      let extracted: ExtractedInfo | null = null;
       if (result?.success && result?.data) {
-        const extracted = result.data as ExtractedInfo;
+        extracted = result.data as ExtractedInfo;
         setData(prev => ({
           ...prev,
-          companyName: extracted.companyName || extractDomain(prev.websiteUrl),
-          greeting: extracted.suggestedGreeting || prev.greeting,
-          greetingPreset: null, // Mark as custom since it's AI-generated
+          companyName: extracted!.companyName || extractDomain(prev.websiteUrl),
           extractedInfo: extracted,
         }));
       }
+      
+      // Generate AI greeting based on extracted info
+      if (extracted) {
+        try {
+          const { data: greetingResult } = await supabase.functions.invoke('generate-greeting', {
+            body: {
+              companyName: extracted.companyName,
+              description: extracted.description,
+              businessType: extracted.businessType,
+            },
+          });
+          
+          if (greetingResult?.success && greetingResult?.greeting) {
+            setData(prev => ({
+              ...prev,
+              greeting: greetingResult.greeting,
+              greetingPreset: null, // Mark as AI-generated (custom)
+            }));
+          }
+        } catch (greetingErr) {
+          console.error('Error generating AI greeting:', greetingErr);
+          // Continue with default greeting if AI fails
+        }
+      }
+      
       setStep('confirm');
     } catch (err) {
       console.error('Error extracting website info:', err);
@@ -596,20 +620,6 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   />
                 </div>
 
-                {/* Suggested Greeting Preview */}
-                <div className="p-4">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    Suggested Greeting
-                  </label>
-                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 border border-primary/10">
-                    <p className="text-sm text-foreground leading-relaxed">{data.greeting}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                    <Pencil className="h-3 w-3" />
-                    You can customize this in the next step
-                  </p>
-                </div>
               </div>
 
               {/* Extracted info summary */}
@@ -654,11 +664,21 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
 
           {/* Step 2: Welcome Message */}
           {step === 2 && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">How should your bot greet visitors?</h1>
                 <p className="text-muted-foreground">This is the first message they'll see</p>
               </div>
+
+              {/* AI-generated greeting notice */}
+              {data.extractedInfo && data.greetingPreset === null && (
+                <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 border border-primary/20 flex items-start gap-2">
+                  <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-foreground/80">
+                    <span className="font-medium">Suggested for your website</span> — we generated this greeting based on your business. Feel free to edit!
+                  </p>
+                </div>
+              )}
               
               <Textarea
                 value={data.greeting}
@@ -676,12 +696,12 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               />
 
               <div className="flex flex-wrap gap-2 justify-center">
-                {[...greetingPresets, ...(data.greetingPreset === null ? [{ label: 'Custom', value: data.greeting }] : [])].map((preset) => (
+                {greetingPresets.map((preset) => (
                   <Button
                     key={preset.label}
-                    variant={data.greetingPreset === preset.label || (preset.label === 'Custom' && data.greetingPreset === null) ? "default" : "outline"}
+                    variant={data.greetingPreset === preset.label ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setData({ ...data, greeting: preset.value, greetingPreset: preset.label === 'Custom' ? null : preset.label })}
+                    onClick={() => setData({ ...data, greeting: preset.value, greetingPreset: preset.label })}
                     className="text-xs"
                   >
                     {preset.label}
