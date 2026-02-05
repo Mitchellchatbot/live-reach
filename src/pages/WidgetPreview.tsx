@@ -321,285 +321,250 @@ const WidgetPreview = () => {
 
         <main className="flex-1 p-2 overflow-hidden">
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
-          {/* Settings */}
-          <div className="space-y-6">
-            <Tabs defaultValue="widget">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="widget" className="gap-2">
-                  <Palette className="h-4 w-4" />
-                  Widget
-                </TabsTrigger>
-                <TabsTrigger value="code" className="gap-2">
-                  <Code className="h-4 w-4" />
-                  Embed Code
-                </TabsTrigger>
-              </TabsList>
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Settings Row */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Widget & Code Tabs */}
+            <div className="space-y-6">
+              <Tabs defaultValue="widget">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="widget" className="gap-2">
+                    <Palette className="h-4 w-4" />
+                    Widget
+                  </TabsTrigger>
+                  <TabsTrigger value="code" className="gap-2">
+                    <Code className="h-4 w-4" />
+                    Embed Code
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="widget" className="mt-6 space-y-6">
-                {/* Widget Icon */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Chat Launcher Icon</CardTitle>
-                    <CardDescription>Pick an icon for your chat launcher button</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Hidden file input for custom icon */}
-                    <input
-                      type="file"
-                      ref={widgetIconInputRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const previewUrl = URL.createObjectURL(file);
-                          setWidgetIcon('custom');
-                          setWidgetIconPreview(previewUrl);
-                        }
-                      }}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <div className="grid grid-cols-3 gap-2">
-                      {widgetIconOptions.map((option) => {
-                        const IconComponent = option.icon;
-                        const isSelected = widgetIcon === option.id;
-                        const isCustomOption = option.id === 'custom';
-                        
-                        return (
-                          <button
-                            key={option.id}
-                            onClick={() => {
-                              if (isCustomOption) {
-                                widgetIconInputRef.current?.click();
-                              } else {
-                                setWidgetIcon(option.id);
-                                setWidgetIconPreview(null);
-                              }
-                            }}
-                            className={cn(
-                              "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
-                              isSelected
-                                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                                : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
-                            )}
-                          >
-                            {isCustomOption && widgetIconPreview ? (
-                              <img 
-                                src={widgetIconPreview} 
-                                alt="Custom icon" 
-                                className="h-6 w-6 rounded object-cover"
-                              />
-                            ) : (
-                              <IconComponent className={cn(
-                                "h-6 w-6 transition-transform duration-200",
-                                isSelected ? "scale-110" : ""
-                              )} />
-                            )}
-                            <span className={cn(
-                              "text-xs font-medium",
-                              isSelected ? "" : "text-muted-foreground"
-                            )}>
-                              {option.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <Button 
-                      onClick={handleSaveWidgetIcon} 
-                      disabled={isSavingIcon || !selectedPropertyId} 
-                      className="w-full"
-                    >
-                      {isSavingIcon ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      Save Widget Icon
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Brand Color */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Brand Color</CardTitle>
-                    <CardDescription>
-                      Choose your primary widget color
-                      {isExtracting && <span className="flex items-center gap-2 mt-1 text-primary">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Extracting from your website...
-                        </span>}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-6 gap-3 mb-4">
-                      {colorPresets.map(preset => <button key={preset.name} onClick={() => setPrimaryColor(preset.color)} className="h-10 w-10 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" style={{
-                        backgroundColor: preset.color
-                      }} title={preset.name} />)}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} placeholder="Custom color (HSL)" className="font-mono text-sm" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-              </TabsContent>
-
-              <TabsContent value="code" className="mt-6">
-                {/* Embed Code */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Code className="h-5 w-5" />
-                      Embed Code
-                      {selectedProperty && <span className="text-xs font-normal text-muted-foreground ml-2">
-                          for {selectedProperty.name}
-                        </span>}
-                    </CardTitle>
-                    <CardDescription>
-                      Add this code to your website's HTML, just before the closing &lt;/body&gt; tag
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="relative">
-                      <pre className="bg-sidebar text-sidebar-foreground p-4 rounded-lg text-sm overflow-x-auto">
-                        <code>{widgetScript}</code>
-                      </pre>
-                      <Button onClick={handleCopy} size="sm" variant="secondary" className="absolute top-2 right-2" disabled={!selectedPropertyId}>
-                        {copied ? <>
-                            <Check className="h-4 w-4 mr-1" />
-                            Copied
-                          </> : <>
-                            <Copy className="h-4 w-4 mr-1" />
-                            Copy
-                          </>}
+                <TabsContent value="widget" className="mt-6 space-y-6">
+                  {/* Widget Icon */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Chat Launcher Icon</CardTitle>
+                      <CardDescription>Pick an icon for your chat launcher button</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <input
+                        type="file"
+                        ref={widgetIconInputRef}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const previewUrl = URL.createObjectURL(file);
+                            setWidgetIcon('custom');
+                            setWidgetIconPreview(previewUrl);
+                          }
+                        }}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        {widgetIconOptions.map((option) => {
+                          const IconComponent = option.icon;
+                          const isSelected = widgetIcon === option.id;
+                          const isCustomOption = option.id === 'custom';
+                          return (
+                            <button
+                              key={option.id}
+                              onClick={() => {
+                                if (isCustomOption) {
+                                  widgetIconInputRef.current?.click();
+                                } else {
+                                  setWidgetIcon(option.id);
+                                  setWidgetIconPreview(null);
+                                }
+                              }}
+                              className={cn(
+                                "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
+                                isSelected
+                                  ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                  : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
+                              )}
+                            >
+                              {isCustomOption && widgetIconPreview ? (
+                                <img src={widgetIconPreview} alt="Custom icon" className="h-6 w-6 rounded object-cover" />
+                              ) : (
+                                <IconComponent className={cn("h-6 w-6 transition-transform duration-200", isSelected ? "scale-110" : "")} />
+                              )}
+                              <span className={cn("text-xs font-medium", isSelected ? "" : "text-muted-foreground")}>
+                                {option.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <Button onClick={handleSaveWidgetIcon} disabled={isSavingIcon || !selectedPropertyId} className="w-full">
+                        {isSavingIcon ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Save Widget Icon
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+                    </CardContent>
+                  </Card>
 
-          {/* Preview & Display Settings */}
-          <div className="space-y-6">
-            <Card className="overflow-hidden">
-              <CardHeader className="bg-muted/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      {previewMode === 'desktop' ? (
-                        <Monitor className="h-4 w-4" />
-                      ) : (
-                        <Smartphone className="h-4 w-4" />
-                      )}
-                      Widget Preview
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-2 mt-1">
-                      <Sparkles className="h-3 w-3" />
-                      {selectedProperty?.domain ? `Preview on ${selectedProperty.domain}` : 'Select a property to see a live preview'}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                    <button
-                      onClick={() => setPreviewMode('desktop')}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        previewMode === 'desktop' 
-                          ? "bg-background shadow-sm text-foreground" 
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                      title="Desktop view"
-                    >
-                      <Monitor className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setPreviewMode('mobile')}
-                      className={cn(
-                        "p-1.5 rounded-md transition-all",
-                        previewMode === 'mobile' 
-                          ? "bg-background shadow-sm text-foreground" 
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                      title="Mobile view"
-                    >
-                      <Smartphone className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                {previewMode === 'mobile' ? (
-                  <div className="flex justify-center">
-                    <div className="relative w-[375px] h-[667px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2rem] border-4 border-foreground/20 shadow-xl">
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
-                      {selectedProperty?.domain ? (
-                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
-                      ) : (
-                        <div className="p-6 pt-10">
-                          <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
-                          <div className="space-y-2">
-                            <div className="h-3 w-full bg-foreground/5 rounded" />
-                            <div className="h-3 w-5/6 bg-foreground/5 rounded" />
-                            <div className="h-3 w-4/6 bg-foreground/5 rounded" />
-                          </div>
-                          <div className="mt-6 space-y-3">
-                            <div className="h-24 bg-foreground/5 rounded-lg" />
-                            <div className="h-24 bg-foreground/5 rounded-lg" />
-                          </div>
-                        </div>
-                      )}
-                      <div className="absolute bottom-4 right-4">
-                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                  {/* Brand Color */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Brand Color</CardTitle>
+                      <CardDescription>
+                        Choose your primary widget color
+                        {isExtracting && <span className="flex items-center gap-2 mt-1 text-primary">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Extracting from your website...
+                          </span>}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-6 gap-3 mb-4">
+                        {colorPresets.map(preset => <button key={preset.name} onClick={() => setPrimaryColor(preset.color)} className="h-10 w-10 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" style={{ backgroundColor: preset.color }} title={preset.name} />)}
                       </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-full h-[700px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
-                    <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
-                      <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-destructive/50" />
-                        <div className="w-3 h-3 rounded-full bg-amber-500/50" />
-                        <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
+                      <div className="flex gap-2">
+                        <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} placeholder="Custom color (HSL)" className="font-mono text-sm" />
                       </div>
-                      <div className="flex-1 mx-4">
-                        <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
-                          <span className="text-xs text-muted-foreground truncate">
-                            {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
-                          </span>
-                        </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="code" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Code className="h-5 w-5" />
+                        Embed Code
+                        {selectedProperty && <span className="text-xs font-normal text-muted-foreground ml-2">for {selectedProperty.name}</span>}
+                      </CardTitle>
+                      <CardDescription>
+                        Add this code to your website's HTML, just before the closing &lt;/body&gt; tag
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="relative">
+                        <pre className="bg-sidebar text-sidebar-foreground p-4 rounded-lg text-sm overflow-x-auto">
+                          <code>{widgetScript}</code>
+                        </pre>
+                        <Button onClick={handleCopy} size="sm" variant="secondary" className="absolute top-2 right-2" disabled={!selectedPropertyId}>
+                          {copied ? <><Check className="h-4 w-4 mr-1" />Copied</> : <><Copy className="h-4 w-4 mr-1" />Copy</>}
+                        </Button>
                       </div>
-                    </div>
-                    <div className="relative h-[calc(100%-2rem)]">
-                      {selectedProperty?.domain ? (
-                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
-                      ) : (
-                        <div className="p-8">
-                          <div className="max-w-4xl mx-auto">
-                            <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
-                            <div className="grid grid-cols-3 gap-6 mb-8">
-                              <div className="h-40 bg-foreground/5 rounded-lg" />
-                              <div className="h-40 bg-foreground/5 rounded-lg" />
-                              <div className="h-40 bg-foreground/5 rounded-lg" />
-                            </div>
-                            <div className="space-y-3">
-                              <div className="h-4 w-full bg-foreground/5 rounded" />
-                              <div className="h-4 w-5/6 bg-foreground/5 rounded" />
-                              <div className="h-4 w-4/6 bg-foreground/5 rounded" />
-                              <div className="h-4 w-3/4 bg-foreground/5 rounded" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div className="absolute bottom-4 right-4">
-                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
 
             {/* Display Settings */}
-            <DisplaySettingsCard greeting={greeting} setGreeting={setGreeting} extractedFont={extractedFont} propertyId={selectedPropertyId} />
+            <div className="space-y-6">
+              <DisplaySettingsCard greeting={greeting} setGreeting={setGreeting} extractedFont={extractedFont} propertyId={selectedPropertyId} />
+            </div>
           </div>
+
+          {/* Preview - Full Width Below */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    {previewMode === 'desktop' ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
+                    Widget Preview
+                  </CardTitle>
+                  <CardDescription className="flex items-center gap-2 mt-1">
+                    <Sparkles className="h-3 w-3" />
+                    {selectedProperty?.domain ? `Preview on ${selectedProperty.domain}` : 'Select a property to see a live preview'}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                  <button
+                    onClick={() => setPreviewMode('desktop')}
+                    className={cn(
+                      "p-1.5 rounded-md transition-all",
+                      previewMode === 'desktop' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                    title="Desktop view"
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setPreviewMode('mobile')}
+                    className={cn(
+                      "p-1.5 rounded-md transition-all",
+                      previewMode === 'mobile' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                    title="Mobile view"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 flex justify-center">
+              {previewMode === 'mobile' ? (
+                <div className="relative w-[375px] h-[812px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
+                  {selectedProperty?.domain ? (
+                    <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                  ) : (
+                    <div className="p-6 pt-10">
+                      <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
+                      <div className="space-y-2">
+                        <div className="h-3 w-full bg-foreground/5 rounded" />
+                        <div className="h-3 w-5/6 bg-foreground/5 rounded" />
+                        <div className="h-3 w-4/6 bg-foreground/5 rounded" />
+                      </div>
+                      <div className="mt-6 space-y-3">
+                        <div className="h-24 bg-foreground/5 rounded-lg" />
+                        <div className="h-24 bg-foreground/5 rounded-lg" />
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-4 right-4">
+                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                  </div>
+                </div>
+              ) : (
+                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
+                  <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-destructive/50" />
+                      <div className="w-3 h-3 rounded-full bg-amber-500/50" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
+                    </div>
+                    <div className="flex-1 mx-4">
+                      <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
+                        <span className="text-xs text-muted-foreground truncate">
+                          {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative h-[calc(100%-2rem)]">
+                    {selectedProperty?.domain ? (
+                      <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                    ) : (
+                      <div className="p-8">
+                        <div className="max-w-4xl mx-auto">
+                          <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
+                          <div className="grid grid-cols-3 gap-6 mb-8">
+                            <div className="h-40 bg-foreground/5 rounded-lg" />
+                            <div className="h-40 bg-foreground/5 rounded-lg" />
+                            <div className="h-40 bg-foreground/5 rounded-lg" />
+                          </div>
+                          <div className="space-y-3">
+                            <div className="h-4 w-full bg-foreground/5 rounded" />
+                            <div className="h-4 w-5/6 bg-foreground/5 rounded" />
+                            <div className="h-4 w-4/6 bg-foreground/5 rounded" />
+                            <div className="h-4 w-3/4 bg-foreground/5 rounded" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute bottom-4 right-4">
+                      <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
         </div>
       </main>
