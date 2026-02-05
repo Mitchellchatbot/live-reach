@@ -498,9 +498,15 @@ const WidgetPreview = () => {
                 <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
-                    <div className="w-[390px] h-[844px] origin-top-left" style={{ transform: 'scale(0.5)' }}>
-                      <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
-                    </div>
+                    <FitScaledIframe
+                      src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`}
+                      title={`Mobile preview of ${selectedProperty.name}`}
+                      viewportWidth={390}
+                      viewportHeight={844}
+                      sandbox="allow-scripts allow-same-origin"
+                      loading="lazy"
+                      iframeClassName="pointer-events-auto"
+                    />
                   ) : (
                     <div className="p-6 pt-10">
                       <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
@@ -538,9 +544,15 @@ const WidgetPreview = () => {
                     </div>
                     <div className="relative h-[calc(100%-2rem)] overflow-hidden">
                       {selectedProperty?.domain ? (
-                        <div className="w-[1440px] h-[900px] origin-top-left" style={{ transform: 'scale(0.5)' }}>
-                          <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
-                        </div>
+                        <FitScaledIframe
+                          src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`}
+                          title={`Desktop preview of ${selectedProperty.name}`}
+                          viewportWidth={1440}
+                          viewportHeight={900}
+                          sandbox="allow-scripts allow-same-origin"
+                          loading="lazy"
+                          iframeClassName="pointer-events-auto"
+                        />
                       ) : (
                         <div className="p-8">
                           <div className="max-w-4xl mx-auto">
@@ -574,4 +586,84 @@ const WidgetPreview = () => {
       </div>
     </div>;
 };
+
+type FitScaledIframeProps = {
+  src: string;
+  title: string;
+  viewportWidth: number;
+  viewportHeight: number;
+  sandbox?: string;
+  loading?: "lazy" | "eager";
+  className?: string;
+  iframeClassName?: string;
+  maxScale?: number;
+};
+
+function FitScaledIframe({
+  src,
+  title,
+  viewportWidth,
+  viewportHeight,
+  sandbox,
+  loading = "lazy",
+  className,
+  iframeClassName,
+  maxScale = 1,
+}: FitScaledIframeProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      setContainerSize({ width, height });
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const ready = containerSize.width > 0 && containerSize.height > 0;
+  const scale = ready
+    ? Math.min(
+        maxScale,
+        containerSize.width / viewportWidth,
+        containerSize.height / viewportHeight
+      )
+    : 1;
+
+  const left = ready ? Math.max(0, (containerSize.width - viewportWidth * scale) / 2) : 0;
+  const top = ready ? Math.max(0, (containerSize.height - viewportHeight * scale) / 2) : 0;
+
+  return (
+    <div ref={containerRef} className={cn("relative w-full h-full overflow-hidden", className)}>
+      <div
+        className="absolute"
+        style={{
+          width: viewportWidth,
+          height: viewportHeight,
+          left,
+          top,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          visibility: ready ? "visible" : "hidden",
+        }}
+      >
+        <iframe
+          src={src}
+          className={cn("w-full h-full border-0", iframeClassName)}
+          title={title}
+          sandbox={sandbox}
+          loading={loading}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default WidgetPreview;
