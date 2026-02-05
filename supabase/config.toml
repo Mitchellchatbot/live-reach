@@ -1,1 +1,7 @@
 project_id = "qylckndenngvvaexosml"
+
+[functions.salesforce-oauth-callback]
+verify_jwt = false
+
+[functions.widget-conversation-presence]
+verify_jwt = false
