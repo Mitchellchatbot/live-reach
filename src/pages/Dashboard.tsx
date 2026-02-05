@@ -325,7 +325,7 @@ const DashboardContent = () => {
                   variant="header"
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {totalUnread > 0 && <span className="text-xs text-sidebar-primary font-medium bg-sidebar-primary/20 px-2 py-0.5 rounded-full">
                     {totalUnread}
                   </span>}
@@ -335,8 +335,8 @@ const DashboardContent = () => {
                   selectedPropertyId={propertyFilter === 'all' ? undefined : propertyFilter}
                   onPropertyChange={(id) => setPropertyFilter(id)}
                   onDeleteProperty={deleteProperty}
-                  showIcon={true}
-                  className="w-auto max-w-[180px]"
+                  showIcon={false}
+                  className="w-auto max-w-[150px] h-8 text-xs"
                   variant="header"
                   showAllOption={true}
                 />
