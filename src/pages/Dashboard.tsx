@@ -103,20 +103,23 @@ const DashboardContent = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Redirect to onboarding if no properties - only after data has loaded
-  // We need to ensure properties have been fetched (dataLoading was true then became false)
-  const [propertiesChecked, setPropertiesChecked] = useState(false);
+  // Redirect to onboarding if no properties - only after BOTH auth and data have fully loaded
+  // Use a ref to ensure we only check once per mount to prevent random redirects
+  const onboardingCheckedRef = useRef(false);
+  
   useEffect(() => {
-    // Only mark as checked once data loading completes
-    if (!dataLoading && user) {
-      setPropertiesChecked(true);
-    }
-  }, [dataLoading, user]);
-  useEffect(() => {
-    if (propertiesChecked && properties.length === 0) {
+    // Only check once, after both loading states are complete
+    if (authLoading || dataLoading) return;
+    if (!user) return;
+    if (onboardingCheckedRef.current) return;
+    
+    // Mark as checked so we don't redirect again on re-renders
+    onboardingCheckedRef.current = true;
+    
+    if (properties.length === 0) {
       navigate('/onboarding');
     }
-  }, [propertiesChecked, properties.length, navigate]);
+  }, [authLoading, dataLoading, user, properties.length, navigate]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [propertyFilter, setPropertyFilter] = useState<string>('all');

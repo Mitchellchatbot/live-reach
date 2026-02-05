@@ -42,49 +42,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    let initialLoadComplete = false;
+    let isMounted = true;
 
-    // Set up auth state listener FIRST
+    // Listener for ONGOING auth changes (does NOT control initial loading)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Defer Supabase call with setTimeout to prevent deadlock
+          // Defer to avoid deadlock
           setTimeout(() => {
-            fetchUserRole(session.user.id);
+            if (isMounted) fetchUserRole(session.user.id);
           }, 0);
         } else {
           setRole(null);
         }
-        
-        // Only set loading false if initial load already happened
-        // This prevents race condition between onAuthStateChange and getSession
-        if (initialLoadComplete) {
-          setLoading(false);
-        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      initialLoadComplete = true;
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      }
-      
-      setLoading(false);
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      initialLoadComplete = true;
-      setLoading(false);
-    });
+    // INITIAL load - controls loading state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
 
-    return () => subscription.unsubscribe();
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        // Fetch role BEFORE setting loading to false
+        if (session?.user) {
+          await fetchUserRole(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
