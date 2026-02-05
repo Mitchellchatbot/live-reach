@@ -282,11 +282,11 @@ const DashboardContent = () => {
   const getStatusTitle = () => {
     switch (statusFilter) {
       case 'active':
-        return 'Active Conversations';
+        return 'Active';
       case 'closed':
-        return 'Closed Conversations';
+        return 'Closed';
       default:
-        return 'All Conversations';
+        return 'All';
     }
   };
   const isClosedView = statusFilter === 'closed';
