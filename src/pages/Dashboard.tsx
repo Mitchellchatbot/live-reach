@@ -151,10 +151,24 @@ const DashboardContent = () => {
   }, [conversations, statusFilter, propertyFilter, searchQuery]);
 
   // Add lastMessage to conversations
-  const conversationsWithLastMessage = useMemo(() => filteredConversations.map(conv => ({
-    ...conv,
-    lastMessage: conv.messages[conv.messages.length - 1]
-  })), [filteredConversations]);
+  const conversationsWithLastMessage = useMemo(
+    () =>
+      filteredConversations.map((conv) => ({
+        ...conv,
+        lastMessage: conv.messages[conv.messages.length - 1],
+      })),
+    [filteredConversations]
+  );
+
+  const sidebarBadgeCounts = useMemo(() => {
+    const unreadConversations = dbConversations.filter((c) =>
+      c.messages?.some((m) => !m.read && m.sender_type === 'visitor')
+    ).length;
+
+    const activeCount = dbConversations.filter((c) => c.status !== 'closed').length;
+
+    return { all: unreadConversations, active: activeCount };
+  }, [dbConversations]);
   const handleSelectConversation = async (conversation: Conversation) => {
     setSelectedConversationId(conversation.id);
     setCollapsed(true); // Auto-collapse sidebar when selecting a conversation
@@ -288,7 +302,7 @@ const DashboardContent = () => {
   }
   return <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden page-enter">
       <DashboardTour />
-      <DashboardSidebar />
+      <DashboardSidebar badgeCounts={sidebarBadgeCounts} />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Unified Header - Black spanning all sections */}

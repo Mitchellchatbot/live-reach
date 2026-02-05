@@ -127,14 +127,27 @@ export const useConversations = () => {
         return;
       }
 
-      // Step 2: Batch fetch ALL messages in a single query (fixes N+1 problem)
+      // Step 2: Batch fetch ALL messages in chunked queries (avoids URL too long / 400 Bad Request)
       const conversationIds = convData.map(c => c.id);
-      const { data: allMessages, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .in('conversation_id', conversationIds)
-        .order('sequence_number', { ascending: true });
 
+      const chunkSize = 25;
+      const idChunks: string[][] = [];
+      for (let i = 0; i < conversationIds.length; i += chunkSize) {
+        idChunks.push(conversationIds.slice(i, i + chunkSize));
+      }
+
+      const messageChunkResults = await Promise.all(
+        idChunks.map((ids) =>
+          supabase
+            .from('messages')
+            .select('*')
+            .in('conversation_id', ids)
+            .order('sequence_number', { ascending: true })
+        )
+      );
+
+      const allMessages = messageChunkResults.flatMap((r) => r.data || []);
+      const messagesError = messageChunkResults.find((r) => r.error)?.error;
       if (messagesError) {
         console.error('Error fetching messages:', messagesError);
       }

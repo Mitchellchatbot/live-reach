@@ -34,9 +34,9 @@ const useGlobalErrorHandlers = () => {
 // Eagerly loaded pages (critical path)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
 
 // Lazy loaded pages (code splitting)
-const Dashboard = lazy(() => import("./pages/Dashboard"));
 const WidgetPreview = lazy(() => import("./pages/WidgetPreview"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const TeamMembers = lazy(() => import("./pages/TeamMembers"));

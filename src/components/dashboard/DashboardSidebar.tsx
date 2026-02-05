@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { useConversations } from '@/hooks/useConversations';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
@@ -123,31 +122,26 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
   </div>
 );
 
-export const DashboardSidebar = () => {
+export const DashboardSidebar = ({
+  badgeCounts,
+}: {
+  badgeCounts?: { all?: number; active?: number };
+}) => {
   const { collapsed, setCollapsed } = useSidebarState();
   const navigate = useNavigate();
   const { profile, updateAvatarUrl } = useUserProfile();
   const { signOut, user, isClient, isAgent, isAdmin } = useAuth();
-  const { conversations } = useConversations();
   
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  // Calculate badge counts - "All" shows unread count, "Active" shows non-closed count
-  const badgeCounts = useMemo(() => {
-    // Count conversations with unread visitor messages
-    const unreadCount = conversations.filter(c => 
-      c.messages?.some(m => !m.read && m.sender_type === 'visitor')
-    ).length;
-    
-    // Active = all non-closed conversations
-    const activeCount = conversations.filter(c => c.status !== 'closed').length;
-
+  // Badge counts are provided by the page (prevents duplicate useConversations mounts/subscriptions)
+  const resolvedBadgeCounts = useMemo(() => {
     return {
-      all: unreadCount,
-      active: activeCount,
+      all: badgeCounts?.all ?? 0,
+      active: badgeCounts?.active ?? 0,
     };
-  }, [conversations]);
+  }, [badgeCounts?.all, badgeCounts?.active]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -229,9 +223,9 @@ export const DashboardSidebar = () => {
           {(isClient || isAdmin) && (
             <div data-tour="inbox-section">
               <SidebarSection title="Inbox" collapsed={collapsed}>
-                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={badgeCounts.all > 0 ? badgeCounts.all : undefined} collapsed={collapsed} />
+                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={collapsed} />
                 <div data-tour="active-filter">
-                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={badgeCounts.active > 0 ? badgeCounts.active : undefined} collapsed={collapsed} />
+                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={collapsed} />
                 </div>
                 <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} />
               </SidebarSection>
