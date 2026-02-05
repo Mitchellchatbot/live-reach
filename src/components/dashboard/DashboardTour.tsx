@@ -74,8 +74,15 @@ const aiSupportSteps: Step[] = [
     floaterProps: { disableFlip: true },
     data: { icon: 'alert' },
   },
+  {
+    target: '[data-tour="ai-engagement"]',
+    content: "Control how you collect visitor information. With Natural Lead Capture ON, the AI conversationally asks for name, phone, and other details during the chat — no forms needed. When it's OFF, visitors see a traditional form they must fill out before chatting.",
+    title: "Engagement & Lead Capture",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+    data: { icon: 'message' },
+  },
 ];
-
 // Remaining dashboard steps (after AI Support)
 const remainingDashboardSteps: Step[] = [
   {

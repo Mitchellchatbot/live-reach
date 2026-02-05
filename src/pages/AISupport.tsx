@@ -1150,7 +1150,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               </Card>
 
               {/* Engagement Settings */}
-              <Card>
+              <Card data-tour="ai-engagement">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-muted-foreground" />
