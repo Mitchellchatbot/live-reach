@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Bot, ImagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
@@ -10,12 +10,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
+
+// Widget icon options (same as onboarding)
+const widgetIconOptions = [
+  { id: 'message-circle', label: 'Bubble', icon: MessageCircle },
+  { id: 'message-square', label: 'Square', icon: MessageSquare },
+  { id: 'messages-square', label: 'Chat', icon: MessagesSquare },
+  { id: 'headphones', label: 'Support', icon: Headphones },
+  { id: 'help-circle', label: 'Help', icon: HelpCircle },
+  { id: 'heart', label: 'Heart', icon: Heart },
+  { id: 'sparkles', label: 'Sparkles', icon: Sparkles },
+  { id: 'bot', label: 'Bot', icon: Bot },
+  { id: 'custom', label: 'Custom', icon: ImagePlus },
+];
 
 const colorPresets = [{
   name: 'Sage',
@@ -35,23 +46,6 @@ const colorPresets = [{
 }, {
   name: 'Ocean',
   color: 'hsl(190, 30%, 45%)'
-}];
-const stylePresets = [{
-  name: 'Bubbly',
-  radius: 24,
-  description: 'Soft, friendly rounded corners'
-}, {
-  name: 'Modern',
-  radius: 12,
-  description: 'Clean, contemporary look'
-}, {
-  name: 'Sharp',
-  radius: 4,
-  description: 'Professional, minimal rounding'
-}, {
-  name: 'Custom',
-  radius: null,
-  description: 'Set your own corner radius'
 }];
 
 // Convert hex to HSL
@@ -159,15 +153,14 @@ const WidgetPreview = () => {
   } = useConversations();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
   const [primaryColor, setPrimaryColor] = useState('hsl(150, 25%, 45%)');
-  const [textColor, setTextColor] = useState('hsl(0, 0%, 100%)');
-  const [borderColor, setBorderColor] = useState('hsl(0, 0%, 0%, 0.1)');
-  const [widgetSize, setWidgetSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");
   const [copied, setCopied] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [borderRadius, setBorderRadius] = useState(24);
-  const [selectedStyle, setSelectedStyle] = useState('Bubbly');
   const [extractedFont, setExtractedFont] = useState<string | null>(null);
+  const [widgetIcon, setWidgetIcon] = useState('message-circle');
+  const [widgetIconPreview, setWidgetIconPreview] = useState<string | null>(null);
+  const [isSavingIcon, setIsSavingIcon] = useState(false);
+  const widgetIconInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-select first property and load its settings when properties load
   useEffect(() => {
@@ -177,6 +170,7 @@ const WidgetPreview = () => {
       // Load property settings
       if (firstProperty.widget_color) setPrimaryColor(firstProperty.widget_color);
       if (firstProperty.greeting) setGreeting(firstProperty.greeting);
+      if (firstProperty.widget_icon) setWidgetIcon(firstProperty.widget_icon);
       // Auto-extract brand from property domain
       extractBrandFromProperty(firstProperty.domain);
     }
@@ -189,6 +183,7 @@ const WidgetPreview = () => {
     if (property) {
       if (property.widget_color) setPrimaryColor(property.widget_color);
       if (property.greeting) setGreeting(property.greeting);
+      if (property.widget_icon) setWidgetIcon(property.widget_icon);
       // Auto-extract brand from the new property's domain
       extractBrandFromProperty(property.domain);
     }
@@ -241,20 +236,24 @@ const WidgetPreview = () => {
       setIsExtracting(false);
     }
   };
-  const handleStyleChange = (styleName: string) => {
-    setSelectedStyle(styleName);
-    const preset = stylePresets.find(s => s.name === styleName);
-    if (preset && preset.radius !== null) {
-      setBorderRadius(preset.radius);
+  const handleSaveWidgetIcon = async () => {
+    if (!selectedPropertyId) return;
+    setIsSavingIcon(true);
+    const { error } = await supabase.from('properties').update({
+      widget_icon: widgetIcon,
+    }).eq('id', selectedPropertyId);
+    setIsSavingIcon(false);
+    if (error) {
+      toast.error('Failed to save widget icon');
+      console.error('Error saving widget icon:', error);
+      return;
     }
-  };
-  const handleRadiusChange = (value: number[]) => {
-    setBorderRadius(value[0]);
+    toast.success('Widget icon saved!');
   };
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
 <iframe 
   id="scaledbot-widget"
-  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?primaryColor=${encodeURIComponent(primaryColor)}&textColor=${encodeURIComponent(textColor)}&borderColor=${encodeURIComponent(borderColor)}&widgetSize=${widgetSize}&borderRadius=${borderRadius}&greeting=${encodeURIComponent(greeting)}&autoOpen=true"
+  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?primaryColor=${encodeURIComponent(primaryColor)}&greeting=${encodeURIComponent(greeting)}&autoOpen=true"
   style="position: fixed; bottom: 0; right: 0; width: 88px; height: 88px; border: none; z-index: 9999; background: transparent; overflow: hidden;"
   allow="camera; microphone"
   allowtransparency="true"
@@ -337,41 +336,82 @@ const WidgetPreview = () => {
               </TabsList>
 
               <TabsContent value="widget" className="mt-6 space-y-6">
-                {/* Style Preset */}
+                {/* Widget Icon */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Widget Style</CardTitle>
-                    <CardDescription>Choose a preset style or customize the corner radius</CardDescription>
+                    <CardTitle className="text-base">Chat Launcher Icon</CardTitle>
+                    <CardDescription>Pick an icon for your chat launcher button</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Style Preset</Label>
-                      <Select value={selectedStyle} onValueChange={handleStyleChange}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {stylePresets.map(style => <SelectItem key={style.name} value={style.name}>
-                              {style.name}
-                            </SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {stylePresets.find(s => s.name === selectedStyle)?.description}
-                      </p>
+                  <CardContent className="space-y-4">
+                    {/* Hidden file input for custom icon */}
+                    <input
+                      type="file"
+                      ref={widgetIconInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const previewUrl = URL.createObjectURL(file);
+                          setWidgetIcon('custom');
+                          setWidgetIconPreview(previewUrl);
+                        }
+                      }}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      {widgetIconOptions.map((option) => {
+                        const IconComponent = option.icon;
+                        const isSelected = widgetIcon === option.id;
+                        const isCustomOption = option.id === 'custom';
+                        
+                        return (
+                          <button
+                            key={option.id}
+                            onClick={() => {
+                              if (isCustomOption) {
+                                widgetIconInputRef.current?.click();
+                              } else {
+                                setWidgetIcon(option.id);
+                                setWidgetIconPreview(null);
+                              }
+                            }}
+                            className={cn(
+                              "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
+                            )}
+                          >
+                            {isCustomOption && widgetIconPreview ? (
+                              <img 
+                                src={widgetIconPreview} 
+                                alt="Custom icon" 
+                                className="h-6 w-6 rounded object-cover"
+                              />
+                            ) : (
+                              <IconComponent className={cn(
+                                "h-6 w-6 transition-transform duration-200",
+                                isSelected ? "scale-110" : ""
+                              )} />
+                            )}
+                            <span className={cn(
+                              "text-xs font-medium",
+                              isSelected ? "" : "text-muted-foreground"
+                            )}>
+                              {option.label}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-
-                    {selectedStyle === 'Custom' && <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <Label>Corner Radius</Label>
-                          <span className="text-sm text-muted-foreground">{borderRadius}px</span>
-                        </div>
-                        <Slider value={[borderRadius]} onValueChange={handleRadiusChange} max={32} min={0} step={2} className="w-full" />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Sharp</span>
-                          <span>Rounded</span>
-                        </div>
-                      </div>}
+                    <Button 
+                      onClick={handleSaveWidgetIcon} 
+                      disabled={isSavingIcon || !selectedPropertyId} 
+                      className="w-full"
+                    >
+                      {isSavingIcon ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Save Widget Icon
+                    </Button>
                   </CardContent>
                 </Card>
 
@@ -395,70 +435,6 @@ const WidgetPreview = () => {
                     </div>
                     <div className="flex gap-2">
                       <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} placeholder="Custom color (HSL)" className="font-mono text-sm" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Text & Border Colors */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Text & Border</CardTitle>
-                    <CardDescription>Customize text and border colors</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Text Color (on primary)</Label>
-                      <div className="flex gap-2">
-                        <div className="flex gap-2">
-                          <button onClick={() => setTextColor('hsl(0, 0%, 100%)')} className={cn("h-10 w-10 rounded-full border-2 transition-transform hover:scale-110", textColor === 'hsl(0, 0%, 100%)' ? "ring-2 ring-ring ring-offset-2" : "")} style={{
-                            backgroundColor: 'white',
-                            borderColor: 'hsl(0, 0%, 80%)'
-                          }} title="White" />
-                          <button onClick={() => setTextColor('hsl(0, 0%, 0%)')} className={cn("h-10 w-10 rounded-full border-2 transition-transform hover:scale-110", textColor === 'hsl(0, 0%, 0%)' ? "ring-2 ring-ring ring-offset-2" : "")} style={{
-                            backgroundColor: 'black',
-                            borderColor: 'hsl(0, 0%, 30%)'
-                          }} title="Black" />
-                        </div>
-                        <Input value={textColor} onChange={e => setTextColor(e.target.value)} placeholder="Custom (HSL)" className="font-mono text-sm flex-1" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Border Color</Label>
-                      <div className="flex gap-2">
-                        <div className="flex gap-2">
-                          <button onClick={() => setBorderColor('hsl(0, 0%, 0%, 0.1)')} className={cn("h-10 w-10 rounded-full border-2 transition-transform hover:scale-110", borderColor === 'hsl(0, 0%, 0%, 0.1)' ? "ring-2 ring-ring ring-offset-2" : "")} style={{
-                            backgroundColor: 'hsl(0, 0%, 90%)',
-                            borderColor: 'hsl(0, 0%, 70%)'
-                          }} title="Light" />
-                          <button onClick={() => setBorderColor('hsl(0, 0%, 0%, 0.3)')} className={cn("h-10 w-10 rounded-full border-2 transition-transform hover:scale-110", borderColor === 'hsl(0, 0%, 0%, 0.3)' ? "ring-2 ring-ring ring-offset-2" : "")} style={{
-                            backgroundColor: 'hsl(0, 0%, 70%)',
-                            borderColor: 'hsl(0, 0%, 50%)'
-                          }} title="Medium" />
-                          <button onClick={() => setBorderColor('transparent')} className={cn("h-10 w-10 rounded-full border-2 border-dashed transition-transform hover:scale-110", borderColor === 'transparent' ? "ring-2 ring-ring ring-offset-2" : "")} style={{
-                            borderColor: 'hsl(0, 0%, 60%)'
-                          }} title="None" />
-                        </div>
-                        <Input value={borderColor} onChange={e => setBorderColor(e.target.value)} placeholder="Custom (HSL)" className="font-mono text-sm flex-1" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Widget Size */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Widget Size</CardTitle>
-                    <CardDescription>Choose the size of your chat widget</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(['small', 'medium', 'large'] as const).map(size => <button key={size} onClick={() => setWidgetSize(size)} className={cn("flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all", widgetSize === size ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}>
-                          <div className="bg-muted rounded" style={{
-                          width: size === 'small' ? 32 : size === 'medium' ? 44 : 56,
-                          height: size === 'small' ? 32 : size === 'medium' ? 44 : 56
-                        }} />
-                          <span className="text-sm font-medium capitalize">{size}</span>
-                        </button>)}
                     </div>
                   </CardContent>
                 </Card>
@@ -538,7 +514,7 @@ const WidgetPreview = () => {
 
                   {/* Widget positioned in preview */}
                   <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} textColor={textColor} borderColor={borderColor} widgetSize={widgetSize} borderRadius={borderRadius} greeting={greeting} isPreview={true} />
+                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
                   </div>
                 </div>
               </CardContent>
@@ -605,7 +581,7 @@ const WidgetPreview = () => {
 
                   {/* Widget positioned in preview */}
                   <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} textColor={textColor} borderColor={borderColor} widgetSize={widgetSize} borderRadius={borderRadius} greeting={greeting} isPreview={true} />
+                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
                   </div>
                 </div>
               </div>
