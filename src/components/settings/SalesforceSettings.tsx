@@ -355,7 +355,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <Card>
+      <Card data-tour="salesforce-connection">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -465,7 +465,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       </Card>
 
       {/* Auto Export Settings */}
-      <Card>
+      <Card data-tour="salesforce-auto-export">
         <CardHeader>
           <CardTitle>Auto Export</CardTitle>
           <CardDescription>
@@ -502,7 +502,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       </Card>
 
       {/* Field Mappings */}
-      <Card>
+      <Card data-tour="salesforce-field-mappings">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
