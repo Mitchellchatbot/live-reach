@@ -99,14 +99,13 @@ serve(async (req) => {
       visitorId = newVisitor.id;
     }
 
-    // Find existing open conversation (don't create one yet - lazy creation)
+    // Find most recent conversation (can be closed; we may reopen it on widget return)
     let conversationId: string | null = null;
     const { data: existingConv, error: convFindErr } = await supabase
       .from("conversations")
-      .select("id")
+      .select("id,status")
       .eq("property_id", propertyId)
       .eq("visitor_id", visitorId)
-      .neq("status", "closed")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

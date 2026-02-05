@@ -183,6 +183,7 @@ const BOOTSTRAP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-
 const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-create-conversation`;
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
 const GET_MESSAGES_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-get-messages`;
+const PRESENCE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-conversation-presence`;
 
 // Secure visitor update through edge function
 const updateVisitorSecure = async (
@@ -205,6 +206,35 @@ const updateVisitorSecure = async (
     }
   } catch (error) {
     console.error('Error updating visitor:', error);
+  }
+};
+
+// Mark the conversation as active/closed based on widget visibility.
+// This is "best effort" (unload events are not guaranteed), so we also rely on
+// dashboard-side stale closing to keep statuses accurate.
+const updateConversationPresenceSecure = async (args: {
+  propertyId: string;
+  visitorId: string;
+  sessionId: string;
+  status: 'active' | 'closed';
+}) => {
+  try {
+    const resp = await fetch(PRESENCE_URL, {
+      method: 'POST',
+      keepalive: args.status === 'closed',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify(args),
+    });
+
+    if (!resp.ok) {
+      console.error('Failed to update conversation presence:', await resp.text());
+    }
+  } catch (error) {
+    // Swallow errors (especially on unload), but log in case it's systematic.
+    console.error('Error updating conversation presence:', error);
   }
 };
 
@@ -1497,6 +1527,71 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     initializeChat();
   }, [initializeChat]);
 
+  // Presence: keep conversations "active" while the widget is visible, and attempt
+  // to mark them "closed" when the tab hides/unloads.
+  useEffect(() => {
+    if (isPreview || !propertyId || propertyId === 'demo') return;
+    if (!visitorId || !conversationId) return;
+
+    const sessionId = getOrCreateSessionId();
+    let disposed = false;
+
+    const markActive = () => {
+      if (disposed) return;
+      if (document.visibilityState !== 'visible') return;
+      void updateConversationPresenceSecure({
+        propertyId,
+        visitorId,
+        sessionId,
+        status: 'active',
+      });
+    };
+
+    const markClosed = () => {
+      if (disposed) return;
+      void updateConversationPresenceSecure({
+        propertyId,
+        visitorId,
+        sessionId,
+        status: 'closed',
+      });
+    };
+
+    // Immediately mark active once we have a conversation.
+    markActive();
+
+    // Heartbeat so the dashboard can close stale conversations even if unload doesn't fire.
+    const heartbeatId = window.setInterval(markActive, 15000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        markClosed();
+      } else {
+        markActive();
+      }
+    };
+
+    const onPageHide = () => markClosed();
+    const onBeforeUnload = () => markClosed();
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    return () => {
+      disposed = true;
+      window.clearInterval(heartbeatId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+
+      // Best-effort close if the widget is unmounting while a conversation exists.
+      if (document.visibilityState !== 'visible') {
+        markClosed();
+      }
+    };
+  }, [conversationId, isPreview, propertyId, visitorId]);
+
   // Start proactive message timer when widget opens
   useEffect(() => {
     startProactiveTimer();
@@ -1506,6 +1601,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
     };
   }, [startProactiveTimer]);
+
 
   // Poll for new messages (human agent responses) - realtime requires auth which widget doesn't have
   useEffect(() => {
