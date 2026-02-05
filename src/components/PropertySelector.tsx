@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Building2, Trash2, ChevronDown, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, Trash2, ChevronDown, Check, Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +51,7 @@ export const PropertySelector = ({
   const [propertyToDelete, setPropertyToDelete] = useState<DbProperty | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleDeleteClick = (e: React.MouseEvent, property: DbProperty) => {
     e.preventDefault();
@@ -163,6 +166,17 @@ export const PropertySelector = ({
               </Button>
             </DropdownMenuItem>
           ))}
+          <Separator className="my-1" />
+          <DropdownMenuItem
+            className="flex items-center gap-2 cursor-pointer text-primary"
+            onSelect={() => {
+              setOpen(false);
+              navigate('/onboarding');
+            }}
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            <span className="font-medium">Add Property</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
