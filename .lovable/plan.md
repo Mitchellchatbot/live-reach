@@ -1,104 +1,37 @@
 
-## Add Widget Code Tour After Analytics
 
-This plan fixes the tour flow so Analytics correctly transitions to the Widget Code tour instead of ending with "Get Started!".
+## Fix: Auto-Click Tabs Should Fully Handle Step Advancement
 
 ### Problem
-The Analytics tour currently shows "Get Started!" on the last step because `isLastStep` is true for that phase. Instead, it should show a transition button like "Tour Widget Code" and navigate to the widget customization page.
+When the tour reaches a "click this tab" step (Widget Embed tab, Salesforce Settings tab, Email tab) and the user presses **Next**, the auto-click logic runs but then falls through to the generic scroll-and-advance code. This causes a race condition: the tab content hasn't rendered yet, so the next step's target element doesn't exist, and the tour stops with `TARGET_NOT_FOUND`.
+
+### Root Cause
+After the `isClickRequired` block clicks the tab and waits for the next target, the code continues to the scroll block at line 776. That block calls `setRun(false)`, tries to scroll to the target (which may still not be in the DOM), sets the step index, then re-enables the tour. The timing is off because the tab click already waited, but the scroll block doesn't know that.
 
 ### Solution
+After the `isClickRequired` auto-click block successfully clicks the tab and confirms the next target exists, it should **advance the step and return immediately** instead of falling through.
 
-**1. Add a Transition Step at the End of Analytics Steps**
+### File to Modify
 
-Add a new step to `analyticsSteps` that targets the Widget Code sidebar item:
+**`src/components/dashboard/DashboardTour.tsx`** (~lines 756-774)
 
-```typescript
-// After the analytics-stats step
-{
-  target: '[data-tour="widget-code-sidebar"]',
-  content: "widget-code-sidebar-special",
-  title: "Widget Code",
-  placement: 'right',
-  data: { isWidgetCodeSidebar: true },
-}
+After the auto-click block (clicking the tab, waiting for the next target to appear), add:
+- `setRun(false)`
+- `setStepIndex(nextIndex)`
+- `setTimeout(() => setRun(true), 200)` (slightly longer delay to let tab content settle)
+- `return` to prevent falling through to the generic scroll logic
+
+This mirrors the same pattern used for sidebar navigation transitions (e.g., analytics-to-widget-code), where the handler sets `run=false`, navigates, and returns -- letting the `useEffect` re-engage the tour on the new page. Here, instead of navigating to a new page, we just advance the step after the tab switch.
+
+### Technical Detail
+
+```text
+Current flow (broken):
+  isClickRequired block runs -> clicks tab -> waits -> falls through
+  scroll block runs -> target may not exist -> tour breaks
+
+Fixed flow:
+  isClickRequired block runs -> clicks tab -> waits for target ->
+  setRun(false) -> setStepIndex(next) -> setRun(true) -> return
+  (scroll block is skipped)
 ```
-
-**2. Add `data-tour` Attribute to Widget Code Sidebar Item**
-
-In `DashboardSidebar.tsx`, add `data-tour="widget-code-sidebar"` to the Widget Code menu item so the tour can target it.
-
-**3. Update CustomTooltip to Handle the Widget Code Sidebar Transition**
-
-Add a special case in `CustomTooltip` for `isWidgetCodeSidebar`:
-- Display a styled card explaining Widget Customization features
-- Button says "Tour Widget Code" instead of "Get Started!"
-- Clicking navigates to `/dashboard/widget?tour=1&tourPhase=widget-code`
-
-**4. Add Handler Function for Widget Code Navigation**
-
-Add `handleSetupWidgetCode` function that navigates to the widget page with tour params (similar to `handleSetupAnalytics`).
-
-**5. Update Button Logic in CustomTooltip**
-
-Modify the button text logic to check for `isWidgetCodeSidebar` so it shows the correct label instead of "Get Started!".
-
-### Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/dashboard/DashboardTour.tsx` | Add transition step to `analyticsSteps`, add `isWidgetCodeSidebar` handling in CustomTooltip, add `handleSetupWidgetCode` function, update button onClick logic |
-| `src/components/dashboard/DashboardSidebar.tsx` | Add `data-tour="widget-code-sidebar"` attribute to the Widget Code menu item |
-
-### Technical Details
-
-**New Analytics Step (end of `analyticsSteps` array):**
-```typescript
-{
-  target: '[data-tour="widget-code-sidebar"]',
-  content: "widget-code-sidebar-special",
-  title: "Widget Code",
-  placement: 'right',
-  data: { isWidgetCodeSidebar: true },
-}
-```
-
-**CustomTooltip Addition:**
-```typescript
-const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
-
-// In the render, add a case for isWidgetCodeSidebar similar to isAnalyticsSidebar
-// Shows: Code icon, "Go Live" title, description about embedding the widget
-```
-
-**Handler Function:**
-```typescript
-const handleSetupWidgetCode = () => {
-  setRun(false);
-  navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
-};
-```
-
-**Button Logic Update (in CustomTooltip):**
-```typescript
-onClick={
-  isAISettings ? onSetupAI : 
-  isAnalyticsSidebar ? onSetupAnalytics : 
-  isWidgetCodeSidebar ? onSetupWidgetCode : 
-  primaryProps.onClick
-}
-```
-
-```typescript
-// Button text
-{isAISettings ? 'Tour AI Settings' : 
- isAnalyticsSidebar ? 'View Analytics' : 
- isWidgetCodeSidebar ? 'Tour Widget Code' : 
- isLastStep ? 'Get Started!' : 'Next'}
-```
-
-### Tour Flow After Fix
-1. Dashboard (5 steps) - ends with "Tour AI Settings" button
-2. AI Support (5 steps) - ends with "View Analytics" button  
-3. Analytics (3 steps) - ends with "Tour Widget Code" button (NEW!)
-4. Widget Code (5 steps) - ends with navigation to remaining steps
-5. Remaining (3 steps) - ends with "Get Started!"
