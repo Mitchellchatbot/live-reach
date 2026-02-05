@@ -147,7 +147,7 @@ const widgetCodeSteps: Step[] = [
     placement: 'top',
   },
 ];
-// Remaining dashboard steps (after AI Support)
+// Remaining dashboard steps (after Widget Code - Team, Salesforce, Notifications)
 const remainingDashboardSteps: Step[] = [
   {
     target: '[data-tour="team-members"]',
@@ -169,13 +169,6 @@ const remainingDashboardSteps: Step[] = [
     title: "Notifications",
     placement: 'right',
     data: { isNotifications: true },
-  },
-  {
-    target: '[data-tour="widget-code"]',
-    content: "widget-code-special",
-    title: "Get Your Widget",
-    placement: 'right',
-    data: { isWidgetCode: true },
   },
 ];
 
