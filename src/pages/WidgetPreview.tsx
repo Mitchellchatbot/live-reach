@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Bot, ImagePlus } from 'lucide-react';
+import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Bot, ImagePlus, Monitor, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
@@ -161,6 +161,7 @@ const WidgetPreview = () => {
   const [widgetIconPreview, setWidgetIconPreview] = useState<string | null>(null);
   const [isSavingIcon, setIsSavingIcon] = useState(false);
   const widgetIconInputRef = useRef<HTMLInputElement>(null);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Auto-select first property and load its settings when properties load
   useEffect(() => {
@@ -477,46 +478,122 @@ const WidgetPreview = () => {
             </Tabs>
           </div>
 
-          {/* Mobile Preview & Display Settings */}
+          {/* Preview & Display Settings */}
           <div className="space-y-6">
             <Card className="overflow-hidden">
               <CardHeader className="bg-muted/50">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                    <line x1="12" y1="18" x2="12" y2="18" />
-                  </svg>
-                  Mobile Preview
-                </CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <Sparkles className="h-3 w-3" />
-                  {selectedProperty?.domain ? `Preview on ${selectedProperty.domain}` : 'Select a property to see a live preview'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 flex justify-center">
-                <div className="relative w-[375px] h-[667px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2rem] border-4 border-foreground/20 shadow-xl">
-                  {/* Phone notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
-                  
-                  {/* Website iframe preview */}
-                  {selectedProperty?.domain ? <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" /> : <div className="p-6 pt-10">
-                      <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
-                      <div className="space-y-2">
-                        <div className="h-3 w-full bg-foreground/5 rounded" />
-                        <div className="h-3 w-5/6 bg-foreground/5 rounded" />
-                        <div className="h-3 w-4/6 bg-foreground/5 rounded" />
-                      </div>
-                      <div className="mt-6 space-y-3">
-                        <div className="h-24 bg-foreground/5 rounded-lg" />
-                        <div className="h-24 bg-foreground/5 rounded-lg" />
-                      </div>
-                    </div>}
-
-                  {/* Widget positioned in preview */}
-                  <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {previewMode === 'desktop' ? (
+                        <Monitor className="h-4 w-4" />
+                      ) : (
+                        <Smartphone className="h-4 w-4" />
+                      )}
+                      Widget Preview
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-1">
+                      <Sparkles className="h-3 w-3" />
+                      {selectedProperty?.domain ? `Preview on ${selectedProperty.domain}` : 'Select a property to see a live preview'}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                    <button
+                      onClick={() => setPreviewMode('desktop')}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all",
+                        previewMode === 'desktop' 
+                          ? "bg-background shadow-sm text-foreground" 
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      title="Desktop view"
+                    >
+                      <Monitor className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setPreviewMode('mobile')}
+                      className={cn(
+                        "p-1.5 rounded-md transition-all",
+                        previewMode === 'mobile' 
+                          ? "bg-background shadow-sm text-foreground" 
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      title="Mobile view"
+                    >
+                      <Smartphone className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                {previewMode === 'mobile' ? (
+                  <div className="flex justify-center">
+                    <div className="relative w-[375px] h-[667px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2rem] border-4 border-foreground/20 shadow-xl">
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
+                      {selectedProperty?.domain ? (
+                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                      ) : (
+                        <div className="p-6 pt-10">
+                          <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
+                          <div className="space-y-2">
+                            <div className="h-3 w-full bg-foreground/5 rounded" />
+                            <div className="h-3 w-5/6 bg-foreground/5 rounded" />
+                            <div className="h-3 w-4/6 bg-foreground/5 rounded" />
+                          </div>
+                          <div className="mt-6 space-y-3">
+                            <div className="h-24 bg-foreground/5 rounded-lg" />
+                            <div className="h-24 bg-foreground/5 rounded-lg" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-4 right-4">
+                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-full h-[700px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
+                    <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-destructive/50" />
+                        <div className="w-3 h-3 rounded-full bg-amber-500/50" />
+                        <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
+                      </div>
+                      <div className="flex-1 mx-4">
+                        <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
+                          <span className="text-xs text-muted-foreground truncate">
+                            {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="relative h-[calc(100%-2rem)]">
+                      {selectedProperty?.domain ? (
+                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                      ) : (
+                        <div className="p-8">
+                          <div className="max-w-4xl mx-auto">
+                            <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
+                            <div className="grid grid-cols-3 gap-6 mb-8">
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                            </div>
+                            <div className="space-y-3">
+                              <div className="h-4 w-full bg-foreground/5 rounded" />
+                              <div className="h-4 w-5/6 bg-foreground/5 rounded" />
+                              <div className="h-4 w-4/6 bg-foreground/5 rounded" />
+                              <div className="h-4 w-3/4 bg-foreground/5 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-4 right-4">
+                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -524,71 +601,7 @@ const WidgetPreview = () => {
             <DisplaySettingsCard greeting={greeting} setGreeting={setGreeting} extractedFont={extractedFont} propertyId={selectedPropertyId} />
           </div>
         </div>
-
-        {/* Desktop Preview - Full Width Below */}
-        <div className="mt-8">
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50">
-              <CardTitle className="text-base flex items-center gap-2">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-                Desktop Preview
-              </CardTitle>
-              <CardDescription className="flex items-center gap-2">
-                <Sparkles className="h-3 w-3" />
-                Full-width desktop view of your widget
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="relative w-full h-[700px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
-                {/* Browser chrome */}
-                <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-destructive/50" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                  </div>
-                  <div className="flex-1 mx-4">
-                    <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
-                      <span className="text-xs text-muted-foreground truncate">
-                        {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Website iframe preview */}
-                <div className="relative h-[calc(100%-2rem)]">
-                  {selectedProperty?.domain ? <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" /> : <div className="p-8">
-                      <div className="max-w-4xl mx-auto">
-                        <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
-                        <div className="grid grid-cols-3 gap-6 mb-8">
-                          <div className="h-40 bg-foreground/5 rounded-lg" />
-                          <div className="h-40 bg-foreground/5 rounded-lg" />
-                          <div className="h-40 bg-foreground/5 rounded-lg" />
-                        </div>
-                        <div className="space-y-3">
-                          <div className="h-4 w-full bg-foreground/5 rounded" />
-                          <div className="h-4 w-5/6 bg-foreground/5 rounded" />
-                          <div className="h-4 w-4/6 bg-foreground/5 rounded" />
-                          <div className="h-4 w-3/4 bg-foreground/5 rounded" />
-                        </div>
-                      </div>
-                    </div>}
-
-                  {/* Widget positioned in preview */}
-                  <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-          </div>
       </main>
       </div>
     </div>;
