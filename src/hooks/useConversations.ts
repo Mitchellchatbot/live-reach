@@ -61,7 +61,12 @@ export interface DbConversation {
   property?: DbProperty;
 }
 
-export const useConversations = () => {
+export interface UseConversationsOptions {
+  selectedPropertyId?: string; // undefined or 'all' means all properties
+}
+
+export const useConversations = (options: UseConversationsOptions = {}) => {
+  const { selectedPropertyId } = options;
   const { user } = useAuth();
   const [conversations, setConversations] = useState<DbConversation[]>([]);
   const [properties, setProperties] = useState<DbProperty[]>([]);
@@ -104,8 +109,9 @@ export const useConversations = () => {
     if (!user) return;
 
     try {
-      // Step 1: Fetch all conversations with visitor and property data
-      const { data: convData, error: convError } = await supabase
+      // Step 1: Fetch conversations with visitor and property data
+      // Filter by property if a specific one is selected
+      let query = supabase
         .from('conversations')
         .select(`
           *,
@@ -113,6 +119,13 @@ export const useConversations = () => {
           property:properties(*)
         `)
         .order('updated_at', { ascending: false });
+
+      // Only apply property filter if a specific property is selected (not 'all' or undefined)
+      if (selectedPropertyId && selectedPropertyId !== 'all') {
+        query = query.eq('property_id', selectedPropertyId);
+      }
+
+      const { data: convData, error: convError } = await query;
 
       if (convError) {
         console.error('Error fetching conversations:', convError);
@@ -127,7 +140,7 @@ export const useConversations = () => {
         return;
       }
 
-      // Step 2: Batch fetch ALL messages in chunked queries (avoids URL too long / 400 Bad Request)
+      // Step 2: Batch fetch messages only for the fetched conversations
       const conversationIds = convData.map(c => c.id);
 
       const chunkSize = 25;
@@ -184,7 +197,7 @@ export const useConversations = () => {
     } finally {
       setConversationsLoaded(true);
     }
-  }, [user]);
+  }, [user, selectedPropertyId]);
 
   const sendMessage = async (conversationId: string, content: string, senderId: string) => {
     // Get next sequence number for this conversation
@@ -467,26 +480,32 @@ export const useConversations = () => {
     return true;
   };
 
-  // Initial data fetch with parallel loading
+  // Fetch properties once on mount
+  useEffect(() => {
+    if (!user) {
+      setProperties([]);
+      setPropertiesLoaded(false);
+      return;
+    }
+    fetchProperties();
+  }, [user, fetchProperties]);
+
+  // Fetch conversations when user or selectedPropertyId changes
   useEffect(() => {
     if (!user) {
       setConversations([]);
-      setProperties([]);
-      setLoading(false);
-      setPropertiesLoaded(false);
       setConversationsLoaded(false);
+      setLoading(false);
       return;
     }
 
     setLoading(true);
-    setPropertiesLoaded(false);
     setConversationsLoaded(false);
 
-    // Fetch both in parallel
-    Promise.all([fetchProperties(), fetchConversations()]).catch((err) => {
-      console.error('[useConversations] parallel fetch error:', err);
+    fetchConversations().catch((err) => {
+      console.error('[useConversations] fetch conversations error:', err);
     });
-  }, [user, fetchProperties, fetchConversations]);
+  }, [user, selectedPropertyId, fetchConversations]);
 
   useEffect(() => {
     if (propertiesLoaded && conversationsLoaded) {
