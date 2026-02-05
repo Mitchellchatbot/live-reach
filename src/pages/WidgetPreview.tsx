@@ -518,7 +518,7 @@ const WidgetPreview = () => {
                   </div>
                 </div>
               ) : (
-              <div className="relative w-full aspect-[4/3]">
+              <div className="relative w-full aspect-video">
                   <div className="relative w-full h-full bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
                     <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
                       <div className="flex gap-1.5">
