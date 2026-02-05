@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { PageHeader } from '@/components/dashboard/PageHeader';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { BlogAnalytics } from '@/components/dashboard/BlogAnalytics';
 import { Building2, Loader2 } from 'lucide-react';
 import { useConversations } from '@/hooks/useConversations';
@@ -69,6 +70,7 @@ const Analytics = () => {
           </div>
         </div>
       </div>
+      <DashboardTour />
     </div>
   );
 };

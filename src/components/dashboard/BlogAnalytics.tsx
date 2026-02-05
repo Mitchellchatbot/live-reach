@@ -50,7 +50,7 @@ export const BlogAnalytics = ({ propertyId }: BlogAnalyticsProps) => {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3" data-tour="analytics-stats">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export const BlogAnalytics = ({ propertyId }: BlogAnalyticsProps) => {
       </div>
 
       {/* Top Performing Pages */}
-      <Card>
+      <Card data-tour="analytics-top-pages">
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />

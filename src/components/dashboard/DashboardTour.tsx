@@ -47,7 +47,7 @@ const dashboardSteps: Step[] = [
   },
 ];
 
-// AI Support page tour steps
+// AI Support page tour steps (3 steps)
 const aiSupportSteps: Step[] = [
   {
     target: '[data-tour="ai-personas"]',
@@ -74,13 +74,24 @@ const aiSupportSteps: Step[] = [
     floaterProps: { disableFlip: true },
     data: { icon: 'alert' },
   },
+];
+
+// Analytics page tour steps
+const analyticsSteps: Step[] = [
   {
-    target: '[data-tour="ai-engagement"]',
-    content: "Control how you collect visitor information. With Natural Lead Capture ON, the AI conversationally asks for name, phone, and other details during the chat — no forms needed. When it's OFF, visitors see a traditional form they must fill out before chatting.",
-    title: "Engagement & Lead Capture",
+    target: '[data-tour="analytics-top-pages"]',
+    content: "See which pages on your website generate the most conversations. The page address shows exactly where visitors are engaging with your chat widget.",
+    title: "Top Performing Pages",
     placement: 'left',
+    disableBeacon: true,
     floaterProps: { disableFlip: true },
-    data: { icon: 'message' },
+  },
+  {
+    target: '[data-tour="analytics-stats"]',
+    content: "\"Opens\" counts how many times visitors started a chat. \"Escalations\" tracks when AI handed off to a human agent — this helps you measure AI effectiveness and staffing needs.",
+    title: "Opens & Escalations",
+    placement: 'bottom',
+    disableBeacon: true,
   },
 ];
 // Remaining dashboard steps (after AI Support)
@@ -313,12 +324,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   // Build the current tour steps based on phase
   const currentSteps = useMemo(() => {
     if (tourPhase === 'ai-support') {
-      return [...aiSupportSteps, ...remainingDashboardSteps];
+      return aiSupportSteps;
+    }
+    if (tourPhase === 'analytics') {
+      return analyticsSteps;
     }
     return dashboardSteps;
   }, [tourPhase]);
 
-  const totalSteps = dashboardSteps.length + aiSupportSteps.length + remainingDashboardSteps.length - 1; // -1 because AI Settings step transitions
+  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + remainingDashboardSteps.length - 1;
 
   // Calculate display step number
   const getDisplayStepNumber = () => {
@@ -394,10 +408,17 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
       
-      // Check if we're finishing AI Support steps and need to go back to dashboard
+      // After AI Support steps → navigate to Analytics
       if (tourPhase === 'ai-support' && nextIndex >= aiSupportSteps.length && action !== ACTIONS.PREV) {
         setRun(false);
-        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=${nextIndex - aiSupportSteps.length}`);
+        navigate(`/dashboard/analytics?tour=1&tourPhase=analytics`);
+        return;
+      }
+
+      // After Analytics steps → navigate to dashboard for remaining (widget code)
+      if (tourPhase === 'analytics' && nextIndex >= analyticsSteps.length && action !== ACTIONS.PREV) {
+        setRun(false);
+        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=0`);
         return;
       }
       
@@ -442,10 +463,13 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   }, [tourPhase, searchParams]);
 
-  // Get the right steps for remaining phase
+  // Get the right steps for current phase
   const stepsToUse = useMemo(() => {
     if (tourPhase === 'remaining') {
       return remainingDashboardSteps;
+    }
+    if (tourPhase === 'analytics') {
+      return analyticsSteps;
     }
     return currentSteps;
   }, [tourPhase, currentSteps]);
