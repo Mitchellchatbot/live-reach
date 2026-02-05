@@ -3,6 +3,7 @@ import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS, TooltipRenderPro
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles } from 'lucide-react';
 
@@ -293,6 +294,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { setCollapsed } = useSidebarState();
 
   // Determine which steps to show based on current route
   const isOnAISupport = location.pathname === '/dashboard/ai-support';
@@ -320,14 +322,17 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   useEffect(() => {
     const shouldStartTour = searchParams.get('tour') === '1';
     if (shouldStartTour) {
-      // Small delay to ensure DOM elements are rendered
+      // Expand sidebar when tour starts so elements are visible
+      setCollapsed(false);
+      
+      // Longer delay to ensure DOM elements are rendered and sidebar is expanded
       const timer = setTimeout(() => {
         setRun(true);
         setStepIndex(0);
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
     }
-  }, [searchParams, location.pathname]);
+  }, [searchParams, location.pathname, setCollapsed]);
 
   const handleSetupAI = () => {
     // Navigate to AI Support and continue tour there
