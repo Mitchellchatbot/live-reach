@@ -209,13 +209,10 @@ const WidgetPreview = () => {
       });
       if (error) throw error;
       if (data.success && data.branding) {
-        const {
-          colors,
-          typography
-        } = data.branding;
+        const { primaryColor: extractedPrimary, colors, fonts } = data.branding;
 
-        // Try to get the best color (primary > accent > first available)
-        let colorToUse = colors?.primary || colors?.accent;
+        // Try to get the best color (primaryColor > colors.primary > colors.accent)
+        let colorToUse = extractedPrimary || colors?.primary || colors?.accent;
         if (colorToUse) {
           // Convert hex to HSL if needed
           if (colorToUse.startsWith('#')) {
@@ -224,9 +221,9 @@ const WidgetPreview = () => {
           setPrimaryColor(colorToUse);
         }
 
-        // Extract font if available
-        if (typography?.fontFamilies?.primary) {
-          setExtractedFont(typography.fontFamilies.primary);
+        // Extract font if available (fonts is an array like [{family: "Montserrat", role: "body"}])
+        if (Array.isArray(fonts) && fonts.length > 0 && fonts[0]?.family) {
+          setExtractedFont(fonts[0].family);
         }
         toast.success('Brand styles extracted from your website!');
       }
@@ -498,7 +495,7 @@ const WidgetPreview = () => {
             </CardHeader>
             <CardContent className="p-4 flex justify-center">
               {previewMode === 'mobile' ? (
-                <div className="relative w-[375px] h-[812px] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
+                <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
                     <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
@@ -517,48 +514,50 @@ const WidgetPreview = () => {
                     </div>
                   )}
                   <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} />
                   </div>
                 </div>
               ) : (
-                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
-                  <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-destructive/50" />
-                      <div className="w-3 h-3 rounded-full bg-amber-500/50" />
-                      <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
-                    </div>
-                    <div className="flex-1 mx-4">
-                      <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
-                        <span className="text-xs text-muted-foreground truncate">
-                          {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
-                        </span>
+                <div className="relative w-full" style={{ height: '50vh', minHeight: '400px' }}>
+                  <div className="relative w-full h-full bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
+                    <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-destructive/50" />
+                        <div className="w-3 h-3 rounded-full bg-amber-500/50" />
+                        <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
                       </div>
-                    </div>
-                  </div>
-                  <div className="relative h-[calc(100%-2rem)]">
-                    {selectedProperty?.domain ? (
-                      <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
-                    ) : (
-                      <div className="p-8">
-                        <div className="max-w-4xl mx-auto">
-                          <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
-                          <div className="grid grid-cols-3 gap-6 mb-8">
-                            <div className="h-40 bg-foreground/5 rounded-lg" />
-                            <div className="h-40 bg-foreground/5 rounded-lg" />
-                            <div className="h-40 bg-foreground/5 rounded-lg" />
-                          </div>
-                          <div className="space-y-3">
-                            <div className="h-4 w-full bg-foreground/5 rounded" />
-                            <div className="h-4 w-5/6 bg-foreground/5 rounded" />
-                            <div className="h-4 w-4/6 bg-foreground/5 rounded" />
-                            <div className="h-4 w-3/4 bg-foreground/5 rounded" />
-                          </div>
+                      <div className="flex-1 mx-4">
+                        <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
+                          <span className="text-xs text-muted-foreground truncate">
+                            {selectedProperty?.domain ? `https://${selectedProperty.domain.replace(/^https?:\/\//, '')}` : 'https://your-website.com'}
+                          </span>
                         </div>
                       </div>
-                    )}
-                    <div className="absolute bottom-4 right-4">
-                      <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} />
+                    </div>
+                    <div className="relative h-[calc(100%-2rem)]">
+                      {selectedProperty?.domain ? (
+                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                      ) : (
+                        <div className="p-8">
+                          <div className="max-w-4xl mx-auto">
+                            <div className="h-10 w-64 bg-foreground/10 rounded mb-8" />
+                            <div className="grid grid-cols-3 gap-6 mb-8">
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                              <div className="h-40 bg-foreground/5 rounded-lg" />
+                            </div>
+                            <div className="space-y-3">
+                              <div className="h-4 w-full bg-foreground/5 rounded" />
+                              <div className="h-4 w-5/6 bg-foreground/5 rounded" />
+                              <div className="h-4 w-4/6 bg-foreground/5 rounded" />
+                              <div className="h-4 w-3/4 bg-foreground/5 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-4 right-4">
+                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} />
+                      </div>
                     </div>
                   </div>
                 </div>
