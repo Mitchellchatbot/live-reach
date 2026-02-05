@@ -520,6 +520,20 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
 
     if (finishedStatuses.includes(status)) {
+      // If we're finishing the analytics phase, navigate to widget-code instead of ending
+      if (tourPhase === 'analytics' && status === STATUS.FINISHED) {
+        setRun(false);
+        navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
+        return;
+      }
+      
+      // If we're finishing the widget-code phase, navigate to remaining steps
+      if (tourPhase === 'widget-code' && status === STATUS.FINISHED) {
+        setRun(false);
+        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=0`);
+        return;
+      }
+      
       setRun(false);
       
       // Remove tour params from URL
