@@ -60,7 +60,7 @@ const aiSupportSteps: Step[] = [
   },
   {
     target: '[data-tour="ai-timing"]',
-    content: "Make your AI feel more human by adding response delays and typing indicators. Visitors will see a natural conversation pace.",
+    content: "Make your AI feel more human by adding response delays and typing indicators. Smart Typing Duration calculates realistic typing time based on message length and WPM, so longer replies take longer to 'type' — just like a real person.",
     title: "Response Timing",
     placement: 'left',
     floaterProps: { disableFlip: true },
