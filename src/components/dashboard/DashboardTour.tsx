@@ -47,7 +47,7 @@ const dashboardSteps: Step[] = [
   },
 ];
 
-// AI Support page tour steps (3 steps)
+// AI Support page tour steps (4 steps)
 const aiSupportSteps: Step[] = [
   {
     target: '[data-tour="ai-personas"]',
@@ -74,8 +74,15 @@ const aiSupportSteps: Step[] = [
     floaterProps: { disableFlip: true },
     data: { icon: 'alert' },
   },
+  {
+    target: '[data-tour="ai-engagement"]',
+    content: "Control how you collect visitor information. With Natural Lead Capture ON, the AI conversationally asks for name, phone, and other details during the chat — no forms needed. When it's OFF, visitors see a traditional form they must fill out before chatting.",
+    title: "Engagement & Lead Capture",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+    data: { icon: 'message' },
+  },
 ];
-
 // Analytics page tour steps
 const analyticsSteps: Step[] = [
   {
