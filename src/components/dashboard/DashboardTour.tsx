@@ -52,7 +52,7 @@ const aiSupportSteps: Step[] = [
     target: '[data-tour="ai-personas"]',
     content: "Create AI personas with unique personalities. Each persona can have different conversation styles and be assigned to specific properties.",
     title: "AI Personas",
-    placement: 'bottom',
+    placement: 'right',
     disableBeacon: true,
     data: { icon: 'bot' },
   },
