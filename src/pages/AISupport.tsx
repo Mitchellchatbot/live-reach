@@ -648,6 +648,13 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <PageHeader title="AI Support" docsLink="/documentation/ai-support/personas">
+          <PropertySelector
+            properties={properties}
+            selectedPropertyId={selectedPropertyId}
+            onPropertyChange={setSelectedPropertyId}
+            onDeleteProperty={async () => false}
+            variant="header"
+          />
           <HeaderButton size="icon" onClick={fetchAIAgents}>
             <RefreshCw className="h-4 w-4" />
           </HeaderButton>
@@ -661,13 +668,6 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         <div className="flex-1 p-2 overflow-hidden">
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
             <div className="max-w-4xl mx-auto space-y-6">
-          {/* Property Selector for AI Settings */}
-          <PropertySelector
-            properties={properties}
-            selectedPropertyId={selectedPropertyId}
-            onPropertyChange={setSelectedPropertyId}
-            onDeleteProperty={async () => false}
-          />
 
           {/* AI Personas Card */}
           <Card data-tour="ai-personas">

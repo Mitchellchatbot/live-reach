@@ -317,30 +317,30 @@ const DashboardContent = () => {
         <div className="flex shrink-0 bg-sidebar text-sidebar-foreground pl-2">
           {/* Conversation List Header */}
           <div className="w-80 px-4 py-3 border-r border-sidebar-border shrink-0">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
-                  <InfoIndicator 
-                    to="/documentation/inbox/conversations" 
-                    variant="header"
-                  />
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
+                <InfoIndicator 
+                  to="/documentation/inbox/conversations" 
+                  variant="header"
+                />
+              </div>
+              <div className="flex items-center gap-2">
                 {totalUnread > 0 && <span className="text-xs text-sidebar-primary font-medium bg-sidebar-primary/20 px-2 py-0.5 rounded-full">
                     {totalUnread}
                   </span>}
+                {/* Property Selector */}
+                <PropertySelector
+                  properties={properties}
+                  selectedPropertyId={propertyFilter === 'all' ? undefined : propertyFilter}
+                  onPropertyChange={(id) => setPropertyFilter(id)}
+                  onDeleteProperty={deleteProperty}
+                  showIcon={true}
+                  className="w-auto max-w-[180px]"
+                  variant="header"
+                  showAllOption={true}
+                />
               </div>
-              {/* Property Selector */}
-              <PropertySelector
-                properties={properties}
-                selectedPropertyId={propertyFilter === 'all' ? undefined : propertyFilter}
-                onPropertyChange={(id) => setPropertyFilter(id)}
-                onDeleteProperty={deleteProperty}
-                showIcon={true}
-                className="w-full"
-                variant="default"
-                showAllOption={true}
-              />
             </div>
           </div>
 
