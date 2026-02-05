@@ -170,30 +170,74 @@ const widgetCodeSteps: Step[] = [
     placement: 'top',
   },
   {
-    target: '[data-tour="team-members"]',
-    content: "team-sidebar-special",
-    title: "Team & Integrations",
+    target: '[data-tour="salesforce"]',
+    content: "salesforce-sidebar-special",
+    title: "Salesforce Integration",
     placement: 'right',
-    data: { isTeamSidebar: true },
+    data: { isSalesforceSidebar: true },
   },
 ];
 
-// Remaining dashboard steps (after Widget Code - Team, Salesforce, Notifications)
+// Salesforce page tour steps
+const salesforceSteps: Step[] = [
+  {
+    target: '[data-tour="salesforce-leads-tab"]',
+    content: "The Visitor Leads tab shows all visitors who have chatted on your site. This is your lead pipeline ready to be exported to Salesforce.",
+    title: "Visitor Leads Tab",
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="salesforce-visitor-leads"]',
+    content: "View all your visitor leads in one place. You can see their contact info, treatment interests, urgency level, and export status.",
+    title: "Lead Dashboard",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="salesforce-export-actions"]',
+    content: "Select leads with checkboxes, then click 'Export Selected' to push them to Salesforce. Already exported leads show a green badge.",
+    title: "Manual Export",
+    placement: 'bottom',
+  },
+  {
+    target: '[data-tour="salesforce-settings-tab"]',
+    content: "Click the Settings tab to connect your Salesforce account and configure automatic exports.",
+    title: "Settings Tab",
+    placement: 'bottom',
+    data: { isClickRequired: true, clickTarget: 'salesforce-settings-tab' },
+  },
+  {
+    target: '[data-tour="salesforce-connection"]',
+    content: "Enter your Salesforce Connected App credentials here. Once connected, you'll see your instance URL and can start exporting leads.",
+    title: "Salesforce Connection",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="salesforce-auto-export"]',
+    content: "Enable automatic exports when conversations are escalated or closed. No more manual work — leads flow directly to your CRM.",
+    title: "Auto Export",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="salesforce-field-mappings"]',
+    content: "Map visitor data to Salesforce Lead fields. GCLID mapping lets you track Google Ads conversions directly in Salesforce.",
+    title: "Field Mappings",
+    placement: 'top',
+  },
+  {
+    target: '[data-tour="notifications"]',
+    content: "notifications-sidebar-special",
+    title: "Notifications",
+    placement: 'right',
+    data: { isNotificationsSidebar: true },
+  },
+];
+
+// Remaining dashboard steps (after Salesforce - Notifications only)
 const remainingDashboardSteps: Step[] = [
-  {
-    target: '[data-tour="team-members"]',
-    content: "team-members-special",
-    title: "Build Your Team",
-    placement: 'right',
-    data: { isTeamMembers: true },
-  },
-  {
-    target: '[data-tour="salesforce"]',
-    content: "salesforce-special",
-    title: "Salesforce Integration",
-    placement: 'right',
-    data: { isSalesforce: true },
-  },
   {
     target: '[data-tour="notifications"]',
     content: "notifications-special",
@@ -221,7 +265,8 @@ const CustomTooltip = ({
   onSetupWidget,
   onSetupAnalytics,
   onSetupWidgetCode,
-  onSetupTeamSidebar,
+  onSetupSalesforceSidebar,
+  onSetupNotificationsSidebar,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
@@ -230,7 +275,8 @@ const CustomTooltip = ({
   onSetupWidget: () => void;
   onSetupAnalytics: () => void;
   onSetupWidgetCode: () => void;
-  onSetupTeamSidebar: () => void;
+  onSetupSalesforceSidebar: () => void;
+  onSetupNotificationsSidebar: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
@@ -239,7 +285,8 @@ const CustomTooltip = ({
   const isWidgetCode = step.data?.isWidgetCode;
   const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
-  const isTeamSidebar = step.data?.isTeamSidebar;
+  const isSalesforceSidebar = step.data?.isSalesforceSidebar;
+  const isNotificationsSidebar = step.data?.isNotificationsSidebar;
 
   return (
     <div
@@ -382,15 +429,27 @@ const CustomTooltip = ({
               </div>
             </div>
           </div>
-        ) : isTeamSidebar ? (
+        ) : isSalesforceSidebar ? (
           <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-500" />
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+              <div className="p-2 rounded-full bg-cyan-500/10">
+                <Cloud className="h-4 w-4 text-cyan-500" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Team & Integrations</p>
-                <p className="text-xs text-muted-foreground">Add team members and connect to Salesforce and Slack for seamless notifications.</p>
+                <p className="text-sm font-medium text-foreground">CRM Integration</p>
+                <p className="text-xs text-muted-foreground">Connect Salesforce to automatically export visitor leads and track Google Ads conversions.</p>
+              </div>
+            </div>
+          </div>
+        ) : isNotificationsSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+              <div className="p-2 rounded-full bg-amber-500/10">
+                <Bell className="h-4 w-4 text-amber-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Stay Informed</p>
+                <p className="text-xs text-muted-foreground">Get instant alerts via email or Slack when new conversations start or escalate.</p>
               </div>
             </div>
           </div>
@@ -418,9 +477,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isTeamSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -519,7 +578,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
   };
 
-  const handleSetupTeamSidebar = async () => {
+  const handleSetupSalesforceSidebar = () => {
+    setRun(false);
+    navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
+  };
+
+  const handleSetupNotificationsSidebar = async () => {
     setRun(false);
     // Mark tour as complete
     searchParams.delete('tour');
@@ -533,7 +597,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
     
-    navigate('/dashboard');
+    navigate('/dashboard/notifications');
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
@@ -571,10 +635,28 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // After Widget Code steps → navigate to dashboard for remaining sidebar items
+      // After Widget Code steps → navigate to Salesforce
       if (tourPhase === 'widget-code' && nextIndex >= widgetCodeSteps.length && action !== ACTIONS.PREV) {
         setRun(false);
-        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=0`);
+        navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
+        return;
+      }
+
+      // After Salesforce steps → end tour
+      if (tourPhase === 'salesforce' && nextIndex >= salesforceSteps.length && action !== ACTIONS.PREV) {
+        setRun(false);
+        searchParams.delete('tour');
+        searchParams.delete('tourPhase');
+        setSearchParams(searchParams, { replace: true });
+        
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ dashboard_tour_complete: true })
+            .eq('user_id', user.id);
+        }
+        
+        navigate('/dashboard/notifications');
         return;
       }
       
@@ -586,6 +668,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         if (embedTab) {
           embedTab.click();
           // Wait for tab switch animation
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+
+      // Special handling: click the Settings tab when advancing to the Salesforce connection step
+      if (tourPhase === 'salesforce' && nextStep?.target === '[data-tour="salesforce-connection"]') {
+        const settingsTab = document.querySelector('[data-tour="salesforce-settings-tab"]') as HTMLButtonElement;
+        if (settingsTab) {
+          settingsTab.click();
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
@@ -610,10 +701,28 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
       
-      // If we're finishing the widget-code phase, navigate to remaining steps
+      // If we're finishing the widget-code phase, navigate to salesforce
       if (tourPhase === 'widget-code' && status === STATUS.FINISHED) {
         setRun(false);
-        navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=0`);
+        navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
+        return;
+      }
+
+      // If we're finishing the salesforce phase, end tour
+      if (tourPhase === 'salesforce' && status === STATUS.FINISHED) {
+        setRun(false);
+        searchParams.delete('tour');
+        searchParams.delete('tourPhase');
+        setSearchParams(searchParams, { replace: true });
+        
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ dashboard_tour_complete: true })
+            .eq('user_id', user.id);
+        }
+        
+        navigate('/dashboard/notifications');
         return;
       }
       
@@ -636,9 +745,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   };
 
-  // Handle remaining/widget-code phase navigation
+  // Handle remaining/widget-code/salesforce phase navigation
   useEffect(() => {
-    if (tourPhase === 'remaining' || tourPhase === 'widget-code') {
+    if (tourPhase === 'remaining' || tourPhase === 'widget-code' || tourPhase === 'salesforce') {
       const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
       setStepIndex(startIndex);
     }
@@ -648,6 +757,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const stepsToUse = useMemo(() => {
     if (tourPhase === 'widget-code') {
       return widgetCodeSteps;
+    }
+    if (tourPhase === 'salesforce') {
+      return salesforceSteps;
     }
     if (tourPhase === 'remaining') {
       return remainingDashboardSteps;
@@ -683,7 +795,8 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           onSetupWidget={handleSetupWidget}
           onSetupAnalytics={handleSetupAnalytics}
           onSetupWidgetCode={handleSetupWidgetCode}
-          onSetupTeamSidebar={handleSetupTeamSidebar}
+          onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
+          onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
         />
       )}
       styles={{

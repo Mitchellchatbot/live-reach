@@ -161,7 +161,7 @@ export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
   }
 
   return (
-    <Card>
+    <Card data-tour="salesforce-visitor-leads">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -173,7 +173,7 @@ export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
               View and export visitor data to Salesforce
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-tour="salesforce-export-actions">
             <Button variant="ghost" size="sm" onClick={fetchVisitors}>
               <RefreshCw className="h-4 w-4" />
             </Button>

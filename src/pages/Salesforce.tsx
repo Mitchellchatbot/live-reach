@@ -168,22 +168,22 @@ const Salesforce = () => {
 
               {selectedPropertyId && (
                 <Tabs defaultValue="leads" className="space-y-6">
-                  <TabsList>
-                    <TabsTrigger value="leads" className="gap-2">
+                  <TabsList data-tour="salesforce-tabs">
+                    <TabsTrigger value="leads" className="gap-2" data-tour="salesforce-leads-tab">
                       <Users className="h-4 w-4" />
                       Visitor Leads
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="gap-2">
+                    <TabsTrigger value="settings" className="gap-2" data-tour="salesforce-settings-tab">
                       <Settings className="h-4 w-4" />
                       Settings
                     </TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="leads">
+                  <TabsContent value="leads" data-tour="salesforce-leads-content">
                     <VisitorLeadsTable propertyId={selectedPropertyId} />
                   </TabsContent>
                   
-                  <TabsContent value="settings">
+                  <TabsContent value="settings" data-tour="salesforce-settings-content">
                     <SalesforceSettings propertyId={selectedPropertyId} />
                   </TabsContent>
                 </Tabs>
