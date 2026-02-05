@@ -746,8 +746,14 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         const embedTab = document.querySelector('[data-tour="widget-embed-tab"]') as HTMLButtonElement;
         if (embedTab) {
           embedTab.click();
-          // Wait for tab switch animation
-          await new Promise(resolve => setTimeout(resolve, 300));
+          // Wait for tab switch animation and content to render
+          await new Promise(resolve => setTimeout(resolve, 500));
+          // Wait for the target element to be visible
+          let attempts = 0;
+          while (attempts < 10 && !document.querySelector('[data-tour="widget-embed-code"]')) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
         }
       }
 
@@ -756,7 +762,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         const settingsTab = document.querySelector('[data-tour="salesforce-settings-tab"]') as HTMLButtonElement;
         if (settingsTab) {
           settingsTab.click();
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
+          let attempts = 0;
+          while (attempts < 10 && !document.querySelector('[data-tour="salesforce-connection"]')) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
         }
       }
 
@@ -765,7 +776,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         const emailTab = document.querySelector('[data-tour="notifications-email-tab"]') as HTMLButtonElement;
         if (emailTab) {
           emailTab.click();
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
+          let attempts = 0;
+          while (attempts < 10 && !document.querySelector('[data-tour="email-recipients"]')) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
         }
       }
 
