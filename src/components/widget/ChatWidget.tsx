@@ -18,6 +18,7 @@ interface ChatWidgetProps {
   agentAvatar?: string;
   isPreview?: boolean;
   autoOpen?: boolean;
+  widgetIcon?: string;
 }
 
 export const ChatWidget = ({
@@ -32,6 +33,7 @@ export const ChatWidget = ({
   agentAvatar,
   isPreview = false,
   autoOpen = false,
+  widgetIcon,
 }: ChatWidgetProps) => {
   const [isOpen, setIsOpen] = useState(autoOpen);
   const [isClosing, setIsClosing] = useState(false);
@@ -71,8 +73,8 @@ export const ChatWidget = ({
     'bot': Bot,
   };
 
-  // Get the icon component from settings
-  const WidgetIconComponent = widgetIconMap[settings?.widget_icon || 'message-circle'] || MessageCircle;
+  // Get the icon component from prop override, settings, or default
+  const WidgetIconComponent = widgetIconMap[widgetIcon || settings?.widget_icon || 'message-circle'] || MessageCircle;
 
   // Use AI agent info if available, otherwise use props
   const displayName = currentAiAgent?.name || agentName;
