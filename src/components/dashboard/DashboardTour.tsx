@@ -108,6 +108,45 @@ const analyticsSteps: Step[] = [
     disableBeacon: true,
   },
 ];
+
+// Widget Code page tour steps
+const widgetCodeSteps: Step[] = [
+  {
+    target: '[data-tour="widget-icon-card"]',
+    content: "Choose an icon that matches your brand. This is the button visitors click to open your chat widget.",
+    title: "Chat Launcher Icon",
+    placement: 'right',
+    disableBeacon: true,
+    data: { icon: 'icon' },
+  },
+  {
+    target: '[data-tour="widget-color-card"]',
+    content: "Pick a color that matches your website's branding. We can even extract colors automatically from your domain.",
+    title: "Brand Color",
+    placement: 'right',
+    data: { icon: 'palette' },
+  },
+  {
+    target: '[data-tour="widget-embed-tab"]',
+    content: "Click this tab to get the code snippet you'll add to your website.",
+    title: "Embed Code Tab",
+    placement: 'bottom',
+    data: { isClickRequired: true },
+  },
+  {
+    target: '[data-tour="widget-embed-code"]',
+    content: "Copy this snippet and paste it just before the closing </body> tag on your website. That's it — your chat widget will be live!",
+    title: "Your Embed Code",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="widget-preview"]',
+    content: "This is how your widget will look on your website. Toggle between desktop and mobile views to see how it adapts.",
+    title: "Live Preview",
+    placement: 'top',
+  },
+];
 // Remaining dashboard steps (after AI Support)
 const remainingDashboardSteps: Step[] = [
   {
@@ -361,7 +400,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     return dashboardSteps;
   }, [tourPhase]);
 
-  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + remainingDashboardSteps.length - 1;
+  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + remainingDashboardSteps.length - 1;
 
   // Calculate display step number
   const getDisplayStepNumber = () => {
@@ -449,15 +488,33 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // After Analytics steps → navigate to dashboard for remaining (widget code)
+      // After Analytics steps → navigate to Widget Code page
       if (tourPhase === 'analytics' && nextIndex >= analyticsSteps.length && action !== ACTIONS.PREV) {
+        setRun(false);
+        navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
+        return;
+      }
+
+      // After Widget Code steps → navigate to dashboard for remaining sidebar items
+      if (tourPhase === 'widget-code' && nextIndex >= widgetCodeSteps.length && action !== ACTIONS.PREV) {
         setRun(false);
         navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=0`);
         return;
       }
       
-      // Scroll next target into view before advancing
+      // Special handling: click the Embed Code tab when advancing to the embed code step
       const nextStep = stepsToUse[nextIndex];
+      if (tourPhase === 'widget-code' && nextStep?.target === '[data-tour="widget-embed-code"]') {
+        // Click the Embed Code tab first
+        const embedTab = document.querySelector('[data-tour="widget-embed-tab"]') as HTMLButtonElement;
+        if (embedTab) {
+          embedTab.click();
+          // Wait for tab switch animation
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+
+      // Scroll next target into view before advancing
       if (nextStep?.target && typeof nextStep.target === 'string') {
         setRun(false);
         await scrollTargetIntoView(nextStep.target);
@@ -489,9 +546,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   };
 
-  // Handle remaining phase navigation
+  // Handle remaining/widget-code phase navigation
   useEffect(() => {
-    if (tourPhase === 'remaining') {
+    if (tourPhase === 'remaining' || tourPhase === 'widget-code') {
       const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
       setStepIndex(startIndex);
     }
@@ -499,6 +556,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
   // Get the right steps for current phase
   const stepsToUse = useMemo(() => {
+    if (tourPhase === 'widget-code') {
+      return widgetCodeSteps;
+    }
     if (tourPhase === 'remaining') {
       return remainingDashboardSteps;
     }
