@@ -73,6 +73,16 @@ const DashboardContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const {
+    setCollapsed
+  } = useSidebarState();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Property filter state - used to scope data fetching
+  const [propertyFilter, setPropertyFilter] = useState<string>('all');
+
+  // Pass selectedPropertyId to hook - only fetches conversations for that property
+  const {
     conversations: dbConversations,
     properties,
     loading: dataLoading,
@@ -84,12 +94,9 @@ const DashboardContent = () => {
     deleteConversations,
     deleteProperty,
     toggleAI
-  } = useConversations();
-  const {
-    setCollapsed
-  } = useSidebarState();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  } = useConversations({ 
+    selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter 
+  });
 
   // Determine filter from path
   const statusFilter = useMemo((): FilterStatus => {
@@ -97,6 +104,7 @@ const DashboardContent = () => {
     if (location.pathname === '/dashboard/closed') return 'closed';
     return 'all';
   }, [location.pathname]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
@@ -120,23 +128,23 @@ const DashboardContent = () => {
       navigate('/onboarding');
     }
   }, [authLoading, dataLoading, user, properties.length, navigate]);
+
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [propertyFilter, setPropertyFilter] = useState<string>('all');
 
   // Convert DB conversations to UI format
   const conversations = useMemo(() => dbConversations.map(toUiConversation), [dbConversations]);
 
   // Get selected conversation
   const selectedConversation = useMemo(() => conversations.find(c => c.id === selectedConversationId) || null, [conversations, selectedConversationId]);
+  
   const filteredConversations = useMemo(() => {
     return conversations.filter(conv => {
       // Filter by status based on path
       if (statusFilter === 'active' && conv.status === 'closed') return false;
       if (statusFilter === 'closed' && conv.status !== 'closed') return false;
-      // 'all' shows everything
+      // 'all' shows everything (property filtering is now done at fetch level)
 
-      if (propertyFilter !== 'all' && conv.propertyId !== propertyFilter) return false;
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const visitorName = conv.visitor.name?.toLowerCase() || '';
@@ -148,7 +156,7 @@ const DashboardContent = () => {
       }
       return true;
     }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }, [conversations, statusFilter, propertyFilter, searchQuery]);
+  }, [conversations, statusFilter, searchQuery]);
 
   // Add lastMessage to conversations
   const conversationsWithLastMessage = useMemo(
