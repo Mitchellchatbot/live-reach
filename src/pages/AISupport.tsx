@@ -260,7 +260,7 @@ const AISupport = () => {
         typing_indicator_min_ms: data.typing_indicator_min_ms ?? 1500,
         typing_indicator_max_ms: data.typing_indicator_max_ms ?? 3000,
         smart_typing_enabled: data.smart_typing_enabled ?? true,
-        typing_wpm: data.typing_wpm ?? 90,
+        typing_wpm: data.typing_wpm ?? 130,
         max_ai_messages_before_escalation: data.max_ai_messages_before_escalation ?? 5,
         escalation_keywords: data.escalation_keywords ?? ['crisis', 'emergency', 'suicide', 'help me', 'urgent'],
         auto_escalation_enabled: data.auto_escalation_enabled ?? true,
