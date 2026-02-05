@@ -1,79 +1,104 @@
 
-## What’s happening (root cause)
-Your Salesforce connect flow is failing because the **backend functions for Salesforce are not deployed/available** right now.
+## Add Widget Code Tour After Analytics
 
-I verified this directly by calling the backend endpoints:
-- `POST /salesforce-describe-lead` → **404** `{"code":"NOT_FOUND","message":"Requested function was not found"}`
-- `POST /salesforce-export-leads` → **404** same
-- `GET /salesforce-oauth-callback` → **404** same
+This plan fixes the tour flow so Analytics correctly transitions to the Widget Code tour instead of ending with "Get Started!".
 
-As a control, another function **does** exist and responds (`/extract-brand-colors` returned 200), so this isn’t a general backend outage—just these specific functions (and a couple related ones like `close-stale-conversations`, `widget-conversation-presence`) are missing.
+### Problem
+The Analytics tour currently shows "Get Started!" on the last step because `isLastStep` is true for that phase. Instead, it should show a transition button like "Tour Widget Code" and navigate to the widget customization page.
 
-This is **not** on Salesforce’s side: the request is failing before Salesforce APIs even come into play.
+### Solution
 
-## Why the functions are “missing”
-A 404 `NOT_FOUND` from the functions gateway means **the function isn’t deployed** (or deployment failed), not that your function code threw an error.
+**1. Add a Transition Step at the End of Analytics Steps**
 
-Given you also have 404s for:
-- `close-stale-conversations`
-- `widget-conversation-presence`
+Add a new step to `analyticsSteps` that targets the Widget Code sidebar item:
 
-…it strongly suggests a recurring deploy/bundling problem for a subset of functions.
+```typescript
+// After the analytics-stats step
+{
+  target: '[data-tour="widget-code-sidebar"]',
+  content: "widget-code-sidebar-special",
+  title: "Widget Code",
+  placement: 'right',
+  data: { isWidgetCodeSidebar: true },
+}
+```
 
-## Fix approach (what I will implement)
-### 1) Confirm exactly which functions are missing
-Using backend calls (same method I already used), we’ll confirm 404s for:
-- `salesforce-oauth-callback`
-- `salesforce-describe-lead`
-- `salesforce-export-leads`
-- `close-stale-conversations`
-- `widget-conversation-presence`
+**2. Add `data-tour` Attribute to Widget Code Sidebar Item**
 
-### 2) Re-deploy the missing backend functions
-Attempt deployment of the missing functions as-is. After deployment:
-- Re-test each one with a simple request.
-- Success criteria: they return **anything other than 404** (even a 400 “missing params” is fine—means the route exists).
+In `DashboardSidebar.tsx`, add `data-tour="widget-code-sidebar"` to the Widget Code menu item so the tour can target it.
 
-### 3) If deployment still fails: make bundling more reliable (code changes)
-If the platform is failing to bundle these functions, I’ll refactor them to match the simplest, already-working patterns in your project:
+**3. Update CustomTooltip to Handle the Widget Code Sidebar Transition**
 
-**Changes to apply to each missing function (where applicable):**
-- Replace `import { serve } from "https://deno.land/std@.../server.ts"` with **`Deno.serve(...)`** to reduce external dependency bundling.
-- Replace `https://esm.sh/@supabase/supabase-js@2` import with a more stable import strategy (prefer `npm:@supabase/supabase-js@2` if supported in this runtime; otherwise pin esm.sh with deno target parameters) to avoid flaky remote bundling.
-- Normalize CORS headers to the recommended superset (your codebase is inconsistent here).
-  
-Target files:
-- `supabase/functions/salesforce-describe-lead/index.ts`
-- `supabase/functions/salesforce-export-leads/index.ts`
-- `supabase/functions/widget-conversation-presence/index.ts`
-- `supabase/functions/close-stale-conversations/index.ts`
-- (Salesforce callback already uses `Deno.serve`, but we’ll align imports/CORS if needed): `supabase/functions/salesforce-oauth-callback/index.ts`
+Add a special case in `CustomTooltip` for `isWidgetCodeSidebar`:
+- Display a styled card explaining Widget Customization features
+- Button says "Tour Widget Code" instead of "Get Started!"
+- Clicking navigates to `/dashboard/widget?tour=1&tourPhase=widget-code`
 
-### 4) Ensure the OAuth callback is callable without login (important)
-Salesforce redirects a browser to your callback URL without an auth token. We should explicitly allow that by setting:
+**4. Add Handler Function for Widget Code Navigation**
 
-- `supabase/config.toml`:
-  - `[functions.salesforce-oauth-callback] verify_jwt = false`
+Add `handleSetupWidgetCode` function that navigates to the widget page with tour params (similar to `handleSetupAnalytics`).
 
-(Separately, `widget-conversation-presence` is also called from the public widget and likely needs `verify_jwt = false` too—otherwise it would 401. That’s not your current error, but it’s the correct config to prevent the next blocker after deployment.)
+**5. Update Button Logic in CustomTooltip**
 
-### 5) End-to-end verification checklist
-After the functions exist:
-1. From the backend test tool, confirm:
-   - `/salesforce-describe-lead` returns 400/404(settings)/200 depending on connection state (but not 404 NOT_FOUND).
-2. In the UI (`/dashboard/salesforce`):
-   - Click **Connect Salesforce**
-   - Complete login in the popup
-   - Popup should close and the app should show “Connected”
-3. Confirm Lead fields load (this is where `salesforce-describe-lead` is used).
-4. (Optional) Trigger a manual export from Visitor Leads to confirm `salesforce-export-leads` works.
+Modify the button text logic to check for `isWidgetCodeSidebar` so it shows the correct label instead of "Get Started!".
 
-## Expected outcome
-- The `NOT_FOUND` error goes away because the Salesforce backend functions will be deployed and reachable.
-- Salesforce OAuth can complete, fields can be described, and exports can run.
-- The other missing conversation-related functions will also be restored, removing that warning you saw in logs.
+### Files to Modify
 
-## Notes / edge cases to keep in mind
-- If Salesforce Connected App redirect URI is wrong, you’ll get a Salesforce OAuth error, not a “function not found”. So once the function exists, if there’s still trouble, we’ll validate the redirect URI value in your Salesforce app settings.
-- If token refresh fails later, that would show up as a Salesforce API error (401/invalid_grant), not NOT_FOUND.
+| File | Changes |
+|------|---------|
+| `src/components/dashboard/DashboardTour.tsx` | Add transition step to `analyticsSteps`, add `isWidgetCodeSidebar` handling in CustomTooltip, add `handleSetupWidgetCode` function, update button onClick logic |
+| `src/components/dashboard/DashboardSidebar.tsx` | Add `data-tour="widget-code-sidebar"` attribute to the Widget Code menu item |
 
+### Technical Details
+
+**New Analytics Step (end of `analyticsSteps` array):**
+```typescript
+{
+  target: '[data-tour="widget-code-sidebar"]',
+  content: "widget-code-sidebar-special",
+  title: "Widget Code",
+  placement: 'right',
+  data: { isWidgetCodeSidebar: true },
+}
+```
+
+**CustomTooltip Addition:**
+```typescript
+const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
+
+// In the render, add a case for isWidgetCodeSidebar similar to isAnalyticsSidebar
+// Shows: Code icon, "Go Live" title, description about embedding the widget
+```
+
+**Handler Function:**
+```typescript
+const handleSetupWidgetCode = () => {
+  setRun(false);
+  navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
+};
+```
+
+**Button Logic Update (in CustomTooltip):**
+```typescript
+onClick={
+  isAISettings ? onSetupAI : 
+  isAnalyticsSidebar ? onSetupAnalytics : 
+  isWidgetCodeSidebar ? onSetupWidgetCode : 
+  primaryProps.onClick
+}
+```
+
+```typescript
+// Button text
+{isAISettings ? 'Tour AI Settings' : 
+ isAnalyticsSidebar ? 'View Analytics' : 
+ isWidgetCodeSidebar ? 'Tour Widget Code' : 
+ isLastStep ? 'Get Started!' : 'Next'}
+```
+
+### Tour Flow After Fix
+1. Dashboard (5 steps) - ends with "Tour AI Settings" button
+2. AI Support (5 steps) - ends with "View Analytics" button  
+3. Analytics (3 steps) - ends with "Tour Widget Code" button (NEW!)
+4. Widget Code (5 steps) - ends with navigation to remaining steps
+5. Remaining (3 steps) - ends with "Get Started!"
