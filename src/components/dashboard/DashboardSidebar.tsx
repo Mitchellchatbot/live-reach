@@ -257,8 +257,12 @@ export const DashboardSidebar = ({
           {/* Integrations - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Integrations" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/salesforce" icon={Cloud} label="Salesforce" collapsed={collapsed} dataTour="salesforce" />
-              <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} dataTour="notifications" />
+              <div data-tour="salesforce">
+                <SidebarItem to="/dashboard/salesforce" icon={Cloud} label="Salesforce" collapsed={collapsed} />
+              </div>
+              <div data-tour="notifications">
+                <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
+              </div>
             </SidebarSection>
           )}
 
