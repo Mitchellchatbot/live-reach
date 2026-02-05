@@ -265,15 +265,29 @@ export default function Auth() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/30 to-muted/50">
+        <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
+          <div className="relative">
+            <div className="h-16 w-16 rounded-full border-4 border-muted" />
+            <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          </div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/30 to-muted/50 p-6">
       {/* Decorative background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/30 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
       </div>
       
-      <Card className="w-full max-w-md border-border/40 shadow-xl backdrop-blur-sm bg-card/95 rounded-2xl animate-fade-in">
+      <Card className="w-full max-w-md border-border/40 shadow-xl backdrop-blur-sm bg-card/95 rounded-2xl page-enter">
         <CardHeader className="text-center space-y-6 pt-8 pb-4">
           <div className="flex justify-center">
             <div className="p-3 bg-primary/10 rounded-2xl">
