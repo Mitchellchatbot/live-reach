@@ -250,8 +250,8 @@ export const DashboardSidebar = ({
           {/* Setup - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Setup" collapsed={collapsed}>
-              <div data-tour="widget-code">
-                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} />
+              <div data-tour="widget-code" data-tour-sidebar="widget-code-sidebar">
+                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} dataTour="widget-code-sidebar" />
               </div>
             </SidebarSection>
           )}
