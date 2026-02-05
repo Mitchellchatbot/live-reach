@@ -498,7 +498,9 @@ const WidgetPreview = () => {
                 <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
-                    <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                    <div className="w-[390px] h-[844px] origin-top-left" style={{ transform: 'scale(0.5)' }}>
+                      <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                    </div>
                   ) : (
                     <div className="p-6 pt-10">
                       <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
@@ -534,9 +536,11 @@ const WidgetPreview = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="relative h-[calc(100%-2rem)]">
+                    <div className="relative h-[calc(100%-2rem)] overflow-hidden">
                       {selectedProperty?.domain ? (
-                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                        <div className="w-[1440px] h-[900px] origin-top-left" style={{ transform: 'scale(0.5)' }}>
+                          <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                        </div>
                       ) : (
                         <div className="p-8">
                           <div className="max-w-4xl mx-auto">
