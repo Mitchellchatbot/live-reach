@@ -66,13 +66,11 @@ export const useConversations = () => {
   const [conversations, setConversations] = useState<DbConversation[]>([]);
   const [properties, setProperties] = useState<DbProperty[]>([]);
 
-  // Avoid channel-name collisions when this hook is mounted in multiple places (e.g. sidebar + widget preview).
+  // Avoid channel-name collisions when this hook is mounted in multiple places
   const realtimeChannelSuffixRef = useRef<string>(
     `${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
 
-  // Important: `loading` should represent BOTH properties + conversations.
-  // Otherwise route guards may think there are "no properties" while the properties request is still in-flight.
   const [loading, setLoading] = useState(true);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
   const [conversationsLoaded, setConversationsLoaded] = useState(false);
@@ -106,6 +104,7 @@ export const useConversations = () => {
     if (!user) return;
 
     try {
+      // Step 1: Fetch all conversations with visitor and property data
       const { data: convData, error: convError } = await supabase
         .from('conversations')
         .select(`
@@ -122,30 +121,43 @@ export const useConversations = () => {
         return;
       }
 
-      // Fetch messages for each conversation
-      const conversationsWithMessages = await Promise.all(
-        (convData || []).map(async (conv) => {
-          try {
-            const { data: messages } = await supabase
-              .from('messages')
-              .select('*')
-              .eq('conversation_id', conv.id)
-              .order('sequence_number', { ascending: true });
+      if (!convData || convData.length === 0) {
+        setConversations([]);
+        setConversationsLoaded(true);
+        return;
+      }
 
-            return {
-              ...conv,
-              status: conv.status as 'active' | 'closed' | 'pending',
-              messages: (messages || []).map((m) => ({
-                ...m,
-                sender_type: m.sender_type as 'agent' | 'visitor',
-              })),
-            };
-          } catch (msgErr) {
-            console.error('[fetchConversations] message fetch error:', msgErr);
-            return { ...conv, status: conv.status as 'active' | 'closed' | 'pending', messages: [] };
-          }
-        })
-      );
+      // Step 2: Batch fetch ALL messages in a single query (fixes N+1 problem)
+      const conversationIds = convData.map(c => c.id);
+      const { data: allMessages, error: messagesError } = await supabase
+        .from('messages')
+        .select('*')
+        .in('conversation_id', conversationIds)
+        .order('sequence_number', { ascending: true });
+
+      if (messagesError) {
+        console.error('Error fetching messages:', messagesError);
+      }
+
+      // Step 3: Group messages by conversation_id in memory
+      const messagesByConversation: Record<string, DbMessage[]> = {};
+      (allMessages || []).forEach((msg) => {
+        const convId = msg.conversation_id;
+        if (!messagesByConversation[convId]) {
+          messagesByConversation[convId] = [];
+        }
+        messagesByConversation[convId].push({
+          ...msg,
+          sender_type: msg.sender_type as 'agent' | 'visitor',
+        });
+      });
+
+      // Step 4: Combine conversations with their messages
+      const conversationsWithMessages = convData.map((conv) => ({
+        ...conv,
+        status: conv.status as 'active' | 'closed' | 'pending',
+        messages: messagesByConversation[conv.id] || [],
+      }));
 
       // Filter out conversations where visitor hasn't sent any messages
       const conversationsWithVisitorMessage = conversationsWithMessages.filter(
@@ -192,8 +204,7 @@ export const useConversations = () => {
       return null;
     }
 
-    // Update conversation: set status to active, disable AI when human agent sends a message
-    // This ensures the widget knows a human has taken over and won't generate AI responses.
+    // Update conversation status and disable AI
     await supabase
       .from('conversations')
       .update({ 
@@ -203,9 +214,22 @@ export const useConversations = () => {
       })
       .eq('id', conversationId);
 
-    // Update local state immediately
+    // Update local state immediately (optimistic update)
+    const newMessage: DbMessage = {
+      ...data,
+      sender_type: 'agent',
+    };
+    
     setConversations(prev => 
-      prev.map(c => c.id === conversationId ? { ...c, ai_enabled: false, status: 'active' as const } : c)
+      prev.map(c => c.id === conversationId 
+        ? { 
+            ...c, 
+            ai_enabled: false, 
+            status: 'active' as const,
+            messages: [...(c.messages || []), newMessage],
+          } 
+        : c
+      )
     );
 
     return data;
@@ -231,6 +255,11 @@ export const useConversations = () => {
       return false;
     }
 
+    // Optimistic update
+    setConversations(prev =>
+      prev.map(c => c.id === conversationId ? { ...c, status: 'closed' as const } : c)
+    );
+
     return true;
   };
 
@@ -247,12 +276,16 @@ export const useConversations = () => {
     }
 
     toast.success(`${conversationIds.length} conversation${conversationIds.length > 1 ? 's' : ''} closed`);
-    await fetchConversations();
+    
+    // Optimistic update
+    setConversations(prev =>
+      prev.map(c => conversationIds.includes(c.id) ? { ...c, status: 'closed' as const } : c)
+    );
+    
     return true;
   };
 
   const deleteConversation = async (conversationId: string) => {
-    // First delete all messages for this conversation
     const { error: messagesError } = await supabase
       .from('messages')
       .delete()
@@ -264,7 +297,6 @@ export const useConversations = () => {
       return false;
     }
 
-    // Then delete the conversation
     const { error } = await supabase
       .from('conversations')
       .delete()
@@ -277,12 +309,14 @@ export const useConversations = () => {
     }
 
     toast.success('Conversation deleted');
-    await fetchConversations();
+    
+    // Optimistic update
+    setConversations(prev => prev.filter(c => c.id !== conversationId));
+    
     return true;
   };
 
   const deleteConversations = async (conversationIds: string[]) => {
-    // First delete all messages for these conversations
     const { error: messagesError } = await supabase
       .from('messages')
       .delete()
@@ -294,7 +328,6 @@ export const useConversations = () => {
       return false;
     }
 
-    // Then delete the conversations
     const { error } = await supabase
       .from('conversations')
       .delete()
@@ -307,7 +340,10 @@ export const useConversations = () => {
     }
 
     toast.success(`${conversationIds.length} conversation${conversationIds.length > 1 ? 's' : ''} deleted`);
-    await fetchConversations();
+    
+    // Optimistic update
+    setConversations(prev => prev.filter(c => !conversationIds.includes(c.id)));
+    
     return true;
   };
 
@@ -320,7 +356,6 @@ export const useConversations = () => {
       collectName?: boolean;
       collectPhone?: boolean;
       basePrompt?: string;
-      // AI Agent info from onboarding
       agentName?: string;
       agentAvatarUrl?: string;
       widgetIcon?: string;
@@ -350,7 +385,7 @@ export const useConversations = () => {
       return null;
     }
 
-    // Create AI agent if name was provided during onboarding
+    // Create AI agent
     const agentNameToUse = options?.agentName?.trim() || 'Support Assistant';
     const { data: aiAgent, error: agentError } = await supabase
       .from('ai_agents')
@@ -366,9 +401,7 @@ export const useConversations = () => {
 
     if (agentError) {
       console.error('Error creating AI agent:', agentError);
-      // Don't fail the whole operation, just log the error
     } else if (aiAgent) {
-      // Link AI agent to property
       const { error: linkError } = await supabase
         .from('ai_agent_properties')
         .insert({
@@ -415,13 +448,13 @@ export const useConversations = () => {
       return false;
     }
 
-    // Update local state immediately
     setConversations(prev => 
       prev.map(c => c.id === conversationId ? { ...c, ai_enabled: enabled } : c)
     );
     return true;
   };
 
+  // Initial data fetch with parallel loading
   useEffect(() => {
     if (!user) {
       setConversations([]);
@@ -432,13 +465,14 @@ export const useConversations = () => {
       return;
     }
 
-    // New session / mount: reset to a known loading state.
     setLoading(true);
     setPropertiesLoaded(false);
     setConversationsLoaded(false);
 
-    fetchProperties();
-    fetchConversations();
+    // Fetch both in parallel
+    Promise.all([fetchProperties(), fetchConversations()]).catch((err) => {
+      console.error('[useConversations] parallel fetch error:', err);
+    });
   }, [user, fetchProperties, fetchConversations]);
 
   useEffect(() => {
@@ -447,7 +481,7 @@ export const useConversations = () => {
     }
   }, [propertiesLoaded, conversationsLoaded]);
 
-  // Subscribe to realtime updates
+  // Optimized realtime subscriptions with incremental updates
   useEffect(() => {
     if (!user) return;
 
@@ -457,10 +491,56 @@ export const useConversations = () => {
       .channel(`messages-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
+        { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-          console.log('[useConversations] Messages change detected:', payload);
-          fetchConversations().catch((err) => console.error('[RT messages]', err));
+          console.log('[useConversations] New message:', payload);
+          const newMessage = payload.new as DbMessage;
+          
+          // Incremental update: append message to existing conversation
+          setConversations(prev => {
+            const conversationExists = prev.some(c => c.id === newMessage.conversation_id);
+            if (!conversationExists) {
+              // New conversation - need full refetch
+              fetchConversations().catch(console.error);
+              return prev;
+            }
+            
+            return prev.map(c => 
+              c.id === newMessage.conversation_id
+                ? { 
+                    ...c, 
+                    messages: [...(c.messages || []), {
+                      ...newMessage,
+                      sender_type: newMessage.sender_type as 'agent' | 'visitor',
+                    }],
+                    updated_at: newMessage.created_at,
+                  }
+                : c
+            );
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        (payload) => {
+          console.log('[useConversations] Message updated:', payload);
+          const updatedMessage = payload.new as DbMessage;
+          
+          setConversations(prev =>
+            prev.map(c => 
+              c.id === updatedMessage.conversation_id
+                ? {
+                    ...c,
+                    messages: (c.messages || []).map(m =>
+                      m.id === updatedMessage.id
+                        ? { ...updatedMessage, sender_type: updatedMessage.sender_type as 'agent' | 'visitor' }
+                        : m
+                    ),
+                  }
+                : c
+            )
+          );
         }
       )
       .subscribe((status) => {
@@ -471,25 +551,64 @@ export const useConversations = () => {
       .channel(`conversations-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'conversations' },
+        { event: 'INSERT', schema: 'public', table: 'conversations' },
+        () => {
+          // New conversation - need full refetch to get visitor/property data
+          fetchConversations().catch(console.error);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'conversations' },
         (payload) => {
-          console.log('[useConversations] Conversations change detected:', payload);
-          fetchConversations().catch((err) => console.error('[RT conversations]', err));
+          console.log('[useConversations] Conversation updated:', payload);
+          const updated = payload.new;
+          
+          // Incremental update for conversation metadata
+          setConversations(prev =>
+            prev.map(c => 
+              c.id === updated.id
+                ? { 
+                    ...c, 
+                    status: updated.status as 'active' | 'closed' | 'pending',
+                    ai_enabled: updated.ai_enabled,
+                    assigned_agent_id: updated.assigned_agent_id,
+                    updated_at: updated.updated_at,
+                  }
+                : c
+            )
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'conversations' },
+        (payload) => {
+          const deleted = payload.old;
+          setConversations(prev => prev.filter(c => c.id !== deleted.id));
         }
       )
       .subscribe((status) => {
         console.log('[useConversations] Conversations channel status:', status);
       });
 
-    // Subscribe to visitor updates (for AI-extracted info)
     const visitorsChannel = supabase
       .channel(`visitors-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'visitors' },
+        { event: 'UPDATE', schema: 'public', table: 'visitors' },
         (payload) => {
-          console.log('[useConversations] Visitors change detected:', payload);
-          fetchConversations().catch((err) => console.error('[RT visitors]', err));
+          console.log('[useConversations] Visitor updated:', payload);
+          const updatedVisitor = payload.new as DbVisitor;
+          
+          // Incremental update for visitor data
+          setConversations(prev =>
+            prev.map(c => 
+              c.visitor?.id === updatedVisitor.id
+                ? { ...c, visitor: updatedVisitor }
+                : c
+            )
+          );
         }
       )
       .subscribe((status) => {
