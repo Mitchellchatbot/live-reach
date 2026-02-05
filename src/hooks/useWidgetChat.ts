@@ -180,6 +180,7 @@ const UPDATE_VISITOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/up
 const AI_AGENTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-property-ai-agents`;
 const SETTINGS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-property-settings`;
 const BOOTSTRAP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-bootstrap`;
+const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-create-conversation`;
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
 const GET_MESSAGES_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-get-messages`;
 
@@ -384,6 +385,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const [showProactiveMessage, setShowProactiveMessage] = useState(false);
   const [aiAgents, setAiAgents] = useState<AIAgent[]>([]);
   const [currentAiAgent, setCurrentAiAgent] = useState<AIAgent | null>(null);
+  const [greetingText, setGreetingText] = useState<string>(''); // Static greeting from property settings
   
   const aiMessageCountRef = useRef(0);
   const proactiveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -571,9 +573,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
   }, [propertyId]);
 
-  const ensureWidgetIds = useCallback(async (greetingText?: string, fetchedAgents?: AIAgent[]) => {
+  const ensureWidgetIds = useCallback(async (fetchedAgents?: AIAgent[]) => {
     if (!propertyId || propertyId === 'demo' || isPreview) return;
-    if (visitorIdRef.current && conversationIdRef.current) return;
+    if (visitorIdRef.current) return; // Already have visitor
 
     const sessionId = getOrCreateSessionId();
     const trackingParams = getTrackingParams();
@@ -591,7 +593,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           currentPage: getEffectivePagePath(),
           browserInfo: getBrowserInfo(),
           gclid: trackingParams.gclid,
-          greeting: greetingText ?? '',
         }),
       });
 
@@ -604,6 +605,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       if (data?.visitorId) {
         setVisitorId(data.visitorId);
         visitorIdRef.current = data.visitorId;
+      }
+      // Store greeting from property settings for static display
+      if (data?.greeting) {
+        setGreetingText(data.greeting);
       }
       if (data?.conversationId) {
         setConversationId(data.conversationId);
@@ -619,7 +624,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Load existing messages for returning visitors
+      // Load existing messages for returning visitors (only if conversation exists)
       if (data?.visitorId && data?.conversationId) {
         try {
           const msgResponse = await fetch(GET_MESSAGES_URL, {
@@ -683,6 +688,46 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
     } catch (e) {
       console.error('Widget bootstrap error:', e);
+    }
+  }, [propertyId, isPreview]);
+
+  // Create conversation on-demand (lazy creation when visitor sends first message)
+  const ensureConversationExists = useCallback(async (): Promise<string | null> => {
+    if (!propertyId || propertyId === 'demo' || isPreview) return null;
+    if (conversationIdRef.current) return conversationIdRef.current;
+    if (!visitorIdRef.current) return null;
+
+    const sessionId = getOrCreateSessionId();
+
+    try {
+      const response = await fetch(CREATE_CONVERSATION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          propertyId,
+          visitorId: visitorIdRef.current,
+          sessionId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Widget create conversation failed:', response.status, await response.text());
+        return null;
+      }
+
+      const data = await response.json();
+      if (data?.conversationId) {
+        setConversationId(data.conversationId);
+        conversationIdRef.current = data.conversationId;
+        return data.conversationId;
+      }
+      return null;
+    } catch (e) {
+      console.error('Widget create conversation error:', e);
+      return null;
     }
   }, [propertyId, isPreview]);
 
@@ -1031,7 +1076,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
 
     proactiveTimerRef.current = setTimeout(() => {
-      if (messages.length === 0 || (messages.length === 1 && messages[0].id === 'greeting')) {
+      if (messages.length === 0) {
         setShowProactiveMessage(true);
         setMessages(prev => [...prev, {
           id: 'proactive',
@@ -1050,23 +1095,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       fetchAiAgents(),
     ]);
 
-    // OPTIMIZATION: Show greeting immediately for fast perceived load time
-    const greetingAgent = fetchedAgents.length > 0 ? fetchedAgents[0] : null;
+    // Store greeting for static display (not as a message)
     const greetingContent = greeting || fetchedSettings.greeting || '';
-
-    // IMPORTANT: never clobber messages if initializeChat is called again.
     if (greetingContent) {
-      setMessages(prev => {
-        if (prev.length > 0) return prev;
-        return [{
-          id: 'greeting',
-          content: greetingContent,
-          sender_type: 'agent',
-          created_at: new Date().toISOString(),
-          agent_name: greetingAgent?.name,
-          agent_avatar: greetingAgent?.avatar_url,
-        }];
-      });
+      setGreetingText(greetingContent);
     }
     
     // For preview/demo mode, we're done - don't create DB records
@@ -1075,12 +1107,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       return;
     }
 
-    // Mark loading as done early - the greeting is visible
+    // Mark loading as done early
     setLoading(false);
 
-    // Background bootstrap (visitor + conversation ids) for real embeds
-    // Pass fetchedAgents so we can attribute agent info to loaded messages
-    void ensureWidgetIds(greetingContent, fetchedAgents);
+    // Background bootstrap (visitor only - conversation created lazily on first message)
+    void ensureWidgetIds(fetchedAgents);
   }, [propertyId, greeting, fetchSettings, fetchAiAgents, isPreview, ensureWidgetIds]);
 
   // Submit lead info
@@ -1115,9 +1146,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     setMessages(prev => [...prev, visitorMessage]);
 
-    // For real embeds, make sure IDs exist (never resets UI state)
+    // For real embeds, make sure visitor exists and conversation is created
     if (!isPreview && propertyId && propertyId !== 'demo') {
       await ensureWidgetIds();
+      await ensureConversationExists();
     }
 
     // Track chat_open event on first message
@@ -1178,9 +1210,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       return;
     }
 
-    // Build conversation history for AI
+    // Build conversation history for AI (proactive messages are transient UI only)
     const conversationHistory = messages
-      .filter(m => m.id !== 'greeting' && m.id !== 'proactive')
+      .filter(m => m.id !== 'proactive')
       .map(m => ({
         role: m.sender_type === 'visitor' ? 'user' as const : 'assistant' as const,
         content: m.content,
@@ -1598,5 +1630,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     visitorInfo,
     currentAiAgent,
     aiAgents,
+    greetingText, // Static greeting for UI display
   };
 };

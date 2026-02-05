@@ -33,7 +33,7 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Validate property exists
+    // Validate property exists and get greeting
     const { data: property, error: propErr } = await supabase
       .from("properties")
       .select("id,greeting")
@@ -99,8 +99,8 @@ serve(async (req) => {
       visitorId = newVisitor.id;
     }
 
-    // Find or create conversation
-    let conversationId: string;
+    // Find existing open conversation (don't create one yet - lazy creation)
+    let conversationId: string | null = null;
     const { data: existingConv, error: convFindErr } = await supabase
       .from("conversations")
       .select("id")
@@ -117,49 +117,15 @@ serve(async (req) => {
 
     if (existingConv?.id) {
       conversationId = existingConv.id;
-    } else {
-      const { data: newConv, error: convCreateErr } = await supabase
-        .from("conversations")
-        .insert({
-          property_id: propertyId,
-          visitor_id: visitorId,
-          status: "pending",
-        })
-        .select("id")
-        .single();
-
-      if (convCreateErr || !newConv?.id) {
-        console.error("widget-bootstrap: failed to create conversation", convCreateErr);
-        return new Response(JSON.stringify({ error: "Failed to create conversation" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      conversationId = newConv.id;
     }
 
-    // Ensure greeting exists as the first message (best-effort)
-    const greetingText = (greeting ?? property.greeting ?? "").toString();
-    if (greetingText.trim()) {
-      const { data: anyMsg } = await supabase
-        .from("messages")
-        .select("id")
-        .eq("conversation_id", conversationId)
-        .limit(1);
-
-      if (!anyMsg || anyMsg.length === 0) {
-        await supabase.from("messages").insert({
-          conversation_id: conversationId,
-          sender_id: "ai-bot",
-          sender_type: "agent",
-          content: greetingText,
-          sequence_number: 1,
-        });
-      }
-    }
-
-    return new Response(JSON.stringify({ visitorId, conversationId, visitorInfo }), {
+    // Return visitor info and greeting (greeting is for static UI display only)
+    return new Response(JSON.stringify({ 
+      visitorId, 
+      conversationId, 
+      visitorInfo,
+      greeting: property.greeting || null 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

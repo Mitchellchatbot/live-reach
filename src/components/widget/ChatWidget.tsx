@@ -56,6 +56,7 @@ export const ChatWidget = ({
     visitorInfo,
     currentAiAgent,
     aiAgents,
+    greetingText,
   } = useWidgetChat({ propertyId, greeting, isPreview });
 
   // Widget icon mapping
@@ -551,6 +552,35 @@ export const ChatWidget = ({
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
+                {/* Static Greeting - displayed first, not stored as a message */}
+                {greetingText && (
+                  <div className="flex gap-3 animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="max-w-[75%] flex flex-col">
+                      {displayName && (
+                        <span className="text-xs text-muted-foreground mb-1 ml-1">{displayName}</span>
+                      )}
+                      <div
+                        className="px-4 py-3 shadow-sm bg-card border border-border/30"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
+                          {greetingText}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {messages.map((msg, index) => {
                   // For agent messages, use per-message agent info or fall back to current
                   const msgAgentName = msg.agent_name || displayName;
