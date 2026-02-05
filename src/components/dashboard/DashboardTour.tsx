@@ -107,6 +107,13 @@ const analyticsSteps: Step[] = [
     placement: 'bottom',
     disableBeacon: true,
   },
+  {
+    target: '[data-tour="widget-code-sidebar"]',
+    content: "widget-code-sidebar-special",
+    title: "Widget Code",
+    placement: 'right',
+    data: { isWidgetCodeSidebar: true },
+  },
 ];
 
 // Widget Code page tour steps
@@ -189,6 +196,7 @@ const CustomTooltip = ({
   onSetupNotifications,
   onSetupWidget,
   onSetupAnalytics,
+  onSetupWidgetCode,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
@@ -196,6 +204,7 @@ const CustomTooltip = ({
   onSetupNotifications: () => void;
   onSetupWidget: () => void;
   onSetupAnalytics: () => void;
+  onSetupWidgetCode: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
@@ -203,6 +212,7 @@ const CustomTooltip = ({
   const isNotifications = step.data?.isNotifications;
   const isWidgetCode = step.data?.isWidgetCode;
   const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
+  const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
 
   return (
     <div
@@ -333,6 +343,18 @@ const CustomTooltip = ({
               </div>
             </div>
           </div>
+        ) : isWidgetCodeSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+              <div className="p-2 rounded-full bg-green-500/10">
+                <Code className="h-4 w-4 text-green-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Go Live</p>
+                <p className="text-xs text-muted-foreground">Customize your chat widget's appearance and get the embed code to add it to your website.</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
         )}
@@ -357,9 +379,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isLastStep ? 'Get Started!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -451,6 +473,11 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const handleSetupAnalytics = () => {
     setRun(false);
     navigate(`/dashboard/analytics?tour=1&tourPhase=analytics`);
+  };
+
+  const handleSetupWidgetCode = () => {
+    setRun(false);
+    navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
@@ -599,6 +626,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           onSetupNotifications={handleSetupNotifications}
           onSetupWidget={handleSetupWidget}
           onSetupAnalytics={handleSetupAnalytics}
+          onSetupWidgetCode={handleSetupWidgetCode}
         />
       )}
       styles={{
