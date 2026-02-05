@@ -122,16 +122,26 @@ const widgetCodeSteps: Step[] = [
     target: '[data-tour="widget-icon-card"]',
     content: "Choose an icon that matches your brand. This is the button visitors click to open your chat widget.",
     title: "Chat Launcher Icon",
-    placement: 'right',
+    placement: 'left',
     disableBeacon: true,
+    floaterProps: { disableFlip: true },
     data: { icon: 'icon' },
   },
   {
     target: '[data-tour="widget-color-card"]',
-    content: "Pick a color that matches your website's branding. We can even extract colors automatically from your domain.",
+    content: "Pick a color that matches your website's branding. We automatically extract colors from your domain to get you started.",
     title: "Brand Color",
-    placement: 'right',
+    placement: 'left',
+    floaterProps: { disableFlip: true },
     data: { icon: 'palette' },
+  },
+  {
+    target: '[data-tour="widget-welcome-message"]',
+    content: "This is the first message visitors see when they open the chat. Make it warm and inviting to encourage engagement.",
+    title: "Welcome Message",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+    data: { icon: 'message' },
   },
   {
     target: '[data-tour="widget-embed-tab"]',
@@ -148,12 +158,26 @@ const widgetCodeSteps: Step[] = [
     floaterProps: { disableFlip: true },
   },
   {
+    target: '[data-tour="widget-preview-toggle"]',
+    content: "Toggle between desktop and mobile views to see how your widget looks on different devices.",
+    title: "Preview Modes",
+    placement: 'bottom',
+  },
+  {
     target: '[data-tour="widget-preview"]',
-    content: "This is how your widget will look on your website. Toggle between desktop and mobile views to see how it adapts.",
+    content: "This live preview shows exactly how your widget will appear on your website. The chat button in the corner is fully interactive!",
     title: "Live Preview",
     placement: 'top',
   },
+  {
+    target: '[data-tour="team-members"]',
+    content: "team-sidebar-special",
+    title: "Team & Integrations",
+    placement: 'right',
+    data: { isTeamSidebar: true },
+  },
 ];
+
 // Remaining dashboard steps (after Widget Code - Team, Salesforce, Notifications)
 const remainingDashboardSteps: Step[] = [
   {
@@ -197,6 +221,7 @@ const CustomTooltip = ({
   onSetupWidget,
   onSetupAnalytics,
   onSetupWidgetCode,
+  onSetupTeamSidebar,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
@@ -205,6 +230,7 @@ const CustomTooltip = ({
   onSetupWidget: () => void;
   onSetupAnalytics: () => void;
   onSetupWidgetCode: () => void;
+  onSetupTeamSidebar: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
@@ -213,6 +239,7 @@ const CustomTooltip = ({
   const isWidgetCode = step.data?.isWidgetCode;
   const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
+  const isTeamSidebar = step.data?.isTeamSidebar;
 
   return (
     <div
@@ -355,6 +382,18 @@ const CustomTooltip = ({
               </div>
             </div>
           </div>
+        ) : isTeamSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <div className="p-2 rounded-full bg-blue-500/10">
+                <Users className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Team & Integrations</p>
+                <p className="text-xs text-muted-foreground">Add team members and connect to Salesforce and Slack for seamless notifications.</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
         )}
@@ -379,9 +418,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isTeamSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -478,6 +517,23 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const handleSetupWidgetCode = () => {
     setRun(false);
     navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
+  };
+
+  const handleSetupTeamSidebar = async () => {
+    setRun(false);
+    // Mark tour as complete
+    searchParams.delete('tour');
+    searchParams.delete('tourPhase');
+    setSearchParams(searchParams, { replace: true });
+
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ dashboard_tour_complete: true })
+        .eq('user_id', user.id);
+    }
+    
+    navigate('/dashboard');
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
@@ -627,6 +683,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           onSetupWidget={handleSetupWidget}
           onSetupAnalytics={handleSetupAnalytics}
           onSetupWidgetCode={handleSetupWidgetCode}
+          onSetupTeamSidebar={handleSetupTeamSidebar}
         />
       )}
       styles={{

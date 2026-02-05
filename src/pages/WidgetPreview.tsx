@@ -119,7 +119,7 @@ const DisplaySettingsCard = ({
     setHasChanges(false);
     toast.success('Welcome message saved!');
   };
-  return <Card>
+  return <Card data-tour="widget-welcome-message">
       <CardHeader>
         <CardTitle className="text-base">Welcome Message</CardTitle>
         <CardDescription>The first message visitors see when they open the chat</CardDescription>
@@ -469,7 +469,7 @@ const WidgetPreview = () => {
                     {selectedProperty?.domain ? `Preview on ${selectedProperty.domain}` : 'Select a property to see a live preview'}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-muted rounded-lg p-1" data-tour="widget-preview-toggle">
                   <button
                     onClick={() => setPreviewMode('desktop')}
                     className={cn(
