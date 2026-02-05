@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles } from 'lucide-react';
+import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles, BarChart3 } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
@@ -82,6 +82,13 @@ const aiSupportSteps: Step[] = [
     floaterProps: { disableFlip: true },
     data: { icon: 'message' },
   },
+  {
+    target: '[data-tour="analytics-sidebar"]',
+    content: "analytics-sidebar-special",
+    title: "Analytics",
+    placement: 'right',
+    data: { isAnalyticsSidebar: true },
+  },
 ];
 // Analytics page tour steps
 const analyticsSteps: Step[] = [
@@ -149,18 +156,21 @@ const CustomTooltip = ({
   onSetupSalesforce,
   onSetupNotifications,
   onSetupWidget,
+  onSetupAnalytics,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
   onSetupSalesforce: () => void;
   onSetupNotifications: () => void;
   onSetupWidget: () => void;
+  onSetupAnalytics: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
   const isSalesforce = step.data?.isSalesforce;
   const isNotifications = step.data?.isNotifications;
   const isWidgetCode = step.data?.isWidgetCode;
+  const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
 
   return (
     <div
@@ -279,6 +289,18 @@ const CustomTooltip = ({
               Get Widget Code Now
             </Button>
           </div>
+        ) : isAnalyticsSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="p-2 rounded-full bg-primary/10">
+                <BarChart3 className="h-4 w-4 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Track Performance</p>
+                <p className="text-xs text-muted-foreground">See which pages drive the most conversations and how often AI escalates to human agents.</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
         )}
@@ -303,9 +325,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isLastStep ? 'Get Started!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -393,6 +415,11 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const handleSetupSalesforce = () => endTourAndNavigate('/dashboard/salesforce');
   const handleSetupNotifications = () => endTourAndNavigate('/dashboard/notifications');
   const handleSetupWidget = () => endTourAndNavigate('/dashboard/widget');
+
+  const handleSetupAnalytics = () => {
+    setRun(false);
+    navigate(`/dashboard/analytics?tour=1&tourPhase=analytics`);
+  };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
     return new Promise((resolve) => {
@@ -504,6 +531,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           onSetupSalesforce={handleSetupSalesforce}
           onSetupNotifications={handleSetupNotifications}
           onSetupWidget={handleSetupWidget}
+          onSetupAnalytics={handleSetupAnalytics}
         />
       )}
       styles={{
