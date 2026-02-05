@@ -169,14 +169,6 @@ const CustomTooltip = ({
                 <p className="text-xs text-muted-foreground">Customize your AI's tone, style, and conversation approach to match your brand voice.</p>
               </div>
             </div>
-            <Button 
-              onClick={onSetupAI}
-              className="w-full"
-              size="sm"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Set Up AI Now
-            </Button>
           </div>
         ) : isTeamMembers ? (
           <div className="space-y-4">
@@ -282,9 +274,10 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
+              onClick={isAISettings ? onSetupAI : primaryProps.onClick}
             >
-              {isLastStep ? 'Get Started!' : 'Next'}
-              {!isLastStep && <ArrowRight className="h-4 w-4" />}
+              {isAISettings ? 'Tour AI Settings' : isLastStep ? 'Get Started!' : 'Next'}
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
