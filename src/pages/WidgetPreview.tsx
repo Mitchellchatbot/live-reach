@@ -498,7 +498,7 @@ const WidgetPreview = () => {
                 <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
-                    <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                    <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Mobile preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
                   ) : (
                     <div className="p-6 pt-10">
                       <div className="h-6 w-32 bg-foreground/10 rounded mb-4" />
@@ -518,13 +518,13 @@ const WidgetPreview = () => {
                   </div>
                 </div>
               ) : (
-              <div className="relative w-full" style={{ height: '560px' }}>
+              <div className="relative w-full h-[70vh] min-h-[560px] max-h-[900px]">
                   <div className="relative w-full h-full bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
                     <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
                       <div className="flex gap-1.5">
                         <div className="w-3 h-3 rounded-full bg-destructive/50" />
-                        <div className="w-3 h-3 rounded-full bg-amber-500/50" />
-                        <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
+                        <div className="w-3 h-3 rounded-full bg-status-away/50" />
+                        <div className="w-3 h-3 rounded-full bg-status-online/50" />
                       </div>
                       <div className="flex-1 mx-4">
                         <div className="h-5 bg-background/50 rounded-md flex items-center px-3">
@@ -536,7 +536,7 @@ const WidgetPreview = () => {
                     </div>
                     <div className="relative h-[calc(100%-2rem)]">
                       {selectedProperty?.domain ? (
-                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-none" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
+                        <iframe src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`} className="w-full h-full border-0 pointer-events-auto" title={`Desktop preview of ${selectedProperty.name}`} sandbox="allow-scripts allow-same-origin" loading="lazy" />
                       ) : (
                         <div className="p-8">
                           <div className="max-w-4xl mx-auto">
