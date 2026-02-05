@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -584,6 +585,7 @@ const WidgetPreview = () => {
         </div>
       </main>
       </div>
+      <DashboardTour />
     </div>;
 };
 

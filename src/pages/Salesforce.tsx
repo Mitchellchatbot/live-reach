@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
@@ -208,6 +209,7 @@ const Salesforce = () => {
           </div>
         </div>
       </div>
+      <DashboardTour />
     </div>
   );
 };
