@@ -274,6 +274,7 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Dev" collapsed={collapsed}>
               <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={collapsed} />
+              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={collapsed} />
             </SidebarSection>
           )}
         </nav>
