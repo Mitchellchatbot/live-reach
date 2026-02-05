@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         url: formattedUrl,
         formats: ['branding'],
+        timeout: 15000,
       }),
     });
 
@@ -51,9 +52,10 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       console.error('Firecrawl API error:', data);
+      // Return a 200 with success: false so the frontend can handle it gracefully
       return new Response(
         JSON.stringify({ success: false, error: data.error || `Request failed with status ${response.status}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
