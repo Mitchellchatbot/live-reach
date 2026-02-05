@@ -571,13 +571,22 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   
   // Build the current tour steps based on phase
   const currentSteps = useMemo(() => {
-    if (tourPhase === 'ai-support') {
-      return aiSupportSteps;
+    switch (tourPhase) {
+      case 'ai-support':
+        return aiSupportSteps;
+      case 'analytics':
+        return analyticsSteps;
+      case 'widget-code':
+        return widgetCodeSteps;
+      case 'salesforce':
+        return salesforceSteps;
+      case 'notifications':
+        return notificationsSteps;
+      case 'team':
+        return remainingDashboardSteps;
+      default:
+        return dashboardSteps;
     }
-    if (tourPhase === 'analytics') {
-      return analyticsSteps;
-    }
-    return dashboardSteps;
   }, [tourPhase]);
 
   const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + remainingDashboardSteps.length - 1;
