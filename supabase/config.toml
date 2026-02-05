@@ -3,5 +3,40 @@ project_id = "qylckndenngvvaexosml"
 [functions.salesforce-oauth-callback]
 verify_jwt = false
 
+# Widget + public endpoints (called from an unauthenticated iframe)
 [functions.widget-conversation-presence]
 verify_jwt = false
+
+[functions.widget-bootstrap]
+verify_jwt = false
+
+[functions.widget-create-conversation]
+verify_jwt = false
+
+[functions.widget-save-message]
+verify_jwt = false
+
+[functions.widget-get-messages]
+verify_jwt = false
+
+[functions.update-visitor]
+verify_jwt = false
+
+[functions.get-property-settings]
+verify_jwt = false
+
+[functions.get-property-ai-agents]
+verify_jwt = false
+
+[functions.track-page-analytics]
+verify_jwt = false
+
+[functions.get-visitor-location]
+verify_jwt = false
+
+[functions.extract-visitor-info]
+verify_jwt = false
+
+[functions.chat-ai]
+verify_jwt = false
+
