@@ -150,7 +150,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
   return (
     <div className="space-y-6">
       {/* Email Recipients */}
-      <Card>
+      <Card data-tour="email-recipients">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -225,7 +225,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
       </Card>
 
       {/* Notification Settings */}
-      <Card>
+      <Card data-tour="email-triggers">
         <CardHeader>
           <CardTitle>Notification Triggers</CardTitle>
           <CardDescription>
