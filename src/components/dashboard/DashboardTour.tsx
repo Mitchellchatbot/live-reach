@@ -61,7 +61,7 @@ const aiSupportSteps: Step[] = [
     target: '[data-tour="ai-timing"]',
     content: "Make your AI feel more human by adding response delays and typing indicators. Visitors will see a natural conversation pace.",
     title: "Response Timing",
-    placement: 'bottom',
+    placement: 'left',
     data: { icon: 'clock' },
   },
   {
