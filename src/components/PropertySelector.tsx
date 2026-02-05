@@ -30,6 +30,8 @@ interface PropertySelectorProps {
   className?: string;
   /** Use 'header' variant when rendered inside the dark PageHeader */
   variant?: 'default' | 'header';
+  /** Show "All Properties" option */
+  showAllOption?: boolean;
 }
 
 export const PropertySelector = ({
@@ -41,6 +43,7 @@ export const PropertySelector = ({
   showIcon = true,
   className = 'w-[220px]',
   variant = 'default',
+  showAllOption = false,
 }: PropertySelectorProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<DbProperty | null>(null);
@@ -104,13 +107,34 @@ export const PropertySelector = ({
             <span className="flex items-center gap-2 truncate">
               {showIcon && <Building2 className={cn("h-4 w-4 shrink-0", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />}
               <span className="truncate">
-                {selectedProperty ? getPropertyLabel(selectedProperty) : 'Select property'}
+                {showAllOption && !selectedPropertyId 
+                  ? 'All Properties' 
+                  : selectedProperty 
+                    ? getPropertyLabel(selectedProperty) 
+                    : 'Select property'}
               </span>
             </span>
             <ChevronDown className={cn("h-4 w-4 shrink-0 ml-2", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[280px]">
+          {showAllOption && (
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onSelect={() => {
+                onPropertyChange('all');
+                setOpen(false);
+              }}
+            >
+              {!selectedPropertyId && (
+                <Check className="h-4 w-4 text-primary shrink-0" />
+              )}
+              {selectedPropertyId && (
+                <span className="w-4 shrink-0" />
+              )}
+              <span className="truncate font-medium">All Properties</span>
+            </DropdownMenuItem>
+          )}
           {properties.map((property) => (
             <DropdownMenuItem
               key={property.id}

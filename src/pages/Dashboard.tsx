@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Filter, Plus, MoreHorizontal, MoreVertical, Video, UserPlus, Archive } from 'lucide-react';
+import { Search, MoreVertical, Video, UserPlus, Archive } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { PropertySelector } from '@/components/PropertySelector';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -82,12 +82,12 @@ const DashboardContent = () => {
     closeConversations,
     deleteConversation,
     deleteConversations,
+    deleteProperty,
     toggleAI
   } = useConversations();
   const {
     setCollapsed
   } = useSidebarState();
-  const [filterOpen, setFilterOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -284,45 +284,30 @@ const DashboardContent = () => {
         <div className="flex shrink-0 bg-sidebar text-sidebar-foreground pl-2">
           {/* Conversation List Header */}
           <div className="w-80 px-4 py-3 border-r border-sidebar-border shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
-                <InfoIndicator 
-                  to="/documentation/inbox/conversations" 
-                  variant="header"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                {totalUnread > 0 && <span className="text-xs text-sidebar-primary font-medium bg-sidebar-primary/20 px-2 py-0.5 rounded-full mr-1">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
+                  <InfoIndicator 
+                    to="/documentation/inbox/conversations" 
+                    variant="header"
+                  />
+                </div>
+                {totalUnread > 0 && <span className="text-xs text-sidebar-primary font-medium bg-sidebar-primary/20 px-2 py-0.5 rounded-full">
                     {totalUnread}
                   </span>}
-                
-                {/* Filter Popover */}
-                <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className={`h-8 w-8 ${propertyFilter !== 'all' ? 'text-sidebar-primary' : 'text-sidebar-foreground/60'} hover:bg-sidebar-accent`}>
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2" align="end">
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium text-muted-foreground px-2 py-1">Filter by property</p>
-                      <button onClick={() => {
-                      setPropertyFilter('all');
-                      setFilterOpen(false);
-                    }} className={`w-full text-left px-2 py-1.5 text-sm rounded-lg transition-colors ${propertyFilter === 'all' ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground'}`}>
-                        All Properties
-                      </button>
-                      {properties.map(prop => <button key={prop.id} onClick={() => {
-                      setPropertyFilter(prop.id);
-                      setFilterOpen(false);
-                    }} className={`w-full text-left px-2 py-1.5 text-sm rounded-lg transition-colors ${propertyFilter === prop.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground'}`}>
-                          {prop.name}
-                        </button>)}
-                    </div>
-                  </PopoverContent>
-                </Popover>
               </div>
+              {/* Property Selector */}
+              <PropertySelector
+                properties={properties}
+                selectedPropertyId={propertyFilter === 'all' ? undefined : propertyFilter}
+                onPropertyChange={(id) => setPropertyFilter(id)}
+                onDeleteProperty={deleteProperty}
+                showIcon={true}
+                className="w-full"
+                variant="default"
+                showAllOption={true}
+              />
             </div>
           </div>
 
