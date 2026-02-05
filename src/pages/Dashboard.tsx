@@ -271,11 +271,22 @@ const DashboardContent = () => {
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
   const loading = authLoading || dataLoading;
   if (loading || !user) {
-    return <div className="flex h-screen items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
+          <div className="relative">
+            <div className="h-16 w-16 rounded-full border-4 border-muted" />
+            <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm font-medium text-foreground">Loading dashboard</p>
+            <p className="text-xs text-muted-foreground">Please wait...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
-  return <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden">
+  return <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden page-enter">
       <DashboardTour />
       <DashboardSidebar />
       

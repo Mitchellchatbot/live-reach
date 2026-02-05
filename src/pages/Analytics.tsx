@@ -45,11 +45,15 @@ const Analytics = () => {
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
             <div className="max-w-4xl mx-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-20 gap-4 animate-in fade-in duration-300">
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-full border-4 border-muted" />
+                  <div className="absolute inset-0 h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                </div>
+                <p className="text-sm text-muted-foreground">Loading analytics...</p>
               </div>
             ) : properties.length === 0 ? (
-              <div className="text-center py-20">
+              <div className="text-center py-20 animate-in fade-in duration-300">
                 <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h2 className="text-lg font-semibold text-foreground mb-2">No Properties Yet</h2>
                 <p className="text-muted-foreground">
@@ -57,7 +61,9 @@ const Analytics = () => {
                 </p>
               </div>
             ) : (
-              <BlogAnalytics propertyId={selectedPropertyId} />
+              <div className="content-ready">
+                <BlogAnalytics propertyId={selectedPropertyId} />
+              </div>
             )}
             </div>
           </div>
