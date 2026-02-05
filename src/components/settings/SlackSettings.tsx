@@ -194,7 +194,7 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <Card>
+      <Card data-tour="slack-connection">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -249,7 +249,7 @@ export const SlackSettings = ({ propertyId }: SlackSettingsProps) => {
       </Card>
 
       {/* Notification Settings */}
-      <Card>
+      <Card data-tour="slack-triggers">
         <CardHeader>
           <CardTitle>Notification Triggers</CardTitle>
           <CardDescription>

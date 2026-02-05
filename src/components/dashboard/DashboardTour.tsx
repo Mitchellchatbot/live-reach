@@ -236,14 +236,66 @@ const salesforceSteps: Step[] = [
   },
 ];
 
-// Remaining dashboard steps (after Salesforce - Notifications only)
+// Notifications page tour steps
+const notificationsSteps: Step[] = [
+  {
+    target: '[data-tour="notifications-tabs"]',
+    content: "Switch between Slack and Email notification channels. Configure both to never miss an important conversation.",
+    title: "Notification Channels",
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+  {
+    target: '[data-tour="slack-connection"]',
+    content: "Connect your Slack workspace with one click. Notifications will be sent to your chosen channel instantly.",
+    title: "Slack Connection",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="slack-triggers"]',
+    content: "Choose when to receive Slack alerts — for new conversations, escalations, or both. Keep your team informed in real-time.",
+    title: "Slack Triggers",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="notifications-email-tab"]',
+    content: "Click the Email tab to set up email notifications for your team.",
+    title: "Email Notifications",
+    placement: 'bottom',
+    data: { isClickRequired: true, clickTarget: 'notifications-email-tab' },
+  },
+  {
+    target: '[data-tour="email-recipients"]',
+    content: "Add multiple email addresses to receive notifications. Great for keeping your entire team in the loop.",
+    title: "Email Recipients",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="email-triggers"]',
+    content: "Control which events trigger email notifications. Enable or disable alerts for new chats and escalations.",
+    title: "Email Triggers",
+    placement: 'top',
+  },
+  {
+    target: '[data-tour="team-members"]',
+    content: "team-sidebar-special",
+    title: "Team Members",
+    placement: 'right',
+    data: { isTeamSidebar: true },
+  },
+];
+
+// Remaining dashboard steps (after Notifications - Team only)
 const remainingDashboardSteps: Step[] = [
   {
-    target: '[data-tour="notifications"]',
-    content: "notifications-special",
-    title: "Notifications",
+    target: '[data-tour="team-members"]',
+    content: "team-special",
+    title: "Team Members",
     placement: 'right',
-    data: { isNotifications: true },
+    data: { isTeamMembers: true },
   },
 ];
 
@@ -267,6 +319,7 @@ const CustomTooltip = ({
   onSetupWidgetCode,
   onSetupSalesforceSidebar,
   onSetupNotificationsSidebar,
+  onSetupTeamSidebar,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
@@ -277,6 +330,7 @@ const CustomTooltip = ({
   onSetupWidgetCode: () => void;
   onSetupSalesforceSidebar: () => void;
   onSetupNotificationsSidebar: () => void;
+  onSetupTeamSidebar: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isTeamMembers = step.data?.isTeamMembers;
@@ -287,6 +341,7 @@ const CustomTooltip = ({
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
   const isSalesforceSidebar = step.data?.isSalesforceSidebar;
   const isNotificationsSidebar = step.data?.isNotificationsSidebar;
+  const isTeamSidebar = step.data?.isTeamSidebar;
 
   return (
     <div
@@ -453,6 +508,18 @@ const CustomTooltip = ({
               </div>
             </div>
           </div>
+        ) : isTeamSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <div className="p-2 rounded-full bg-blue-500/10">
+                <Users className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Team Collaboration</p>
+                <p className="text-xs text-muted-foreground">Invite team members, assign conversations, and collaborate on visitor support.</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
         )}
@@ -477,9 +544,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isTeamSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -583,7 +650,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
   };
 
-  const handleSetupNotificationsSidebar = async () => {
+  const handleSetupNotificationsSidebar = () => {
+    setRun(false);
+    navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
+  };
+
+  const handleSetupTeamSidebar = async () => {
     setRun(false);
     // Mark tour as complete
     searchParams.delete('tour');
@@ -597,7 +669,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
     
-    navigate('/dashboard/notifications');
+    navigate('/dashboard/team');
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
@@ -642,8 +714,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // After Salesforce steps → end tour
+      // After Salesforce steps → navigate to Notifications
       if (tourPhase === 'salesforce' && nextIndex >= salesforceSteps.length && action !== ACTIONS.PREV) {
+        setRun(false);
+        navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
+        return;
+      }
+
+      // After Notifications steps → end tour
+      if (tourPhase === 'notifications' && nextIndex >= notificationsSteps.length && action !== ACTIONS.PREV) {
         setRun(false);
         searchParams.delete('tour');
         searchParams.delete('tourPhase');
@@ -656,7 +735,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
             .eq('user_id', user.id);
         }
         
-        navigate('/dashboard/notifications');
+        navigate('/dashboard/team');
         return;
       }
       
@@ -677,6 +756,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         const settingsTab = document.querySelector('[data-tour="salesforce-settings-tab"]') as HTMLButtonElement;
         if (settingsTab) {
           settingsTab.click();
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+
+      // Special handling: click the Email tab when advancing to the email recipients step
+      if (tourPhase === 'notifications' && nextStep?.target === '[data-tour="email-recipients"]') {
+        const emailTab = document.querySelector('[data-tour="notifications-email-tab"]') as HTMLButtonElement;
+        if (emailTab) {
+          emailTab.click();
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
@@ -708,8 +796,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // If we're finishing the salesforce phase, end tour
+      // If we're finishing the salesforce phase, navigate to notifications
       if (tourPhase === 'salesforce' && status === STATUS.FINISHED) {
+        setRun(false);
+        navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
+        return;
+      }
+
+      // If we're finishing the notifications phase, end tour
+      if (tourPhase === 'notifications' && status === STATUS.FINISHED) {
         setRun(false);
         searchParams.delete('tour');
         searchParams.delete('tourPhase');
@@ -722,7 +817,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
             .eq('user_id', user.id);
         }
         
-        navigate('/dashboard/notifications');
+        navigate('/dashboard/team');
         return;
       }
       
@@ -745,9 +840,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   };
 
-  // Handle remaining/widget-code/salesforce phase navigation
+  // Handle remaining/widget-code/salesforce/notifications phase navigation
   useEffect(() => {
-    if (tourPhase === 'remaining' || tourPhase === 'widget-code' || tourPhase === 'salesforce') {
+    if (tourPhase === 'remaining' || tourPhase === 'widget-code' || tourPhase === 'salesforce' || tourPhase === 'notifications') {
       const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
       setStepIndex(startIndex);
     }
@@ -760,6 +855,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
     if (tourPhase === 'salesforce') {
       return salesforceSteps;
+    }
+    if (tourPhase === 'notifications') {
+      return notificationsSteps;
     }
     if (tourPhase === 'remaining') {
       return remainingDashboardSteps;
@@ -797,6 +895,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           onSetupWidgetCode={handleSetupWidgetCode}
           onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
           onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
+          onSetupTeamSidebar={handleSetupTeamSidebar}
         />
       )}
       styles={{

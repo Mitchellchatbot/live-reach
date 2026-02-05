@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
@@ -168,12 +169,12 @@ const Notifications = () => {
 
               {selectedPropertyId && (
                 <Tabs defaultValue="slack" className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="slack" className="gap-2">
+                  <TabsList className="grid w-full grid-cols-2" data-tour="notifications-tabs">
+                    <TabsTrigger value="slack" className="gap-2" data-tour="notifications-slack-tab">
                       <MessageCircle className="h-4 w-4" />
                       Slack
                     </TabsTrigger>
-                    <TabsTrigger value="email" className="gap-2">
+                    <TabsTrigger value="email" className="gap-2" data-tour="notifications-email-tab">
                       <Mail className="h-4 w-4" />
                       Email
                     </TabsTrigger>
@@ -210,6 +211,7 @@ const Notifications = () => {
           </div>
         </div>
       </div>
+      <DashboardTour />
     </div>
   );
 };
