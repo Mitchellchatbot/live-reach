@@ -422,6 +422,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       showSkipButton
       hideCloseButton
       scrollToFirstStep
+      scrollOffset={150}
       disableOverlayClose
       spotlightClicks
       callback={handleJoyrideCallback}
