@@ -770,6 +770,11 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
               attempts++;
             }
           }
+          // Advance step and return — don't fall through to scroll logic
+          setRun(false);
+          setStepIndex(nextIndex);
+          setTimeout(() => setRun(true), 200);
+          return;
         }
       }
 
