@@ -68,7 +68,7 @@ const aiSupportSteps: Step[] = [
     target: '[data-tour="ai-escalation"]',
     content: "Set rules for when AI should hand off to a human agent. Trigger escalation after a number of messages or when specific keywords are detected.",
     title: "Escalation Rules",
-    placement: 'right',
+    placement: 'left',
     data: { icon: 'alert' },
   },
 ];
