@@ -223,6 +223,11 @@ export const ChatWidget = ({
   };
   const currentSize = sizeConfig[widgetSize];
 
+  // In preview mode, use responsive sizing
+  const previewPanelStyle: React.CSSProperties = isPreview
+    ? { width: 'min(380px, 90%)', height: 'min(520px, 75%)', borderRadius: panelRadius, border: `1px solid ${borderColor}` }
+    : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
+
   // Tell the parent page how big the iframe should be.
   // This removes the “big box” around the widget when it’s closed.
   useEffect(() => {
@@ -437,7 +442,7 @@ export const ChatWidget = ({
               setIsOpen(false);
             }
           }}
-          style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
+          style={previewPanelStyle}
         >
           {/* Header */}
           <div 
