@@ -325,11 +325,11 @@ const WidgetPreview = () => {
             <div className="space-y-6">
               <Tabs defaultValue="widget">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="widget" className="gap-2">
+                  <TabsTrigger value="widget" className="gap-2" data-tour="widget-customize-tab">
                     <Palette className="h-4 w-4" />
                     Widget
                   </TabsTrigger>
-                  <TabsTrigger value="code" className="gap-2">
+                  <TabsTrigger value="code" className="gap-2" data-tour="widget-embed-tab">
                     <Code className="h-4 w-4" />
                     Embed Code
                   </TabsTrigger>
@@ -337,7 +337,7 @@ const WidgetPreview = () => {
 
                 <TabsContent value="widget" className="mt-6 space-y-6">
                   {/* Widget Icon */}
-                  <Card>
+                  <Card data-tour="widget-icon-card">
                     <CardHeader>
                       <CardTitle className="text-base">Chat Launcher Icon</CardTitle>
                       <CardDescription>Pick an icon for your chat launcher button</CardDescription>
@@ -400,7 +400,7 @@ const WidgetPreview = () => {
                   </Card>
 
                   {/* Brand Color */}
-                  <Card>
+                  <Card data-tour="widget-color-card">
                     <CardHeader>
                       <CardTitle className="text-base">Brand Color</CardTitle>
                       <CardDescription>
@@ -423,7 +423,7 @@ const WidgetPreview = () => {
                 </TabsContent>
 
                 <TabsContent value="code" className="mt-6">
-                  <Card>
+                  <Card data-tour="widget-embed-code">
                     <CardHeader>
                       <CardTitle className="text-base flex items-center gap-2">
                         <Code className="h-5 w-5" />
@@ -456,7 +456,7 @@ const WidgetPreview = () => {
           </div>
 
           {/* Preview - Full Width Below */}
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden" data-tour="widget-preview">
             <CardHeader className="bg-muted/50">
               <div className="flex items-center justify-between">
                 <div>
