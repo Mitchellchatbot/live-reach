@@ -430,8 +430,9 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       showSkipButton
       hideCloseButton
       scrollToFirstStep
-      scrollOffset={150}
+      scrollOffset={200}
       disableOverlayClose
+      disableScrollParentFix={false}
       spotlightClicks
       callback={handleJoyrideCallback}
       tooltipComponent={(props) => (
