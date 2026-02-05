@@ -80,68 +80,85 @@ export const useConversations = () => {
   const fetchProperties = useCallback(async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching properties:', error);
+      if (error) {
+        console.error('Error fetching properties:', error);
+        setProperties([]);
+        setPropertiesLoaded(true);
+        return;
+      }
+
+      setProperties(data || []);
+    } catch (err) {
+      console.error('[fetchProperties] unexpected error:', err);
       setProperties([]);
+    } finally {
       setPropertiesLoaded(true);
-      return;
     }
-
-    setProperties(data || []);
-    setPropertiesLoaded(true);
   }, [user]);
 
   const fetchConversations = useCallback(async () => {
     if (!user) return;
 
-    const { data: convData, error: convError } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        visitor:visitors(*),
-        property:properties(*)
-      `)
-      .order('updated_at', { ascending: false });
+    try {
+      const { data: convData, error: convError } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          visitor:visitors(*),
+          property:properties(*)
+        `)
+        .order('updated_at', { ascending: false });
 
-    if (convError) {
-      console.error('Error fetching conversations:', convError);
+      if (convError) {
+        console.error('Error fetching conversations:', convError);
+        setConversations([]);
+        setConversationsLoaded(true);
+        return;
+      }
+
+      // Fetch messages for each conversation
+      const conversationsWithMessages = await Promise.all(
+        (convData || []).map(async (conv) => {
+          try {
+            const { data: messages } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('conversation_id', conv.id)
+              .order('sequence_number', { ascending: true });
+
+            return {
+              ...conv,
+              status: conv.status as 'active' | 'closed' | 'pending',
+              messages: (messages || []).map((m) => ({
+                ...m,
+                sender_type: m.sender_type as 'agent' | 'visitor',
+              })),
+            };
+          } catch (msgErr) {
+            console.error('[fetchConversations] message fetch error:', msgErr);
+            return { ...conv, status: conv.status as 'active' | 'closed' | 'pending', messages: [] };
+          }
+        })
+      );
+
+      // Filter out conversations where visitor hasn't sent any messages
+      const conversationsWithVisitorMessage = conversationsWithMessages.filter(
+        (conv) => conv.messages && conv.messages.some((m) => m.sender_type === 'visitor')
+      );
+
+      setConversations(conversationsWithVisitorMessage as DbConversation[]);
+    } catch (err) {
+      console.error('[fetchConversations] unexpected error:', err);
       setConversations([]);
+    } finally {
       setConversationsLoaded(true);
-      return;
     }
-
-    // Fetch messages for each conversation
-    const conversationsWithMessages = await Promise.all(
-      (convData || []).map(async (conv) => {
-        const { data: messages } = await supabase
-          .from('messages')
-          .select('*')
-          .eq('conversation_id', conv.id)
-          .order('sequence_number', { ascending: true });
-
-        return {
-          ...conv,
-          status: conv.status as 'active' | 'closed' | 'pending',
-          messages: (messages || []).map((m) => ({
-            ...m,
-            sender_type: m.sender_type as 'agent' | 'visitor',
-          })),
-        };
-      })
-    );
-
-    // Filter out conversations where visitor hasn't sent any messages
-    const conversationsWithVisitorMessage = conversationsWithMessages.filter(
-      (conv) => conv.messages && conv.messages.some((m) => m.sender_type === 'visitor')
-    );
-
-    setConversations(conversationsWithVisitorMessage as DbConversation[]);
-    setConversationsLoaded(true);
   }, [user]);
 
   const sendMessage = async (conversationId: string, content: string, senderId: string) => {
@@ -443,7 +460,7 @@ export const useConversations = () => {
         { event: '*', schema: 'public', table: 'messages' },
         (payload) => {
           console.log('[useConversations] Messages change detected:', payload);
-          fetchConversations();
+          fetchConversations().catch((err) => console.error('[RT messages]', err));
         }
       )
       .subscribe((status) => {
@@ -457,7 +474,7 @@ export const useConversations = () => {
         { event: '*', schema: 'public', table: 'conversations' },
         (payload) => {
           console.log('[useConversations] Conversations change detected:', payload);
-          fetchConversations();
+          fetchConversations().catch((err) => console.error('[RT conversations]', err));
         }
       )
       .subscribe((status) => {
@@ -472,7 +489,7 @@ export const useConversations = () => {
         { event: '*', schema: 'public', table: 'visitors' },
         (payload) => {
           console.log('[useConversations] Visitors change detected:', payload);
-          fetchConversations();
+          fetchConversations().catch((err) => console.error('[RT visitors]', err));
         }
       )
       .subscribe((status) => {
