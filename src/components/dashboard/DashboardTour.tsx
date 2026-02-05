@@ -750,11 +750,27 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       
       const nextStep = stepsToUse[nextIndex];
       const currentStep = stepsToUse[index];
+      
+      // Determine if we need to auto-click a tab.
+      // Case 1: Current step has isClickRequired (user pressed Next on the tab step)
+      // Case 2: TARGET_NOT_FOUND — the previous step had isClickRequired but user 
+      //         pressed Next without clicking the tab, so Joyride jumped to the next
+      //         step whose target doesn't exist yet. Go back and click the tab.
+      let tabStep = currentStep?.data?.isClickRequired ? currentStep : null;
+      let targetNextStep = nextStep;
+      let targetNextIndex = nextIndex;
+      
+      if (!tabStep && type === EVENTS.TARGET_NOT_FOUND) {
+        const prevStep = stepsToUse[index - 1];
+        if (prevStep?.data?.isClickRequired) {
+          tabStep = prevStep;
+          targetNextStep = currentStep;
+          targetNextIndex = index;
+        }
+      }
 
-      // If the current step is a "click this tab" step and user pressed Next,
-      // auto-click the tab before advancing
-      if (currentStep?.data?.isClickRequired && action !== ACTIONS.PREV) {
-        const clickTarget = currentStep.data?.clickTarget || currentStep.target;
+      if (tabStep && action !== ACTIONS.PREV) {
+        const clickTarget = tabStep.data?.clickTarget || tabStep.target;
         const tabSelector = typeof clickTarget === 'string' && clickTarget.startsWith('[')
           ? clickTarget
           : `[data-tour="${clickTarget}"]`;
@@ -762,17 +778,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         if (tabEl) {
           tabEl.click();
           await new Promise(resolve => setTimeout(resolve, 500));
-          // Wait for the next step's target to appear
-          if (nextStep?.target && typeof nextStep.target === 'string') {
+          if (targetNextStep?.target && typeof targetNextStep.target === 'string') {
             let attempts = 0;
-            while (attempts < 10 && !document.querySelector(nextStep.target)) {
+            while (attempts < 15 && !document.querySelector(targetNextStep.target)) {
               await new Promise(resolve => setTimeout(resolve, 100));
               attempts++;
             }
           }
-          // Advance step and return — don't fall through to scroll logic
           setRun(false);
-          setStepIndex(nextIndex);
+          setStepIndex(targetNextIndex);
           setTimeout(() => setRun(true), 200);
           return;
         }
