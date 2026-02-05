@@ -241,7 +241,9 @@ export const DashboardSidebar = ({
               <div data-tour="ai-support">
                 <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} />
               </div>
-              <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} />
+              <div data-tour="analytics-sidebar">
+                <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} />
+              </div>
             </SidebarSection>
           )}
 

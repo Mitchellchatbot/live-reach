@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePageAnalytics, TimeRange } from '@/hooks/usePageAnalytics';
 import { cn } from '@/lib/utils';
+import { useSearchParams } from 'react-router-dom';
 
 const timeRangeOptions: { value: TimeRange; label: string }[] = [
   { value: 'week', label: 'Last 7 Days' },
@@ -10,12 +11,26 @@ const timeRangeOptions: { value: TimeRange; label: string }[] = [
   { value: 'all', label: 'All Time' },
 ];
 
+const DUMMY_ANALYTICS_DATA = [
+  { url: 'https://yoursite.com/admissions', page_title: 'Admissions Page', chat_opens: 24, human_escalations: 6, conversion_rate: 25.0 },
+  { url: 'https://yoursite.com/about', page_title: 'About Us', chat_opens: 18, human_escalations: 3, conversion_rate: 16.7 },
+  { url: 'https://yoursite.com/contact', page_title: 'Contact', chat_opens: 12, human_escalations: 4, conversion_rate: 33.3 },
+];
+
+const DUMMY_TOTALS = { total_chat_opens: 54, total_human_escalations: 13, avg_conversion_rate: 24.1 };
+
 interface BlogAnalyticsProps {
   propertyId?: string;
 }
 
 export const BlogAnalytics = ({ propertyId }: BlogAnalyticsProps) => {
-  const { data, totals, loading, error, timeRange, setTimeRange } = usePageAnalytics(propertyId);
+  const [searchParams] = useSearchParams();
+  const isTourActive = searchParams.get('tour') === '1';
+  const { data: realData, totals: realTotals, loading, error, timeRange, setTimeRange } = usePageAnalytics(propertyId);
+
+  // Use dummy data during tour if no real data exists
+  const data = isTourActive && realData.length === 0 ? DUMMY_ANALYTICS_DATA : realData;
+  const totals = isTourActive && realData.length === 0 ? DUMMY_TOTALS : realTotals;
 
   const topPages = data.slice(0, 5);
 
