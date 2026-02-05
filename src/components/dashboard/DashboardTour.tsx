@@ -366,6 +366,20 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const handleSetupNotifications = () => endTourAndNavigate('/dashboard/notifications');
   const handleSetupWidget = () => endTourAndNavigate('/dashboard/widget');
 
+  const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
+    return new Promise((resolve) => {
+      const selector = stepTarget;
+      const el = document.querySelector(selector);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Wait for smooth scroll to finish
+        setTimeout(resolve, 600);
+      } else {
+        resolve();
+      }
+    });
+  };
+
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { status, action, type, index } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -375,13 +389,22 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       
       // Check if we're finishing AI Support steps and need to go back to dashboard
       if (tourPhase === 'ai-support' && nextIndex >= aiSupportSteps.length && action !== ACTIONS.PREV) {
-        // We've finished AI Support steps, navigate back to dashboard for remaining steps
         setRun(false);
         navigate(`/dashboard?tour=1&tourPhase=remaining&stepIndex=${nextIndex - aiSupportSteps.length}`);
         return;
       }
       
-      setStepIndex(nextIndex);
+      // Scroll next target into view before advancing
+      const nextStep = stepsToUse[nextIndex];
+      if (nextStep?.target && typeof nextStep.target === 'string') {
+        setRun(false);
+        await scrollTargetIntoView(nextStep.target);
+        setStepIndex(nextIndex);
+        // Small delay to let DOM settle after scroll
+        setTimeout(() => setRun(true), 100);
+      } else {
+        setStepIndex(nextIndex);
+      }
     }
 
     if (finishedStatuses.includes(status)) {
