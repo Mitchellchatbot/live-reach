@@ -13,7 +13,7 @@ export const PageHeader = ({ title, children, className, docsLink }: PageHeaderP
   return (
     <div 
       className={cn(
-        "h-16 shrink-0 flex items-center justify-between px-6 sticky top-0 z-[10001]",
+        "h-16 shrink-0 flex items-center justify-between px-6 sticky top-0 z-10",
         "bg-sidebar text-sidebar-foreground",
         className
       )}
