@@ -748,48 +748,27 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
       
-      // Special handling: click the Embed Code tab when advancing to the embed code step
       const nextStep = stepsToUse[nextIndex];
-      if (tourPhase === 'widget-code' && nextStep?.target === '[data-tour="widget-embed-code"]') {
-        // Click the Embed Code tab first
-        const embedTab = document.querySelector('[data-tour="widget-embed-tab"]') as HTMLButtonElement;
-        if (embedTab) {
-          embedTab.click();
-          // Wait for tab switch animation and content to render
-          await new Promise(resolve => setTimeout(resolve, 500));
-          // Wait for the target element to be visible
-          let attempts = 0;
-          while (attempts < 10 && !document.querySelector('[data-tour="widget-embed-code"]')) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-        }
-      }
+      const currentStep = stepsToUse[index];
 
-      // Special handling: click the Settings tab when advancing to the Salesforce connection step
-      if (tourPhase === 'salesforce' && nextStep?.target === '[data-tour="salesforce-connection"]') {
-        const settingsTab = document.querySelector('[data-tour="salesforce-settings-tab"]') as HTMLButtonElement;
-        if (settingsTab) {
-          settingsTab.click();
+      // If the current step is a "click this tab" step and user pressed Next,
+      // auto-click the tab before advancing
+      if (currentStep?.data?.isClickRequired && action !== ACTIONS.PREV) {
+        const clickTarget = currentStep.data?.clickTarget || currentStep.target;
+        const tabSelector = typeof clickTarget === 'string' && clickTarget.startsWith('[')
+          ? clickTarget
+          : `[data-tour="${clickTarget}"]`;
+        const tabEl = document.querySelector(tabSelector) as HTMLButtonElement;
+        if (tabEl) {
+          tabEl.click();
           await new Promise(resolve => setTimeout(resolve, 500));
-          let attempts = 0;
-          while (attempts < 10 && !document.querySelector('[data-tour="salesforce-connection"]')) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-        }
-      }
-
-      // Special handling: click the Email tab when advancing to the email recipients step
-      if (tourPhase === 'notifications' && nextStep?.target === '[data-tour="email-recipients"]') {
-        const emailTab = document.querySelector('[data-tour="notifications-email-tab"]') as HTMLButtonElement;
-        if (emailTab) {
-          emailTab.click();
-          await new Promise(resolve => setTimeout(resolve, 500));
-          let attempts = 0;
-          while (attempts < 10 && !document.querySelector('[data-tour="email-recipients"]')) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
+          // Wait for the next step's target to appear
+          if (nextStep?.target && typeof nextStep.target === 'string') {
+            let attempts = 0;
+            while (attempts < 10 && !document.querySelector(nextStep.target)) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              attempts++;
+            }
           }
         }
       }
