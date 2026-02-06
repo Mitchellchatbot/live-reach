@@ -119,10 +119,15 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
 
           <div className="rounded-2xl border border-border/50 overflow-hidden bg-card/60 backdrop-blur-sm">
             {/* Table header */}
-            <div className="grid grid-cols-4 bg-muted/50 border-b border-border/50">
-              <div className="p-4 font-semibold text-foreground text-sm">Feature</div>
+            <div className="grid grid-cols-4 border-b border-border/50">
+              <div className="p-4 font-semibold text-foreground text-sm bg-muted/50">Feature</div>
               {pricingPlans.map((plan) => (
-                <div key={plan.id} className="p-4 text-center">
+                <div key={plan.id} className={cn(
+                  "p-4 text-center",
+                  plan.id === 'basic' && "bg-muted/50",
+                  plan.id === 'professional' && "bg-orange-50",
+                  plan.id === 'enterprise' && "bg-orange-100",
+                )}>
                   <p className="font-bold text-foreground">{plan.name}</p>
                   <p className="text-xs text-muted-foreground">${plan.price}/mo</p>
                 </div>
@@ -140,18 +145,20 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                 {category.features.map((feature, idx) => (
                   <div
                     key={feature.name}
-                    className={cn(
-                      "grid grid-cols-4 border-b border-border/20",
-                      idx % 2 === 0 ? "bg-background/50" : "bg-muted/10"
-                    )}
+                    className="grid grid-cols-4 border-b border-border/20"
                   >
-                    <div className="p-3 text-sm text-foreground/80 flex items-center">
+                    <div className={cn("p-3 text-sm text-foreground/80 flex items-center", idx % 2 === 0 ? "bg-background/50" : "bg-muted/10")}>
                       {feature.name}
                     </div>
                     {(['basic', 'professional', 'enterprise'] as const).map((planId) => {
                       const value = feature[planId];
                       return (
-                        <div key={planId} className="p-3 text-center flex items-center justify-center">
+                        <div key={planId} className={cn(
+                          "p-3 text-center flex items-center justify-center",
+                          planId === 'basic' && (idx % 2 === 0 ? "bg-background/50" : "bg-muted/10"),
+                          planId === 'professional' && (idx % 2 === 0 ? "bg-orange-50/80" : "bg-orange-50/50"),
+                          planId === 'enterprise' && (idx % 2 === 0 ? "bg-orange-100/70" : "bg-orange-100/40"),
+                        )}>
                           {value === true ? (
                             <Check className="h-4 w-4 text-primary" />
                           ) : value === false ? (

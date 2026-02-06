@@ -80,30 +80,47 @@ const Subscription = () => {
                 )}
 
                 {currentPlan && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                      <p className="text-xs text-muted-foreground font-medium">Monthly Price</p>
-                      <p className="text-2xl font-bold text-foreground mt-1">${activePlan?.price}</p>
+                  <>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                        <p className="text-xs text-muted-foreground font-medium">Monthly Price</p>
+                        <p className="text-2xl font-bold text-foreground mt-1">${activePlan?.price}</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                        <p className="text-xs text-muted-foreground font-medium">Next Billing Date</p>
+                        <p className="text-lg font-semibold text-foreground mt-1 flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          —
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                        <p className="text-xs text-muted-foreground font-medium">Status</p>
+                        <Badge className="mt-2 bg-green-100 text-green-700 border-green-200">Active</Badge>
+                      </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                      <p className="text-xs text-muted-foreground font-medium">Next Billing Date</p>
-                      <p className="text-lg font-semibold text-foreground mt-1 flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        —
+
+                    <div className="border-t border-border/50 pt-4">
+                      <h4 className="text-sm font-semibold text-foreground mb-3">Manage Plan</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" disabled>
+                          <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
+                          Upgrade Plan
+                        </Button>
+                        <Button variant="outline" size="sm" disabled>
+                          Update Payment Method
+                        </Button>
+                        <Button variant="outline" size="sm" disabled>
+                          View Billing History
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" disabled>
+                          Cancel Subscription
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Payment management will be available once Stripe is connected.
                       </p>
                     </div>
-                  </div>
-                )}
-
-                {currentPlan && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" disabled>
-                      Change Plan
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" disabled>
-                      Cancel Subscription
-                    </Button>
-                  </div>
+                  </>
                 )}
               </CardContent>
             </Card>
