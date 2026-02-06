@@ -279,7 +279,8 @@ const notificationsSteps: Step[] = [
     target: '[data-tour="email-triggers"]',
     content: "Control which events trigger email notifications. Enable or disable alerts for new chats and escalations.",
     title: "Email Triggers",
-    placement: 'top',
+    placement: 'left',
+    floaterProps: { disableFlip: true },
   },
   {
     target: '[data-tour="team-members"]',
