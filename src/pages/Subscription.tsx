@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CreditCard, Calendar, MessageSquare, ArrowRight, TrendingUp, AlertCircle } from 'lucide-react';
+import { CreditCard, Calendar, MessageSquare, ArrowRight, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Receipt, XCircle, Settings } from 'lucide-react';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { pricingPlans } from '@/components/pricing/PricingData';
 import { cn } from '@/lib/utils';
@@ -80,47 +80,23 @@ const Subscription = () => {
                 )}
 
                 {currentPlan && (
-                  <>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                        <p className="text-xs text-muted-foreground font-medium">Monthly Price</p>
-                        <p className="text-2xl font-bold text-foreground mt-1">${activePlan?.price}</p>
-                      </div>
-                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                        <p className="text-xs text-muted-foreground font-medium">Next Billing Date</p>
-                        <p className="text-lg font-semibold text-foreground mt-1 flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          —
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                        <p className="text-xs text-muted-foreground font-medium">Status</p>
-                        <Badge className="mt-2 bg-green-100 text-green-700 border-green-200">Active</Badge>
-                      </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground font-medium">Monthly Price</p>
+                      <p className="text-2xl font-bold text-foreground mt-1">${activePlan?.price}</p>
                     </div>
-
-                    <div className="border-t border-border/50 pt-4">
-                      <h4 className="text-sm font-semibold text-foreground mb-3">Manage Plan</h4>
-                      <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" disabled>
-                          <ArrowRight className="h-3.5 w-3.5 mr-1.5" />
-                          Upgrade Plan
-                        </Button>
-                        <Button variant="outline" size="sm" disabled>
-                          Update Payment Method
-                        </Button>
-                        <Button variant="outline" size="sm" disabled>
-                          View Billing History
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" disabled>
-                          Cancel Subscription
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Payment management will be available once Stripe is connected.
+                    <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground font-medium">Next Billing Date</p>
+                      <p className="text-lg font-semibold text-foreground mt-1 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        —
                       </p>
                     </div>
-                  </>
+                    <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground font-medium">Status</p>
+                      <Badge className="mt-2 bg-green-100 text-green-700 border-green-200">Active</Badge>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -158,6 +134,80 @@ const Subscription = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Manage Plan Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" />
+                Manage Plan
+              </CardTitle>
+              <CardDescription>
+                {currentPlan
+                  ? 'Upgrade, downgrade, or cancel your subscription at any time.'
+                  : 'Choose a plan to get started, or manage your subscription once active.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-center opacity-60 cursor-not-allowed"
+                >
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ArrowUpRight className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Upgrade Plan</p>
+                    <p className="text-xs text-muted-foreground mt-1">Move to a higher tier for more conversations</p>
+                  </div>
+                </button>
+
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-center opacity-60 cursor-not-allowed"
+                >
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ArrowDownRight className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Downgrade Plan</p>
+                    <p className="text-xs text-muted-foreground mt-1">Switch to a lower tier to save costs</p>
+                  </div>
+                </button>
+
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-center opacity-60 cursor-not-allowed"
+                >
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Receipt className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Billing History</p>
+                    <p className="text-xs text-muted-foreground mt-1">View invoices and past payments</p>
+                  </div>
+                </button>
+
+                <button
+                  disabled
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-center opacity-60 cursor-not-allowed"
+                >
+                  <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <XCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Cancel Subscription</p>
+                    <p className="text-xs text-muted-foreground mt-1">End your plan at the next billing cycle</p>
+                  </div>
+                </button>
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                These options will become active once payments are connected.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Pricing Plans */}
           <div>
