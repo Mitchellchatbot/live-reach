@@ -251,7 +251,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
       {/* Animated gradient background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <FloatingOrb className="w-[600px] h-[600px] bg-primary/20 top-[-200px] right-[-200px]" delay={0} />
