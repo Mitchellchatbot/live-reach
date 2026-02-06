@@ -283,13 +283,6 @@ const notificationsSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="team-members"]',
-    content: "Now let's meet your team! Manage agents, create accounts, and link AI personas.",
-    title: "Team Members",
-    placement: 'right',
-    data: { isTeamSidebar: true },
-  },
 ];
 
 // Team phase steps (after Notifications)
@@ -675,20 +668,8 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
   };
 
-  const handleSetupTeamSidebar = async () => {
+  const handleSetupTeamSidebar = () => {
     setRun(false);
-    // Mark tour as complete
-    searchParams.delete('tour');
-    searchParams.delete('tourPhase');
-    setSearchParams(searchParams, { replace: true });
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ dashboard_tour_complete: true })
-        .eq('user_id', user.id);
-    }
-    
     navigate('/dashboard/team?tour=1&tourPhase=team');
   };
 
