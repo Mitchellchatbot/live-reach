@@ -192,9 +192,7 @@ export const ChatWidget = ({
   // On mobile (non-preview), fill the entire iframe which is already sized to the screen
   const previewPanelStyle: React.CSSProperties = isPreview
     ? { width: 'min(380px, 90vw)', height: 'min(520px, 75vh)', borderRadius: panelRadius, border: `1px solid ${borderColor}` }
-    : isMobileWidget
-      ? { width: '100vw', height: '100vh', borderRadius: 0, border: 'none' }
-      : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
+    : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
 
   // Tell the parent page how big the iframe should be.
   // This removes the “big box” around the widget when it’s closed.
@@ -219,8 +217,11 @@ export const ChatWidget = ({
         '*'
       );
     } else if (isMobileWidget) {
+      const padding = 32;
+      const width = currentSize.width + padding;
+      const height = currentSize.height + padding;
       window.parent.postMessage(
-        { type: 'scaledbot_widget_resize', fullscreen: true },
+        { type: 'scaledbot_widget_resize', width, height, fullscreen: false },
         '*'
       );
     } else {
@@ -252,7 +253,7 @@ export const ChatWidget = ({
     <div 
       className={cn(
         "z-50 font-sans pointer-events-none",
-        isPreview ? "relative" : isMobileWidget && isOpen ? "fixed inset-0" : "fixed bottom-4 right-4"
+        isPreview ? "relative" : "fixed bottom-4 right-4"
       )}
       style={{ ...widgetStyle, background: 'transparent' }}
     >
