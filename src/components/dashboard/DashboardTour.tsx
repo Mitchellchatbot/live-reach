@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { Button } from '@/components/ui/button';
+import { TourCelebration } from './TourCelebration';
 import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles, BarChart3 } from 'lucide-react';
 
 interface DashboardTourProps {
@@ -282,23 +283,53 @@ const notificationsSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="team-members"]',
-    content: "team-sidebar-special",
-    title: "Team Members",
-    placement: 'right',
-    data: { isTeamSidebar: true },
-  },
 ];
 
-// Remaining dashboard steps (after Notifications - Team only)
-const remainingDashboardSteps: Step[] = [
+// Team phase steps (after Notifications)
+const teamSteps: Step[] = [
   {
-    target: '[data-tour="team-members"]',
-    content: "team-special",
-    title: "Team Members",
+    target: '[data-tour="team-table"]',
+    content: "This is your team hub. Here you'll see all your human agents, their status, and assigned properties.",
+    title: "Team Overview",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="create-account-btn"]',
+    content: "Use 'Create Account' to instantly set up an agent with a username and password. They can sign in right away — perfect for internal team members.",
+    title: "Create Account",
+    placement: 'bottom',
+  },
+  {
+    target: '[data-tour="invite-agent-btn"]',
+    content: "Use 'Invite Agent' to send an email invitation. They'll receive a link to set up their own credentials — ideal for external collaborators.",
+    title: "Invite Agent",
+    placement: 'bottom',
+  },
+  {
+    target: '[data-tour="team-table"]',
+    content: "Each agent has a 🤖 button in the Actions column. Click it to create an AI persona that mirrors their name and avatar — the AI will respond as them when they're offline.",
+    title: "AI Persona Linking",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+  },
+  {
+    target: '[data-tour="ai-support"]',
+    content: "You can also create and manage AI personas directly from AI Support settings. Customize personality prompts, choose from preset personas, or build your own.",
+    title: "AI Settings",
     placement: 'right',
-    data: { isTeamMembers: true },
+  },
+  {
+    target: '[data-tour="info-indicator"]',
+    content: "See these little ℹ️ icons next to page titles? Click any of them to jump straight to the relevant documentation page. They're on every section!",
+    title: "Quick Help Tips",
+    placement: 'bottom',
+  },
+  {
+    target: '[data-tour="get-help"]',
+    content: "Have questions? Visit 'Get Help' anytime for support, FAQs, and direct assistance from our team.",
+    title: "Get Help",
+    placement: 'right',
   },
 ];
 
@@ -336,7 +367,6 @@ const CustomTooltip = ({
   onSetupTeamSidebar: () => void;
 }) => {
   const isAISettings = step.data?.isAISettings;
-  const isTeamMembers = step.data?.isTeamMembers;
   const isSalesforce = step.data?.isSalesforce;
   const isNotifications = step.data?.isNotifications;
   const isWidgetCode = step.data?.isWidgetCode;
@@ -344,7 +374,7 @@ const CustomTooltip = ({
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
   const isSalesforceSidebar = step.data?.isSalesforceSidebar;
   const isNotificationsSidebar = step.data?.isNotificationsSidebar;
-  const isTeamSidebar = step.data?.isTeamSidebar;
+  
 
   return (
     <div
@@ -382,26 +412,6 @@ const CustomTooltip = ({
                 <p className="text-xs text-muted-foreground">Customize your AI's tone, style, and conversation approach to match your brand voice.</p>
               </div>
             </div>
-          </div>
-        ) : isTeamMembers ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Collaborate Together</p>
-                <p className="text-xs text-muted-foreground">Invite team members with their own login credentials. Assign conversations and share the workload.</p>
-              </div>
-            </div>
-            <Button 
-              onClick={onSetupTeam}
-              className="w-full"
-              size="sm"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Add Team Members Now
-            </Button>
           </div>
         ) : isSalesforce ? (
           <div className="space-y-4">
@@ -511,18 +521,6 @@ const CustomTooltip = ({
               </div>
             </div>
           </div>
-        ) : isTeamSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Team Collaboration</p>
-                <p className="text-xs text-muted-foreground">Invite team members, assign conversations, and collaborate on visitor support.</p>
-              </div>
-            </div>
-          </div>
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
         )}
@@ -547,9 +545,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isTeamSidebar ? 'Finish Tour' : isLastStep ? 'Get Started!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isLastStep ? 'Finish Tour!' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -562,6 +560,7 @@ const CustomTooltip = ({
 export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const [run, setRun] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -586,13 +585,13 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
       case 'notifications':
         return notificationsSteps;
       case 'team':
-        return remainingDashboardSteps;
+        return teamSteps;
       default:
         return dashboardSteps;
     }
   }, [tourPhase]);
 
-  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + remainingDashboardSteps.length - 1;
+  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + teamSteps.length - 1;
 
   // Calculate display step number
   const getDisplayStepNumber = () => {
@@ -733,8 +732,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // After Notifications steps → end tour
+      // After Notifications steps → navigate to Team
       if (tourPhase === 'notifications' && nextIndex >= notificationsSteps.length && action !== ACTIONS.PREV) {
+        setRun(false);
+        navigate(`/dashboard/team?tour=1&tourPhase=team`);
+        return;
+      }
+
+      // After Team steps → show celebration
+      if (tourPhase === 'team' && nextIndex >= teamSteps.length && action !== ACTIONS.PREV) {
         setRun(false);
         searchParams.delete('tour');
         searchParams.delete('tourPhase');
@@ -747,7 +753,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
             .eq('user_id', user.id);
         }
         
-        navigate('/dashboard/team');
+        setShowCelebration(true);
         return;
       }
       
@@ -835,8 +841,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         return;
       }
 
-      // If we're finishing the notifications phase, end tour
+      // If we're finishing the notifications phase, navigate to team
       if (tourPhase === 'notifications' && status === STATUS.FINISHED) {
+        setRun(false);
+        navigate(`/dashboard/team?tour=1&tourPhase=team`);
+        return;
+      }
+
+      // If we're finishing the team phase, show celebration
+      if (tourPhase === 'team' && status === STATUS.FINISHED) {
         setRun(false);
         searchParams.delete('tour');
         searchParams.delete('tourPhase');
@@ -849,7 +862,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
             .eq('user_id', user.id);
         }
         
-        navigate('/dashboard/team');
+        setShowCelebration(true);
         return;
       }
       
@@ -874,7 +887,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
   // Handle remaining/widget-code/salesforce/notifications phase navigation
   useEffect(() => {
-    if (tourPhase === 'remaining' || tourPhase === 'widget-code' || tourPhase === 'salesforce' || tourPhase === 'notifications') {
+    if (tourPhase === 'remaining' || tourPhase === 'team' || tourPhase === 'widget-code' || tourPhase === 'salesforce' || tourPhase === 'notifications') {
       const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
       setStepIndex(startIndex);
     }
@@ -891,8 +904,8 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     if (tourPhase === 'notifications') {
       return notificationsSteps;
     }
-    if (tourPhase === 'remaining') {
-      return remainingDashboardSteps;
+    if (tourPhase === 'remaining' || tourPhase === 'team') {
+      return teamSteps;
     }
     if (tourPhase === 'analytics') {
       return analyticsSteps;
@@ -901,58 +914,64 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   }, [tourPhase, currentSteps]);
 
   return (
-    <Joyride
-      steps={stepsToUse}
-      run={run}
-      stepIndex={stepIndex}
-      continuous
-      showProgress
-      showSkipButton
-      hideCloseButton
-      scrollToFirstStep
-      scrollOffset={200}
-      disableOverlayClose
-      disableScrollParentFix={false}
-      spotlightClicks
-      callback={handleJoyrideCallback}
-      tooltipComponent={(props) => (
-        <CustomTooltip 
-          {...props} 
-          onSetupAI={handleSetupAI} 
-          onSetupTeam={handleSetupTeam}
-          onSetupSalesforce={handleSetupSalesforce}
-          onSetupNotifications={handleSetupNotifications}
-          onSetupWidget={handleSetupWidget}
-          onSetupAnalytics={handleSetupAnalytics}
-          onSetupWidgetCode={handleSetupWidgetCode}
-          onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
-          onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
-          onSetupTeamSidebar={handleSetupTeamSidebar}
-        />
-      )}
-      styles={{
-        options: {
-          primaryColor: 'hsl(var(--primary))',
-          backgroundColor: 'hsl(var(--background))',
-          textColor: 'hsl(var(--foreground))',
-          arrowColor: 'hsl(var(--background))',
-          overlayColor: 'rgba(0, 0, 0, 0.75)',
-          zIndex: 10000,
-        },
-        spotlight: {
-          borderRadius: '12px',
-        },
-        beacon: {
-          display: 'none',
-        },
-      }}
-      locale={{
-        back: 'Back',
-        close: 'Close',
-        last: 'Get Started!',
-        next: 'Next',
-        skip: 'Skip Tour',
-      }}
-    />
+    <>
+      <Joyride
+        steps={stepsToUse}
+        run={run}
+        stepIndex={stepIndex}
+        continuous
+        showProgress
+        showSkipButton
+        hideCloseButton
+        scrollToFirstStep
+        scrollOffset={200}
+        disableOverlayClose
+        disableScrollParentFix={false}
+        spotlightClicks
+        callback={handleJoyrideCallback}
+        tooltipComponent={(props) => (
+          <CustomTooltip 
+            {...props} 
+            onSetupAI={handleSetupAI} 
+            onSetupTeam={handleSetupTeam}
+            onSetupSalesforce={handleSetupSalesforce}
+            onSetupNotifications={handleSetupNotifications}
+            onSetupWidget={handleSetupWidget}
+            onSetupAnalytics={handleSetupAnalytics}
+            onSetupWidgetCode={handleSetupWidgetCode}
+            onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
+            onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
+            onSetupTeamSidebar={handleSetupTeamSidebar}
+          />
+        )}
+        styles={{
+          options: {
+            primaryColor: 'hsl(var(--primary))',
+            backgroundColor: 'hsl(var(--background))',
+            textColor: 'hsl(var(--foreground))',
+            arrowColor: 'hsl(var(--background))',
+            overlayColor: 'rgba(0, 0, 0, 0.75)',
+            zIndex: 10000,
+          },
+          spotlight: {
+            borderRadius: '12px',
+          },
+          beacon: {
+            display: 'none',
+          },
+        }}
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Finish Tour!',
+          next: 'Next',
+          skip: 'Skip Tour',
+        }}
+      />
+      <TourCelebration 
+        open={showCelebration} 
+        onClose={() => setShowCelebration(false)} 
+      />
+    </>
   );
 };

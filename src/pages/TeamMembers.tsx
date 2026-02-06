@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
@@ -482,7 +483,7 @@ const TeamMembers = () => {
         <div className="flex-1 p-2 overflow-hidden">
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
             <div className="max-w-4xl mx-auto">
-          <Card>
+          <Card data-tour="team-table">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Team Members</CardTitle>
@@ -498,7 +499,7 @@ const TeamMembers = () => {
                 {/* Create Account Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline">
+                    <Button variant="outline" data-tour="create-account-btn">
                       <KeyRound className="mr-2 h-4 w-4" />
                       Create Account
                     </Button>
@@ -593,7 +594,7 @@ const TeamMembers = () => {
                 {/* Invite Agent Dialog */}
                 <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button data-tour="invite-agent-btn">
                       <UserPlus className="mr-2 h-4 w-4" />
                       Invite Agent
                     </Button>
@@ -855,6 +856,7 @@ const TeamMembers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <DashboardTour />
     </div>
   );
 };

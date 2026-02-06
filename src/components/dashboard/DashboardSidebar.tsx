@@ -271,7 +271,9 @@ export const DashboardSidebar = ({
           {/* Support */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Support" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={collapsed} />
+              <div data-tour="get-help">
+                <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={collapsed} />
+              </div>
               <SidebarItem to="/documentation" icon={BookOpen} label="Documentation" collapsed={collapsed} />
             </SidebarSection>
           )}
