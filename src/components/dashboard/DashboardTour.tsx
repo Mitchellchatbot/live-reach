@@ -299,6 +299,7 @@ const teamSteps: Step[] = [
     content: "This is your team hub. Here you'll see all your human agents, their status, and assigned properties.",
     title: "Team Overview",
     placement: 'left',
+    disableBeacon: true,
     floaterProps: { disableFlip: true },
   },
   {
