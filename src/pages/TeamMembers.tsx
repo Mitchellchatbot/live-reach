@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { useSearchParams } from 'react-router-dom';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,6 +60,37 @@ const TeamMembers = () => {
   const [uploadingAvatarFor, setUploadingAvatarFor] = useState<string | null>(null);
   const [creatingAIForId, setCreatingAIForId] = useState<string | null>(null);
   const [linkedAIAgents, setLinkedAIAgents] = useState<Record<string, string>>({}); // agent_id -> ai_name
+
+  const [searchParams] = useSearchParams();
+  const isTourActive = searchParams.get('tour') === '1';
+
+  // Demo agents shown during tour when no real agents exist
+  const demoAgents: Agent[] = useMemo(() => [
+    {
+      id: 'demo-1',
+      name: 'Sarah Johnson',
+      email: 'sarah@example.com',
+      status: 'online',
+      invitation_status: 'accepted',
+      user_id: 'demo',
+      assigned_properties: properties.slice(0, 1).map(p => p.id),
+      avatar_url: undefined,
+    },
+    {
+      id: 'demo-2',
+      name: 'Michael Chen',
+      email: 'michael@example.com',
+      status: 'offline',
+      invitation_status: 'accepted',
+      user_id: 'demo',
+      assigned_properties: [],
+      avatar_url: undefined,
+    },
+  ], [properties]);
+
+  // Use demo agents during tour if no real agents exist
+  const displayAgents = (isTourActive && agents.length === 0) ? demoAgents : agents;
+  const isDemoMode = isTourActive && agents.length === 0;
 
   useEffect(() => {
     fetchAgents();
@@ -483,6 +515,11 @@ const TeamMembers = () => {
         <div className="flex-1 p-2 overflow-hidden">
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
             <div className="max-w-4xl mx-auto">
+          {isDemoMode && (
+            <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm text-muted-foreground">
+              <span className="font-medium text-primary">Tour Mode:</span> Showing sample agents. Your real team will appear here once you invite agents.
+            </div>
+          )}
           <Card data-tour="team-table">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -675,7 +712,7 @@ const TeamMembers = () => {
                   <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
                   Loading agents...
                 </div>
-              ) : agents.length === 0 ? (
+              ) : displayAgents.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
                   <p className="font-medium text-lg">No agents yet</p>
@@ -696,7 +733,7 @@ const TeamMembers = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {agents.map((agent) => (
+                    {displayAgents.map((agent) => (
                       <TableRow key={agent.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
