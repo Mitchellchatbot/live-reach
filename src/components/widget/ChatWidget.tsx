@@ -210,27 +210,28 @@ export const ChatWidget = ({
 
     if (!inIframe) return;
 
-    let width: number;
-    let height: number;
-
     if (!isOpen) {
       const padding = 32;
-      width = currentSize.button + padding;
-      height = currentSize.button + padding;
+      const width = currentSize.button + padding;
+      const height = currentSize.button + padding;
+      window.parent.postMessage(
+        { type: 'scaledbot_widget_resize', width, height, fullscreen: false },
+        '*'
+      );
     } else if (isMobileWidget) {
-      // On mobile, expand iframe to full viewport so the widget can fill the screen
-      width = window.screen?.width || 400;
-      height = window.screen?.height || 700;
+      window.parent.postMessage(
+        { type: 'scaledbot_widget_resize', fullscreen: true },
+        '*'
+      );
     } else {
       const padding = 32;
-      width = currentSize.width + padding;
-      height = currentSize.height + padding;
+      const width = currentSize.width + padding;
+      const height = currentSize.height + padding;
+      window.parent.postMessage(
+        { type: 'scaledbot_widget_resize', width, height, fullscreen: false },
+        '*'
+      );
     }
-
-    window.parent.postMessage(
-      { type: 'scaledbot_widget_resize', width, height },
-      '*'
-    );
   }, [isOpen, widgetSize, isPreview, isMobileWidget, currentSize.width, currentSize.height, currentSize.button]);
 
   // Convert HSL string to ensure compatibility
@@ -581,7 +582,7 @@ export const ChatWidget = ({
             setIsOpen(true);
           }}
           className={cn(
-            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto",
+            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg",
             showAttentionBounce && "animate-attention-bounce"
           )}
           onAnimationEnd={() => setShowAttentionBounce(false)}
@@ -591,6 +592,8 @@ export const ChatWidget = ({
             width: `${currentSize.button}px`,
             height: `${currentSize.button}px`,
             color: textColor,
+            border: `2px solid color-mix(in srgb, ${primaryColor} 60%, white 40%)`,
+            boxSizing: 'border-box',
           }}
         >
           <WidgetIconComponent className={cn(
