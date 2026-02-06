@@ -43,6 +43,17 @@ const Notifications = () => {
   const [newPropertyName, setNewPropertyName] = useState('');
   const [newPropertyDomain, setNewPropertyDomain] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState('slack');
+
+  // Listen for tour tab-switch events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.tab) setActiveTab(detail.tab);
+    };
+    window.addEventListener('tour-switch-tab', handler);
+    return () => window.removeEventListener('tour-switch-tab', handler);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -168,7 +179,7 @@ const Notifications = () => {
               </Card>
 
               {selectedPropertyId && (
-                <Tabs defaultValue="slack" className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                   <TabsList className="grid w-full grid-cols-2" data-tour="notifications-tabs">
                     <TabsTrigger value="slack" className="gap-2" data-tour="notifications-slack-tab">
                       <MessageCircle className="h-4 w-4" />

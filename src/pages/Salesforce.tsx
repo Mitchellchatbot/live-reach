@@ -43,6 +43,17 @@ const Salesforce = () => {
   const [newPropertyName, setNewPropertyName] = useState('');
   const [newPropertyDomain, setNewPropertyDomain] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState('leads');
+
+  // Listen for tour tab-switch events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.tab) setActiveTab(detail.tab);
+    };
+    window.addEventListener('tour-switch-tab', handler);
+    return () => window.removeEventListener('tour-switch-tab', handler);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -168,7 +179,7 @@ const Salesforce = () => {
               </Card>
 
               {selectedPropertyId && (
-                <Tabs defaultValue="leads" className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                   <TabsList data-tour="salesforce-tabs">
                     <TabsTrigger value="leads" className="gap-2" data-tour="salesforce-leads-tab">
                       <Users className="h-4 w-4" />

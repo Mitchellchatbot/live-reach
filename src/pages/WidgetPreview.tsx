@@ -163,6 +163,17 @@ const WidgetPreview = () => {
   const [isSavingIcon, setIsSavingIcon] = useState(false);
   const widgetIconInputRef = useRef<HTMLInputElement>(null);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [activeWidgetTab, setActiveWidgetTab] = useState('widget');
+
+  // Listen for tour tab-switch events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.tab) setActiveWidgetTab(detail.tab);
+    };
+    window.addEventListener('tour-switch-tab', handler);
+    return () => window.removeEventListener('tour-switch-tab', handler);
+  }, []);
 
   // Auto-select first property and load its settings when properties load
   useEffect(() => {
@@ -332,7 +343,7 @@ const WidgetPreview = () => {
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Widget & Code Tabs */}
             <div className="space-y-6">
-              <Tabs defaultValue="widget">
+              <Tabs value={activeWidgetTab} onValueChange={setActiveWidgetTab}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="widget" className="gap-2" data-tour="widget-customize-tab">
                     <Palette className="h-4 w-4" />
