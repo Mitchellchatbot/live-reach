@@ -25,7 +25,7 @@ interface ChatWidgetProps {
 
 export const ChatWidget = ({
   propertyId = 'demo',
-  primaryColor = 'hsl(172, 66%, 50%)',
+  primaryColor = '#F97316',
   textColor = 'hsl(0, 0%, 100%)',
   borderColor = 'hsl(0, 0%, 0%, 0.1)',
   widgetSize = 'medium',
