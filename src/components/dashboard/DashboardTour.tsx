@@ -283,6 +283,13 @@ const notificationsSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
+  {
+    target: '[data-tour="team-members"]',
+    content: "Now let's meet your team! Manage agents, create accounts, and link AI personas.",
+    title: "Team Members",
+    placement: 'right',
+    data: { isTeamSidebar: true },
+  },
 ];
 
 // Team phase steps (after Notifications)
@@ -354,6 +361,7 @@ const CustomTooltip = ({
   onSetupSalesforceSidebar,
   onSetupNotificationsSidebar,
   onSetupTeamSidebar,
+  tourPhase,
 }: TooltipRenderProps & { 
   onSetupAI: () => void; 
   onSetupTeam: () => void;
@@ -365,6 +373,7 @@ const CustomTooltip = ({
   onSetupSalesforceSidebar: () => void;
   onSetupNotificationsSidebar: () => void;
   onSetupTeamSidebar: () => void;
+  tourPhase: string;
 }) => {
   const isAISettings = step.data?.isAISettings;
   const isSalesforce = step.data?.isSalesforce;
@@ -374,7 +383,7 @@ const CustomTooltip = ({
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
   const isSalesforceSidebar = step.data?.isSalesforceSidebar;
   const isNotificationsSidebar = step.data?.isNotificationsSidebar;
-  
+  const isTeamSidebar = step.data?.isTeamSidebar;
 
   return (
     <div
@@ -545,9 +554,9 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : primaryProps.onClick}
+              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isLastStep ? 'Finish Tour!' : 'Next'}
+              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isTeamSidebar ? 'Tour Team' : (isLastStep && tourPhase === 'team') ? 'Finish Tour!' : isLastStep ? 'Next' : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -942,6 +951,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
             onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
             onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
             onSetupTeamSidebar={handleSetupTeamSidebar}
+            tourPhase={tourPhase}
           />
         )}
         styles={{
