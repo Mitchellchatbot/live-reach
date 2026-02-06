@@ -34,8 +34,8 @@ export const ChatWidget = ({
   autoOpen = false,
   widgetIcon,
 }: ChatWidgetProps) => {
-  // Detect mobile for auto-open and sizing
-  const isMobileWidget = typeof window !== 'undefined' && window.innerWidth < 768;
+  // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
+  const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
 
   const [isOpen, setIsOpen] = useState(autoOpen && !isMobileWidget);
   const [isClosing, setIsClosing] = useState(false);
@@ -189,9 +189,12 @@ export const ChatWidget = ({
   const currentSize = isMobileWidget ? mobileSizeConfig[widgetSize] : desktopSizeConfig[widgetSize];
 
   // In preview mode, use viewport-based sizing so it doesn't get squished by parent containers
+  // On mobile (non-preview), fill the entire iframe which is already sized to the screen
   const previewPanelStyle: React.CSSProperties = isPreview
     ? { width: 'min(380px, 90vw)', height: 'min(520px, 75vh)', borderRadius: panelRadius, border: `1px solid ${borderColor}` }
-    : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
+    : isMobileWidget
+      ? { width: '100vw', height: '100vh', borderRadius: 0, border: 'none' }
+      : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
 
   // Tell the parent page how big the iframe should be.
   // This removes the “big box” around the widget when it’s closed.
@@ -207,15 +210,28 @@ export const ChatWidget = ({
 
     if (!inIframe) return;
 
-    const padding = 32; // matches the widget's internal bottom/right spacing
-    const width = (isOpen ? currentSize.width : currentSize.button) + padding;
-    const height = (isOpen ? currentSize.height : currentSize.button) + padding;
+    let width: number;
+    let height: number;
+
+    if (!isOpen) {
+      const padding = 32;
+      width = currentSize.button + padding;
+      height = currentSize.button + padding;
+    } else if (isMobileWidget) {
+      // On mobile, expand iframe to full viewport so the widget can fill the screen
+      width = window.screen?.width || 400;
+      height = window.screen?.height || 700;
+    } else {
+      const padding = 32;
+      width = currentSize.width + padding;
+      height = currentSize.height + padding;
+    }
 
     window.parent.postMessage(
       { type: 'scaledbot_widget_resize', width, height },
       '*'
     );
-  }, [isOpen, widgetSize, isPreview, currentSize.width, currentSize.height, currentSize.button]);
+  }, [isOpen, widgetSize, isPreview, isMobileWidget, currentSize.width, currentSize.height, currentSize.button]);
 
   // Convert HSL string to ensure compatibility
   const widgetStyle = {
@@ -233,7 +249,10 @@ export const ChatWidget = ({
 
   return (
     <div 
-      className={cn("z-50 font-sans pointer-events-none", isPreview ? "relative" : "fixed bottom-4 right-4")}
+      className={cn(
+        "z-50 font-sans pointer-events-none",
+        isPreview ? "relative" : isMobileWidget && isOpen ? "fixed inset-0" : "fixed bottom-4 right-4"
+      )}
       style={{ ...widgetStyle, background: 'transparent' }}
     >
 
