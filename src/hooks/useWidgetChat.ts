@@ -582,6 +582,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         proactive_message_delay_seconds: s.proactive_message_delay_seconds ?? DEFAULT_SETTINGS.proactive_message_delay_seconds,
         greeting: s.greeting ?? null,
         ai_base_prompt: s.ai_base_prompt ?? null,
+        widget_icon: s.widget_icon ?? DEFAULT_SETTINGS.widget_icon,
       };
 
       setSettings(merged);
