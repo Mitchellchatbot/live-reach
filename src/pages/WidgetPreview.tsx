@@ -510,6 +510,7 @@ const WidgetPreview = () => {
             {/* Display Settings */}
             <div className="space-y-6">
               <DisplaySettingsCard greeting={greeting} setGreeting={setGreeting} extractedFont={extractedFont} propertyId={selectedPropertyId} />
+              <div data-tour="widget-effects-card">
               <WidgetEffectsCard
                 propertyId={selectedPropertyId}
                 effectType={effectType}
@@ -521,6 +522,7 @@ const WidgetPreview = () => {
                 onEffectIntervalChange={setEffectInterval}
                 onEffectIntensityChange={setEffectIntensity}
               />
+              </div>
             </div>
           </div>
 
