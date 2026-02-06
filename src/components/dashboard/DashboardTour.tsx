@@ -148,7 +148,7 @@ const widgetCodeSteps: Step[] = [
     content: "Click this tab to get the code snippet you'll add to your website.",
     title: "Embed Code Tab",
     placement: 'bottom',
-    data: { isClickRequired: true },
+    data: { isClickRequired: true, tabValue: 'code' },
   },
   {
     target: '[data-tour="widget-embed-code"]',
@@ -206,7 +206,7 @@ const salesforceSteps: Step[] = [
     content: "Click the Settings tab to connect your Salesforce account and configure automatic exports.",
     title: "Settings Tab",
     placement: 'bottom',
-    data: { isClickRequired: true, clickTarget: 'salesforce-settings-tab' },
+    data: { isClickRequired: true, clickTarget: 'salesforce-settings-tab', tabValue: 'settings' },
   },
   {
     target: '[data-tour="salesforce-connection"]',
@@ -265,7 +265,7 @@ const notificationsSteps: Step[] = [
     content: "Click the Email tab to set up email notifications for your team.",
     title: "Email Notifications",
     placement: 'bottom',
-    data: { isClickRequired: true, clickTarget: 'notifications-email-tab' },
+    data: { isClickRequired: true, clickTarget: 'notifications-email-tab', tabValue: 'email' },
   },
   {
     target: '[data-tour="email-recipients"]',
@@ -778,15 +778,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         const tabEl = document.querySelector(tabSelector) as HTMLButtonElement;
         if (tabEl) {
           // Dispatch a custom event to switch tabs (Radix tabs need controlled state)
-          const tabValue = tabEl.getAttribute('value') || tabEl.getAttribute('data-value');
+          const tabValue = tabStep.data?.tabValue || tabEl.getAttribute('value') || tabEl.getAttribute('data-value');
           if (tabValue) {
             window.dispatchEvent(new CustomEvent('tour-switch-tab', { detail: { tab: tabValue } }));
-          } else {
-            // Fallback: try pointer events + click
-            tabEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
-            tabEl.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
-            tabEl.click();
           }
+          // Also click for any non-tab click-required steps
+          tabEl.click();
           await new Promise(resolve => setTimeout(resolve, 500));
           if (targetNextStep?.target && typeof targetNextStep.target === 'string') {
             let attempts = 0;
