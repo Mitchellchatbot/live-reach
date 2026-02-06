@@ -283,6 +283,13 @@ const notificationsSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
+  {
+    target: '[data-tour="team-members"]',
+    content: "team-sidebar-special",
+    title: "Team Members",
+    placement: 'right',
+    data: { isTeamSidebar: true },
+  },
 ];
 
 // Team phase steps (after Notifications)
@@ -520,6 +527,18 @@ const CustomTooltip = ({
               <div className="space-y-1">
                 <p className="text-sm font-medium text-foreground">Stay Informed</p>
                 <p className="text-xs text-muted-foreground">Get instant alerts via email or Slack when new conversations start or escalate.</p>
+              </div>
+            </div>
+          </div>
+        ) : isTeamSidebar ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+              <div className="p-2 rounded-full bg-blue-500/10">
+                <Users className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">Your Team</p>
+                <p className="text-xs text-muted-foreground">Manage human agents, create accounts or send invitations, and link AI personas to team members.</p>
               </div>
             </div>
           </div>
@@ -816,37 +835,15 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
 
     if (finishedStatuses.includes(status)) {
-      // If we're finishing the analytics phase, navigate to widget-code instead of ending
-      if (tourPhase === 'analytics' && status === STATUS.FINISHED) {
-        setRun(false);
-        navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
-        return;
-      }
+      setRun(false);
+
+      // Each phase's last step has a custom button handler that navigates to the next phase.
+      // STATUS.FINISHED only fires if:
+      // 1. User skipped the tour
+      // 2. The team phase completed (final phase)
+      // 3. Fallback for any edge case
       
-      // If we're finishing the widget-code phase, navigate to salesforce
-      if (tourPhase === 'widget-code' && status === STATUS.FINISHED) {
-        setRun(false);
-        navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
-        return;
-      }
-
-      // If we're finishing the salesforce phase, navigate to notifications
-      if (tourPhase === 'salesforce' && status === STATUS.FINISHED) {
-        setRun(false);
-        navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
-        return;
-      }
-
-      // If we're finishing the notifications phase, navigate to team
-      if (tourPhase === 'notifications' && status === STATUS.FINISHED) {
-        setRun(false);
-        navigate(`/dashboard/team?tour=1&tourPhase=team`);
-        return;
-      }
-
-      // If we're finishing the team phase, show celebration
       if (tourPhase === 'team' && status === STATUS.FINISHED) {
-        setRun(false);
         searchParams.delete('tour');
         searchParams.delete('tourPhase');
         setSearchParams(searchParams, { replace: true });
@@ -861,15 +858,12 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         setShowCelebration(true);
         return;
       }
-      
-      setRun(false);
-      
-      // Remove tour params from URL
+
+      // For skip or any other finished status, end the tour
       searchParams.delete('tour');
       searchParams.delete('tourPhase');
       setSearchParams(searchParams, { replace: true });
 
-      // Mark tour as complete in database
       if (user) {
         await supabase
           .from('profiles')
@@ -881,33 +875,8 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   };
 
-  // Handle remaining/widget-code/salesforce/notifications phase navigation
-  useEffect(() => {
-    if (tourPhase === 'remaining' || tourPhase === 'team' || tourPhase === 'widget-code' || tourPhase === 'salesforce' || tourPhase === 'notifications') {
-      const startIndex = parseInt(searchParams.get('stepIndex') || '0', 10);
-      setStepIndex(startIndex);
-    }
-  }, [tourPhase, searchParams]);
-
-  // Get the right steps for current phase
-  const stepsToUse = useMemo(() => {
-    if (tourPhase === 'widget-code') {
-      return widgetCodeSteps;
-    }
-    if (tourPhase === 'salesforce') {
-      return salesforceSteps;
-    }
-    if (tourPhase === 'notifications') {
-      return notificationsSteps;
-    }
-    if (tourPhase === 'remaining' || tourPhase === 'team') {
-      return teamSteps;
-    }
-    if (tourPhase === 'analytics') {
-      return analyticsSteps;
-    }
-    return currentSteps;
-  }, [tourPhase, currentSteps]);
+  // currentSteps already handles all phases via the useMemo above
+  const stepsToUse = currentSteps;
 
   return (
     <>
