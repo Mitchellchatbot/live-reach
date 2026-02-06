@@ -15,22 +15,28 @@ const WidgetEmbed = () => {
   const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
   const autoOpen = searchParams.get('autoOpen') !== 'false';
 
-  // Load the widget_color from the DB so live embeds always reflect the saved brand color
+  // Load the widget_color and widget_icon from the DB so live embeds always reflect saved settings
   const [primaryColor, setPrimaryColor] = useState(paramColor || 'hsl(221, 83%, 53%)');
+  const [widgetIcon, setWidgetIcon] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!propertyId) return;
-    const loadColor = async () => {
+    const loadSettings = async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('widget_color')
+        .select('widget_color, widget_icon')
         .eq('id', propertyId)
         .maybeSingle();
-      if (!error && data?.widget_color && data.widget_color !== '#6B7280') {
-        setPrimaryColor(data.widget_color);
+      if (!error && data) {
+        if (data.widget_color && data.widget_color !== '#6B7280') {
+          setPrimaryColor(data.widget_color);
+        }
+        if (data.widget_icon) {
+          setWidgetIcon(data.widget_icon);
+        }
       }
     };
-    loadColor();
+    loadSettings();
   }, [propertyId]);
 
   // Ensure transparency is maintained (WidgetApp already sets initial styles)
@@ -77,6 +83,7 @@ const WidgetEmbed = () => {
         greeting={greeting}
         isPreview={false}
         autoOpen={autoOpen}
+        widgetIcon={widgetIcon}
       />
     </div>
   );
