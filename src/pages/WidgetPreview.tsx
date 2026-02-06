@@ -258,16 +258,17 @@ const WidgetPreview = () => {
     autoOpen: 'true',
   });
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
-<iframe 
-  id="scaledbot-widget"
-  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?${embedParams.toString()}"
-  style="position: fixed; bottom: 0; right: 0; width: 88px; height: 88px; border: none; z-index: 9999; background: transparent; overflow: hidden;"
-  allowtransparency="true"
-></iframe>
 <script>
   (function () {
-    var iframe = document.getElementById('scaledbot-widget');
-    if (!iframe) return;
+    var params = ${JSON.stringify(embedParams.toString())};
+    var parentUrl = encodeURIComponent(window.location.href);
+    var src = 'https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?' + params + '&parentUrl=' + parentUrl;
+    var iframe = document.createElement('iframe');
+    iframe.id = 'scaledbot-widget';
+    iframe.src = src;
+    iframe.style.cssText = 'position:fixed;bottom:0;right:0;width:88px;height:88px;border:none;z-index:9999;background:transparent;overflow:hidden;';
+    iframe.setAttribute('allowtransparency', 'true');
+    document.body.appendChild(iframe);
     window.addEventListener('message', function (event) {
       var data = event && event.data;
       if (!data || data.type !== 'scaledbot_widget_resize') return;

@@ -114,7 +114,16 @@ const getBrowserInfo = (): string => {
 };
 
 const getParentPageUrl = (): string | null => {
-  // When running inside an iframe, document.referrer is usually the host page URL.
+  // Prefer the parentUrl query param injected by the embed script (most reliable).
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const parentUrl = params.get('parentUrl');
+    if (parentUrl) return parentUrl;
+  } catch {
+    // ignore
+  }
+
+  // Fallback: document.referrer (unreliable — can be stripped by referrer policies).
   const ref = document.referrer;
   if (!ref) return null;
 
