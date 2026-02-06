@@ -593,14 +593,20 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   }, [tourPhase]);
 
-  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + teamSteps.length - 1;
+  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length + notificationsSteps.length + teamSteps.length - 1;
 
   // Calculate display step number
   const getDisplayStepNumber = () => {
-    if (tourPhase === 'ai-support') {
-      return dashboardSteps.length + stepIndex; // Continue from where we left off
-    }
-    return stepIndex + 1;
+    const offsets: Record<string, number> = {
+      dashboard: 0,
+      'ai-support': dashboardSteps.length,
+      analytics: dashboardSteps.length + aiSupportSteps.length,
+      'widget-code': dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length,
+      salesforce: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length,
+      notifications: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length,
+      team: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length + notificationsSteps.length,
+    };
+    return (offsets[tourPhase] || 0) + stepIndex + 1;
   };
 
   // Check for tour param and start tour
