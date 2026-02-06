@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
+import { WidgetEffectsCard } from '@/components/widget/WidgetEffectsCard';
 
 // Widget icon options (same as onboarding)
 const widgetIconOptions = [
@@ -164,6 +165,9 @@ const WidgetPreview = () => {
   const widgetIconInputRef = useRef<HTMLInputElement>(null);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [activeWidgetTab, setActiveWidgetTab] = useState('widget');
+  const [effectType, setEffectType] = useState('none');
+  const [effectInterval, setEffectInterval] = useState(5);
+  const [effectIntensity, setEffectIntensity] = useState('medium');
 
   // Listen for tour tab-switch events
   useEffect(() => {
@@ -189,6 +193,9 @@ const WidgetPreview = () => {
       }
       if (firstProperty.greeting) setGreeting(firstProperty.greeting);
       if (firstProperty.widget_icon) setWidgetIcon(firstProperty.widget_icon);
+      setEffectType((firstProperty as any).widget_effect_type || 'none');
+      setEffectInterval((firstProperty as any).widget_effect_interval_seconds || 5);
+      setEffectIntensity((firstProperty as any).widget_effect_intensity || 'medium');
     }
   }, [properties, selectedPropertyId]);
 
@@ -204,6 +211,9 @@ const WidgetPreview = () => {
       }
       if (property.greeting) setGreeting(property.greeting);
       if (property.widget_icon) setWidgetIcon(property.widget_icon);
+      setEffectType((property as any).widget_effect_type || 'none');
+      setEffectInterval((property as any).widget_effect_interval_seconds || 5);
+      setEffectIntensity((property as any).widget_effect_intensity || 'medium');
     }
   };
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
@@ -497,6 +507,15 @@ const WidgetPreview = () => {
             {/* Display Settings */}
             <div className="space-y-6">
               <DisplaySettingsCard greeting={greeting} setGreeting={setGreeting} extractedFont={extractedFont} propertyId={selectedPropertyId} />
+              <WidgetEffectsCard
+                propertyId={selectedPropertyId}
+                effectType={effectType}
+                effectInterval={effectInterval}
+                effectIntensity={effectIntensity}
+                onEffectTypeChange={setEffectType}
+                onEffectIntervalChange={setEffectInterval}
+                onEffectIntensityChange={setEffectIntensity}
+              />
             </div>
           </div>
 
@@ -567,7 +586,7 @@ const WidgetPreview = () => {
                     </div>
                   )}
                   <div className="absolute bottom-4 right-4">
-                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} />
+                    <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} effectType={effectType} effectInterval={effectInterval} effectIntensity={effectIntensity} />
                   </div>
                 </div>
               ) : (
@@ -617,7 +636,7 @@ const WidgetPreview = () => {
                         </div>
                       )}
                       <div className="absolute bottom-4 right-4">
-                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} />
+                        <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} effectType={effectType} effectInterval={effectInterval} effectIntensity={effectIntensity} />
                       </div>
                     </div>
                   </div>
