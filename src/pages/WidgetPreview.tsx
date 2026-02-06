@@ -250,10 +250,17 @@ const WidgetPreview = () => {
     }
     toast.success('Widget icon saved!');
   };
+  const embedParams = new URLSearchParams({
+    primaryColor,
+    greeting,
+    widgetIcon: widgetIcon || 'message-circle',
+    borderRadius: '24',
+    autoOpen: 'true',
+  });
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
 <iframe 
   id="scaledbot-widget"
-  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?autoOpen=true"
+  src="https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?${embedParams.toString()}"
   style="position: fixed; bottom: 0; right: 0; width: 88px; height: 88px; border: none; z-index: 9999; background: transparent; overflow: hidden;"
   allowtransparency="true"
 ></iframe>

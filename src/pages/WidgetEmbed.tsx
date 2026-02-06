@@ -1,49 +1,22 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 const WidgetEmbed = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
+  const [searchParams] = useSearchParams();
 
-  const autoOpen = true;
-
-  // Load ALL widget settings from DB so the live embed always matches the preview
-  const [primaryColor, setPrimaryColor] = useState('hsl(221, 83%, 53%)');
-  const [widgetIcon, setWidgetIcon] = useState<string | undefined>(undefined);
-  const [greeting, setGreeting] = useState('Hi there! How can I help you today?');
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!propertyId) return;
-    const loadSettings = async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('widget_color, widget_icon, greeting')
-        .eq('id', propertyId)
-        .maybeSingle();
-      if (!error && data) {
-        if (data.widget_color && data.widget_color !== '#6B7280') {
-          setPrimaryColor(data.widget_color);
-        }
-        if (data.widget_icon) {
-          setWidgetIcon(data.widget_icon);
-        }
-        if (data.greeting) {
-          setGreeting(data.greeting);
-        }
-      }
-      setSettingsLoaded(true);
-    };
-    loadSettings();
-  }, [propertyId]);
+  const primaryColor = searchParams.get('primaryColor') || 'hsl(221, 83%, 53%)';
+  const widgetIcon = searchParams.get('widgetIcon') || undefined;
+  const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
+  const borderRadius = parseInt(searchParams.get('borderRadius') || '24', 10);
+  const autoOpen = searchParams.get('autoOpen') !== 'false';
 
   // Ensure transparency is maintained (WidgetApp already sets initial styles)
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
 
-    // Reinforce embed mode class and transparency
     html.classList.add('widget-embed-mode');
     html.classList.remove('dark');
     
@@ -67,11 +40,6 @@ const WidgetEmbed = () => {
     return <div className="p-4 text-destructive">Property ID is required</div>;
   }
 
-  // Wait for DB settings before rendering widget to avoid flash of defaults
-  if (!settingsLoaded) {
-    return null;
-  }
-
   return (
     <div 
       className="w-full h-full overflow-hidden pointer-events-none"
@@ -80,6 +48,7 @@ const WidgetEmbed = () => {
       <ChatWidget
         propertyId={propertyId}
         primaryColor={primaryColor}
+        borderRadius={borderRadius}
         greeting={greeting}
         isPreview={false}
         autoOpen={autoOpen}
