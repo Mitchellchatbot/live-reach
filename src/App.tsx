@@ -54,6 +54,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Documentation = lazy(() => import("./pages/Documentation"));
 const DocPage = lazy(() => import("./pages/docs/DocPage"));
 const WidgetEmbed = lazy(() => import("./pages/WidgetEmbed"));
+const Subscription = lazy(() => import("./pages/Subscription"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -132,6 +133,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/widget" element={<RequireClient><WidgetPreview /></RequireClient>} />
         <Route path="/dashboard/salesforce" element={<RequireClient><Salesforce /></RequireClient>} />
         <Route path="/dashboard/notifications" element={<RequireClient><Notifications /></RequireClient>} />
+        <Route path="/dashboard/subscription" element={<RequireClient><Subscription /></RequireClient>} />
         <Route path="/dashboard/support" element={<RequireClient><Support /></RequireClient>} />
         
         <Route path="/widget-preview" element={<WidgetPreview />} />

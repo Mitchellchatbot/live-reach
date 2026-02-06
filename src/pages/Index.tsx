@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
+import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
@@ -260,7 +261,11 @@ const Index = () => {
               <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
                 Features
               </Button>
-              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
+              <Button
+                variant="ghost"
+                className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9"
+                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Pricing
               </Button>
               <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
@@ -370,7 +375,7 @@ const Index = () => {
               <p className="mt-6 text-sm text-muted-foreground font-medium animate-fade-in flex items-center gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.6s' }}>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  Free 14-day trial
+                  Free 7-day trial
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -635,6 +640,22 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section id="pricing" className="relative py-32 overflow-hidden">
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+              Simple,
+              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Transparent Pricing</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Start with a 7-day free trial. No credit card required.
+            </p>
+          </div>
+          <PricingSection showComparison={true} ctaPath="/auth" />
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/15 to-orange-500/10" />
@@ -653,7 +674,7 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to={user ? getDashboardRoute() : '/auth'}>
                 <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-10 h-16 text-lg font-bold rounded-2xl group">
-                  {user ? 'Go to Dashboard' : 'Start Free Trial'}
+                  {user ? 'Go to Dashboard' : 'Start 7-Day Free Trial'}
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>

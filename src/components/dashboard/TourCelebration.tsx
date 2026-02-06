@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Rocket, ArrowRight } from 'lucide-react';
@@ -11,6 +12,7 @@ interface TourCelebrationProps {
 export const TourCelebration = ({ open, onClose }: TourCelebrationProps) => {
   const [visible, setVisible] = useState(false);
   const firedRef = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (open && !firedRef.current) {
@@ -122,15 +124,28 @@ export const TourCelebration = ({ open, onClose }: TourCelebrationProps) => {
               </div>
             </div>
 
-            {/* CTA */}
-            <Button
-              onClick={onClose}
-              size="lg"
-              className="w-full text-base font-semibold gap-2 group"
-            >
-              Let's Go
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
+            {/* CTAs */}
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  onClose();
+                  navigate('/dashboard/subscription');
+                }}
+                size="lg"
+                className="w-full text-base font-semibold gap-2 group bg-gradient-to-r from-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/25"
+              >
+                Start 7-Day Free Trial
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="lg"
+                className="w-full text-base font-medium text-muted-foreground"
+              >
+                Continue Exploring
+              </Button>
+            </div>
           </div>
         </div>
       </div>
