@@ -12,6 +12,8 @@ export interface PricingPlan {
   features: string[];
   gradient: string;
   overflow?: string;
+  /** Tailwind classes for the card highlight */
+  highlightClasses?: string;
 }
 
 export const pricingPlans: PricingPlan[] = [
@@ -26,8 +28,6 @@ export const pricingPlans: PricingPlan[] = [
     gradient: 'from-blue-500 to-indigo-600',
     features: [
       '500 conversations/month',
-      '1 property (website)',
-      '1 AI persona',
       'Natural lead capture',
       'Email notifications',
       'Basic analytics',
@@ -45,17 +45,16 @@ export const pricingPlans: PricingPlan[] = [
     conversationsNum: 2000,
     icon: Zap,
     gradient: 'from-primary to-orange-500',
+    highlightClasses: 'border-orange-300 bg-orange-50/60',
     features: [
       '2,000 conversations/month',
-      '5 properties (websites)',
-      'Unlimited AI personas',
       'Natural lead capture',
       'Email & Slack notifications',
       'Advanced analytics',
       'Crisis detection & escalation',
       'Salesforce integration',
-      'Team members (up to 10)',
       'Custom AI prompts',
+      'Launcher effects',
       'Priority support',
     ],
   },
@@ -68,22 +67,19 @@ export const pricingPlans: PricingPlan[] = [
     conversationsNum: 10000,
     icon: Building2,
     gradient: 'from-violet-500 to-purple-600',
+    highlightClasses: 'border-orange-400 bg-orange-100/60',
     overflow: 'Pay-as-you-go after 10,000 — $0.05 per extra conversation. Never miss a lead.',
     features: [
       '10,000 conversations/month',
-      'Unlimited properties',
-      'Unlimited AI personas',
       'Natural lead capture',
       'All notification channels',
       'Full analytics suite',
       'Crisis detection & escalation',
       'Salesforce integration',
-      'Unlimited team members',
       'Custom AI prompts',
-      'HIPAA BAA included',
-      'Dedicated account manager',
+      'Launcher effects',
       'Pay-as-you-go overflow',
-      'API access',
+      'Priority support',
     ],
   },
 ];
@@ -93,9 +89,6 @@ export const comparisonCategories = [
     name: 'Usage',
     features: [
       { name: 'Monthly conversations', basic: '500', professional: '2,000', enterprise: '10,000+' },
-      { name: 'Properties (websites)', basic: '1', professional: '5', enterprise: 'Unlimited' },
-      { name: 'AI personas', basic: '1', professional: 'Unlimited', enterprise: 'Unlimited' },
-      { name: 'Team members', basic: '1', professional: '10', enterprise: 'Unlimited' },
       { name: 'Overflow conversations', basic: false, professional: false, enterprise: 'Pay-as-you-go' },
     ],
   },
@@ -105,9 +98,7 @@ export const comparisonCategories = [
       { name: 'Natural lead capture', basic: true, professional: true, enterprise: true },
       { name: 'Crisis detection', basic: true, professional: true, enterprise: true },
       { name: 'Custom AI prompts', basic: false, professional: true, enterprise: true },
-      { name: 'Auto-escalation rules', basic: false, professional: true, enterprise: true },
       { name: 'Launcher effects', basic: false, professional: true, enterprise: true },
-      { name: 'Proactive messages', basic: false, professional: true, enterprise: true },
     ],
   },
   {
@@ -116,16 +107,13 @@ export const comparisonCategories = [
       { name: 'Email notifications', basic: true, professional: true, enterprise: true },
       { name: 'Slack notifications', basic: false, professional: true, enterprise: true },
       { name: 'Salesforce CRM', basic: false, professional: true, enterprise: true },
-      { name: 'API access', basic: false, professional: false, enterprise: true },
     ],
   },
   {
-    name: 'Support & Compliance',
+    name: 'Support',
     features: [
       { name: 'Standard support', basic: true, professional: true, enterprise: true },
       { name: 'Priority support', basic: false, professional: true, enterprise: true },
-      { name: 'Dedicated account manager', basic: false, professional: false, enterprise: true },
-      { name: 'HIPAA BAA', basic: false, professional: false, enterprise: true },
     ],
   },
 ];
