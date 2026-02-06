@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Wand2, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Wand2, Loader2, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon, Ban } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -8,13 +8,24 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const widgetIconMap: Record<string, LucideIcon> = {
+  'message-circle': MessageCircle,
+  'message-square': MessageSquare,
+  'messages-square': MessagesSquare,
+  'headphones': Headphones,
+  'help-circle': HelpCircle,
+  'heart': Heart,
+  'sparkles': Sparkles,
+  'bot': Bot,
+};
+
 const effectOptions = [
-  { id: 'none', label: 'None', description: 'No animation' },
-  { id: 'pulse', label: 'Pulse', description: 'Gentle glow pulse' },
-  { id: 'bounce', label: 'Bounce', description: 'Playful bounce' },
-  { id: 'wiggle', label: 'Wiggle', description: 'Side-to-side shake' },
-  { id: 'ring', label: 'Ring', description: 'Ripple ring effect' },
-  { id: 'heartbeat', label: 'Heartbeat', description: 'Double-beat pulse' },
+  { id: 'none', label: 'None' },
+  { id: 'pulse', label: 'Pulse' },
+  { id: 'bounce', label: 'Bounce' },
+  { id: 'wiggle', label: 'Wiggle' },
+  { id: 'ring', label: 'Ring' },
+  { id: 'heartbeat', label: 'Heartbeat' },
 ] as const;
 
 const intensityOptions = [
@@ -23,11 +34,83 @@ const intensityOptions = [
   { id: 'strong', label: 'Strong' },
 ] as const;
 
+// Generate inline animation style for a mini preview button
+const getMiniAnimation = (effect: string, intensity: string): string => {
+  if (effect === 'none') return '';
+  const s = intensity === 'subtle' ? 0 : intensity === 'strong' ? 2 : 1;
+  const scale = [1.05, 1.1, 1.15][s];
+  const bounce = [6, 10, 16][s];
+  const bounceSmall = [3, 5, 8][s];
+  const rotate = [5, 10, 15][s];
+  const rotateSmall = [3, 6, 10][s];
+  const ringScale = [1.6, 1.8, 2.2][s];
+
+  switch (effect) {
+    case 'pulse':
+      return `widget-fx-pulse-${intensity} 1s ease-in-out infinite`;
+    case 'bounce':
+      return `widget-fx-bounce-${intensity} 0.8s ease-out infinite`;
+    case 'wiggle':
+      return `widget-fx-wiggle-${intensity} 0.6s ease-in-out infinite`;
+    case 'heartbeat':
+      return `widget-fx-heartbeat-${intensity} 1s ease-in-out infinite`;
+    case 'ring':
+      return ''; // ring is handled separately
+    default:
+      return '';
+  }
+};
+
+const generateKeyframes = (intensity: string) => {
+  const s = intensity === 'subtle' ? 0 : intensity === 'strong' ? 2 : 1;
+  const scale = [1.05, 1.1, 1.15][s];
+  const bounce = [6, 10, 16][s];
+  const bounceSmall = [3, 5, 8][s];
+  const rotate = [5, 10, 15][s];
+  const rotateSmall = [3, 6, 10][s];
+  const hbBig = [1.08, 1.14, 1.2][s];
+  const hbSmall = [1.05, 1.1, 1.15][s];
+  const ringScale = [1.6, 1.8, 2.2][s];
+
+  return `
+    @keyframes widget-fx-pulse-${intensity} {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(${scale}); }
+    }
+    @keyframes widget-fx-bounce-${intensity} {
+      0%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-${bounce}px); }
+      50% { transform: translateY(0); }
+      70% { transform: translateY(-${bounceSmall}px); }
+    }
+    @keyframes widget-fx-wiggle-${intensity} {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(${rotate}deg); }
+      40% { transform: rotate(-${rotate}deg); }
+      60% { transform: rotate(${rotateSmall}deg); }
+      80% { transform: rotate(-${rotateSmall}deg); }
+    }
+    @keyframes widget-fx-heartbeat-${intensity} {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(${hbBig}); }
+      30% { transform: scale(1); }
+      45% { transform: scale(${hbSmall}); }
+      60% { transform: scale(1); }
+    }
+    @keyframes widget-fx-ring-${intensity} {
+      0% { transform: scale(1); opacity: 0.5; }
+      100% { transform: scale(${ringScale}); opacity: 0; }
+    }
+  `;
+};
+
 interface WidgetEffectsCardProps {
   propertyId: string | undefined;
   effectType: string;
   effectInterval: number;
   effectIntensity: string;
+  primaryColor: string;
+  widgetIcon: string;
   onEffectTypeChange: (type: string) => void;
   onEffectIntervalChange: (interval: number) => void;
   onEffectIntensityChange: (intensity: string) => void;
@@ -38,6 +121,8 @@ export const WidgetEffectsCard = ({
   effectType,
   effectInterval,
   effectIntensity,
+  primaryColor,
+  widgetIcon,
   onEffectTypeChange,
   onEffectIntervalChange,
   onEffectIntensityChange,
@@ -47,6 +132,10 @@ export const WidgetEffectsCard = ({
   const [localIntensity, setLocalIntensity] = useState(effectIntensity);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Track which mini-button is currently demoing (on click)
+  const [demoEffect, setDemoEffect] = useState<string | null>(null);
+
+  const IconComponent = widgetIconMap[widgetIcon] || MessageCircle;
 
   useEffect(() => {
     setLocalType(effectType);
@@ -59,11 +148,20 @@ export const WidgetEffectsCard = ({
     setHasChanges(
       type !== effectType || interval !== effectInterval || intensity !== effectIntensity
     );
-    // Live preview
     onEffectTypeChange(type);
     onEffectIntervalChange(interval);
     onEffectIntensityChange(intensity);
   };
+
+  const handleSelectEffect = useCallback((id: string) => {
+    setLocalType(id);
+    updateLocal(id, localInterval, localIntensity);
+    // Trigger demo animation on the clicked button
+    setDemoEffect(null); // reset first to retrigger
+    requestAnimationFrame(() => setDemoEffect(id));
+    // Clear after animation
+    setTimeout(() => setDemoEffect(null), 1200);
+  }, [localInterval, localIntensity]);
 
   const handleSave = async () => {
     if (!propertyId) return;
@@ -87,6 +185,7 @@ export const WidgetEffectsCard = ({
 
   return (
     <Card>
+      <style>{generateKeyframes('subtle')}{generateKeyframes('medium')}{generateKeyframes('strong')}</style>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Wand2 className="h-4 w-4" />
@@ -97,28 +196,64 @@ export const WidgetEffectsCard = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Effect Type */}
+        {/* Effect Type - mini icon buttons */}
         <div className="space-y-2">
           <Label>Effect Style</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {effectOptions.map((opt) => (
-              <button
-                key={opt.id}
-                onClick={() => {
-                  setLocalType(opt.id);
-                  updateLocal(opt.id, localInterval, localIntensity);
-                }}
-                className={cn(
-                  "flex flex-col items-center justify-center p-2.5 rounded-xl border-2 transition-all duration-200 gap-1",
-                  localType === opt.id
-                    ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border bg-background hover:border-primary/50 hover:bg-muted/50"
-                )}
-              >
-                <span className="text-xs font-medium">{opt.label}</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">{opt.description}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-3 gap-3">
+            {effectOptions.map((opt) => {
+              const isSelected = localType === opt.id;
+              const isDemoing = demoEffect === opt.id;
+              const animStyle: React.CSSProperties =
+                isDemoing && opt.id !== 'none'
+                  ? { animation: getMiniAnimation(opt.id, localIntensity) || undefined }
+                  : {};
+
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => handleSelectEffect(opt.id)}
+                  className={cn(
+                    "relative flex flex-col items-center justify-center py-3 px-2 rounded-xl border-2 transition-all duration-200 gap-2",
+                    isSelected
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-background hover:border-primary/50 hover:bg-muted/50"
+                  )}
+                >
+                  {/* Mini launcher preview */}
+                  <div className="relative">
+                    {/* Ring ripple */}
+                    {isDemoing && opt.id === 'ring' && (
+                      <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          background: `color-mix(in srgb, ${primaryColor} 40%, transparent)`,
+                          animation: `widget-fx-ring-${localIntensity} 1s ease-out forwards`,
+                        }}
+                      />
+                    )}
+                    <div
+                      className="h-10 w-10 rounded-full flex items-center justify-center shadow-md"
+                      style={{
+                        background: opt.id === 'none' ? 'hsl(var(--muted))' : primaryColor,
+                        ...animStyle,
+                      }}
+                    >
+                      {opt.id === 'none' ? (
+                        <Ban className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <IconComponent className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    isSelected ? "text-foreground" : "text-muted-foreground"
+                  )}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -156,6 +291,10 @@ export const WidgetEffectsCard = ({
                     onClick={() => {
                       setLocalIntensity(opt.id);
                       updateLocal(localType, localInterval, opt.id);
+                      // Re-demo with new intensity
+                      setDemoEffect(null);
+                      requestAnimationFrame(() => setDemoEffect(localType));
+                      setTimeout(() => setDemoEffect(null), 1200);
                     }}
                     className={cn(
                       "flex-1 py-2 rounded-lg border-2 text-xs font-medium transition-all duration-200",
