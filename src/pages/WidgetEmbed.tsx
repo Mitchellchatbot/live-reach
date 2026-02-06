@@ -1,30 +1,25 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const WidgetEmbed = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
-  const [searchParams] = useSearchParams();
 
-  const paramColor = searchParams.get('primaryColor');
-  const textColor = searchParams.get('textColor') || 'hsl(0, 0%, 100%)';
-  const borderColor = searchParams.get('borderColor') || 'hsl(0, 0%, 0%, 0.1)';
-  const widgetSize = (searchParams.get('widgetSize') as 'small' | 'medium' | 'large') || 'medium';
-  const borderRadius = parseInt(searchParams.get('borderRadius') || '16', 10);
-  const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
-  const autoOpen = searchParams.get('autoOpen') !== 'false';
+  const autoOpen = true;
 
-  // Load the widget_color and widget_icon from the DB so live embeds always reflect saved settings
-  const [primaryColor, setPrimaryColor] = useState(paramColor || 'hsl(221, 83%, 53%)');
+  // Load ALL widget settings from DB so the live embed always matches the preview
+  const [primaryColor, setPrimaryColor] = useState('hsl(221, 83%, 53%)');
   const [widgetIcon, setWidgetIcon] = useState<string | undefined>(undefined);
+  const [greeting, setGreeting] = useState('Hi there! How can I help you today?');
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
     if (!propertyId) return;
     const loadSettings = async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('widget_color, widget_icon')
+        .select('widget_color, widget_icon, greeting')
         .eq('id', propertyId)
         .maybeSingle();
       if (!error && data) {
@@ -34,7 +29,11 @@ const WidgetEmbed = () => {
         if (data.widget_icon) {
           setWidgetIcon(data.widget_icon);
         }
+        if (data.greeting) {
+          setGreeting(data.greeting);
+        }
       }
+      setSettingsLoaded(true);
     };
     loadSettings();
   }, [propertyId]);
@@ -65,7 +64,12 @@ const WidgetEmbed = () => {
   }, []);
 
   if (!propertyId) {
-    return <div className="p-4 text-red-500">Property ID is required</div>;
+    return <div className="p-4 text-destructive">Property ID is required</div>;
+  }
+
+  // Wait for DB settings before rendering widget to avoid flash of defaults
+  if (!settingsLoaded) {
+    return null;
   }
 
   return (
@@ -76,10 +80,6 @@ const WidgetEmbed = () => {
       <ChatWidget
         propertyId={propertyId}
         primaryColor={primaryColor}
-        textColor={textColor}
-        borderColor={borderColor}
-        widgetSize={widgetSize}
-        borderRadius={borderRadius}
         greeting={greeting}
         isPreview={false}
         autoOpen={autoOpen}
