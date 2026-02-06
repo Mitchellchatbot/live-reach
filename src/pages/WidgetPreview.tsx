@@ -170,11 +170,14 @@ const WidgetPreview = () => {
       const firstProperty = properties[0];
       setSelectedPropertyId(firstProperty.id);
       // Load property settings
-      if (firstProperty.widget_color) setPrimaryColor(firstProperty.widget_color);
+      if (firstProperty.widget_color && firstProperty.widget_color !== '#6B7280') {
+        setPrimaryColor(firstProperty.widget_color);
+      } else {
+        // Only auto-extract if no brand color has been saved yet
+        extractBrandFromProperty(firstProperty.domain, firstProperty.id);
+      }
       if (firstProperty.greeting) setGreeting(firstProperty.greeting);
       if (firstProperty.widget_icon) setWidgetIcon(firstProperty.widget_icon);
-      // Auto-extract brand from property domain
-      extractBrandFromProperty(firstProperty.domain);
     }
   }, [properties, selectedPropertyId]);
 
@@ -183,46 +186,45 @@ const WidgetPreview = () => {
     setSelectedPropertyId(propertyId);
     const property = properties.find(p => p.id === propertyId);
     if (property) {
-      if (property.widget_color) setPrimaryColor(property.widget_color);
+      if (property.widget_color && property.widget_color !== '#6B7280') {
+        setPrimaryColor(property.widget_color);
+      } else {
+        extractBrandFromProperty(property.domain, property.id);
+      }
       if (property.greeting) setGreeting(property.greeting);
       if (property.widget_icon) setWidgetIcon(property.widget_icon);
-      // Auto-extract brand from the new property's domain
-      extractBrandFromProperty(property.domain);
     }
   };
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
-  const extractBrandFromProperty = async (domain: string) => {
+  const extractBrandFromProperty = async (domain: string, propId?: string) => {
     if (!domain) return;
+    const targetPropertyId = propId || selectedPropertyId;
     setIsExtracting(true);
     try {
-      // Format the domain as a URL
       let url = domain.trim();
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = `https://${url}`;
       }
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('extract-brand-colors', {
-        body: {
-          url
-        }
+      const { data, error } = await supabase.functions.invoke('extract-brand-colors', {
+        body: { url }
       });
       if (error) throw error;
       if (data.success && data.branding) {
         const { primaryColor: extractedPrimary, colors, fonts } = data.branding;
 
-        // Try to get the best color (primaryColor > colors.primary > colors.accent)
         let colorToUse = extractedPrimary || colors?.primary || colors?.accent;
         if (colorToUse) {
-          // Convert hex to HSL if needed
           if (colorToUse.startsWith('#')) {
             colorToUse = hexToHsl(colorToUse);
           }
           setPrimaryColor(colorToUse);
+
+          // Persist the extracted color to the database
+          if (targetPropertyId) {
+            await supabase.from('properties').update({ widget_color: colorToUse }).eq('id', targetPropertyId);
+          }
         }
 
-        // Extract font if available (fonts is an array like [{family: "Montserrat", role: "body"}])
         if (Array.isArray(fonts) && fonts.length > 0 && fonts[0]?.family) {
           setExtractedFont(fonts[0].family);
         }
@@ -230,7 +232,6 @@ const WidgetPreview = () => {
       }
     } catch (error) {
       console.error('Error extracting brand colors:', error);
-      // Silently fail - user can still customize manually
     } finally {
       setIsExtracting(false);
     }
@@ -263,8 +264,15 @@ const WidgetPreview = () => {
     window.addEventListener('message', function (event) {
       var data = event && event.data;
       if (!data || data.type !== 'scaledbot_widget_resize') return;
-      if (typeof data.width === 'number') iframe.style.width = data.width + 'px';
-      if (typeof data.height === 'number') iframe.style.height = data.height + 'px';
+      if (data.fullscreen) {
+        iframe.style.width = '100vw';
+        iframe.style.height = '100vh';
+        iframe.style.bottom = '0';
+        iframe.style.right = '0';
+      } else {
+        if (typeof data.width === 'number') iframe.style.width = data.width + 'px';
+        if (typeof data.height === 'number') iframe.style.height = data.height + 'px';
+      }
     });
   })();
 </script>` : '// Select a property to generate embed code';
@@ -402,14 +410,27 @@ const WidgetPreview = () => {
                   {/* Brand Color */}
                   <Card data-tour="widget-color-card">
                     <CardHeader>
-                      <CardTitle className="text-base">Brand Color</CardTitle>
-                      <CardDescription>
-                        Choose your primary widget color
-                        {isExtracting && <span className="flex items-center gap-2 mt-1 text-primary">
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Extracting from your website...
-                          </span>}
-                      </CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base">Brand Color</CardTitle>
+                          <CardDescription>
+                            Choose your primary widget color
+                            {isExtracting && <span className="flex items-center gap-2 mt-1 text-primary">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                Extracting from your website...
+                              </span>}
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isExtracting || !selectedProperty?.domain}
+                          onClick={() => selectedProperty && extractBrandFromProperty(selectedProperty.domain, selectedProperty.id)}
+                        >
+                          {isExtracting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                          Re-extract
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-6 gap-3 mb-4">
@@ -417,6 +438,18 @@ const WidgetPreview = () => {
                       </div>
                       <div className="flex gap-2">
                         <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} placeholder="Custom color (HSL)" className="font-mono text-sm" />
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            if (!selectedPropertyId) return;
+                            const { error } = await supabase.from('properties').update({ widget_color: primaryColor }).eq('id', selectedPropertyId);
+                            if (error) { toast.error('Failed to save color'); return; }
+                            toast.success('Brand color saved!');
+                          }}
+                          disabled={!selectedPropertyId}
+                        >
+                          Save
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

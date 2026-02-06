@@ -1,18 +1,37 @@
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const WidgetEmbed = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
   const [searchParams] = useSearchParams();
 
-  const primaryColor = searchParams.get('primaryColor') || 'hsl(221, 83%, 53%)';
+  const paramColor = searchParams.get('primaryColor');
   const textColor = searchParams.get('textColor') || 'hsl(0, 0%, 100%)';
   const borderColor = searchParams.get('borderColor') || 'hsl(0, 0%, 0%, 0.1)';
   const widgetSize = (searchParams.get('widgetSize') as 'small' | 'medium' | 'large') || 'medium';
   const borderRadius = parseInt(searchParams.get('borderRadius') || '16', 10);
   const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
   const autoOpen = searchParams.get('autoOpen') !== 'false';
+
+  // Load the widget_color from the DB so live embeds always reflect the saved brand color
+  const [primaryColor, setPrimaryColor] = useState(paramColor || 'hsl(221, 83%, 53%)');
+
+  useEffect(() => {
+    if (!propertyId) return;
+    const loadColor = async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('widget_color')
+        .eq('id', propertyId)
+        .maybeSingle();
+      if (!error && data?.widget_color && data.widget_color !== '#6B7280') {
+        setPrimaryColor(data.widget_color);
+      }
+    };
+    loadColor();
+  }, [propertyId]);
 
   // Ensure transparency is maintained (WidgetApp already sets initial styles)
   useEffect(() => {
