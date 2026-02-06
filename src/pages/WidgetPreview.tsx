@@ -154,7 +154,7 @@ const WidgetPreview = () => {
     deleteProperty
   } = useConversations();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
-  const [primaryColor, setPrimaryColor] = useState('hsl(150, 25%, 45%)');
+  const [primaryColor, setPrimaryColor] = useState('#F97316');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");
   const [copied, setCopied] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
