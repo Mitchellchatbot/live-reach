@@ -385,6 +385,9 @@ export type Database = {
           updated_at: string
           user_id: string
           widget_color: string | null
+          widget_effect_intensity: string | null
+          widget_effect_interval_seconds: number | null
+          widget_effect_type: string | null
           widget_icon: string | null
         }
         Insert: {
@@ -415,6 +418,9 @@ export type Database = {
           updated_at?: string
           user_id: string
           widget_color?: string | null
+          widget_effect_intensity?: string | null
+          widget_effect_interval_seconds?: number | null
+          widget_effect_type?: string | null
           widget_icon?: string | null
         }
         Update: {
@@ -445,6 +451,9 @@ export type Database = {
           updated_at?: string
           user_id?: string
           widget_color?: string | null
+          widget_effect_intensity?: string | null
+          widget_effect_interval_seconds?: number | null
+          widget_effect_type?: string | null
           widget_icon?: string | null
         }
         Relationships: []

@@ -18,6 +18,9 @@ interface ChatWidgetProps {
   isPreview?: boolean;
   autoOpen?: boolean;
   widgetIcon?: string;
+  effectType?: string;
+  effectInterval?: number;
+  effectIntensity?: string;
 }
 
 export const ChatWidget = ({
@@ -33,6 +36,9 @@ export const ChatWidget = ({
   isPreview = false,
   autoOpen = false,
   widgetIcon,
+  effectType = 'none',
+  effectInterval = 5,
+  effectIntensity = 'medium',
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -79,6 +85,43 @@ export const ChatWidget = ({
   // Use AI agent info if available, otherwise use props
   const displayName = currentAiAgent?.name || agentName;
   const displayAvatar = currentAiAgent?.avatar_url || agentAvatar;
+
+  // Periodic effect animation
+  const [effectActive, setEffectActive] = useState(false);
+  const [ringActive, setRingActive] = useState(false);
+
+  useEffect(() => {
+    if (effectType === 'none' || isOpen) return;
+    const id = setInterval(() => {
+      if (effectType === 'ring') {
+        setRingActive(true);
+        setTimeout(() => setRingActive(false), 1500);
+      } else {
+        setEffectActive(true);
+        setTimeout(() => setEffectActive(false), 800);
+      }
+    }, effectInterval * 1000);
+    return () => clearInterval(id);
+  }, [effectType, effectInterval, isOpen]);
+
+  const getEffectStyle = (): React.CSSProperties => {
+    if (!effectActive || effectType === 'none' || effectType === 'ring') return {};
+    const scale = effectIntensity === 'subtle' ? 1.05 : effectIntensity === 'strong' ? 1.15 : 1.1;
+    const translate = effectIntensity === 'subtle' ? 4 : effectIntensity === 'strong' ? 12 : 8;
+
+    switch (effectType) {
+      case 'pulse':
+        return { animation: `widget-pulse 0.8s ease-in-out` };
+      case 'bounce':
+        return { animation: `widget-bounce 0.6s ease-out` };
+      case 'wiggle':
+        return { animation: `widget-wiggle 0.5s ease-in-out` };
+      case 'heartbeat':
+        return { animation: `widget-heartbeat 0.8s ease-in-out` };
+      default:
+        return {};
+    }
+  };
 
 
 
@@ -575,32 +618,77 @@ export const ChatWidget = ({
         </div>
       )}
 
+      {/* Effect keyframes */}
+      <style>{`
+        @keyframes widget-pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+          50% { transform: scale(${effectIntensity === 'subtle' ? 1.05 : effectIntensity === 'strong' ? 1.15 : 1.1}); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        }
+        @keyframes widget-bounce {
+          0%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-${effectIntensity === 'subtle' ? 6 : effectIntensity === 'strong' ? 16 : 10}px); }
+          50% { transform: translateY(0); }
+          70% { transform: translateY(-${effectIntensity === 'subtle' ? 3 : effectIntensity === 'strong' ? 8 : 5}px); }
+        }
+        @keyframes widget-wiggle {
+          0%, 100% { transform: rotate(0deg); }
+          20% { transform: rotate(${effectIntensity === 'subtle' ? 5 : effectIntensity === 'strong' ? 15 : 10}deg); }
+          40% { transform: rotate(-${effectIntensity === 'subtle' ? 5 : effectIntensity === 'strong' ? 15 : 10}deg); }
+          60% { transform: rotate(${effectIntensity === 'subtle' ? 3 : effectIntensity === 'strong' ? 10 : 6}deg); }
+          80% { transform: rotate(-${effectIntensity === 'subtle' ? 3 : effectIntensity === 'strong' ? 10 : 6}deg); }
+        }
+        @keyframes widget-heartbeat {
+          0%, 100% { transform: scale(1); }
+          15% { transform: scale(${effectIntensity === 'subtle' ? 1.08 : effectIntensity === 'strong' ? 1.2 : 1.14}); }
+          30% { transform: scale(1); }
+          45% { transform: scale(${effectIntensity === 'subtle' ? 1.05 : effectIntensity === 'strong' ? 1.15 : 1.1}); }
+          60% { transform: scale(1); }
+        }
+        @keyframes widget-ring-ripple {
+          0% { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(${effectIntensity === 'subtle' ? 1.6 : effectIntensity === 'strong' ? 2.2 : 1.8}); opacity: 0; }
+        }
+      `}</style>
+
       {/* Floating Button */}
       {!isOpen && !isClosing && (
-        <button
-          onClick={() => {
-            setShowAttentionBounce(false);
-            setIsOpen(true);
-          }}
-          className={cn(
-            "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto shadow-lg",
-            showAttentionBounce && "animate-attention-bounce"
+        <div className="relative pointer-events-auto">
+          {/* Ring ripple effect */}
+          {ringActive && effectType === 'ring' && (
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: `color-mix(in srgb, ${primaryColor} 40%, transparent)`,
+                animation: 'widget-ring-ripple 1.2s ease-out forwards',
+              }}
+            />
           )}
-          onAnimationEnd={() => setShowAttentionBounce(false)}
-          style={{ 
-            background: 'var(--widget-primary)', 
-            borderRadius: buttonRadius,
-            width: `${currentSize.button}px`,
-            height: `${currentSize.button}px`,
-            color: textColor,
-            border: `2px solid color-mix(in srgb, ${primaryColor} 70%, white 30%)`,
-            boxSizing: 'border-box',
-          }}
-        >
-          <WidgetIconComponent className={cn(
-            widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
-          )} />
-        </button>
+          <button
+            onClick={() => {
+              setShowAttentionBounce(false);
+              setIsOpen(true);
+            }}
+            className={cn(
+              "flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg",
+              showAttentionBounce && "animate-attention-bounce"
+            )}
+            onAnimationEnd={() => setShowAttentionBounce(false)}
+            style={{ 
+              background: 'var(--widget-primary)', 
+              borderRadius: buttonRadius,
+              width: `${currentSize.button}px`,
+              height: `${currentSize.button}px`,
+              color: textColor,
+              border: `2px solid color-mix(in srgb, ${primaryColor} 70%, white 30%)`,
+              boxSizing: 'border-box',
+              ...getEffectStyle(),
+            }}
+          >
+            <WidgetIconComponent className={cn(
+              widgetSize === 'small' ? 'h-5 w-5' : widgetSize === 'medium' ? 'h-7 w-7' : 'h-8 w-8'
+            )} />
+          </button>
+        </div>
       )}
     </div>
   );
