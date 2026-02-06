@@ -504,8 +504,8 @@ export const ChatWidget = ({
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-border/30 bg-card/80 backdrop-blur-sm">
-                <div className="flex gap-2">
+              <div className="flex-shrink-0 p-3 border-t border-border/30 bg-card/80 backdrop-blur-sm">
+                <div className="flex gap-2 items-center">
                   {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
@@ -519,14 +519,14 @@ export const ChatWidget = ({
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingImage}
-                    className="h-12 w-12 flex-shrink-0 flex items-center justify-center border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background transition-all duration-300 disabled:opacity-50"
+                    className="h-10 w-10 flex-shrink-0 flex items-center justify-center border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background transition-all duration-300 disabled:opacity-50"
                     style={{ borderRadius: buttonRadius }}
                     title="Upload image"
                   >
                     {uploadingImage ? (
-                      <div className="h-5 w-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <ImagePlus className="h-5 w-5" />
+                      <ImagePlus className="h-4 w-4" />
                     )}
                   </button>
                   <input
@@ -536,16 +536,16 @@ export const ChatWidget = ({
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Share what's on your mind..."
-                    className="flex-1 px-5 py-3 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
+                    className="flex-1 min-w-0 px-4 py-2.5 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
                     style={{ borderRadius: `${Math.min(borderRadius, 24)}px` }}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!inputValue.trim()}
-                    className="h-12 w-12 flex-shrink-0 flex items-center justify-center text-white disabled:opacity-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                    className="h-10 w-10 flex-shrink-0 flex items-center justify-center text-white disabled:opacity-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
                     style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
                   >
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4" />
                   </button>
                 </div>
               </div>
