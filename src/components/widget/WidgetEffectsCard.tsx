@@ -231,16 +231,13 @@ export const WidgetEffectsCard = ({
                       />
                     )}
                     <div
-                      className="h-10 w-10 rounded-full flex items-center justify-center shadow-md"
-                      style={{
-                        background: opt.id === 'none' ? 'hsl(var(--muted))' : 'hsl(var(--foreground))',
-                        ...animStyle,
-                      }}
+                      className="h-10 w-10 rounded-full flex items-center justify-center border-2 border-foreground/20 bg-background"
+                      style={animStyle}
                     >
                       {opt.id === 'none' ? (
                         <Ban className="h-4 w-4 text-muted-foreground" />
                       ) : (
-                        <IconComponent className="h-4 w-4" style={{ color: 'hsl(var(--background))' }} />
+                        <IconComponent className="h-4 w-4 text-foreground/70" />
                       )}
                     </div>
                   </div>
