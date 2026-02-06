@@ -271,15 +271,8 @@ const WidgetPreview = () => {
     window.addEventListener('message', function (event) {
       var data = event && event.data;
       if (!data || data.type !== 'scaledbot_widget_resize') return;
-      if (data.fullscreen) {
-        iframe.style.width = '100vw';
-        iframe.style.height = '100vh';
-        iframe.style.bottom = '0';
-        iframe.style.right = '0';
-      } else {
-        if (typeof data.width === 'number') iframe.style.width = data.width + 'px';
-        if (typeof data.height === 'number') iframe.style.height = data.height + 'px';
-      }
+      if (typeof data.width === 'number') iframe.style.width = data.width + 'px';
+      if (typeof data.height === 'number') iframe.style.height = data.height + 'px';
     });
   })();
 </script>` : '// Select a property to generate embed code';
