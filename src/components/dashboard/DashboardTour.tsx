@@ -776,7 +776,16 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           : `[data-tour="${clickTarget}"]`;
         const tabEl = document.querySelector(tabSelector) as HTMLButtonElement;
         if (tabEl) {
-          tabEl.click();
+          // Dispatch a custom event to switch tabs (Radix tabs need controlled state)
+          const tabValue = tabEl.getAttribute('value') || tabEl.getAttribute('data-value');
+          if (tabValue) {
+            window.dispatchEvent(new CustomEvent('tour-switch-tab', { detail: { tab: tabValue } }));
+          } else {
+            // Fallback: try pointer events + click
+            tabEl.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+            tabEl.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
+            tabEl.click();
+          }
           await new Promise(resolve => setTimeout(resolve, 500));
           if (targetNextStep?.target && typeof targetNextStep.target === 'string') {
             let attempts = 0;
