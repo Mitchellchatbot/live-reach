@@ -143,7 +143,7 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                     key={feature.name}
                     className="grid grid-cols-4 border-b border-border/20"
                   >
-                    <div className={cn("p-3 text-sm text-foreground/80 flex items-center", idx % 2 === 0 ? "bg-background/50" : "bg-muted/10")}>
+                    <div className={cn("p-3 text-sm text-foreground/80 flex items-center", "bg-background/50")}>
                       {feature.name}
                     </div>
                     {(['basic', 'professional', 'enterprise'] as const).map((planId) => {
@@ -151,9 +151,9 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                       return (
                         <div key={planId} className={cn(
                           "p-3 text-center flex items-center justify-center",
-                          planId === 'basic' && (idx % 2 === 0 ? "bg-background/50" : "bg-muted/10"),
-                          planId === 'professional' && (idx % 2 === 0 ? "bg-orange-50/80" : "bg-orange-50/50"),
-                          planId === 'enterprise' && (idx % 2 === 0 ? "bg-orange-100/70" : "bg-orange-100/40"),
+                          planId === 'basic' && "bg-background/50",
+                          planId === 'professional' && "bg-orange-50",
+                          planId === 'enterprise' && "bg-orange-100",
                         )}>
                           {value === true ? (
                             <Check className="h-4 w-4 text-primary" />
