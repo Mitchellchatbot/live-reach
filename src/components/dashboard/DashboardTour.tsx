@@ -689,7 +689,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         .eq('user_id', user.id);
     }
     
-    navigate('/dashboard/team');
+    navigate('/dashboard/team?tour=1&tourPhase=team');
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
