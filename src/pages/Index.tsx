@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 import scaledBotLogo from '@/assets/scaled-bot-logo.png';
 
 const features = [
@@ -201,9 +202,17 @@ const FloatingOrb = ({ className, delay = 0 }: { className: string; delay?: numb
   />
 );
 
+const navSections = [
+  { id: 'features', label: 'Features' },
+  { id: 'testimonials', label: 'Testimonials' },
+  { id: 'pricing', label: 'Pricing' },
+  { id: 'contact', label: 'Contact' },
+];
+
 const Index = () => {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -212,6 +221,28 @@ const Index = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // Track which section is in view
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    navSections.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
+        { rootMargin: '-40% 0px -40% 0px', threshold: 0 }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+    return () => observers.forEach(o => o.disconnect());
+  }, []);
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   const getDashboardRoute = () => {
     if (isAgent) return '/conversations';
@@ -257,23 +288,22 @@ const Index = () => {
             </div>
             
             {/* Center Navigation Links */}
-            <div className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1.5 backdrop-blur-sm border border-border/30">
-              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
-                Features
-              </Button>
-              <Button
-                variant="ghost"
-                className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9"
-                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Pricing
-              </Button>
-              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
-                Resources
-              </Button>
-              <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground rounded-full px-5 h-9">
-                Contact
-              </Button>
+             <div className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1.5 backdrop-blur-sm border border-border/30">
+              {navSections.map((section) => (
+                <Button
+                  key={section.id}
+                  variant="ghost"
+                  className={cn(
+                    "font-medium rounded-full px-5 h-9 transition-all",
+                    activeSection === section.id
+                      ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  onClick={() => scrollTo(section.id)}
+                >
+                  {section.label}
+                </Button>
+              ))}
             </div>
 
             {/* Right Auth Actions */}
@@ -497,7 +527,7 @@ const Index = () => {
       </section>
 
       {/* Social Proof / Testimonials */}
-      <section className="relative py-24 overflow-hidden">
+      <section id="testimonials" className="relative py-24 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-6 border border-primary/20">
@@ -543,7 +573,7 @@ const Index = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="relative py-24 overflow-hidden">
+      <section id="features" className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
         
         <div className="container mx-auto px-4 relative">
@@ -657,7 +687,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-32 overflow-hidden">
+      <section id="contact" className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/15 to-orange-500/10" />
         <FloatingOrb className="w-[500px] h-[500px] bg-primary/20 top-[-100px] left-[-100px]" delay={0} />
         <FloatingOrb className="w-[400px] h-[400px] bg-orange-500/15 bottom-[-100px] right-[-100px]" delay={2} />
