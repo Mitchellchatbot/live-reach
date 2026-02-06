@@ -167,7 +167,8 @@ const widgetCodeSteps: Step[] = [
     target: '[data-tour="widget-preview"]',
     content: "This live preview shows exactly how your widget will appear on your website. The chat button in the corner is fully interactive!",
     title: "Live Preview",
-    placement: 'top',
+    placement: 'left',
+    floaterProps: { disableFlip: true },
   },
   {
     target: '[data-tour="salesforce"]',
