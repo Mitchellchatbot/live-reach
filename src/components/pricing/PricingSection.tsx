@@ -137,10 +137,6 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             {/* Category rows */}
             {comparisonCategories.map((category) => (
               <div key={category.name}>
-                {/* Category header */}
-                <div className="bg-muted/30 px-4 py-2 border-b border-border/30">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{category.name}</p>
-                </div>
 
                 {category.features.map((feature, idx) => (
                   <div
