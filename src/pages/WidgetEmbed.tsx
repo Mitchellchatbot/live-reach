@@ -11,6 +11,9 @@ const WidgetEmbed = () => {
   const greeting = searchParams.get('greeting') || 'Hi there! How can I help you today?';
   const borderRadius = parseInt(searchParams.get('borderRadius') || '24', 10);
   const autoOpen = searchParams.get('autoOpen') !== 'false';
+  const effectType = searchParams.get('effectType') || 'none';
+  const effectInterval = parseInt(searchParams.get('effectInterval') || '5', 10);
+  const effectIntensity = searchParams.get('effectIntensity') || 'medium';
 
   // Ensure transparency is maintained (WidgetApp already sets initial styles)
   useEffect(() => {
@@ -53,6 +56,9 @@ const WidgetEmbed = () => {
         isPreview={false}
         autoOpen={autoOpen}
         widgetIcon={widgetIcon}
+        effectType={effectType}
+        effectInterval={effectInterval}
+        effectIntensity={effectIntensity}
       />
     </div>
   );

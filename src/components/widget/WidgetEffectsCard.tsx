@@ -137,17 +137,19 @@ export const WidgetEffectsCard = ({
 
   const IconComponent = widgetIconMap[widgetIcon] || MessageCircle;
 
+  const [initializedFor, setInitializedFor] = useState(propertyId);
   useEffect(() => {
-    setLocalType(effectType);
-    setLocalInterval(effectInterval);
-    setLocalIntensity(effectIntensity);
-    setHasChanges(false);
-  }, [effectType, effectInterval, effectIntensity]);
+    if (propertyId !== initializedFor) {
+      setLocalType(effectType);
+      setLocalInterval(effectInterval);
+      setLocalIntensity(effectIntensity);
+      setHasChanges(false);
+      setInitializedFor(propertyId);
+    }
+  }, [propertyId, effectType, effectInterval, effectIntensity, initializedFor]);
 
   const updateLocal = (type: string, interval: number, intensity: string) => {
-    setHasChanges(
-      type !== effectType || interval !== effectInterval || intensity !== effectIntensity
-    );
+    setHasChanges(true);
     onEffectTypeChange(type);
     onEffectIntervalChange(interval);
     onEffectIntensityChange(intensity);

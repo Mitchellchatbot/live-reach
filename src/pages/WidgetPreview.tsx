@@ -277,6 +277,9 @@ const WidgetPreview = () => {
     widgetIcon: widgetIcon || 'message-circle',
     borderRadius: '24',
     autoOpen: 'true',
+    effectType,
+    effectInterval: String(effectInterval),
+    effectIntensity,
   });
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
 <script>
