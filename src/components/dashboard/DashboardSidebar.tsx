@@ -15,7 +15,8 @@ import {
   Bot,
   Bell,
   Cloud,
-  BookOpen
+  BookOpen,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -265,6 +266,13 @@ export const DashboardSidebar = ({
               <div data-tour="notifications">
                 <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
               </div>
+            </SidebarSection>
+          )}
+
+          {/* Account */}
+          {(isClient || isAdmin) && (
+            <SidebarSection title="Account" collapsed={collapsed}>
+              <SidebarItem to="/dashboard/subscription" icon={CreditCard} label="Subscription" collapsed={collapsed} />
             </SidebarSection>
           )}
 
