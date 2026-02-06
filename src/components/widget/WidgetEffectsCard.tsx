@@ -224,9 +224,8 @@ export const WidgetEffectsCard = ({
                     {/* Ring ripple */}
                     {isDemoing && opt.id === 'ring' && (
                       <div
-                        className="absolute inset-0 rounded-full"
+                        className="absolute inset-0 rounded-full bg-foreground/30"
                         style={{
-                          background: `color-mix(in srgb, ${primaryColor} 40%, transparent)`,
                           animation: `widget-fx-ring-${localIntensity} 1s ease-out forwards`,
                         }}
                       />
@@ -234,14 +233,14 @@ export const WidgetEffectsCard = ({
                     <div
                       className="h-10 w-10 rounded-full flex items-center justify-center shadow-md"
                       style={{
-                        background: opt.id === 'none' ? 'hsl(var(--muted))' : primaryColor,
+                        background: opt.id === 'none' ? 'hsl(var(--muted))' : 'hsl(var(--foreground))',
                         ...animStyle,
                       }}
                     >
                       {opt.id === 'none' ? (
                         <Ban className="h-4 w-4 text-muted-foreground" />
                       ) : (
-                        <IconComponent className="h-4 w-4 text-white" />
+                        <IconComponent className="h-4 w-4" style={{ color: 'hsl(var(--background))' }} />
                       )}
                     </div>
                   </div>
