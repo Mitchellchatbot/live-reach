@@ -226,7 +226,8 @@ const salesforceSteps: Step[] = [
     target: '[data-tour="salesforce-field-mappings"]',
     content: "Map visitor data to Salesforce Lead fields. GCLID mapping lets you track Google Ads conversions directly in Salesforce.",
     title: "Field Mappings",
-    placement: 'top',
+    placement: 'left',
+    floaterProps: { disableFlip: true },
   },
   {
     target: '[data-tour="notifications"]',
