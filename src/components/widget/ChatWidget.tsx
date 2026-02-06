@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, Phone, PhoneOff, Mic, MicOff, Video, VideoOff, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useVideoChat } from '@/hooks/useVideoChat';
 import { useWidgetChat } from '@/hooks/useWidgetChat';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,8 +41,6 @@ export const ChatWidget = ({
   const [isClosing, setIsClosing] = useState(false);
   const [showAttentionBounce, setShowAttentionBounce] = useState(true);
   const [inputValue, setInputValue] = useState('');
-  const [showVideoCall, setShowVideoCall] = useState(false);
-  const [hasIncomingCall, setHasIncomingCall] = useState(false);
   const [leadName, setLeadName] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -83,47 +80,7 @@ export const ChatWidget = ({
   const displayName = currentAiAgent?.name || agentName;
   const displayAvatar = currentAiAgent?.avatar_url || agentAvatar;
 
-  const videoChat = useVideoChat({
-    onCallAccepted: () => {
-      console.log('Video call connected');
-    },
-    onCallEnded: () => {
-      setShowVideoCall(false);
-    },
-  });
 
-  // Simulate incoming call from agent (for demo)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isOpen && !showVideoCall && messages.length > 2) {
-        // Simulate agent initiating a call after some chat activity
-        // In real app, this would come from WebSocket
-      }
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, [isOpen, showVideoCall, messages.length]);
-
-  // Video call handler (currently disabled in UI but kept for future use)
-  const _handleStartVideoCall = async () => {
-    setShowVideoCall(true);
-    await videoChat.initiateCall();
-  };
-
-  const handleAcceptCall = async () => {
-    setHasIncomingCall(false);
-    setShowVideoCall(true);
-    await videoChat.acceptCall();
-  };
-
-  const handleDeclineCall = () => {
-    setHasIncomingCall(false);
-    videoChat.declineCall();
-  };
-
-  const handleEndCall = () => {
-    videoChat.endCall();
-    setShowVideoCall(false);
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -279,166 +236,9 @@ export const ChatWidget = ({
       className={cn("z-50 font-sans pointer-events-none", isPreview ? "relative" : "fixed bottom-4 right-4")}
       style={{ ...widgetStyle, background: 'transparent' }}
     >
-      {/* Incoming Call Notification */}
-      {hasIncomingCall && (
-        <div 
-          className="absolute bottom-20 right-0 w-80 bg-card/95 backdrop-blur-lg shadow-xl border border-border/50 p-5 animate-fade-in pointer-events-auto"
-          style={{ borderRadius: panelRadius }}
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div 
-              className="h-12 w-12 rounded-full flex items-center justify-center animate-breathe"
-              style={{ background: 'var(--widget-primary)' }}
-            >
-              <Video className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <p className="font-semibold text-foreground">{agentName}</p>
-              <p className="text-sm text-muted-foreground">Incoming video call</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleDeclineCall}
-              className="flex-1 h-11 rounded-full bg-destructive/90 hover:bg-destructive text-destructive-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-            >
-              <PhoneOff className="h-4 w-4" />
-              Decline
-            </button>
-            <button
-              onClick={handleAcceptCall}
-              className="flex-1 h-11 rounded-full bg-healing hover:bg-healing/90 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-            >
-              <Phone className="h-4 w-4" />
-              Accept
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Video Call Panel */}
-      {showVideoCall && (
-        <div 
-          className="animate-scale-in mb-4 bg-card/95 backdrop-blur-lg shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
-          style={{ width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` }}
-        >
-          {/* Video Call Header */}
-          <div 
-            className="px-5 py-4 flex items-center justify-between"
-            style={{ background: 'var(--widget-primary)' }}
-          >
-            <div className="flex items-center gap-3">
-              <Video className="h-5 w-5 text-white" />
-              <span className="font-semibold text-white">Video Call</span>
-            </div>
-            <button 
-              onClick={handleEndCall}
-              className="h-9 w-9 rounded-full bg-white/20 hover:bg-destructive flex items-center justify-center transition-all duration-300"
-            >
-              <PhoneOff className="h-4 w-4 text-white" />
-            </button>
-          </div>
-
-          {/* Video Area */}
-          <div className="flex-1 relative bg-gradient-to-br from-muted/30 to-accent/20">
-            {/* Remote Video */}
-            {videoChat.status === 'connected' ? (
-              <video
-                ref={videoChat.remoteVideoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-4">
-                {videoChat.status === 'requesting' && (
-                  <>
-                    <div 
-                      className="h-20 w-20 rounded-full flex items-center justify-center animate-breathe"
-                      style={{ background: 'var(--widget-primary)' }}
-                    >
-                      <Phone className="h-10 w-10 text-white" />
-                    </div>
-                    <p className="text-foreground font-medium">Calling {agentName}...</p>
-                    <p className="text-muted-foreground text-sm">Please wait while we connect you</p>
-                  </>
-                )}
-                {videoChat.status === 'connecting' && (
-                  <>
-                    <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                      <div className="h-10 w-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                    <p className="text-foreground font-medium">Connecting...</p>
-                  </>
-                )}
-                {videoChat.status === 'error' && (
-                  <>
-                    <div className="h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center">
-                      <X className="h-10 w-10 text-destructive" />
-                    </div>
-                    <p className="text-foreground font-medium">Call couldn't connect</p>
-                    <p className="text-muted-foreground text-sm">{videoChat.error}</p>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Local Video PiP */}
-            {(videoChat.status === 'connected' || videoChat.status === 'connecting' || videoChat.status === 'requesting') && (
-              <div 
-                className="absolute bottom-4 right-4 w-28 aspect-video overflow-hidden shadow-lg border-2 border-white/50"
-                style={{ borderRadius: `${Math.min(borderRadius, 16)}px` }}
-              >
-                <video
-                  ref={videoChat.localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={cn("w-full h-full object-cover", videoChat.isVideoOff && "hidden")}
-                />
-                {videoChat.isVideoOff && (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <VideoOff className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Video Controls */}
-          {videoChat.status === 'connected' && (
-            <div className="flex items-center justify-center gap-4 p-5 bg-card/80 backdrop-blur-sm border-t border-border/30">
-              <button
-                onClick={videoChat.toggleMute}
-                className={cn(
-                  "h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300",
-                  videoChat.isMuted ? "bg-destructive text-destructive-foreground" : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                )}
-              >
-                {videoChat.isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-              </button>
-              <button
-                onClick={videoChat.toggleVideo}
-                className={cn(
-                  "h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300",
-                  videoChat.isVideoOff ? "bg-destructive text-destructive-foreground" : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                )}
-              >
-                {videoChat.isVideoOff ? <VideoOff className="h-5 w-5" /> : <Video className="h-5 w-5" />}
-              </button>
-              <button
-                onClick={handleEndCall}
-                className="h-12 w-12 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground flex items-center justify-center transition-all duration-300"
-              >
-                <PhoneOff className="h-5 w-5" />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Chat Panel */}
-      {(isOpen || isClosing) && !showVideoCall && (
+      {(isOpen || isClosing) && (
         <div 
           className={cn(
             "mb-4 bg-card/95 backdrop-blur-lg overflow-hidden flex flex-col pointer-events-auto",
