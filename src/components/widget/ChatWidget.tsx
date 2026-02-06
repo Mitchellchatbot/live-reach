@@ -592,7 +592,7 @@ export const ChatWidget = ({
             width: `${currentSize.button}px`,
             height: `${currentSize.button}px`,
             color: textColor,
-            border: `2px solid color-mix(in srgb, ${primaryColor} 60%, white 40%)`,
+            border: `2px solid color-mix(in srgb, ${primaryColor} 70%, white 30%)`,
             boxSizing: 'border-box',
           }}
         >
