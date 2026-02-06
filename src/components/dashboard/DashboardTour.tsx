@@ -145,6 +145,14 @@ const widgetCodeSteps: Step[] = [
     data: { icon: 'message' },
   },
   {
+    target: '[data-tour="widget-effects-card"]',
+    content: "Add eye-catching animations to your chat launcher button — like pulse, bounce, or wiggle — to grab visitor attention. You can control how often they play and how intense they are.",
+    title: "Launcher Effects",
+    placement: 'left',
+    floaterProps: { disableFlip: true },
+    data: { icon: 'wand' },
+  },
+  {
     target: '[data-tour="widget-embed-tab"]',
     content: "Click this tab to get the code snippet you'll add to your website.",
     title: "Embed Code Tab",
