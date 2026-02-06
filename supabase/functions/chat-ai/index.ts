@@ -11,7 +11,9 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields } = await req.json();
+    const body = await req.json();
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+    const { propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields } = body;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -19,7 +21,15 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Processing chat request with', messages?.length || 0, 'messages');
+    if (messages.length === 0) {
+      console.error('No messages provided');
+      return new Response(JSON.stringify({ error: 'No messages provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Processing chat request with', messages.length, 'messages');
     if (agentName) {
       console.log('Using AI agent:', agentName);
     }
