@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Check, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
+import { Check, ArrowRight, Sparkles, TrendingUp, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -17,16 +17,25 @@ interface PricingSectionProps {
 export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLabel }: PricingSectionProps) => {
   return (
     <div className="space-y-20">
+      {/* No credit card banner */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
+          <CreditCard className="h-4 w-4" />
+          No credit card required — start your free trial instantly
+        </div>
+      </div>
+
       {/* Pricing Cards */}
-      <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto -mt-12">
         {pricingPlans.map((plan) => (
           <div
             key={plan.id}
             className={cn(
-              "relative group rounded-3xl border bg-card/60 backdrop-blur-sm p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 flex flex-col",
-              plan.popular
-                ? "border-primary/50 shadow-xl shadow-primary/10 scale-[1.02]"
-                : "border-border/50 hover:border-primary/30"
+              "relative group rounded-3xl border p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 flex flex-col",
+              plan.highlightClasses
+                ? plan.highlightClasses
+                : "bg-card/60 border-border/50 hover:border-primary/30",
+              plan.popular && "shadow-xl shadow-primary/10 scale-[1.02]"
             )}
           >
             {plan.popular && (
