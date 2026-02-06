@@ -512,6 +512,8 @@ const WidgetPreview = () => {
                 effectType={effectType}
                 effectInterval={effectInterval}
                 effectIntensity={effectIntensity}
+                primaryColor={primaryColor}
+                widgetIcon={widgetIcon}
                 onEffectTypeChange={setEffectType}
                 onEffectIntervalChange={setEffectInterval}
                 onEffectIntensityChange={setEffectIntensity}
