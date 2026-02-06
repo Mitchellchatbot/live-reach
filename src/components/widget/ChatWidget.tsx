@@ -252,7 +252,9 @@ export const ChatWidget = ({
     if (!inIframe) return;
 
     if (!isOpen) {
-      const padding = 32;
+      // Extra padding when effects are active so animations (bounce, pulse, ring) aren't clipped by the iframe
+      const hasEffect = effectType && effectType !== 'none';
+      const padding = hasEffect ? 48 : 32;
       const width = currentSize.button + padding;
       const height = currentSize.button + padding;
       window.parent.postMessage(
@@ -276,7 +278,7 @@ export const ChatWidget = ({
         '*'
       );
     }
-  }, [isOpen, widgetSize, isPreview, isMobileWidget, currentSize.width, currentSize.height, currentSize.button]);
+  }, [isOpen, widgetSize, isPreview, isMobileWidget, currentSize.width, currentSize.height, currentSize.button, effectType]);
 
   // Convert HSL string to ensure compatibility
   const widgetStyle = {
