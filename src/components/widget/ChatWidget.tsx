@@ -35,7 +35,10 @@ export const ChatWidget = ({
   autoOpen = false,
   widgetIcon,
 }: ChatWidgetProps) => {
-  const [isOpen, setIsOpen] = useState(autoOpen);
+  // Detect mobile for auto-open and sizing
+  const isMobileWidget = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const [isOpen, setIsOpen] = useState(autoOpen && !isMobileWidget);
   const [isClosing, setIsClosing] = useState(false);
   const [showAttentionBounce, setShowAttentionBounce] = useState(true);
   const [inputValue, setInputValue] = useState('');
@@ -215,13 +218,18 @@ export const ChatWidget = ({
   const messageRadiusLarge = `${Math.min(borderRadius, 24)}px`;
   const messageRadiusSmall = `${Math.max(borderRadius / 3, 4)}px`;
 
-  // Widget size dimensions
-  const sizeConfig = {
+  // Widget size dimensions — smaller on mobile
+  const desktopSizeConfig = {
     small: { width: 320, height: 440, button: 48 },
     medium: { width: 380, height: 520, button: 56 },
     large: { width: 440, height: 600, button: 64 },
   };
-  const currentSize = sizeConfig[widgetSize];
+  const mobileSizeConfig = {
+    small: { width: 280, height: 380, button: 44 },
+    medium: { width: 320, height: 440, button: 48 },
+    large: { width: 360, height: 500, button: 52 },
+  };
+  const currentSize = isMobileWidget ? mobileSizeConfig[widgetSize] : desktopSizeConfig[widgetSize];
 
   // In preview mode, use viewport-based sizing so it doesn't get squished by parent containers
   const previewPanelStyle: React.CSSProperties = isPreview
