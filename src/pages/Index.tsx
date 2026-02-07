@@ -210,6 +210,7 @@ const navSections = [
   { id: 'integrations', label: 'Integrations' },
   { id: 'testimonials', label: 'Testimonials' },
   { id: 'pricing', label: 'Pricing' },
+  { id: 'resources', label: 'Resources', href: '/documentation' },
   { id: 'contact', label: 'Contact' },
 ];
 
@@ -289,21 +290,32 @@ const Index = () => {
             
             {/* Center Navigation Links - Desktop */}
             <div className="hidden lg:flex items-center gap-0.5 bg-muted/60 rounded-full px-1.5 py-1 border border-border/30">
-              {navSections.map((section) => (
-                <Button
-                  key={section.id}
-                  variant="ghost"
-                  className={cn(
-                    "font-medium rounded-full px-5 h-8 text-sm transition-all duration-200",
-                    activeSection === section.id
-                      ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
-                  )}
-                  onClick={() => scrollTo(section.id)}
-                >
-                  {section.label}
-                </Button>
-              ))}
+              {navSections.map((section) => 
+                section.href ? (
+                  <Link key={section.id} to={section.href}>
+                    <Button
+                      variant="ghost"
+                      className="font-medium rounded-full px-5 h-8 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-transparent"
+                    >
+                      {section.label}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    key={section.id}
+                    variant="ghost"
+                    className={cn(
+                      "font-medium rounded-full px-5 h-8 text-sm transition-all duration-200",
+                      activeSection === section.id
+                        ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-transparent"
+                    )}
+                    onClick={() => scrollTo(section.id)}
+                  >
+                    {section.label}
+                  </Button>
+                )
+              )}
             </div>
 
             {/* Right Auth Actions */}
@@ -348,24 +360,36 @@ const Index = () => {
           {mobileMenuOpen && (
             <div className="lg:hidden border-t border-border/30 py-3 animate-fade-in">
               <div className="flex flex-col gap-1">
-                {navSections.map((section) => (
-                  <Button
-                    key={section.id}
-                    variant="ghost"
-                    className={cn(
-                      "justify-start font-semibold h-11 rounded-xl transition-all",
-                      activeSection === section.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                    onClick={() => {
-                      scrollTo(section.id);
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    {section.label}
-                  </Button>
-                ))}
+                {navSections.map((section) => 
+                  section.href ? (
+                    <Link key={section.id} to={section.href}>
+                      <Button
+                        variant="ghost"
+                        className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {section.label}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      key={section.id}
+                      variant="ghost"
+                      className={cn(
+                        "justify-start font-semibold h-11 rounded-xl transition-all",
+                        activeSection === section.id
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={() => {
+                        scrollTo(section.id);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      {section.label}
+                    </Button>
+                  )
+                )}
                 {user && (
                   <Link to={getDashboardRoute()} className="sm:hidden">
                     <Button variant="ghost" className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground">
