@@ -72,9 +72,9 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
 
             {/* Overflow badge for Enterprise */}
             {plan.overflow && (
-              <div className="mb-6 flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
-                <TrendingUp className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground leading-relaxed">
+              <div className="mb-5 flex items-start gap-1.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <TrendingUp className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-muted-foreground leading-snug">
                   {plan.overflow}
                 </p>
               </div>
