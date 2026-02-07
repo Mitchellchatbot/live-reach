@@ -163,8 +163,8 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                           isPro && "bg-primary/[0.03] border-x border-primary/5",
                         )}>
                           {value === true ? (
-                            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Check className="h-3 w-3 text-primary" />
+                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center shadow-sm shadow-primary/10">
+                              <Check className="h-3.5 w-3.5 text-primary" strokeWidth={3} />
                             </div>
                           ) : value === false ? (
                             <span className="text-muted-foreground/25 text-sm">—</span>
