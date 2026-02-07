@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/care-assist-logo.png';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import slackLogo from '@/assets/logos/slack.svg';
-import calendlyLogo from '@/assets/logos/calendly-logo.png';
+import googleCalendarLogo from '@/assets/logos/google-calendar.svg';
 import gmailLogo from '@/assets/logos/gmail.svg';
 import outlookLogo from '@/assets/logos/outlook.png';
 import googleGLogo from '@/assets/logos/google-g.svg';
@@ -771,12 +771,12 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Calendly */}
+            {/* Google Calendar */}
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006BFF] to-[#0052CC] opacity-60 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4285F4] to-[#34A853] opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
-                <div className="h-14 w-14 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <img src={calendlyLogo} alt="Calendly" className="h-8 w-auto" />
+                <div className="h-14 w-14 rounded-2xl bg-[#4285F4]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <img src={googleCalendarLogo} alt="Google Calendar" className="h-8 w-8" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Calendar</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
