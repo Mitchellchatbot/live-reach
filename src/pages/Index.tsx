@@ -69,10 +69,10 @@ const testimonials = [
 ];
 
 const stats = [
-  { value: 47, suffix: '%', label: 'More Leads Captured', prefix: '+' },
-  { value: 4, suffix: 's', label: 'Avg Response Time', prefix: '<' },
-  { value: 24, suffix: '/7', label: 'Always Available', prefix: '' },
-  { value: 100, suffix: '+', label: 'Treatment Centers', prefix: '' },
+  { value: 47, suffix: '%', label: 'More Leads Captured', prefix: '+', icon: BarChart3 },
+  { value: 4, suffix: 's', label: 'Avg Response Time', prefix: '<', icon: Clock },
+  { value: 24, suffix: '/7', label: 'Always Available', prefix: '', icon: Zap },
+  { value: 100, suffix: '+', label: 'Treatment Centers', prefix: '', icon: Heart },
 ];
 
 // Animated counter hook
@@ -173,15 +173,19 @@ const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.React
 };
 
 // Stat counter component
-const StatCounter = ({ value, suffix, label, prefix }: { value: number; suffix: string; label: string; prefix: string }) => {
+const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: number; suffix: string; label: string; prefix: string; icon: React.ElementType }) => {
   const { count, ref } = useCountUp(value, 2000);
   
   return (
-    <div ref={ref} className="text-center group">
-      <div className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-br from-primary via-primary to-primary/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 inline-block">
+    <div ref={ref} className="group relative bg-card rounded-2xl border border-border/50 p-6 md:p-8 text-center hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-b-full bg-primary/60 group-hover:w-20 group-hover:bg-primary transition-all duration-300" />
+      <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+        <Icon className="h-5 w-5 text-primary" />
+      </div>
+      <div className="text-4xl md:text-5xl font-black text-primary tracking-tight">
         {prefix}{count}{suffix}
       </div>
-      <div className="text-sm md:text-base text-muted-foreground mt-3 font-semibold tracking-wide">
+      <div className="text-sm text-muted-foreground mt-2 font-semibold">
         {label}
       </div>
     </div>
@@ -555,12 +559,14 @@ const Index = () => {
       </section>
 
       {/* Animated Stats Section */}
-      <section className="relative py-12 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.08)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.08)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
-        
+      <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4 relative">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+              Trusted by treatment centers <span className="text-primary">nationwide</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <StatCounter key={index} {...stat} />
             ))}
