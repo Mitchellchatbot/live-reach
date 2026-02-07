@@ -64,16 +64,24 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour, iconCo
       {isActive && (
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-sidebar-primary rounded-full" />
       )}
-      <Icon
+      <div 
         className={cn(
-          "h-5 w-5 flex-shrink-0 transition-all duration-200",
-          !iconColor && (isActive 
-            ? "text-sidebar-primary" 
-            : "text-sidebar-foreground/50 group-hover:text-sidebar-primary group-hover:scale-110"),
-          iconColor && "group-hover:scale-110"
+          "h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-110",
         )}
-        style={iconColor ? { color: iconColor } : undefined}
-      />
+        style={{ 
+          backgroundColor: iconColor ? `${iconColor}18` : 'hsl(var(--sidebar-accent))',
+        }}
+      >
+        <Icon
+          className={cn(
+            "h-[18px] w-[18px] transition-all duration-200",
+            !iconColor && (isActive 
+              ? "text-sidebar-primary" 
+              : "text-sidebar-foreground/50 group-hover:text-sidebar-primary"),
+          )}
+          style={iconColor ? { color: iconColor } : undefined}
+        />
+      </div>
       {!collapsed && (
         <>
           <span className={cn(
@@ -262,10 +270,10 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Integrations" collapsed={collapsed}>
               <div data-tour="salesforce">
-                <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-5 w-5", className)} />} label="Salesforce" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-[18px] w-[18px]", className)} />} label="Salesforce" collapsed={collapsed} iconColor="#00A1E0" />
               </div>
               <div data-tour="notifications">
-                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-5 w-5", className)} />} label="Notifications" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-[18px] w-[18px]", className)} />} label="Notifications" collapsed={collapsed} iconColor="#EA4335" />
               </div>
             </SidebarSection>
           )}
@@ -273,7 +281,7 @@ export const DashboardSidebar = ({
           {/* Account */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Account" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-5 w-5", className)} />} label="Subscription" collapsed={collapsed} />
+              <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-[18px] w-[18px]", className)} />} label="Subscription" collapsed={collapsed} iconColor="#F97316" />
             </SidebarSection>
           )}
 
