@@ -24,6 +24,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import gmailLogo from '@/assets/logos/gmail.svg';
+import careAssistLogo from '@/assets/care-assist-logo.png';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
@@ -170,16 +171,12 @@ export const DashboardSidebar = ({
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <img src={careAssistLogo} alt="Care Assist" className="w-8 h-8 rounded-lg object-contain" />
               <span className="font-bold text-lg text-sidebar-foreground">Care Assist</span>
             </div>
           )}
           {collapsed && (
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img src={careAssistLogo} alt="Care Assist" className="w-10 h-10 rounded-xl object-contain" />
           )}
           {!collapsed && (
             <Tooltip delayDuration={0}>
