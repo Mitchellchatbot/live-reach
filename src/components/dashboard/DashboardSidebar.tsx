@@ -25,6 +25,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import gmailLogo from '@/assets/logos/gmail.svg';
 import careAssistLogo from '@/assets/care-assist-logo.png';
+import subscriptionCardLogo from '@/assets/logos/subscription-card.svg';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
@@ -272,7 +273,7 @@ export const DashboardSidebar = ({
           {/* Account */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Account" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/subscription" icon={CreditCard} label="Subscription" collapsed={collapsed} iconColor="#F97316" />
+              <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-5 w-5", className)} />} label="Subscription" collapsed={collapsed} />
             </SidebarSection>
           )}
 
