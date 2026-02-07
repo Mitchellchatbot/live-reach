@@ -899,36 +899,130 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section id="contact" className="relative py-16 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/15 to-orange-500/10" />
-        <FloatingOrb className="w-[500px] h-[500px] bg-primary/20 top-[-100px] left-[-100px]" delay={0} />
-        <FloatingOrb className="w-[400px] h-[400px] bg-orange-500/15 bottom-[-100px] right-[-100px]" delay={2} />
+      {/* Contact & Scheduling Section */}
+      <section id="contact" className="relative py-16 md:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-muted/50" />
         
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 md:mb-6 tracking-tight">
-              Start Helping More People
-              <span className="block bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent mt-2">Today</span>
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+              Let's Get
+              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Started</span>
             </h2>
-            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto">
-              Join treatment centers across the country converting more leads and helping more people find recovery.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Book a strategy call or send us your details. We'll get back to you within 24 hours.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              <Link to={user ? getDashboardRoute() : '/auth'} className="w-full sm:w-auto">
-                <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-8 md:px-10 h-13 md:h-16 text-base md:text-lg font-bold rounded-2xl group w-full sm:w-auto">
-                  {user ? 'Go to Dashboard' : 'Start 7-Day Free Trial'}
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="gap-2 px-6 md:px-8 h-13 md:h-16 text-base md:text-lg font-bold rounded-2xl border-2 hover:bg-background/80 backdrop-blur-sm w-full sm:w-auto">
-                <Phone className="h-5 w-5" />
-                Schedule Demo
-              </Button>
+          </div>
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-5 md:gap-8 items-stretch">
+            {/* Calendly Placeholder */}
+            <div className="relative bg-card rounded-2xl md:rounded-3xl border border-border/50 shadow-lg overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-border/40">
+                <h3 className="text-xl md:text-2xl font-black text-foreground">Book a Strategy Call</h3>
+                <p className="text-sm text-muted-foreground mt-1">Schedule a free 30-minute consultation</p>
+              </div>
+              <div className="p-6 md:p-8 flex flex-col items-center text-center">
+                <div className="w-20 h-20 rounded-full bg-muted/60 flex items-center justify-center mb-4">
+                  <Calendar className="h-9 w-9 text-muted-foreground" />
+                </div>
+                <p className="text-foreground font-bold text-lg mb-1">Intro Call</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                  <Clock className="h-4 w-4" />
+                  <span>30 min</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-8">
+                  Web conferencing details provided upon confirmation.
+                </p>
+                <div className="w-full border-t border-border/40 pt-6">
+                  <p className="font-bold text-foreground mb-4">Select a Day</p>
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <button className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground">
+                      <ChevronRight className="h-4 w-4 rotate-180" />
+                    </button>
+                    <span className="text-sm font-semibold text-foreground">February 2026</span>
+                    <button className="h-8 w-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
+                    {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
+                      <span key={d} className="py-1 font-semibold">{d}</span>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1 text-sm">
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
+                      <button 
+                        key={day} 
+                        className={cn(
+                          "h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm transition-colors",
+                          day === 10 ? "bg-primary text-primary-foreground font-bold" : "text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-8 font-medium">
-              No credit card required • Setup in 5 minutes • Cancel anytime
-            </p>
+
+            {/* Contact Form */}
+            <div className="relative bg-card rounded-2xl md:rounded-3xl border border-border/50 shadow-lg overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-border/40">
+                <h3 className="text-xl md:text-2xl font-black text-foreground">Get Started Today</h3>
+                <p className="text-sm text-muted-foreground mt-1">No credit card required</p>
+              </div>
+              <div className="p-6 md:p-8">
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Your Name *"
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Email Address *"
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="tel"
+                      placeholder="Phone Number"
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Facility Name"
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <textarea
+                      placeholder="Tell us about your center..."
+                      rows={4}
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm resize-none"
+                    />
+                  </div>
+                  <Button 
+                    type="submit"
+                    size="lg" 
+                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 gap-2 h-13 text-base font-bold rounded-xl"
+                  >
+                    <Send className="h-4 w-4" />
+                    Get My Free Demo
+                  </Button>
+                </form>
+                <p className="text-xs text-muted-foreground mt-4 text-center">
+                  No credit card required • Setup in 5 minutes • Cancel anytime
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
