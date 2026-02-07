@@ -23,7 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
 import salesforceLogo from '@/assets/logos/salesforce.svg';
-import colorfulBellLogo from '@/assets/logos/bell-colorful.svg';
+import gmailLogo from '@/assets/logos/gmail.svg';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
@@ -267,7 +267,7 @@ export const DashboardSidebar = ({
                 <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-5 w-5", className)} />} label="Salesforce" collapsed={collapsed} />
               </div>
               <div data-tour="notifications">
-                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={colorfulBellLogo} alt="Notifications" className={cn("h-5 w-5", className)} />} label="Notifications" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-5 w-5", className)} />} label="Notifications" collapsed={collapsed} />
               </div>
             </SidebarSection>
           )}
