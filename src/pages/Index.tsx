@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X, Mail, Calendar, Hash } from 'lucide-react';
+import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X, Mail, Calendar, Hash, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { PricingSection } from '@/components/pricing/PricingSection';
@@ -672,29 +672,47 @@ const Index = () => {
               Seamless Integrations
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
-              Connects to Your
-              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Existing Stack</span>
+              Never Miss a
+              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Lead Again</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Instantly notify your team, schedule appointments, and capture leads—all automatically.
+              Every lead is instantly pushed to the tools your team already uses—so no opportunity slips through the cracks.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-6xl mx-auto">
+            {/* Salesforce */}
+            <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00A1E0] to-[#1798c1] opacity-60 group-hover:opacity-100 transition-opacity" />
+              <div className="p-5 md:p-7">
+                <div className="h-13 w-13 rounded-2xl bg-[#00A1E0]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Database className="h-6 w-6 text-[#00A1E0]" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">Salesforce</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Export captured leads directly into Salesforce with one click. Full contact details, conversation history, and GCLID tracking included.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">One-click export</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">GCLID tracking</span>
+                </div>
+              </div>
+            </div>
+
             {/* Slack */}
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4A154B] to-[#611f69] opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="p-6 md:p-8">
-                <div className="h-14 w-14 rounded-2xl bg-[#4A154B]/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                  <Hash className="h-7 w-7 text-[#4A154B]" />
+              <div className="p-5 md:p-7">
+                <div className="h-13 w-13 rounded-2xl bg-[#4A154B]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Hash className="h-6 w-6 text-[#4A154B]" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Slack</h3>
-                <p className="text-muted-foreground leading-relaxed mb-5">
-                  Get real-time alerts when visitors start chats or request human help. Never miss a lead.
+                <h3 className="text-lg font-bold text-foreground mb-2">Slack</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Instant Slack alerts the second a new lead comes in or the AI escalates to your team. Stay in the loop 24/7.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Real-time alerts</span>
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Escalations</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Instant alerts</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Escalations</span>
                 </div>
               </div>
             </div>
@@ -702,17 +720,17 @@ const Index = () => {
             {/* Calendly */}
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006BFF] to-[#0052CC] opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="p-6 md:p-8">
-                <div className="h-14 w-14 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                  <Calendar className="h-7 w-7 text-[#006BFF]" />
+              <div className="p-5 md:p-7">
+                <div className="h-13 w-13 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Calendar className="h-6 w-6 text-[#006BFF]" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Calendly</h3>
-                <p className="text-muted-foreground leading-relaxed mb-5">
-                  Let visitors book consultations directly through chat. Automatic scheduling, zero friction.
+                <h3 className="text-lg font-bold text-foreground mb-2">Calendly</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Visitors book consultations directly in chat. No back-and-forth—just automatic scheduling.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Auto-booking</span>
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Reminders</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Auto-booking</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Reminders</span>
                 </div>
               </div>
             </div>
@@ -720,17 +738,17 @@ const Index = () => {
             {/* Email */}
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-orange-500 opacity-60 group-hover:opacity-100 transition-opacity" />
-              <div className="p-6 md:p-8">
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                  <Mail className="h-7 w-7 text-primary" />
+              <div className="p-5 md:p-7">
+                <div className="h-13 w-13 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Mail className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Email</h3>
-                <p className="text-muted-foreground leading-relaxed mb-5">
-                  Receive conversation summaries and lead details straight to your inbox. Stay informed anywhere.
+                <h3 className="text-lg font-bold text-foreground mb-2">Email</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Lead summaries and conversation transcripts delivered straight to your inbox—never lose context.
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Lead alerts</span>
-                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Summaries</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Lead alerts</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Summaries</span>
                 </div>
               </div>
             </div>
