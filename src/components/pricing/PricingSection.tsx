@@ -113,23 +113,26 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
       {/* Comparison Table */}
       {showComparison && (
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-foreground mb-8">
+          <h3 className="text-2xl font-bold text-center text-foreground mb-3">
             Compare Plans in Detail
           </h3>
+          <p className="text-center text-muted-foreground mb-10 text-sm">
+            See exactly what's included in each plan
+          </p>
 
-          <div className="rounded-2xl border border-border/50 overflow-hidden bg-card/60 backdrop-blur-sm">
+          <div className="rounded-2xl border border-border/40 overflow-hidden shadow-lg">
             {/* Table header */}
-            <div className="grid grid-cols-4 border-b border-border/50">
-              <div className="p-4 font-semibold text-foreground text-sm bg-muted/50">Feature</div>
+            <div className="grid grid-cols-4">
+              <div className="p-5 font-semibold text-foreground text-sm bg-muted/30 border-b border-border/40" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
-                  "p-4 text-center",
-                  plan.id === 'basic' && "bg-muted/50",
-                  plan.id === 'professional' && "bg-orange-50",
-                  plan.id === 'enterprise' && "bg-orange-100",
+                  "p-5 text-center border-b",
+                  plan.id === 'basic' && "bg-muted/30 border-border/40",
+                  plan.id === 'professional' && "bg-primary/5 border-primary/10",
+                  plan.id === 'enterprise' && "bg-primary/[0.08] border-primary/15",
                 )}>
-                  <p className="font-bold text-foreground">{plan.name}</p>
-                  <p className="text-xs text-muted-foreground">${plan.price}/mo</p>
+                  <p className="font-bold text-foreground text-lg">{plan.name}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">${plan.price}<span className="text-xs">/mo</span></p>
                 </div>
               ))}
             </div>
@@ -137,30 +140,40 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             {/* Category rows */}
             {comparisonCategories.map((category) => (
               <div key={category.name}>
+                {/* Category header */}
+                <div className="grid grid-cols-4 border-b border-border/30">
+                  <div className="px-5 py-3 col-span-4 bg-muted/20">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{category.name}</p>
+                  </div>
+                </div>
 
                 {category.features.map((feature, idx) => (
                   <div
                     key={feature.name}
-                    className="grid grid-cols-4 border-b border-border/20"
+                    className={cn(
+                      "grid grid-cols-4 border-b border-border/15 transition-colors hover:bg-muted/10",
+                      idx % 2 === 0 ? "bg-background" : "bg-muted/5"
+                    )}
                   >
-                    <div className={cn("p-3 text-sm text-foreground/80 flex items-center", "bg-background/50")}>
+                    <div className="px-5 py-4 text-sm text-foreground/80 flex items-center font-medium">
                       {feature.name}
                     </div>
                     {(['basic', 'professional', 'enterprise'] as const).map((planId) => {
                       const value = feature[planId];
                       return (
                         <div key={planId} className={cn(
-                          "p-3 text-center flex items-center justify-center",
-                          planId === 'basic' && "bg-background/50",
-                          planId === 'professional' && "bg-orange-50",
-                          planId === 'enterprise' && "bg-orange-100",
+                          "px-5 py-4 text-center flex items-center justify-center",
+                          planId === 'professional' && "bg-primary/[0.02]",
+                          planId === 'enterprise' && "bg-primary/[0.04]",
                         )}>
                           {value === true ? (
-                            <Check className="h-4 w-4 text-primary" />
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Check className="h-3.5 w-3.5 text-primary" />
+                            </div>
                           ) : value === false ? (
-                            <span className="text-muted-foreground/40">—</span>
+                            <span className="text-muted-foreground/30 text-lg">—</span>
                           ) : (
-                            <span className="text-sm font-medium text-foreground">{value}</span>
+                            <span className="text-sm font-semibold text-foreground">{value}</span>
                           )}
                         </div>
                       );
@@ -169,6 +182,28 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                 ))}
               </div>
             ))}
+
+            {/* Bottom CTA row */}
+            <div className="grid grid-cols-4 bg-muted/10">
+              <div className="p-5" />
+              {pricingPlans.map((plan) => (
+                <div key={plan.id} className="p-5 flex items-center justify-center">
+                  <Link to={ctaPath}>
+                    <Button
+                      variant={plan.popular ? 'default' : 'outline'}
+                      size="sm"
+                      className={cn(
+                        "rounded-lg gap-1.5 font-semibold",
+                        plan.popular && "bg-gradient-to-r from-primary to-orange-500 text-primary-foreground border-0 shadow-md"
+                      )}
+                    >
+                      {ctaLabel || 'Get Started'}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
