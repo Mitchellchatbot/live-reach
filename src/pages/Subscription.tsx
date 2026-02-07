@@ -47,12 +47,12 @@ const Subscription = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-foreground text-lg">Add Another Property</h3>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Your first property is free. Each additional property is <span className="font-bold text-foreground">$100/month</span>.
+                  Your first property is free. Each additional property is <span className="font-bold text-foreground">$97/month</span>.
                     Choose a plan below or connect payments to get started.
                   </p>
                 </div>
                 <Badge variant="outline" className="border-primary text-primary bg-primary/10 shrink-0 text-sm px-3 py-1">
-                  $100/property
+                  $97/property
                 </Badge>
               </CardContent>
             </Card>
