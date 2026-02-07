@@ -446,7 +446,7 @@ const Index = () => {
               </h1>
               
               <p className="mt-5 md:mt-8 text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 font-light">
-                AI chat that engages visitors <span className="text-foreground font-bold">24/7</span>, captures leads naturally, and alerts your team—staying{' '}
+                AI chat that engages visitors <span className="text-primary font-bold">24/7</span>, captures leads naturally, and alerts your team—staying{' '}
                 <span className="relative inline-block">
                   <span className="text-primary font-bold">HIPAA compliant</span>
                   <span className="absolute -bottom-1 left-0 right-0 h-[3px] bg-primary/30 rounded-full" />
