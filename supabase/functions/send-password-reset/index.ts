@@ -73,6 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "Care Assist <noreply@care-assist.io>",
+      reply_to: "support@care-assist.io",
       to: [email],
       subject: "Reset your password",
       html: `
