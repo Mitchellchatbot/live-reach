@@ -56,6 +56,7 @@ const DocPage = lazy(() => import("./pages/docs/DocPage"));
 const WidgetEmbed = lazy(() => import("./pages/WidgetEmbed"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Demo = lazy(() => import("./pages/Demo"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -111,6 +112,7 @@ const AppRoutes = () => {
         <Route path="/" element={<Index />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/conversations" element={<RequireAgent><AgentDashboard /></RequireAgent>} />
         <Route path="/onboarding" element={<Onboarding />} />
