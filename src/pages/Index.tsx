@@ -6,7 +6,7 @@ import { ChatWidget } from '@/components/widget/ChatWidget';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import scaledBotLogo from '@/assets/scaled-bot-logo.png';
+import careAssistLogo from '@/assets/care-assist-logo.png';
 
 const features = [
   {
@@ -277,10 +277,8 @@ const Index = () => {
       <nav className="relative bg-background/90 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex h-16 md:h-[68px] items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-                <MessageSquare className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
-              </div>
+            <div className="flex items-center gap-2">
+              <img src={careAssistLogo} alt="Care Assist" className="h-9 w-9 md:h-10 md:w-10 rounded-xl object-contain" />
               <span className="font-extrabold text-lg md:text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             
