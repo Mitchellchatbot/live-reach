@@ -84,7 +84,9 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             <ul className="space-y-3 mb-8 flex-1">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
-                  <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5 flex-shrink-0 shadow-sm shadow-primary/10">
+                    <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                  </div>
                   <span className="text-sm text-muted-foreground">{feature}</span>
                 </li>
               ))}
@@ -129,8 +131,8 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                   "p-4 md:p-5 text-center",
                   plan.popular && "bg-primary/5 border-x border-primary/10",
                 )}>
-                  <p className="font-bold text-foreground">{plan.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">${plan.price}<span>/mo</span></p>
+                  <p className="font-extrabold text-lg text-foreground">{plan.name}</p>
+                  <p className="text-sm font-bold text-primary mt-0.5">${plan.price}<span className="text-muted-foreground font-medium text-xs">/mo</span></p>
                 </div>
               ))}
             </div>
@@ -139,8 +141,8 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             {comparisonCategories.map((category) => (
               <div key={category.name}>
                 {/* Category header */}
-                <div className="px-4 md:px-5 py-2.5 bg-muted/40 border-b border-border/30">
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{category.name}</p>
+                <div className="px-4 md:px-5 py-3 bg-muted/50 border-b border-border/30">
+                  <p className="text-xs font-extrabold text-foreground/70 uppercase tracking-widest">{category.name}</p>
                 </div>
 
                 {category.features.map((feature, idx) => (
@@ -163,8 +165,8 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                           isPro && "bg-primary/[0.03] border-x border-primary/5",
                         )}>
                           {value === true ? (
-                          <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center shadow-sm shadow-primary/10">
-                              <Check className="h-3.5 w-3.5 text-primary" strokeWidth={3} />
+                          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center shadow-sm shadow-primary/15 ring-1 ring-primary/15">
+                              <Check className="h-4 w-4 text-primary" strokeWidth={3} />
                             </div>
                           ) : value === false ? (
                             <span className="text-muted-foreground/25 text-sm">—</span>
