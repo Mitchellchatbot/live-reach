@@ -12,6 +12,12 @@ import slackLogo from '@/assets/logos/slack.svg';
 import calendlyLogo from '@/assets/logos/calendly-logo.png';
 import gmailLogo from '@/assets/logos/gmail.svg';
 import outlookLogo from '@/assets/logos/outlook.png';
+import googleGLogo from '@/assets/logos/google-g.svg';
+import sarahHeadshot from '@/assets/testimonials/sarah.jpg';
+import michaelHeadshot from '@/assets/testimonials/michael.jpg';
+import jenniferHeadshot from '@/assets/testimonials/jennifer.jpg';
+
+const testimonialHeadshots = [sarahHeadshot, michaelHeadshot, jenniferHeadshot];
 
 const features = [
   {
@@ -53,7 +59,7 @@ const testimonials = [
     role: "Admissions Director",
     facility: "Recovery First Center",
     rating: 5,
-    image: "SM",
+    timeAgo: "2 weeks ago",
   },
   {
     quote: "The AI handles after-hours inquiries with real empathy. Families feel heard immediately.",
@@ -61,7 +67,7 @@ const testimonials = [
     role: "CEO",
     facility: "Serenity Treatment",
     rating: 5,
-    image: "MR",
+    timeAgo: "1 month ago",
   },
   {
     quote: "Our admissions increased 47% in the first quarter. Game changer for our center.",
@@ -69,7 +75,7 @@ const testimonials = [
     role: "Marketing Director",
     facility: "New Horizons Recovery",
     rating: 5,
-    image: "JL",
+    timeAgo: "3 weeks ago",
   },
 ];
 
@@ -620,25 +626,38 @@ const Index = () => {
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="group relative bg-card/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+                className="group relative bg-card p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
               >
                 {/* Glow on hover */}
                 <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
                 
                 <div className="relative">
-                  <div className="flex gap-1 mb-6">
+                  {/* Google Review header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <img src={googleGLogo} alt="Google" className="h-6 w-6" />
+                    <span className="text-xs text-muted-foreground">{testimonial.timeAgo}</span>
+                  </div>
+
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-primary fill-primary" />
+                      <Star key={i} className="h-4 w-4 text-[#FBBC04] fill-[#FBBC04]" />
                     ))}
                   </div>
-                  <p className="text-foreground text-lg leading-relaxed mb-8 font-medium">"{testimonial.quote}"</p>
-                  <div className="flex items-center gap-4 pt-6 border-t border-border/50">
-                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center ring-4 ring-primary/20 shadow-lg">
-                      <span className="text-base font-bold text-white">{testimonial.image}</span>
-                    </div>
+
+                  {/* Quote */}
+                  <p className="text-foreground text-base leading-relaxed mb-6 font-medium">"{testimonial.quote}"</p>
+
+                  {/* Author with headshot */}
+                  <div className="flex items-center gap-3 pt-5 border-t border-border/50">
+                    <img 
+                      src={testimonialHeadshots[index]} 
+                      alt={testimonial.author}
+                      className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
+                    />
                     <div>
-                      <p className="font-bold text-foreground text-lg">{testimonial.author}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
+                      <p className="font-bold text-foreground">{testimonial.author}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
                     </div>
                   </div>
                 </div>
