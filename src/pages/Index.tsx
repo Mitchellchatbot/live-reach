@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight } from 'lucide-react';
+import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { PricingSection } from '@/components/pricing/PricingSection';
@@ -184,7 +184,7 @@ const StatCounter = ({ value, suffix, label, prefix }: { value: number; suffix: 
   
   return (
     <div ref={ref} className="text-center group">
-      <div className="text-5xl md:text-6xl lg:text-7xl font-black bg-gradient-to-br from-primary via-primary to-primary/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 inline-block">
+      <div className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-br from-primary via-primary to-primary/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-500 inline-block">
         {prefix}{count}{suffix}
       </div>
       <div className="text-sm md:text-base text-muted-foreground mt-3 font-semibold tracking-wide">
@@ -213,6 +213,7 @@ const Index = () => {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -274,30 +275,30 @@ const Index = () => {
       />
       
       {/* Navigation */}
-      <nav className="relative bg-background/60 backdrop-blur-2xl sticky top-0 z-50 border-b border-border/30">
+      <nav className="relative bg-background/80 backdrop-blur-2xl sticky top-0 z-50 border-b border-primary/10 shadow-lg shadow-primary/5">
         <div className="container mx-auto px-4">
-          <div className="flex h-18 items-center justify-between py-4">
-            <div className="flex items-center gap-3">
+          <div className="flex h-16 md:h-18 items-center justify-between">
+            <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
-                <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/30">
-                  <MessageSquare className="h-5 w-5 text-primary-foreground" />
+                <div className="absolute inset-0 bg-primary/40 blur-xl rounded-full" />
+                <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-lg shadow-primary/40">
+                  <MessageSquare className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
                 </div>
               </div>
-              <span className="font-bold text-xl tracking-tight text-foreground">Care Assist</span>
+              <span className="font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">Care Assist</span>
             </div>
             
-            {/* Center Navigation Links */}
-             <div className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1.5 backdrop-blur-sm border border-border/30">
+            {/* Center Navigation Links - Desktop */}
+            <div className="hidden lg:flex items-center gap-1 bg-foreground/5 rounded-full px-2 py-1.5 backdrop-blur-sm border border-border/40 shadow-inner">
               {navSections.map((section) => (
                 <Button
                   key={section.id}
                   variant="ghost"
                   className={cn(
-                    "font-medium rounded-full px-5 h-9 transition-all",
+                    "font-semibold rounded-full px-5 h-9 transition-all duration-300",
                     activeSection === section.id
-                      ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-gradient-to-r from-primary to-orange-500 text-primary-foreground shadow-md shadow-primary/30 hover:opacity-90 hover:text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                   )}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -307,54 +308,105 @@ const Index = () => {
             </div>
 
             {/* Right Auth Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               {user ? (
                 <>
-                  <Link to={getDashboardRoute()}>
-                    <Button variant="ghost" className="font-medium text-foreground">Dashboard</Button>
+                  <Link to={getDashboardRoute()} className="hidden sm:block">
+                    <Button variant="ghost" className="font-semibold text-foreground">Dashboard</Button>
                   </Link>
-                  <Button variant="outline" onClick={signOut} className="font-medium rounded-full px-5">
+                  <Button variant="outline" onClick={signOut} className="font-semibold rounded-full px-4 md:px-5 text-sm">
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <>
-                  <Link to="/auth">
-                    <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground hidden sm:inline-flex">Login</Button>
+                  <Link to="/auth" className="hidden sm:block">
+                    <Button variant="ghost" className="font-semibold text-muted-foreground hover:text-foreground">Login</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 font-semibold px-6 rounded-full h-10 group">
-                      Start Free
+                    <Button className="bg-gradient-to-r from-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/30 font-bold px-4 md:px-6 rounded-full h-9 md:h-10 text-sm group">
+                      <span className="hidden sm:inline">Start Free</span>
+                      <span className="sm:hidden">Start</span>
                       <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
                     </Button>
                   </Link>
                 </>
               )}
+              
+              {/* Mobile Menu Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden h-9 w-9"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
+          
+          {/* Mobile Navigation Dropdown */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden border-t border-border/30 py-3 animate-fade-in">
+              <div className="flex flex-col gap-1">
+                {navSections.map((section) => (
+                  <Button
+                    key={section.id}
+                    variant="ghost"
+                    className={cn(
+                      "justify-start font-semibold h-11 rounded-xl transition-all",
+                      activeSection === section.id
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={() => {
+                      scrollTo(section.id);
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    {section.label}
+                  </Button>
+                ))}
+                {user && (
+                  <Link to={getDashboardRoute()} className="sm:hidden">
+                    <Button variant="ghost" className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground">
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                {!user && (
+                  <Link to="/auth" className="sm:hidden">
+                    <Button variant="ghost" className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground">
+                      Login
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 lg:pt-28 lg:pb-40 overflow-hidden">
+      <section className="relative pt-12 pb-16 md:pt-20 md:pb-32 lg:pt-28 lg:pb-40 overflow-hidden">
         <div className="container mx-auto px-4 relative">
           {/* Announcement Banner */}
-          <div className="flex justify-center mb-10">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-primary/10 via-accent/50 to-primary/10 backdrop-blur-sm border border-primary/20 rounded-full pl-2 pr-5 py-1.5 text-sm font-medium text-foreground shadow-lg shadow-primary/5 animate-fade-in hover:scale-105 transition-transform cursor-pointer group">
-              <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+          <div className="flex justify-center mb-6 md:mb-10">
+            <div className="inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-primary/10 via-accent/50 to-primary/10 backdrop-blur-sm border border-primary/20 rounded-full pl-2 pr-3 md:pr-5 py-1.5 text-xs md:text-sm font-medium text-foreground shadow-lg shadow-primary/5 animate-fade-in hover:scale-105 transition-transform cursor-pointer group">
+              <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-2.5 md:px-3 py-1 rounded-full shadow-sm">
                 NEW
               </span>
               <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                 AI-powered crisis detection now available
               </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
             </div>
           </div>
           
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.05] tracking-tight">
                 <span className="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                   Never lose
                 </span>
@@ -364,7 +416,7 @@ const Index = () => {
                 </span>
               </h1>
               
-              <p className="mt-8 text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
+              <p className="mt-5 md:mt-8 text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
                 AI chat that engages visitors <span className="text-foreground font-semibold">24/7</span>, captures leads naturally, and alerts your team—staying <span className="text-primary font-semibold">HIPAA compliant</span>.
               </p>
               
@@ -387,32 +439,32 @@ const Index = () => {
               </div>
 
               {/* CTA Buttons */}
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                <Link to="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-8 h-14 text-lg font-bold rounded-2xl w-full sm:w-auto group transition-all duration-300 hover:shadow-3xl hover:shadow-primary/40 hover:-translate-y-1">
+              <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <Link to="/auth" className="w-full sm:w-auto">
+                  <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold rounded-2xl w-full sm:w-auto group transition-all duration-300 hover:shadow-3xl hover:shadow-primary/40 hover:-translate-y-1">
                     Start Free Trial
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/widget-preview">
-                  <Button size="lg" variant="outline" className="gap-2 px-8 h-14 text-lg font-bold rounded-2xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 w-full sm:w-auto group transition-all duration-300 backdrop-blur-sm">
+                <Link to="/widget-preview" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="gap-2 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold rounded-2xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 w-full sm:w-auto group transition-all duration-300 backdrop-blur-sm">
                     <Play className="h-5 w-5 group-hover:scale-110 transition-transform text-primary" />
                     Watch Demo
                   </Button>
                 </Link>
               </div>
               
-              <p className="mt-6 text-sm text-muted-foreground font-medium animate-fade-in flex items-center gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.6s' }}>
+              <p className="mt-5 md:mt-6 text-xs md:text-sm text-muted-foreground font-medium animate-fade-in flex flex-wrap items-center gap-3 md:gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.6s' }}>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
                   Free 7-day trial
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
                   No credit card
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
                   5 min setup
                 </span>
               </p>
@@ -513,7 +565,7 @@ const Index = () => {
       </section>
 
       {/* Animated Stats Section */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-12 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.08)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.08)_1px,transparent_1px)] bg-[size:3rem_3rem]" />
         
@@ -527,24 +579,24 @@ const Index = () => {
       </section>
 
       {/* Social Proof / Testimonials */}
-      <section id="testimonials" className="relative py-24 overflow-hidden">
+      <section id="testimonials" className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-6 border border-primary/20">
-              <Star className="h-4 w-4 fill-primary" />
+          <div className="text-center mb-10 md:mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
+              <Star className="h-3.5 w-3.5 md:h-4 md:w-4 fill-primary" />
               Trusted by 100+ Treatment Centers
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
               Real Results from
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Real Centers</span>
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="group relative bg-card/80 backdrop-blur-sm p-8 rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+                className="group relative bg-card/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
               >
                 {/* Glow on hover */}
                 <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
@@ -573,16 +625,16 @@ const Index = () => {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="relative py-24 overflow-hidden">
+      <section id="features" className="relative py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
         
         <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold mb-6 border border-primary/20">
-              <Sparkles className="h-4 w-4" />
+          <div className="text-center mb-10 md:mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
+              <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
               Purpose-Built Features
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
               Built for
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Behavioral Health</span>
             </h2>
@@ -591,11 +643,11 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="group relative bg-card/60 backdrop-blur-sm p-8 rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
+                className="group relative bg-card/60 backdrop-blur-sm p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
               >
                 {/* Background gradient on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
@@ -614,18 +666,18 @@ const Index = () => {
       </section>
 
       {/* Problem / Solution */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center">
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-red-500/10 to-transparent rounded-3xl blur-2xl" />
-                <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-10 border border-red-500/20 shadow-xl">
+                <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-10 border border-red-500/20 shadow-xl">
                   <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
                     <Clock className="h-4 w-4" />
                     The Problem
                   </div>
-                  <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 md:mb-6 tracking-tight">
                     Every Minute Matters
                   </h3>
                   <div className="space-y-4 text-lg text-muted-foreground">
@@ -644,12 +696,12 @@ const Index = () => {
               
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-green-500/10 to-transparent rounded-3xl blur-2xl" />
-                <div className="relative bg-card/80 backdrop-blur-sm rounded-3xl p-10 border border-green-500/20 shadow-xl">
+                <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-10 border border-green-500/20 shadow-xl">
                   <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
                     <Heart className="h-4 w-4" />
                     The Solution
                   </div>
-                  <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-6 tracking-tight">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 md:mb-6 tracking-tight">
                     Instant, Empathetic Response
                   </h3>
                   <div className="space-y-4 text-lg text-muted-foreground">
@@ -671,10 +723,10 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative py-32 overflow-hidden">
+      <section id="pricing" className="relative py-16 md:py-32 overflow-hidden">
         <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
               Simple,
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Transparent Pricing</span>
             </h2>
@@ -687,28 +739,28 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section id="contact" className="relative py-32 overflow-hidden">
+      <section id="contact" className="relative py-16 md:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/15 to-orange-500/10" />
         <FloatingOrb className="w-[500px] h-[500px] bg-primary/20 top-[-100px] left-[-100px]" delay={0} />
         <FloatingOrb className="w-[400px] h-[400px] bg-orange-500/15 bottom-[-100px] right-[-100px]" delay={2} />
         
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground mb-6 tracking-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 md:mb-6 tracking-tight">
               Start Helping More People
               <span className="block bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent mt-2">Today</span>
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto">
               Join treatment centers across the country converting more leads and helping more people find recovery.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={user ? getDashboardRoute() : '/auth'}>
-                <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-10 h-16 text-lg font-bold rounded-2xl group">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+              <Link to={user ? getDashboardRoute() : '/auth'} className="w-full sm:w-auto">
+                <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-8 md:px-10 h-13 md:h-16 text-base md:text-lg font-bold rounded-2xl group w-full sm:w-auto">
                   {user ? 'Go to Dashboard' : 'Start 7-Day Free Trial'}
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="gap-2 px-8 h-16 text-lg font-bold rounded-2xl border-2 hover:bg-background/80 backdrop-blur-sm">
+              <Button size="lg" variant="outline" className="gap-2 px-6 md:px-8 h-13 md:h-16 text-base md:text-lg font-bold rounded-2xl border-2 hover:bg-background/80 backdrop-blur-sm w-full sm:w-auto">
                 <Phone className="h-5 w-5" />
                 Schedule Demo
               </Button>
