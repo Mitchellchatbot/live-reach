@@ -188,15 +188,14 @@ const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: numb
   const { count, ref } = useCountUp(value, 2000);
   
   return (
-    <div ref={ref} className="group relative bg-card rounded-2xl border border-border/50 p-6 md:p-8 text-center hover:border-primary/30 hover:shadow-lg transition-all duration-300">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-b-full bg-primary/60 group-hover:w-20 group-hover:bg-primary transition-all duration-300" />
-      <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-        <Icon className="h-5 w-5 text-primary" />
+    <div ref={ref} className="group relative flex flex-col items-center text-center px-4 py-6">
+      <div className="mb-4 h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center ring-1 ring-primary/10 group-hover:ring-primary/25 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-500">
+        <Icon className="h-5.5 w-5.5 text-primary" />
       </div>
-      <div className="text-4xl md:text-5xl font-black text-primary tracking-tight">
+      <div className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-b from-primary to-primary/80 bg-clip-text text-transparent tracking-tighter leading-none">
         {prefix}{count}{suffix}
       </div>
-      <div className="text-sm text-muted-foreground mt-2 font-semibold">
+      <div className="text-sm md:text-base text-muted-foreground mt-2.5 font-semibold tracking-wide">
         {label}
       </div>
     </div>
@@ -601,10 +600,12 @@ const Index = () => {
               Trusted by treatment centers <span className="text-primary">nationwide</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 max-w-5xl mx-auto">
-            {stats.map((stat, index) => (
-              <StatCounter key={index} {...stat} />
-            ))}
+          <div className="max-w-5xl mx-auto bg-card/50 backdrop-blur-sm rounded-3xl border border-border/40 p-4 md:p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/40">
+              {stats.map((stat, index) => (
+                <StatCounter key={index} {...stat} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
