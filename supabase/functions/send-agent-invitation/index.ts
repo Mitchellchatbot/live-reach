@@ -64,7 +64,7 @@ serve(async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "Scaled Bot <onboarding@resend.dev>",
+        from: "Care Assist <onboarding@resend.dev>",
         to: [agentEmail],
         subject: `${inviterName} invited you to join their team on Scaled Bot`,
         html: `

@@ -72,8 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending branded password reset email to ${email}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Care Assist <noreply@care-assist.io>",
-      reply_to: "support@care-assist.io",
+      from: "Care Assist <onboarding@resend.dev>",
       to: [email],
       subject: "Reset your password",
       html: `
