@@ -30,7 +30,7 @@ const personaNames: Record<string, string> = {
   daniel: 'Daniel',
 };
 
-type OnboardingStep = 1 | 'extracting' | 'confirm' | 2 | 3 | 4 | 5 | 'complete';
+type OnboardingStep = 1 | 'extracting' | 'confirm' | 2 | 3 | 'complete';
 
 interface ExtractedInfo {
   companyName: string | null;
@@ -426,7 +426,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       extractWebsiteInfo();
     } else if (step === 'confirm') {
       setStep(2);
-    } else if (step === 5) {
+    } else if (step === 3) {
       handleComplete();
     } else if (typeof step === 'number') {
       setStep((step + 1) as OnboardingStep);
@@ -436,12 +436,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
   const prevStep = () => {
     if (step === 'confirm') {
       setStep(1);
-    } else if (typeof step === 'number' && step > 1) {
-      if (step === 2) {
-        setStep('confirm');
-      } else {
-        setStep((step - 1) as OnboardingStep);
-      }
+    } else if (step === 2) {
+      setStep('confirm');
+    } else if (step === 3) {
+      setStep(2);
     }
   };
 
@@ -511,7 +509,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       {/* Progress dots */}
       {step !== 'complete' && step !== 'extracting' && (
         <div className="flex justify-center gap-2 py-4">
-          {[1, 2, 3, 4, 5].map((s) => {
+          {[1, 2, 3].map((s) => {
             // Map current step to progress number
             const currentProgress = step === 'confirm' ? 1 : (typeof step === 'number' ? step : 1);
             return (
@@ -662,131 +660,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             </div>
           )}
 
-          {/* Step 2: Welcome Message */}
+          {/* Step 2: Create Your AI Persona */}
           {step === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center space-y-2">
-                <h1 className="text-2xl font-semibold text-foreground">How should your bot greet visitors?</h1>
-                <p className="text-muted-foreground">This is the first message they'll see</p>
-              </div>
-
-              {/* AI-generated greeting notice */}
-              {data.extractedInfo && data.greetingPreset === null && (
-                <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 border border-primary/20 flex items-start gap-2">
-                  <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-sm text-foreground/80">
-                    <span className="font-medium">Suggested for your website</span> — we generated this greeting based on your business. Feel free to edit!
-                  </p>
-                </div>
-              )}
-              
-              <Textarea
-                value={data.greeting}
-                onChange={(e) => {
-                  const newValue = e.target.value;
-                  const matchingPreset = greetingPresets.find(p => p.value === newValue);
-                  setData({ 
-                    ...data, 
-                    greeting: newValue,
-                    greetingPreset: matchingPreset ? matchingPreset.label : null
-                  });
-                }}
-                className="min-h-[100px] text-base"
-                placeholder="Hi there! How can we help you today?"
-              />
-
-              <div className="flex flex-wrap gap-2 justify-center">
-                {greetingPresets.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    variant={data.greetingPreset === preset.label ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setData({ ...data, greeting: preset.value, greetingPreset: preset.label })}
-                    className="text-xs"
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
-
-              <div className="space-y-3">
-                <Button onClick={nextStep} className="w-full h-12">
-                  Continue
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <button
-                  onClick={nextStep}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Skip
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Lead Capture */}
-          {step === 3 && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center space-y-2">
-                <h1 className="text-2xl font-semibold text-foreground">Collect visitor info</h1>
-                <p className="text-muted-foreground">
-                  Details like name, email, and phone are <span className="text-foreground font-medium">automatically extracted</span> within the first few messages of conversation.
-                </p>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Want to collect info <span className="text-foreground">upfront</span> before the chat starts? Enable these options:
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <ToggleCard
-                  title="Ask for name"
-                  description="Required before chat starts (Recommended)"
-                  checked={data.collectName}
-                  onChange={(checked) => setData({ ...data, collectName: checked })}
-                  recommended
-                />
-                <ToggleCard
-                  title="Ask for phone"
-                  description="Required before chat starts (Recommended)"
-                  checked={data.collectPhone}
-                  onChange={(checked) => setData({ ...data, collectPhone: checked })}
-                  recommended
-                />
-                <ToggleCard
-                  title="Ask for email"
-                  description="Required before chat starts"
-                  checked={data.collectEmail}
-                  onChange={(checked) => setData({ ...data, collectEmail: checked })}
-                />
-              </div>
-
-              <p className="text-xs text-muted-foreground text-center">
-                Treatment details like substance, insurance, and urgency are always extracted automatically from conversations.
-              </p>
-
-              <div className="space-y-3">
-                <Button onClick={nextStep} className="w-full h-12">
-                  Continue
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <button
-                  onClick={() => {
-                    setData({ ...data, collectEmail: false, collectName: false, collectPhone: false });
-                    nextStep();
-                  }}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Skip, just extract from conversation
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Create Your AI Persona */}
-          {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">Create your AI persona</h1>
@@ -910,8 +785,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             </div>
           )}
 
-          {/* Step 5: Widget Icon Selection */}
-          {step === 5 && (
+          {/* Step 3: Widget Icon Selection */}
+          {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
                 <h1 className="text-2xl font-semibold text-foreground">Choose your chat widget style</h1>
