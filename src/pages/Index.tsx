@@ -13,37 +13,31 @@ const features = [
     icon: Shield,
     title: 'Medical-Safe Responses',
     description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
-    gradient: 'from-emerald-500 to-teal-600',
   },
   {
     icon: AlertTriangle,
     title: 'Crisis Detection',
     description: 'Instantly detects crisis keywords and alerts your team for immediate human intervention.',
-    gradient: 'from-amber-500 to-orange-600',
   },
   {
     icon: Brain,
     title: 'Natural Lead Capture',
     description: 'Collects visitor info through natural conversation—name, phone, insurance, and more.',
-    gradient: 'from-violet-500 to-purple-600',
   },
   {
     icon: UserCheck,
     title: 'Qualified Handoffs',
     description: 'Human agents start conversations informed with full context and visitor details.',
-    gradient: 'from-blue-500 to-indigo-600',
   },
   {
     icon: BarChart3,
     title: 'Conversion Analytics',
     description: 'Track chat-to-lead conversion, drop-off points, and peak inquiry times.',
-    gradient: 'from-pink-500 to-rose-600',
   },
   {
     icon: Zap,
     title: 'Salesforce Integration',
     description: 'Export captured leads directly to Salesforce with one click.',
-    gradient: 'from-cyan-500 to-blue-600',
   },
 ];
 
@@ -647,15 +641,12 @@ const Index = () => {
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="group relative bg-card backdrop-blur-sm rounded-2xl border border-border/40 hover:border-primary/30 transition-all duration-400 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+                className="group relative bg-card rounded-2xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
               >
-                {/* Top accent bar */}
-                <div className={`h-1 w-full bg-gradient-to-r ${feature.gradient}`} />
-                
                 <div className="p-5 md:p-6">
                   <div className="flex items-start gap-4">
-                    <div className={`h-11 w-11 shrink-0 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-400`}>
-                      <feature.icon className="h-5 w-5 text-white" />
+                    <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:shadow-md transition-all duration-300">
+                      <feature.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-base font-bold text-foreground mb-1.5">{feature.title}</h3>
