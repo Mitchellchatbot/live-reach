@@ -593,7 +593,7 @@ const Index = () => {
       </section>
 
       {/* Animated Stats Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-8 md:py-12 overflow-hidden">
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-10 md:mb-14">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
