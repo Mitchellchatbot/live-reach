@@ -486,20 +486,21 @@ const Index = () => {
                 </Link>
               </div>
               
-              <p className="mt-5 md:mt-6 text-xs md:text-sm text-muted-foreground font-medium animate-fade-in flex flex-wrap items-center gap-3 md:gap-4 justify-center lg:justify-start" style={{ animationDelay: '0.6s' }}>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
-                  Free 7-day trial
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
-                  No credit card
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
-                  5 min setup
-                </span>
-              </p>
+              <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-2.5 md:gap-3 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                {[
+                  { text: 'Free 7-day trial', icon: '🎁' },
+                  { text: 'No credit card', icon: '💳' },
+                  { text: '5 min setup', icon: '⚡' },
+                ].map((item, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 bg-primary/[0.07] text-primary border border-primary/15 rounded-full px-3.5 py-1.5 text-xs md:text-sm font-semibold shadow-sm"
+                  >
+                    <span className="text-sm">{item.icon}</span>
+                    {item.text}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Right - Animated Chat Mockup */}
