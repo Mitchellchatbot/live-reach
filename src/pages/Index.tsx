@@ -400,17 +400,17 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.05] tracking-tight">
-                <span className="bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.08] tracking-tight">
+                <span className="text-foreground">
                   Never lose
                 </span>
                 <br />
-                <span className="bg-gradient-to-r from-primary via-primary to-orange-500 bg-clip-text text-transparent animate-gradient-x">
+                <span className="text-primary">
                   another lead.
                 </span>
               </h1>
               
-              <p className="mt-5 md:mt-8 text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0 font-medium">
+              <p className="mt-5 md:mt-8 text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
                 AI chat that engages visitors <span className="text-foreground font-semibold">24/7</span>, captures leads naturally, and alerts your team—staying <span className="text-primary font-semibold">HIPAA compliant</span>.
               </p>
               
