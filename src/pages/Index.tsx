@@ -624,47 +624,53 @@ const Index = () => {
             </h2>
           </div>
           
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={index}
-                className="group relative bg-card p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
-              >
-                {/* Glow on hover */}
-                <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
-                
-                <div className="relative">
-                  {/* Google Review header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <img src={googleGLogo} alt="Google" className="h-6 w-6" />
-                    <span className="text-xs text-muted-foreground">{testimonial.timeAgo}</span>
-                  </div>
+          <div className="relative max-w-6xl mx-auto overflow-hidden">
+            {/* Fade edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+            
+            <div className="flex gap-4 md:gap-6 lg:gap-8 animate-slide-testimonials">
+              {[...testimonials, ...testimonials, ...testimonials, ...testimonials].map((testimonial, index) => (
+                <div 
+                  key={index}
+                  className="group relative bg-card p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex-shrink-0 w-[320px] md:w-[380px]"
+                >
+                  {/* Glow on hover */}
+                  <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+                  
+                  <div className="relative">
+                    {/* Google Review header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <img src={googleGLogo} alt="Google" className="h-6 w-6" />
+                      <span className="text-xs text-muted-foreground">{testimonial.timeAgo}</span>
+                    </div>
 
-                  {/* Stars */}
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-[#FBBC04] fill-[#FBBC04]" />
-                    ))}
-                  </div>
+                    {/* Stars */}
+                    <div className="flex gap-0.5 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 text-[#FBBC04] fill-[#FBBC04]" />
+                      ))}
+                    </div>
 
-                  {/* Quote */}
-                  <p className="text-foreground text-base leading-relaxed mb-6 font-medium">"{testimonial.quote}"</p>
+                    {/* Quote */}
+                    <p className="text-foreground text-base leading-relaxed mb-6 font-medium">"{testimonial.quote}"</p>
 
-                  {/* Author with headshot */}
-                  <div className="flex items-center gap-3 pt-5 border-t border-border/50">
-                    <img 
-                      src={testimonialHeadshots[index]} 
-                      alt={testimonial.author}
-                      className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
-                    />
-                    <div>
-                      <p className="font-bold text-foreground">{testimonial.author}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
+                    {/* Author with headshot */}
+                    <div className="flex items-center gap-3 pt-5 border-t border-border/50">
+                      <img 
+                        src={testimonialHeadshots[index % testimonials.length]} 
+                        alt={testimonial.author}
+                        className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
+                      />
+                      <div>
+                        <p className="font-bold text-foreground">{testimonial.author}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
