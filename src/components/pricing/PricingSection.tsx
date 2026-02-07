@@ -120,19 +120,17 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             See exactly what's included in each plan
           </p>
 
-          <div className="rounded-2xl border border-border/40 overflow-hidden shadow-lg">
+          <div className="rounded-2xl border border-border/40 overflow-hidden bg-card shadow-lg">
             {/* Table header */}
-            <div className="grid grid-cols-4">
-              <div className="p-5 font-semibold text-foreground text-sm bg-muted/30 border-b border-border/40" />
+            <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-border/40">
+              <div className="p-4 md:p-5" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
-                  "p-5 text-center border-b",
-                  plan.id === 'basic' && "bg-muted/30 border-border/40",
-                  plan.id === 'professional' && "bg-primary/5 border-primary/10",
-                  plan.id === 'enterprise' && "bg-primary/[0.08] border-primary/15",
+                  "p-4 md:p-5 text-center",
+                  plan.popular && "bg-primary/5 border-x border-primary/10",
                 )}>
-                  <p className="font-bold text-foreground text-lg">{plan.name}</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">${plan.price}<span className="text-xs">/mo</span></p>
+                  <p className="font-bold text-foreground">{plan.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">${plan.price}<span>/mo</span></p>
                 </div>
               ))}
             </div>
@@ -141,37 +139,35 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             {comparisonCategories.map((category) => (
               <div key={category.name}>
                 {/* Category header */}
-                <div className="grid grid-cols-4 border-b border-border/30">
-                  <div className="px-5 py-3 col-span-4 bg-muted/20">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{category.name}</p>
-                  </div>
+                <div className="px-4 md:px-5 py-2.5 bg-muted/40 border-b border-border/30">
+                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">{category.name}</p>
                 </div>
 
                 {category.features.map((feature, idx) => (
                   <div
                     key={feature.name}
                     className={cn(
-                      "grid grid-cols-4 border-b border-border/15 transition-colors hover:bg-muted/10",
-                      idx % 2 === 0 ? "bg-background" : "bg-muted/5"
+                      "grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-border/10 transition-colors hover:bg-muted/10",
+                      idx % 2 !== 0 && "bg-muted/[0.03]"
                     )}
                   >
-                    <div className="px-5 py-4 text-sm text-foreground/80 flex items-center font-medium">
+                    <div className="px-4 md:px-5 py-3 text-sm text-foreground/80 flex items-center font-medium">
                       {feature.name}
                     </div>
                     {(['basic', 'professional', 'enterprise'] as const).map((planId) => {
                       const value = feature[planId];
+                      const isPro = planId === 'professional';
                       return (
                         <div key={planId} className={cn(
-                          "px-5 py-4 text-center flex items-center justify-center",
-                          planId === 'professional' && "bg-primary/[0.02]",
-                          planId === 'enterprise' && "bg-primary/[0.04]",
+                          "px-4 md:px-5 py-3 text-center flex items-center justify-center",
+                          isPro && "bg-primary/[0.03] border-x border-primary/5",
                         )}>
                           {value === true ? (
-                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Check className="h-3.5 w-3.5 text-primary" />
+                            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Check className="h-3 w-3 text-primary" />
                             </div>
                           ) : value === false ? (
-                            <span className="text-muted-foreground/30 text-lg">—</span>
+                            <span className="text-muted-foreground/25 text-sm">—</span>
                           ) : (
                             <span className="text-sm font-semibold text-foreground">{value}</span>
                           )}
@@ -184,21 +180,24 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             ))}
 
             {/* Bottom CTA row */}
-            <div className="grid grid-cols-4 bg-muted/10">
-              <div className="p-5" />
+            <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] bg-muted/20 border-t border-border/30">
+              <div className="p-4" />
               {pricingPlans.map((plan) => (
-                <div key={plan.id} className="p-5 flex items-center justify-center">
+                <div key={plan.id} className={cn(
+                  "p-4 flex items-center justify-center",
+                  plan.popular && "bg-primary/[0.03] border-x border-primary/5",
+                )}>
                   <Link to={ctaPath}>
                     <Button
                       variant={plan.popular ? 'default' : 'outline'}
                       size="sm"
                       className={cn(
-                        "rounded-lg gap-1.5 font-semibold",
+                        "rounded-lg gap-1.5 font-semibold text-xs h-9 px-4",
                         plan.popular && "bg-gradient-to-r from-primary to-orange-500 text-primary-foreground border-0 shadow-md"
                       )}
                     >
                       {ctaLabel || 'Get Started'}
-                      <ArrowRight className="h-3.5 w-3.5" />
+                      <ArrowRight className="h-3 w-3" />
                     </Button>
                   </Link>
                 </div>
