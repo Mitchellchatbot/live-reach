@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/care-assist-logo.png';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -41,6 +41,9 @@ export default function Auth() {
   const [activeTab, setActiveTab] = useState('login');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   
   const { signIn, signUp, user, role, loading } = useAuth();
   const navigate = useNavigate();
@@ -274,6 +277,47 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!forgotPasswordEmail) {
+      toast({
+        title: 'Email Required',
+        description: 'Please enter your email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email: forgotPasswordEmail },
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+      }
+
+      // Always show success to prevent email enumeration
+      setForgotPasswordSent(true);
+      toast({
+        title: 'Check Your Email',
+        description: 'If an account exists with that email, we\'ve sent a password reset link.',
+      });
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      toast({
+        title: 'Error',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    }
+
+    setIsLoading(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/30 to-muted/50">
@@ -372,6 +416,19 @@ export default function Auth() {
                           )}
                         </Button>
                       </div>
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-xs text-muted-foreground hover:text-primary px-0 h-auto py-0"
+                          onClick={() => {
+                            setShowForgotPassword(true);
+                            setForgotPasswordEmail(loginEmail);
+                          }}
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
                     </div>
                     <Button 
                       type="submit" 
@@ -461,6 +518,85 @@ export default function Auth() {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Forgot Password Overlay */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+            <Card className="w-full max-w-[420px] border-border/30 shadow-2xl shadow-primary/[0.06] backdrop-blur-sm bg-card rounded-2xl overflow-hidden page-enter">
+              <CardContent className="p-6">
+                {forgotPasswordSent ? (
+                  <div className="text-center py-4">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-full mb-4">
+                      <Mail className="h-7 w-7 text-primary" />
+                    </div>
+                    <h2 className="text-xl font-bold text-foreground mb-2">Check Your Email</h2>
+                    <p className="text-muted-foreground text-sm mb-6">
+                      If an account exists for <span className="font-medium text-foreground">{forgotPasswordEmail}</span>, we've sent a password reset link.
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setForgotPasswordSent(false);
+                        setForgotPasswordEmail('');
+                      }}
+                      className="w-full h-11 rounded-xl"
+                    >
+                      Back to Sign In
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg"
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setForgotPasswordEmail('');
+                        }}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
+                      <h2 className="text-lg font-bold text-foreground">Reset Password</h2>
+                    </div>
+                    <p className="text-muted-foreground text-sm mb-5">
+                      Enter the email address associated with your account and we'll send you a link to reset your password.
+                    </p>
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="forgot-email" className="text-sm font-medium text-foreground/80">Email</Label>
+                        <Input
+                          id="forgot-email"
+                          type="email"
+                          placeholder="you@example.com"
+                          value={forgotPasswordEmail}
+                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                          required
+                          autoFocus
+                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all placeholder:text-muted-foreground/50"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                            Sending...
+                          </span>
+                        ) : 'Send Reset Link'}
+                      </Button>
+                    </form>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
       </div>
     </div>

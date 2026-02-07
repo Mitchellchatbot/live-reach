@@ -42,5 +42,8 @@ verify_jwt = false
 [functions.send-welcome-email]
 verify_jwt = false
 
+[functions.send-password-reset]
+verify_jwt = false
+
 [functions.sales-chat]
 verify_jwt = false
