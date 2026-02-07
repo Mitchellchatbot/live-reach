@@ -1162,11 +1162,11 @@ const WidgetPreviewDemo = ({
     }
   }, [isOpen]);
 
-  // Reset animation when icon changes
+  // Reset animation when icon changes — close, wait 2s showing the launcher, then reopen
   useEffect(() => {
     setIsOpen(false);
     setShowMessage(false);
-    const timer = setTimeout(() => setIsOpen(true), 300);
+    const timer = setTimeout(() => setIsOpen(true), 2000);
     return () => clearTimeout(timer);
   }, [widgetIcon]);
 
