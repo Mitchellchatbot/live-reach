@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon } from 'lucide-react';
 import gsap from 'gsap';
@@ -490,6 +491,7 @@ const DashboardContent = () => {
           </div>
         </div>
       </div>
+      <FloatingSupportButton />
     </div>;
 };
 const Dashboard = () => <SidebarStateProvider>
