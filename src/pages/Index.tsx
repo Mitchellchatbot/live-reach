@@ -7,6 +7,11 @@ import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/care-assist-logo.png';
+import salesforceLogo from '@/assets/logos/salesforce.svg';
+import slackLogo from '@/assets/logos/slack.svg';
+import calendlyLogo from '@/assets/logos/calendly.svg';
+import gmailLogo from '@/assets/logos/gmail.svg';
+import outlookLogo from '@/assets/logos/outlook.png';
 
 const features = [
   {
@@ -683,8 +688,8 @@ const Index = () => {
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00A1E0] to-[#1798c1] opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
-                <div className="h-13 w-13 rounded-2xl bg-[#00A1E0]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Database className="h-6 w-6 text-[#00A1E0]" />
+                <div className="h-14 w-14 rounded-2xl bg-[#00A1E0]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <img src={salesforceLogo} alt="Salesforce" className="h-8 w-8" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Salesforce</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -701,8 +706,8 @@ const Index = () => {
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4A154B] to-[#611f69] opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
-                <div className="h-13 w-13 rounded-2xl bg-[#4A154B]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Hash className="h-6 w-6 text-[#4A154B]" />
+                <div className="h-14 w-14 rounded-2xl bg-[#4A154B]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <img src={slackLogo} alt="Slack" className="h-8 w-8" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Slack</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -719,8 +724,8 @@ const Index = () => {
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006BFF] to-[#0052CC] opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
-                <div className="h-13 w-13 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Calendar className="h-6 w-6 text-[#006BFF]" />
+                <div className="h-14 w-14 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <img src={calendlyLogo} alt="Calendly" className="h-8 w-8" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Calendly</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -737,12 +742,17 @@ const Index = () => {
             <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-orange-500 opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
-                <div className="h-13 w-13 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Mail className="h-6 w-6 text-primary" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <img src={gmailLogo} alt="Gmail" className="h-7 w-7" />
+                  </div>
+                  <div className="h-14 w-14 rounded-2xl bg-[#0078D4]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <img src={outlookLogo} alt="Outlook" className="h-7 w-7" />
+                  </div>
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Email</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Lead summaries and conversation transcripts delivered straight to your inbox—never lose context.
+                  Lead summaries and conversation transcripts delivered straight to your inbox—Gmail, Outlook, or any provider.
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full">Lead alerts</span>
