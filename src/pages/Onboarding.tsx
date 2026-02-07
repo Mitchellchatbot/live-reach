@@ -506,20 +506,46 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         </div>
       </div>
 
-      {/* Progress dots */}
+      {/* Progress steps */}
       {step !== 'complete' && step !== 'extracting' && (
-        <div className="flex justify-center gap-2 py-4">
-          {[1, 2, 3].map((s) => {
-            // Map current step to progress number
+        <div className="flex justify-center items-center gap-3 py-4">
+          {[
+            { num: 1, label: 'Website' },
+            { num: 2, label: 'AI Agent' },
+            { num: 3, label: 'Widget' },
+          ].map((s, i) => {
             const currentProgress = step === 'confirm' ? 1 : (typeof step === 'number' ? step : 1);
+            const isActive = s.num === currentProgress;
+            const isDone = s.num < currentProgress;
             return (
-              <div
-                key={s}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all duration-300",
-                  s === currentProgress ? "bg-primary w-6" : s < currentProgress ? "bg-primary" : "bg-muted-foreground/30"
+              <div key={s.num} className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-110"
+                        : isDone
+                          ? "bg-primary/20 text-primary"
+                          : "bg-muted text-muted-foreground/50"
+                    )}
+                  >
+                    {isDone ? <Check className="h-3.5 w-3.5" /> : s.num}
+                  </div>
+                  <span className={cn(
+                    "text-xs font-medium transition-colors hidden sm:block",
+                    isActive ? "text-foreground" : isDone ? "text-primary/70" : "text-muted-foreground/50"
+                  )}>
+                    {s.label}
+                  </span>
+                </div>
+                {i < 2 && (
+                  <div className={cn(
+                    "w-8 h-px transition-colors",
+                    isDone ? "bg-primary/40" : "bg-muted-foreground/20"
+                  )} />
                 )}
-              />
+              </div>
             );
           })}
         </div>
@@ -531,38 +557,44 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           {/* Step 1: Website URL */}
           {step === 1 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="text-center space-y-2">
-                <h1 className="text-2xl font-semibold text-foreground">What's your website?</h1>
-                <p className="text-muted-foreground">We'll set up your chat widget for this domain</p>
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
+                  <Globe className="h-8 w-8 text-primary" />
+                </div>
+                <h1 className="text-3xl font-bold text-foreground tracking-tight">What's your website?</h1>
+                <p className="text-muted-foreground text-base">We'll analyze your site and personalize your chat experience</p>
               </div>
               
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="yourwebsite.com"
-                  value={data.websiteUrl}
-                  onChange={(e) => setData({ ...data, websiteUrl: e.target.value })}
-                  className={cn(
-                    "h-12 text-center text-lg",
-                    data.websiteUrl.trim() && !isValidDomain(data.websiteUrl) && "border-destructive focus-visible:ring-destructive"
-                  )}
-                  autoFocus
-                />
+              <div className="space-y-3">
+                <div className="relative">
+                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50" />
+                  <Input
+                    type="text"
+                    placeholder="yourwebsite.com"
+                    value={data.websiteUrl}
+                    onChange={(e) => setData({ ...data, websiteUrl: e.target.value })}
+                    className={cn(
+                      "h-14 pl-12 text-base rounded-xl border-2 bg-card shadow-sm focus:shadow-md transition-shadow",
+                      data.websiteUrl.trim() && !isValidDomain(data.websiteUrl) 
+                        ? "border-destructive focus-visible:ring-destructive" 
+                        : "border-border focus-visible:border-primary"
+                    )}
+                    autoFocus
+                  />
+                </div>
                 {data.websiteUrl.trim() && !isValidDomain(data.websiteUrl) && (
                   <p className="text-sm text-destructive text-center">Please enter a valid domain (e.g., example.com)</p>
                 )}
               </div>
 
-              <div className="space-y-3">
-                <Button
-                  onClick={nextStep}
-                  disabled={!isValidDomain(data.websiteUrl)}
-                  className="w-full h-12"
-                >
-                  Continue
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
+              <Button
+                onClick={nextStep}
+                disabled={!isValidDomain(data.websiteUrl)}
+                className="w-full h-13 text-base font-semibold rounded-xl shadow-lg shadow-primary/20"
+              >
+                Continue
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           )}
 
