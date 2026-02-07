@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import scaledBotLogo from '@/assets/scaled-bot-logo.png';
+import careAssistLogo from '@/assets/care-assist-logo.png';
 import { Eye, EyeOff } from 'lucide-react';
 
 const loginSchema = z.object({
@@ -301,7 +301,7 @@ export default function Auth() {
         {/* Logo + header outside card */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3.5 bg-primary/10 rounded-2xl mb-5 shadow-sm">
-            <img src={scaledBotLogo} alt="Care Assist" className="h-12 w-auto" />
+            <img src={careAssistLogo} alt="Care Assist" className="h-12 w-auto" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             {invitationData ? 'Accept Your Invitation' : 'Welcome to Care Assist'}
