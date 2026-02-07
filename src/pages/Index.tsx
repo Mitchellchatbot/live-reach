@@ -487,17 +487,13 @@ const Index = () => {
               </div>
               
               <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-2.5 md:gap-3 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                {[
-                  { text: 'Free 7-day trial', icon: '🎁' },
-                  { text: 'No credit card', icon: '💳' },
-                  { text: '5 min setup', icon: '⚡' },
-                ].map((item, i) => (
+                {['Free 7-day trial', 'No credit card', '5 min setup'].map((text, i) => (
                   <span
                     key={i}
                     className="inline-flex items-center gap-1.5 bg-primary/[0.07] text-primary border border-primary/15 rounded-full px-3.5 py-1.5 text-xs md:text-sm font-semibold shadow-sm"
                   >
-                    <span className="text-sm">{item.icon}</span>
-                    {item.text}
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {text}
                   </span>
                 ))}
               </div>
