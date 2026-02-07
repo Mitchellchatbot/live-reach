@@ -31,7 +31,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending welcome email to ${email} (${firstName})`);
 
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "Care Assist <onboarding@resend.dev>",
+      from: "Care Assist <welcome@care-assist.io>",
+      reply_to: "support@care-assist.io",
       to: [email],
       subject: `Welcome to Care Assist, ${firstName}! 🎉`,
       html: `
