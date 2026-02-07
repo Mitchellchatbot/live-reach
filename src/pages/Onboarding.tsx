@@ -606,78 +606,70 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
           {/* Confirm step - show extracted info */}
           {step === 'confirm' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              {/* Success header with animated gradient ring */}
+              {/* Success header */}
               <div className="text-center space-y-3">
-                <div className="relative w-16 h-16 mx-auto mb-4">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-status-online/20 to-status-online/5 animate-pulse" />
-                  <div className="absolute inset-1 rounded-full bg-background flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-status-online/10 flex items-center justify-center">
-                      <Check className="h-6 w-6 text-status-online" />
-                    </div>
-                  </div>
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-status-online/10 flex items-center justify-center">
+                  <Check className="h-8 w-8 text-status-online" />
                 </div>
-                <h1 className="text-2xl font-bold text-foreground">We found your business!</h1>
-                <p className="text-muted-foreground">Please confirm or edit the details below</p>
+                <h1 className="text-3xl font-bold text-foreground tracking-tight">We found your business!</h1>
+                <p className="text-muted-foreground text-base">Confirm or edit the details below</p>
               </div>
 
-              {/* Info card */}
-              <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
-                {/* Company Name */}
-                <div className="p-4 border-b border-border/50">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
-                    <Building2 className="h-3.5 w-3.5" />
+              {/* Editable fields */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
                     Business Name
                   </label>
                   <Input
                     value={data.companyName}
                     onChange={(e) => setData({ ...data, companyName: e.target.value })}
                     placeholder="Your business name"
-                    className="h-11 bg-muted/30 border-0 focus-visible:ring-1"
+                    className="h-12 rounded-xl border-2 bg-card shadow-sm focus:shadow-md transition-shadow focus-visible:border-primary"
                   />
                 </div>
 
-                {/* Website */}
-                <div className="p-4 border-b border-border/50">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2 mb-2">
-                    <Globe className="h-3.5 w-3.5" />
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-primary" />
                     Website
                   </label>
                   <Input
                     value={data.websiteUrl}
                     onChange={(e) => setData({ ...data, websiteUrl: e.target.value })}
                     placeholder="yourwebsite.com"
-                    className="h-11 bg-muted/30 border-0 focus-visible:ring-1"
+                    className="h-12 rounded-xl border-2 bg-card shadow-sm focus:shadow-md transition-shadow focus-visible:border-primary"
                   />
                 </div>
-
               </div>
 
               {/* Extracted info summary */}
               {data.extractedInfo && (
-                <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl p-5 border border-border/30 space-y-4">
+                <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-4 shadow-sm">
                   {data.extractedInfo.description && (
                     <p className="text-sm text-foreground/80 leading-relaxed">{data.extractedInfo.description}</p>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-full capitalize flex items-center gap-1.5">
+                    <span className="text-xs font-semibold bg-primary/10 text-primary px-3 py-1.5 rounded-full capitalize flex items-center gap-1.5">
                       <Sparkles className="h-3 w-3" />
                       {data.extractedInfo.businessType}
                     </span>
                     {data.extractedInfo.primaryColor && (
-                      <span className="text-xs font-medium bg-card text-muted-foreground px-3 py-1.5 rounded-full flex items-center gap-2 border border-border/50">
+                      <span className="text-xs font-medium bg-muted text-muted-foreground px-3 py-1.5 rounded-full flex items-center gap-2">
                         <span 
-                          className="w-3.5 h-3.5 rounded-full ring-2 ring-white shadow-sm" 
+                          className="w-3.5 h-3.5 rounded-full ring-2 ring-background shadow-sm" 
                           style={{ backgroundColor: data.extractedInfo.primaryColor }}
                         />
-                        Brand color
+                        Brand color detected
                       </span>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="space-y-3 pt-2">
-                <Button onClick={nextStep} className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20">
+              <div className="space-y-3 pt-1">
+                <Button onClick={nextStep} className="w-full h-13 text-base font-semibold rounded-xl shadow-lg shadow-primary/20">
                   Looks Good!
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
