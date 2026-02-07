@@ -256,6 +256,15 @@ export default function Auth() {
         variant: 'destructive',
       });
     } else {
+      // Send welcome email (fire and forget – don't block signup)
+      supabase.functions.invoke('send-welcome-email', {
+        body: { email: signupEmail, fullName: signupName },
+      }).then(({ error: emailError }) => {
+        if (emailError) {
+          console.error('Welcome email failed:', emailError);
+        }
+      });
+
       toast({
         title: 'Account Created',
         description: invitationData 
