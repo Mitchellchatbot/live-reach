@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X, Mail, Calendar, Hash, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ChatWidget } from '@/components/widget/ChatWidget';
+import { SalesChatBot } from '@/components/landing/SalesChatBot';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -439,10 +439,10 @@ const Index = () => {
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/widget-preview" className="w-full sm:w-auto">
+                <Link to="/demo" className="w-full sm:w-auto">
                   <Button size="lg" variant="outline" className="gap-2 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold rounded-2xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 w-full sm:w-auto group transition-all duration-300 backdrop-blur-sm">
                     <Play className="h-5 w-5 group-hover:scale-110 transition-transform text-primary" />
-                    Watch Demo
+                    Try Live Demo
                   </Button>
                 </Link>
               </div>
@@ -893,8 +893,8 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Demo Widget */}
-      <ChatWidget />
+      {/* Sales & Support Chat */}
+      <SalesChatBot />
     </div>
   );
 };

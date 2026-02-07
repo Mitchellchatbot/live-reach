@@ -3,7 +3,6 @@ project_id = "qylckndenngvvaexosml"
 [functions.salesforce-oauth-callback]
 verify_jwt = false
 
-# Widget + public endpoints (called from an unauthenticated iframe)
 [functions.widget-conversation-presence]
 verify_jwt = false
 
@@ -41,4 +40,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-welcome-email]
+verify_jwt = false
+
+[functions.sales-chat]
 verify_jwt = false
