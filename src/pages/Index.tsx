@@ -665,50 +665,62 @@ const Index = () => {
       {/* Problem / Solution */}
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-red-500/10 to-transparent rounded-3xl blur-2xl" />
-                <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-10 border border-red-500/20 shadow-xl">
-                  <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+          <div className="text-center mb-10 md:mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
+              <Zap className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              Why Care Assist?
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+              From Missed Calls to
+              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Instant Care</span>
+            </h2>
+          </div>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-5 md:gap-8 lg:gap-12 items-stretch">
+              <div className="relative group">
+                <div className="absolute -inset-3 bg-gradient-to-br from-red-500/8 to-red-500/3 rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="relative h-full bg-card rounded-2xl md:rounded-3xl p-7 md:p-10 border border-red-200/60 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-full text-sm font-bold mb-6 border border-red-100">
                     <Clock className="h-4 w-4" />
                     The Problem
                   </div>
-                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 md:mb-6 tracking-tight">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground mb-5 md:mb-7 tracking-tight leading-tight">
                     Every Minute Matters
                   </h3>
-                  <div className="space-y-4 text-lg text-muted-foreground">
+                  <div className="space-y-5 text-base md:text-lg text-muted-foreground leading-relaxed">
                     <p>
-                      <span className="text-foreground font-semibold">78% of treatment inquiries</span> happen outside business hours.
+                      <span className="text-foreground font-bold">78% of treatment inquiries</span> happen outside business hours.
                     </p>
                     <p>
-                      Average response time: <span className="text-red-500 font-bold text-2xl">4+ hours</span>
+                      Average response time:{' '}
+                      <span className="text-red-500 font-black text-xl md:text-2xl">4+ hours</span>
                     </p>
-                    <p className="text-foreground/80">
+                    <p className="text-muted-foreground/90 italic">
                       By then, the moment of motivation has passed.
                     </p>
                   </div>
                 </div>
               </div>
               
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-green-500/10 to-transparent rounded-3xl blur-2xl" />
-                <div className="relative bg-card/80 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-10 border border-green-500/20 shadow-xl">
-                  <div className="inline-flex items-center gap-2 bg-green-500/10 text-green-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+              <div className="relative group">
+                <div className="absolute -inset-3 bg-gradient-to-br from-green-500/8 to-green-500/3 rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="relative h-full bg-card rounded-2xl md:rounded-3xl p-7 md:p-10 border border-green-200/60 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <div className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-full text-sm font-bold mb-6 border border-green-100">
                     <Heart className="h-4 w-4" />
                     The Solution
                   </div>
-                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 md:mb-6 tracking-tight">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground mb-5 md:mb-7 tracking-tight leading-tight">
                     Instant, Empathetic Response
                   </h3>
-                  <div className="space-y-4 text-lg text-muted-foreground">
+                  <div className="space-y-5 text-base md:text-lg text-muted-foreground leading-relaxed">
                     <p>
-                      Care Assist responds in <span className="text-green-500 font-bold text-2xl">under 5 seconds</span>
+                      Care Assist responds in{' '}
+                      <span className="text-green-500 font-black text-xl md:text-2xl">under 5 seconds</span>
                     </p>
                     <p>
-                      Trained on <span className="text-foreground font-semibold">thousands of behavioral health conversations</span>
+                      Trained on <span className="text-foreground font-bold">thousands of behavioral health conversations</span>
                     </p>
-                    <p className="text-foreground/80">
+                    <p className="text-muted-foreground/90 italic">
                       Genuine empathy, every time.
                     </p>
                   </div>
