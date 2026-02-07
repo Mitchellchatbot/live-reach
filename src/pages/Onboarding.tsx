@@ -835,7 +835,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               </div>
 
               <div className="space-y-3">
-                <Button onClick={nextStep} className="w-full h-12">
+                <Button onClick={nextStep} disabled={!data.aiTone} className="w-full h-12">
                   Continue
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
