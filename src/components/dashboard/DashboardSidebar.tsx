@@ -39,9 +39,10 @@ interface SidebarItemProps {
   badge?: number;
   collapsed: boolean;
   dataTour?: string;
+  iconColor?: string;
 }
 
-const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour }: SidebarItemProps) => {
+const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour, iconColor }: SidebarItemProps) => {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -64,10 +65,12 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour }: Side
       <Icon
         className={cn(
           "h-5 w-5 flex-shrink-0 transition-all duration-200",
-          isActive 
+          !iconColor && (isActive 
             ? "text-sidebar-primary" 
-            : "text-sidebar-foreground/50 group-hover:text-sidebar-primary group-hover:scale-110"
+            : "text-sidebar-foreground/50 group-hover:text-sidebar-primary group-hover:scale-110"),
+          iconColor && "group-hover:scale-110"
         )}
+        style={iconColor ? { color: iconColor } : undefined}
       />
       {!collapsed && (
         <>
@@ -224,11 +227,11 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <div data-tour="inbox-section">
               <SidebarSection title="Inbox" collapsed={collapsed}>
-                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={collapsed} />
+                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={collapsed} iconColor="#6366F1" />
                 <div data-tour="active-filter">
-                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={collapsed} />
+                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={collapsed} iconColor="#22C55E" />
                 </div>
-                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} iconColor="#94A3B8" />
               </SidebarSection>
             </div>
           )}
@@ -237,13 +240,13 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Manage" collapsed={collapsed}>
               <div data-tour="team-members">
-                <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} iconColor="#8B5CF6" />
               </div>
               <div data-tour="ai-support">
-                <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} iconColor="#06B6D4" />
               </div>
               <div data-tour="analytics-sidebar">
-                <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} iconColor="#F59E0B" />
               </div>
             </SidebarSection>
           )}
@@ -252,7 +255,7 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Setup" collapsed={collapsed}>
               <div data-tour="widget-code" data-tour-sidebar="widget-code-sidebar">
-                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} dataTour="widget-code-sidebar" />
+                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} dataTour="widget-code-sidebar" iconColor="#EC4899" />
               </div>
             </SidebarSection>
           )}
@@ -272,7 +275,7 @@ export const DashboardSidebar = ({
           {/* Account */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Account" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/subscription" icon={CreditCard} label="Subscription" collapsed={collapsed} />
+              <SidebarItem to="/dashboard/subscription" icon={CreditCard} label="Subscription" collapsed={collapsed} iconColor="#F97316" />
             </SidebarSection>
           )}
 
@@ -280,17 +283,17 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Support" collapsed={collapsed}>
               <div data-tour="get-help">
-                <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={collapsed} iconColor="#EF4444" />
               </div>
-              <SidebarItem to="/documentation" icon={BookOpen} label="Documentation" collapsed={collapsed} />
+              <SidebarItem to="/documentation" icon={BookOpen} label="Documentation" collapsed={collapsed} iconColor="#14B8A6" />
             </SidebarSection>
           )}
 
           {/* Dev Tools */}
           {(isClient || isAdmin) && (
             <SidebarSection title="Dev" collapsed={collapsed}>
-              <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={collapsed} />
-              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={collapsed} />
+              <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={collapsed} iconColor="#A855F7" />
+              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={collapsed} iconColor="#A855F7" />
             </SidebarSection>
           )}
         </nav>
