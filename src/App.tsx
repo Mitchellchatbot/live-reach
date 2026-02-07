@@ -55,6 +55,7 @@ const Documentation = lazy(() => import("./pages/Documentation"));
 const DocPage = lazy(() => import("./pages/docs/DocPage"));
 const WidgetEmbed = lazy(() => import("./pages/WidgetEmbed"));
 const Subscription = lazy(() => import("./pages/Subscription"));
+const Demo = lazy(() => import("./pages/Demo"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -108,6 +109,7 @@ const AppRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/demo" element={<Demo />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/conversations" element={<RequireAgent><AgentDashboard /></RequireAgent>} />
