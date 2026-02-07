@@ -113,7 +113,7 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
   <div className="space-y-1">
     {!collapsed && (
       <div className="flex items-center gap-2 px-3 mb-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-sidebar-foreground/40">
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-sidebar-foreground/70">
           {title}
         </h3>
         <div className="flex-1 h-px bg-sidebar-border/50" />
