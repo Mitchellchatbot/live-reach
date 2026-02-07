@@ -269,30 +269,27 @@ const Index = () => {
       />
       
       {/* Navigation */}
-      <nav className="relative bg-background/80 backdrop-blur-2xl sticky top-0 z-50 border-b border-primary/10 shadow-lg shadow-primary/5">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 md:h-18 items-center justify-between">
+      <nav className="relative bg-background/90 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex h-16 md:h-[68px] items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/40 blur-xl rounded-full" />
-                <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow-lg shadow-primary/40">
-                  <MessageSquare className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
-                </div>
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
+                <MessageSquare className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
               </div>
-              <span className="font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">Care Assist</span>
+              <span className="font-extrabold text-lg md:text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             
             {/* Center Navigation Links - Desktop */}
-            <div className="hidden lg:flex items-center gap-1 bg-foreground/5 rounded-full px-2 py-1.5 backdrop-blur-sm border border-border/40 shadow-inner">
+            <div className="hidden lg:flex items-center gap-0.5 bg-muted/60 rounded-full px-1.5 py-1 border border-border/30">
               {navSections.map((section) => (
                 <Button
                   key={section.id}
                   variant="ghost"
                   className={cn(
-                    "font-semibold rounded-full px-5 h-9 transition-all duration-300",
+                    "font-medium rounded-full px-5 h-8 text-sm transition-all duration-200",
                     activeSection === section.id
-                      ? "bg-gradient-to-r from-primary to-orange-500 text-primary-foreground shadow-md shadow-primary/30 hover:opacity-90 hover:text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                      ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
                   )}
                   onClick={() => scrollTo(section.id)}
                 >
@@ -306,19 +303,19 @@ const Index = () => {
               {user ? (
                 <>
                   <Link to={getDashboardRoute()} className="hidden sm:block">
-                    <Button variant="ghost" className="font-semibold text-foreground">Dashboard</Button>
+                    <Button variant="ghost" className="font-medium text-foreground h-9">Dashboard</Button>
                   </Link>
-                  <Button variant="outline" onClick={signOut} className="font-semibold rounded-full px-4 md:px-5 text-sm">
+                  <Button variant="outline" onClick={signOut} className="font-medium rounded-full px-5 text-sm h-9">
                     Sign Out
                   </Button>
                 </>
               ) : (
                 <>
                   <Link to="/auth" className="hidden sm:block">
-                    <Button variant="ghost" className="font-semibold text-muted-foreground hover:text-foreground">Login</Button>
+                    <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground h-9">Login</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-gradient-to-r from-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/30 font-bold px-4 md:px-6 rounded-full h-9 md:h-10 text-sm group">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-semibold px-5 md:px-6 rounded-full h-9 md:h-10 text-sm group">
                       <span className="hidden sm:inline">Start Free</span>
                       <span className="sm:hidden">Start</span>
                       <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
