@@ -425,7 +425,7 @@ const Index = () => {
                 NEW
               </span>
               <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                AI-powered crisis detection now available
+                Never miss a lead again — even at 2 AM
               </span>
               <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
             </div>
