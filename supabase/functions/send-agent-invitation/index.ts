@@ -66,7 +66,7 @@ serve(async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Care Assist <invitations@care-assist.io>",
         to: [agentEmail],
-        subject: `${inviterName} invited you to join their team on Scaled Bot`,
+        subject: `${inviterName} invited you to join their team on Care Assist`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -76,14 +76,14 @@ serve(async (req: Request): Promise<Response> => {
           </head>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #6366f1; margin: 0;">Scaled Bot</h1>
+              <h1 style="color: #F97316; margin: 0;">Care Assist</h1>
               <p style="color: #666; margin-top: 5px;">Compassionate support, one conversation at a time</p>
             </div>
             
             <div style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); border-radius: 12px; padding: 30px; margin-bottom: 20px;">
               <h2 style="margin-top: 0; color: #333;">Hi ${agentName}!</h2>
               <p style="font-size: 16px; color: #555;">
-                <strong>${inviterName}</strong> has invited you to join their team as a support agent on Scaled Bot.
+                <strong>${inviterName}</strong> has invited you to join their team as a support agent on Care Assist.
               </p>
               <p style="color: #666;">
                 As a team member, you'll be able to respond to live chat conversations and help visitors get the support they need.
@@ -91,7 +91,7 @@ serve(async (req: Request): Promise<Response> => {
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${signupUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              <a href="${signupUrl}" style="display: inline-block; background: linear-gradient(135deg, #F97316 0%, #ea580c 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Accept Invitation & Create Account
               </a>
             </div>
@@ -103,7 +103,7 @@ serve(async (req: Request): Promise<Response> => {
             <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center;">
-              Scaled Bot - Helping addiction treatment centers connect with those who need support.
+              Care Assist - Helping treatment centers connect with those who need support.
             </p>
           </body>
           </html>
