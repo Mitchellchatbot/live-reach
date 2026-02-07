@@ -893,7 +893,7 @@ const Index = () => {
               <span className="font-bold text-lg text-foreground">Care Assist</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Care Assist. Helping treatment centers help more people.
+              © 2026 Care Assist. Helping treatment centers help more people.
             </p>
             <div className="flex gap-6 text-sm">
               <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors font-medium">Privacy</Link>
