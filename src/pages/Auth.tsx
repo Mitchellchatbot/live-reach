@@ -462,12 +462,6 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground/70 mt-6">
-          {invitationData 
-            ? 'Create your account to start helping visitors'
-            : 'Your journey to healing starts here'
-          }
-        </p>
       </div>
     </div>
   );
