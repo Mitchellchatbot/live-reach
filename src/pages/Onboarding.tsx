@@ -769,6 +769,47 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 )}
               </div>
 
+
+              {/* Welcome Message */}
+              <div className="space-y-3 pt-2 border-t border-border/50">
+                <p className="text-sm font-medium text-foreground">Welcome message</p>
+                {/* Preset greeting chips */}
+                <div className="flex flex-wrap gap-2">
+                  {greetingPresets.map((preset) => (
+                    <button
+                      key={preset.label}
+                      onClick={() => setData({ ...data, greeting: preset.value, greetingPreset: preset.label })}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                        data.greetingPreset === preset.label
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setData({ ...data, greetingPreset: null })}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1",
+                      data.greetingPreset === null
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    )}
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Custom
+                  </button>
+                </div>
+                <Textarea
+                  value={data.greeting}
+                  onChange={(e) => setData({ ...data, greeting: e.target.value, greetingPreset: null })}
+                  placeholder="Enter your welcome message..."
+                  className="min-h-[60px] text-sm"
+                />
+              </div>
+
               <div className="space-y-3">
                 <Button onClick={nextStep} className="w-full h-12">
                   Continue
@@ -785,89 +826,121 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             </div>
           )}
 
-          {/* Step 3: Widget Icon Selection */}
+          {/* Step 3: Lead Capture + Widget Icon Selection */}
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center space-y-2">
-                <h1 className="text-2xl font-semibold text-foreground">Choose your chat widget style</h1>
-                <p className="text-muted-foreground">Pick an icon for your chat launcher button</p>
+                <h1 className="text-2xl font-semibold text-foreground">Customize your widget</h1>
+                <p className="text-muted-foreground">Set up lead capture and choose your chat icon</p>
               </div>
 
-              {/* Hidden file input for custom icon */}
-              <input
-                type="file"
-                ref={widgetIconInputRef}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const previewUrl = URL.createObjectURL(file);
-                    setData({ 
-                      ...data, 
-                      widgetIcon: 'custom',
-                      widgetIconFile: file,
-                      widgetIconPreview: previewUrl
-                    });
-                  }
-                }}
-                accept="image/*"
-                className="hidden"
-              />
+              {/* Lead Capture Section */}
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">Collect from visitors</p>
+                <div className="space-y-2">
+                  <ToggleCard
+                    title="Name"
+                    description="Ask visitors for their name"
+                    checked={data.collectName}
+                    onChange={(v) => setData({ ...data, collectName: v })}
+                    recommended
+                  />
+                  <ToggleCard
+                    title="Phone Number"
+                    description="Collect phone for follow-ups"
+                    checked={data.collectPhone}
+                    onChange={(v) => setData({ ...data, collectPhone: v })}
+                    recommended
+                  />
+                  <ToggleCard
+                    title="Email Address"
+                    description="Get email for communication"
+                    checked={data.collectEmail}
+                    onChange={(v) => setData({ ...data, collectEmail: v })}
+                  />
+                </div>
+              </div>
 
-              {/* Icon grid - 3 rows */}
-              <div className="grid grid-cols-3 gap-2">
-                {widgetIconOptions.map((option, index) => {
-                  const IconComponent = option.icon;
-                  const isSelected = data.widgetIcon === option.id;
-                  const isCustomOption = option.id === 'custom';
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => {
-                        if (isCustomOption) {
-                          widgetIconInputRef.current?.click();
-                        } else {
-                          setData({ 
-                            ...data, 
-                            widgetIcon: option.id,
-                            widgetIconFile: null,
-                            widgetIconPreview: null
-                          });
-                        }
-                      }}
-                      className={cn(
-                        "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
-                        "animate-in fade-in zoom-in-95",
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                          : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
-                      )}
-                      style={{ 
-                        animationDelay: `${index * 30}ms`,
-                        animationFillMode: 'backwards'
-                      }}
-                    >
-                      {isCustomOption && data.widgetIconPreview ? (
-                        <img 
-                          src={data.widgetIconPreview} 
-                          alt="Custom icon" 
-                          className="h-6 w-6 rounded object-cover"
-                        />
-                      ) : (
-                        <IconComponent className={cn(
-                          "h-6 w-6 transition-transform duration-200",
-                          isSelected ? "scale-110" : ""
-                        )} />
-                      )}
-                      <span className={cn(
-                        "text-xs font-medium",
-                        isSelected ? "" : "text-muted-foreground"
-                      )}>
-                        {option.label}
-                      </span>
-                    </button>
-                  );
-                })}
+              {/* Widget Icon Section */}
+              <div className="space-y-3 pt-2 border-t border-border/50">
+                <p className="text-sm font-medium text-foreground">Chat widget icon</p>
+
+                {/* Hidden file input for custom icon */}
+                <input
+                  type="file"
+                  ref={widgetIconInputRef}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const previewUrl = URL.createObjectURL(file);
+                      setData({ 
+                        ...data, 
+                        widgetIcon: 'custom',
+                        widgetIconFile: file,
+                        widgetIconPreview: previewUrl
+                      });
+                    }
+                  }}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                {/* Icon grid - 3 rows */}
+                <div className="grid grid-cols-3 gap-2">
+                  {widgetIconOptions.map((option, index) => {
+                    const IconComponent = option.icon;
+                    const isSelected = data.widgetIcon === option.id;
+                    const isCustomOption = option.id === 'custom';
+                    
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => {
+                          if (isCustomOption) {
+                            widgetIconInputRef.current?.click();
+                          } else {
+                            setData({ 
+                              ...data, 
+                              widgetIcon: option.id,
+                              widgetIconFile: null,
+                              widgetIconPreview: null
+                            });
+                          }
+                        }}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
+                          "animate-in fade-in zoom-in-95",
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                            : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 hover:scale-[1.02]"
+                        )}
+                        style={{ 
+                          animationDelay: `${index * 30}ms`,
+                          animationFillMode: 'backwards'
+                        }}
+                      >
+                        {isCustomOption && data.widgetIconPreview ? (
+                          <img 
+                            src={data.widgetIconPreview} 
+                            alt="Custom icon" 
+                            className="h-6 w-6 rounded object-cover"
+                          />
+                        ) : (
+                          <IconComponent className={cn(
+                            "h-6 w-6 transition-transform duration-200",
+                            isSelected ? "scale-110" : ""
+                          )} />
+                        )}
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isSelected ? "" : "text-muted-foreground"
+                        )}>
+                          {option.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Interactive Chat Widget Preview */}
