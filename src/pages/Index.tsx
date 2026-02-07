@@ -16,6 +16,7 @@ import googleGLogo from '@/assets/logos/google-g.svg';
 import sarahHeadshot from '@/assets/testimonials/sarah.jpg';
 import michaelHeadshot from '@/assets/testimonials/michael.jpg';
 import jenniferHeadshot from '@/assets/testimonials/jennifer.jpg';
+import emilyAvatar from '@/assets/personas/emily.jpg';
 
 const testimonialHeadshots = [sarahHeadshot, michaelHeadshot, jenniferHeadshot];
 
@@ -533,8 +534,8 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     
                     <div className="flex items-center gap-3 relative">
-                      <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center ring-2 ring-white/30 shadow-lg backdrop-blur-sm">
-                        <Bot className="h-6 w-6 text-white" />
+                      <div className="h-12 w-12 rounded-full ring-2 ring-white/30 shadow-lg overflow-hidden">
+                        <img src={emilyAvatar} alt="Care Assist" className="h-full w-full object-cover" />
                       </div>
                       <div>
                         <p className="text-white font-bold text-base">Care Assist</p>
