@@ -254,19 +254,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Animated gradient background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <FloatingOrb className="w-[600px] h-[600px] bg-primary/20 top-[-200px] right-[-200px]" delay={0} />
-        <FloatingOrb className="w-[500px] h-[500px] bg-primary/15 bottom-[10%] left-[-150px]" delay={2} />
-        <FloatingOrb className="w-[400px] h-[400px] bg-primary/10 top-[40%] right-[10%]" delay={4} />
-        <FloatingOrb className="w-[300px] h-[300px] bg-accent/30 bottom-[-100px] right-[30%]" delay={1} />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden hidden md:block">
+        <FloatingOrb className="w-[600px] h-[600px] bg-primary/10 top-[-200px] right-[-200px]" delay={0} />
+        <FloatingOrb className="w-[500px] h-[500px] bg-primary/8 bottom-[10%] left-[-150px]" delay={2} />
+        <FloatingOrb className="w-[400px] h-[400px] bg-primary/5 top-[40%] right-[10%]" delay={4} />
+        <FloatingOrb className="w-[300px] h-[300px] bg-accent/15 bottom-[-100px] right-[30%]" delay={1} />
       </div>
       
       {/* Subtle grid overlay */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.15)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.15)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
       
-      {/* Mouse follow gradient */}
+      {/* Mouse follow gradient - desktop only */}
       <div 
-        className="fixed w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl pointer-events-none transition-all duration-1000 ease-out"
+        className="fixed w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl pointer-events-none transition-all duration-1000 ease-out hidden md:block"
         style={{ 
           left: mousePosition.x - 300, 
           top: mousePosition.y - 300,
@@ -471,7 +471,7 @@ const Index = () => {
             </div>
 
             {/* Right - Animated Chat Mockup */}
-            <div className="relative order-first lg:order-last">
+            <div className="relative hidden lg:block">
               {/* Floating badges */}
               <div className="absolute -top-6 left-4 lg:-left-8 bg-card/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-green-500/30 z-20 animate-bounce-slow">
                 <div className="flex items-center gap-2">
