@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/care-assist-logo.png';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import slackLogo from '@/assets/logos/slack.svg';
-import calendlyLogo from '@/assets/logos/calendly.svg';
+import calendlyLogo from '@/assets/logos/calendly-logo.png';
 import gmailLogo from '@/assets/logos/gmail.svg';
 import outlookLogo from '@/assets/logos/outlook.png';
 
@@ -725,9 +725,9 @@ const Index = () => {
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006BFF] to-[#0052CC] opacity-60 group-hover:opacity-100 transition-opacity" />
               <div className="p-5 md:p-7">
                 <div className="h-14 w-14 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <img src={calendlyLogo} alt="Calendly" className="h-8 w-8" />
+                  <img src={calendlyLogo} alt="Calendly" className="h-8 w-auto" />
                 </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">Calendly</h3>
+                <h3 className="text-lg font-bold text-foreground mb-2">Calendar</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                   Visitors book consultations directly in chat. No back-and-forth—just automatic scheduling.
                 </p>
