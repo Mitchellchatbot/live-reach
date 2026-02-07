@@ -1012,9 +1012,9 @@ const Index = () => {
                   <Button 
                     type="submit"
                     size="lg" 
-                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 gap-2 h-13 text-base font-bold rounded-xl"
+                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 hover:scale-[1.02] shadow-2xl shadow-primary/30 gap-2 h-14 text-lg font-black rounded-xl ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 animate-[attention-bounce_3s_ease-out_infinite]"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="h-5 w-5" />
                     Get My Free Demo
                   </Button>
                 </form>
