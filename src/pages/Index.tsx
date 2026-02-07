@@ -643,21 +643,25 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 max-w-6xl mx-auto">
             {features.map((feature, index) => (
               <div 
                 key={feature.title}
-                className="group relative bg-card/60 backdrop-blur-sm p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
+                className="group relative bg-card backdrop-blur-sm rounded-2xl border border-border/40 hover:border-primary/30 transition-all duration-400 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
               >
-                {/* Background gradient on hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+                {/* Top accent bar */}
+                <div className={`h-1 w-full bg-gradient-to-r ${feature.gradient}`} />
                 
-                <div className="relative">
-                  <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-                    <feature.icon className="h-7 w-7 text-white" />
+                <div className="p-5 md:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`h-11 w-11 shrink-0 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-400`}>
+                      <feature.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-base font-bold text-foreground mb-1.5">{feature.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
               </div>
             ))}
