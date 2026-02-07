@@ -30,9 +30,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending welcome email to ${email} (${firstName})`);
 
-    const emailResponse = await resend.emails.send({
-      from: "Care Assist <welcome@care-assist.io>",
-      reply_to: "support@care-assist.io",
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: "Care Assist <onboarding@resend.dev>",
       to: [email],
       subject: `Welcome to Care Assist, ${firstName}! 🎉`,
       html: `
@@ -152,9 +151,14 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Welcome email sent successfully:", emailResponse);
+    if (emailError) {
+      console.error("Resend error:", emailError);
+      throw new Error(emailError.message || "Failed to send welcome email");
+    }
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    console.log("Welcome email sent successfully:", emailData);
+
+    return new Response(JSON.stringify({ success: true, data: emailData }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
