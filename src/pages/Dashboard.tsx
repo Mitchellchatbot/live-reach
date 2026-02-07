@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, MoreVertical, Video, UserPlus, Archive } from 'lucide-react';
+import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
@@ -131,6 +131,19 @@ const DashboardContent = () => {
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [leadFilters, setLeadFilters] = useState<Set<'phone' | 'email' | 'name'>>(new Set());
+
+  const toggleLeadFilter = (filter: 'phone' | 'email' | 'name') => {
+    setLeadFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(filter)) {
+        next.delete(filter);
+      } else {
+        next.add(filter);
+      }
+      return next;
+    });
+  };
 
   // Convert DB conversations to UI format
   const conversations = useMemo(() => dbConversations.map(toUiConversation), [dbConversations]);
@@ -143,7 +156,13 @@ const DashboardContent = () => {
       // Filter by status based on path
       if (statusFilter === 'active' && conv.status === 'closed') return false;
       if (statusFilter === 'closed' && conv.status !== 'closed') return false;
-      // 'all' shows everything (property filtering is now done at fetch level)
+
+      // Lead capture filters (only apply in closed view)
+      if (leadFilters.size > 0) {
+        if (leadFilters.has('phone') && !conv.visitor.phone) return false;
+        if (leadFilters.has('email') && !conv.visitor.email) return false;
+        if (leadFilters.has('name') && !conv.visitor.name) return false;
+      }
 
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -156,7 +175,7 @@ const DashboardContent = () => {
       }
       return true;
     }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }, [conversations, statusFilter, searchQuery]);
+  }, [conversations, statusFilter, searchQuery, leadFilters]);
 
   // Add lastMessage to conversations
   const conversationsWithLastMessage = useMemo(
@@ -410,6 +429,49 @@ const DashboardContent = () => {
                   <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." className="pl-9 bg-muted/50 border-border/30 text-foreground placeholder:text-muted-foreground focus:bg-background transition-colors rounded-xl" />
                 </div>
               </div>
+
+              {/* Lead Capture Filters - only in closed view */}
+              {isClosedView && (
+                <div className="px-3 py-2 border-b border-border/30 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mr-1">Leads:</span>
+                  <button
+                    onClick={() => toggleLeadFilter('name')}
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                      leadFilters.has('name')
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted"
+                    )}
+                  >
+                    <UserIcon className="h-3 w-3" />
+                    Name
+                  </button>
+                  <button
+                    onClick={() => toggleLeadFilter('email')}
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                      leadFilters.has('email')
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted"
+                    )}
+                  >
+                    <Mail className="h-3 w-3" />
+                    Email
+                  </button>
+                  <button
+                    onClick={() => toggleLeadFilter('phone')}
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                      leadFilters.has('phone')
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted"
+                    )}
+                  >
+                    <Phone className="h-3 w-3" />
+                    Phone
+                  </button>
+                </div>
+              )}
 
               {/* List */}
               <ConversationList conversations={conversationsWithLastMessage} selectedId={selectedConversation?.id} onSelect={handleSelectConversation} showDelete={isClosedView} onDelete={handleDeleteConversation} onBulkClose={handleBulkClose} onBulkDelete={handleBulkDelete} showBulkActions={true} />
