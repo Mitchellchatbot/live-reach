@@ -14,7 +14,7 @@ import {
   LifeBuoy,
   Bot,
   Bell,
-  Cloud,
+  
   BookOpen,
   CreditCard
 } from 'lucide-react';
@@ -24,6 +24,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
+import salesforceLogo from '@/assets/logos/salesforce.svg';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import {
   Tooltip,
@@ -261,7 +262,7 @@ export const DashboardSidebar = ({
           {(isClient || isAdmin) && (
             <SidebarSection title="Integrations" collapsed={collapsed}>
               <div data-tour="salesforce">
-                <SidebarItem to="/dashboard/salesforce" icon={Cloud} label="Salesforce" collapsed={collapsed} />
+                <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-5 w-5", className)} />} label="Salesforce" collapsed={collapsed} />
               </div>
               <div data-tour="notifications">
                 <SidebarItem to="/dashboard/notifications" icon={Bell} label="Notifications" collapsed={collapsed} />
