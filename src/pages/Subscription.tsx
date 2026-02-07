@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CreditCard, Calendar, MessageSquare, ArrowRight, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Receipt, XCircle, Settings } from 'lucide-react';
+import { CreditCard, Calendar, MessageSquare, ArrowRight, TrendingUp, AlertCircle, ArrowUpRight, ArrowDownRight, Receipt, XCircle, Settings, Building2, Plus } from 'lucide-react';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { pricingPlans } from '@/components/pricing/PricingData';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,8 @@ import { cn } from '@/lib/utils';
 const Subscription = () => {
   const { user } = useAuth();
   const { properties } = useConversations();
+  const [searchParams] = useSearchParams();
+  const isAddPropertyIntent = searchParams.get('reason') === 'add-property';
 
   // Mock subscription state – will be replaced by Stripe data
   const [currentPlan] = useState<string | null>(null); // null = no active plan (trial)
@@ -34,6 +37,27 @@ const Subscription = () => {
         />
 
         <div className="flex-1 p-6 space-y-8 max-w-6xl mx-auto w-full">
+          {/* Add Property Paywall Banner */}
+          {isAddPropertyIntent && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="flex items-center gap-4 py-5">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground text-lg">Add Another Property</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Your first property is free. Each additional property is <span className="font-bold text-foreground">$100/month</span>.
+                    Choose a plan below or connect payments to get started.
+                  </p>
+                </div>
+                <Badge variant="outline" className="border-primary text-primary bg-primary/10 shrink-0 text-sm px-3 py-1">
+                  $100/property
+                </Badge>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Current Plan Status */}
           <div className="grid md:grid-cols-3 gap-4">
             {/* Plan Card */}

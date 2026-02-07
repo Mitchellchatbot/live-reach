@@ -171,7 +171,12 @@ export const PropertySelector = ({
             className="flex items-center gap-2 cursor-pointer text-primary"
             onSelect={() => {
               setOpen(false);
-              navigate('/onboarding');
+              // First property is free; additional ones require payment
+              if (properties.length >= 1) {
+                navigate('/dashboard/subscription?reason=add-property');
+              } else {
+                navigate('/onboarding');
+              }
             }}
           >
             <Plus className="h-4 w-4 shrink-0" />
