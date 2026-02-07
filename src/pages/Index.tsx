@@ -383,8 +383,8 @@ const Index = () => {
         <div className="container mx-auto px-4 relative">
           {/* Announcement Banner */}
           <div className="flex justify-center mb-6 md:mb-10">
-            <div className="inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-primary/10 via-accent/50 to-primary/10 backdrop-blur-sm border border-primary/20 rounded-full pl-2 pr-3 md:pr-5 py-1.5 text-xs md:text-sm font-medium text-foreground shadow-lg shadow-primary/5 animate-fade-in hover:scale-105 transition-transform cursor-pointer group">
-              <span className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-2.5 md:px-3 py-1 rounded-full shadow-sm">
+            <div className="inline-flex items-center gap-2 md:gap-3 bg-primary/5 border border-primary/15 rounded-full pl-2 pr-3 md:pr-5 py-1.5 text-xs md:text-sm font-medium text-foreground hover:scale-105 transition-transform cursor-pointer group">
+              <span className="bg-primary text-primary-foreground text-xs font-bold px-2.5 md:px-3 py-1 rounded-full">
                 NEW
               </span>
               <span className="text-muted-foreground group-hover:text-foreground transition-colors">
@@ -397,12 +397,12 @@ const Index = () => {
           <div className="grid lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black leading-[1.08] tracking-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-8xl font-black leading-[1.05] tracking-tighter">
                 <span className="text-foreground">
                   Never lose
                 </span>
                 <br />
-                <span className="text-primary">
+                <span className="text-primary drop-shadow-[0_2px_12px_hsl(var(--primary)/0.3)]">
                   another lead.
                 </span>
               </h1>
@@ -420,8 +420,7 @@ const Index = () => {
                 ].map((pill, i) => (
                   <div 
                     key={i}
-                    className="inline-flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-full px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-primary/30 transition-all animate-fade-in"
-                    style={{ animationDelay: `${0.3 + i * 0.1}s` }}
+                    className="inline-flex items-center gap-2 bg-card/80 border border-border/50 rounded-full px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
                   >
                     <pill.icon className="h-4 w-4 text-primary" />
                     {pill.text}
