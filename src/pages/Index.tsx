@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X } from 'lucide-react';
+import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X, Mail, Calendar, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { PricingSection } from '@/components/pricing/PricingSection';
@@ -202,6 +202,7 @@ const FloatingOrb = ({ className, delay = 0 }: { className: string; delay?: numb
 
 const navSections = [
   { id: 'features', label: 'Features' },
+  { id: 'integrations', label: 'Integrations' },
   { id: 'testimonials', label: 'Testimonials' },
   { id: 'pricing', label: 'Pricing' },
   { id: 'contact', label: 'Contact' },
@@ -662,7 +663,81 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Problem / Solution */}
+      {/* Integrations Section */}
+      <section id="integrations" className="relative py-16 md:py-24 overflow-hidden">
+        <div className="container mx-auto px-4 relative">
+          <div className="text-center mb-10 md:mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
+              <Settings className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              Seamless Integrations
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
+              Connects to Your
+              <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Existing Stack</span>
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Instantly notify your team, schedule appointments, and capture leads—all automatically.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
+            {/* Slack */}
+            <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4A154B] to-[#611f69] opacity-60 group-hover:opacity-100 transition-opacity" />
+              <div className="p-6 md:p-8">
+                <div className="h-14 w-14 rounded-2xl bg-[#4A154B]/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                  <Hash className="h-7 w-7 text-[#4A154B]" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Slack</h3>
+                <p className="text-muted-foreground leading-relaxed mb-5">
+                  Get real-time alerts when visitors start chats or request human help. Never miss a lead.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Real-time alerts</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Escalations</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Calendly */}
+            <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#006BFF] to-[#0052CC] opacity-60 group-hover:opacity-100 transition-opacity" />
+              <div className="p-6 md:p-8">
+                <div className="h-14 w-14 rounded-2xl bg-[#006BFF]/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                  <Calendar className="h-7 w-7 text-[#006BFF]" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Calendly</h3>
+                <p className="text-muted-foreground leading-relaxed mb-5">
+                  Let visitors book consultations directly through chat. Automatic scheduling, zero friction.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Auto-booking</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Reminders</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="group relative bg-card rounded-2xl md:rounded-3xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-orange-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+              <div className="p-6 md:p-8">
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                  <Mail className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Email</h3>
+                <p className="text-muted-foreground leading-relaxed mb-5">
+                  Receive conversation summaries and lead details straight to your inbox. Stay informed anywhere.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Lead alerts</span>
+                  <span className="text-xs font-semibold bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-full">Summaries</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10 md:mb-16">
