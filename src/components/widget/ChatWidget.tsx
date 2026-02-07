@@ -371,8 +371,11 @@ export const ChatWidget = ({
             </div>
           </div>
 
-          {/* Welcome Message */}
-          <div className="px-5 py-3 bg-gradient-to-r from-accent/30 to-muted/30 border-b border-border/30">
+          {/* Disclaimer + Welcome Message */}
+          <div className="px-5 py-2.5 bg-gradient-to-r from-accent/30 to-muted/30 border-b border-border/30 space-y-1.5">
+            <p className="text-[10px] text-muted-foreground/70 text-center leading-tight">
+              ⚠️ This chat does not provide medical advice. Please consult a licensed professional for medical guidance.
+            </p>
             <p className="text-xs text-muted-foreground text-center">
               You're in a safe space. Take your time. 💚
             </p>
