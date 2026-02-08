@@ -286,22 +286,22 @@ const Index = () => {
       />
       
       {/* Navigation */}
-      <nav className="relative bg-background/90 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50">
+      <nav className="relative bg-background/95 backdrop-blur-2xl sticky top-0 z-50 border-b border-border/40 shadow-[0_1px_12px_-2px_hsl(var(--foreground)/0.06)]">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="flex h-16 md:h-[68px] items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex h-16 md:h-[72px] items-center justify-between">
+            <div className="flex items-center gap-2.5">
               <img src={careAssistLogo} alt="Care Assist" className="h-9 w-9 md:h-10 md:w-10 rounded-xl object-contain" />
               <span className="font-extrabold text-lg md:text-xl tracking-tight text-foreground">Care Assist</span>
             </div>
             
             {/* Center Navigation Links - Desktop */}
-            <div className="hidden lg:flex items-center gap-0.5 bg-muted/60 rounded-full px-1.5 py-1 border border-border/30">
+            <div className="hidden lg:flex items-center gap-0.5 bg-muted/70 rounded-full px-1.5 py-1 border border-border/40 shadow-[inset_0_1px_2px_hsl(var(--foreground)/0.04)]">
               {navSections.map((section) => 
                 section.href ? (
                   <Link key={section.id} to={section.href}>
                     <Button
                       variant="ghost"
-                      className="font-medium rounded-full px-5 h-8 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-transparent"
+                      className="font-medium rounded-full px-5 h-9 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-background/60"
                     >
                       {section.label}
                     </Button>
@@ -311,10 +311,10 @@ const Index = () => {
                     key={section.id}
                     variant="ghost"
                     className={cn(
-                      "font-medium rounded-full px-5 h-8 text-sm transition-all duration-200",
+                      "font-medium rounded-full px-5 h-9 text-sm transition-all duration-200",
                       activeSection === section.id
-                        ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-transparent"
+                        ? "bg-background text-foreground shadow-[0_1px_4px_hsl(var(--foreground)/0.08)] hover:bg-background hover:text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-background/60"
                     )}
                     onClick={() => scrollTo(section.id)}
                   >
@@ -338,10 +338,10 @@ const Index = () => {
               ) : (
                 <>
                   <Link to="/auth" className="hidden sm:block">
-                    <Button variant="ghost" className="font-medium text-muted-foreground hover:text-foreground h-9">Login</Button>
+                    <Button variant="ghost" className="font-semibold text-foreground/80 hover:text-foreground h-9">Login</Button>
                   </Link>
                   <Link to="/auth">
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-semibold px-5 md:px-6 rounded-full h-9 md:h-10 text-sm group">
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg font-semibold px-5 md:px-6 rounded-full h-9 md:h-10 text-sm group transition-all duration-200">
                       <span className="hidden sm:inline">Start Free</span>
                       <span className="sm:hidden">Start</span>
                       <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
