@@ -240,6 +240,25 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       // Store code verifier in sessionStorage for the callback
       sessionStorage.setItem(`sf_code_verifier_${propertyId}`, codeVerifier);
 
+      // Generate CSRF token and store it in the database for server-side validation
+      const csrfToken = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+      
+      const { error: csrfError } = await supabase
+        .from('salesforce_settings')
+        .update({
+          pending_oauth_token: csrfToken,
+          pending_oauth_expires_at: expiresAt,
+        })
+        .eq('property_id', propertyId);
+
+      if (csrfError) {
+        console.error('Error storing CSRF token:', csrfError);
+        toast.error('Failed to initiate connection. Please try again.');
+        setConnecting(false);
+        return;
+      }
+
       // Salesforce OAuth authorization URL
       const redirectUri = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/salesforce-oauth-callback`;
       const authUrl = new URL('https://login.salesforce.com/services/oauth2/authorize');
@@ -247,7 +266,8 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       authUrl.searchParams.set('client_id', config.client_id);
       authUrl.searchParams.set('redirect_uri', redirectUri);
       authUrl.searchParams.set('scope', 'api refresh_token openid');
-      authUrl.searchParams.set('state', `${propertyId}:${codeVerifier}`);
+      // State now includes CSRF token: "propertyId:csrfToken:codeVerifier"
+      authUrl.searchParams.set('state', `${propertyId}:${csrfToken}:${codeVerifier}`);
       authUrl.searchParams.set('code_challenge', codeChallenge);
       authUrl.searchParams.set('code_challenge_method', 'S256');
 
