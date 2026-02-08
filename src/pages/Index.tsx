@@ -35,12 +35,12 @@ const features = [
   {
     icon: AlertTriangle,
     title: 'Crisis Detection',
-    description: 'Instantly detects crisis keywords and alerts your team for immediate human intervention.',
+    description: 'Detects crisis keywords, alerts your team, and can direct visitors to SAMHSA\'s National Helpline.',
     backInfo: [
       'Real-time keyword monitoring',
       'Instant Slack & email alerts',
       'Auto-escalation to live agents',
-      'Customizable trigger phrases',
+      'SAMHSA helpline redirect option',
     ],
   },
   {
