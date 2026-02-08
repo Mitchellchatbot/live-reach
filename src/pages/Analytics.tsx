@@ -24,7 +24,7 @@ const Analytics = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Lead Analytics" docsLink="/documentation/analytics/overview">
+        <PageHeader title="Lead Analytics" docsLink="/documentation/analytics/overview" tourSection="analytics">
           {loading ? (
             <div className="flex items-center gap-2 text-sidebar-foreground/60">
               <Loader2 className="h-4 w-4 animate-spin" />

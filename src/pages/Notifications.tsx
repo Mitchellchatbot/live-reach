@@ -101,7 +101,7 @@ const Notifications = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Notifications" docsLink="/documentation/integrations/slack" />
+        <PageHeader title="Notifications" docsLink="/documentation/integrations/slack" tourSection="notifications" />
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">

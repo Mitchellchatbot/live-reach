@@ -501,7 +501,7 @@ const TeamMembers = () => {
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="Team Members" docsLink="/documentation/team/inviting-agents">
+        <PageHeader title="Team Members" docsLink="/documentation/team/inviting-agents" tourSection="team">
           <HeaderButton size="icon" onClick={fetchAgents}>
             <RefreshCw className="h-4 w-4" />
           </HeaderButton>
