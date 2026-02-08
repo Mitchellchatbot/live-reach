@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state"); // This is "propertyId:codeVerifier"
+    const state = url.searchParams.get("state"); // "propertyId:csrfToken:codeVerifier"
     const error = url.searchParams.get("error");
     const errorDescription = url.searchParams.get("error_description");
 
@@ -32,9 +32,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse state to get propertyId and codeVerifier
-    const [propertyId, codeVerifier] = state.split(':');
-    if (!propertyId || !codeVerifier) {
+    // Parse state: "propertyId:csrfToken:codeVerifier"
+    const stateParts = state.split(':');
+    if (stateParts.length < 3) {
+      console.error("Invalid state format - expected propertyId:csrfToken:codeVerifier");
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
+        { headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+
+    const propertyId = stateParts[0];
+    const csrfToken = stateParts[1];
+    // codeVerifier may contain colons, so join remaining parts
+    const codeVerifier = stateParts.slice(2).join(':');
+
+    if (!propertyId || !csrfToken || !codeVerifier) {
       return new Response(
         `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
@@ -45,7 +58,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch the Salesforce settings to get client credentials
+    // Fetch the Salesforce settings and validate CSRF token
     const { data: settings, error: settingsError } = await supabase
       .from("salesforce_settings")
       .select("*")
@@ -59,6 +72,35 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
+
+    // CSRF validation: verify the token matches what was stored when OAuth was initiated
+    if (!settings.pending_oauth_token || settings.pending_oauth_token !== csrfToken) {
+      console.error("CSRF token mismatch for property:", propertyId);
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'csrf_mismatch'},'*');window.close();</script><p>Security validation failed. Please try connecting again. You can close this window.</p></body></html>`,
+        { headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+
+    // Check token expiration (10 minute window)
+    if (settings.pending_oauth_expires_at && new Date(settings.pending_oauth_expires_at) < new Date()) {
+      console.error("OAuth CSRF token expired for property:", propertyId);
+      // Clear the expired token
+      await supabase
+        .from("salesforce_settings")
+        .update({ pending_oauth_token: null, pending_oauth_expires_at: null })
+        .eq("property_id", propertyId);
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'token_expired'},'*');window.close();</script><p>Connection request expired. Please try again. You can close this window.</p></body></html>`,
+        { headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+
+    // Clear the CSRF token immediately (single-use)
+    await supabase
+      .from("salesforce_settings")
+      .update({ pending_oauth_token: null, pending_oauth_expires_at: null })
+      .eq("property_id", propertyId);
 
     const clientId = settings.client_id;
     const clientSecret = settings.client_secret;
