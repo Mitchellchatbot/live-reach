@@ -222,19 +222,14 @@ const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.React
 
 // Flip card component for features
 const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
-  const [flipped, setFlipped] = useState(false);
   const Icon = feature.icon;
 
   return (
     <div
       className="group cursor-pointer [perspective:1000px] h-[180px] sm:h-[200px]"
-      onClick={() => setFlipped(!flipped)}
     >
       <div
-        className={cn(
-          "relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d]",
-          flipped && "[transform:rotateY(180deg)]"
-        )}
+        className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]"
       >
         {/* Front */}
         <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 overflow-hidden">
@@ -249,7 +244,7 @@ const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
               </div>
             </div>
             <div className="mt-3 flex justify-end">
-              <span className="text-[11px] text-muted-foreground/60 font-medium">Tap to learn more →</span>
+              <span className="text-[11px] text-muted-foreground/60 font-medium">Hover to learn more →</span>
             </div>
           </div>
         </div>
@@ -272,7 +267,7 @@ const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
               ))}
             </ul>
             <div className="mt-3 flex justify-end">
-              <span className="text-[11px] text-primary-foreground/60 font-medium">← Tap to go back</span>
+              <span className="text-[11px] text-primary-foreground/60 font-medium">← Move away to go back</span>
             </div>
           </div>
         </div>
