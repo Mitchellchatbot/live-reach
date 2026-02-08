@@ -9,7 +9,8 @@ import {
   Palette, 
   Plug, 
   BarChart3,
-  ArrowRight
+  ArrowRight,
+  Calendar
 } from 'lucide-react';
 import { useFadeIn, useStaggerChildren } from '@/hooks/useGSAP';
 
@@ -83,20 +84,45 @@ const Documentation = () => {
       </div>
 
       {/* Quick Help */}
-      <div ref={helpRef} className="mt-12 p-6 rounded-lg border border-border bg-muted/30 text-center">
-        <h2 className="text-lg font-semibold text-foreground mb-2">
-          Need more help?
-        </h2>
-        <p className="text-muted-foreground mb-4">
-          Can't find what you're looking for? Reach out to our support team.
-        </p>
-        <Link 
-          to="/dashboard/support"
-          className="inline-flex items-center gap-2 text-primary hover:underline"
-        >
-          Contact Support
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+      <div ref={helpRef} className="mt-12 p-6 rounded-lg border border-border bg-muted/30">
+        <div className="grid md:grid-cols-2 gap-6 items-center">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground mb-2">
+              Need more help?
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Can't find what you're looking for? Send us a message or book a call with our team.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link 
+                to="/dashboard/support"
+                className="inline-flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Contact Support
+              </Link>
+              <a 
+                href="https://calendly.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium border border-border text-foreground px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <Calendar className="h-4 w-4" />
+                Book a Call
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center justify-center">
+            <div className="relative w-full max-w-[240px] aspect-square rounded-2xl bg-primary/5 border border-primary/10 flex flex-col items-center justify-center gap-3 p-6">
+              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                <Calendar className="h-7 w-7 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">Free Strategy Call</p>
+              <p className="text-xs text-muted-foreground text-center">30 min consultation with our team</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
