@@ -189,14 +189,14 @@ const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: numb
   const { count, ref } = useCountUp(value, 2000);
   
   return (
-    <div ref={ref} className="group relative flex flex-col items-center text-center px-4 py-6">
-      <div className="mb-4 h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center ring-1 ring-primary/10 group-hover:ring-primary/25 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-500">
-        <Icon className="h-5.5 w-5.5 text-primary" />
+    <div ref={ref} className="group relative flex flex-col items-center text-center px-6 py-8 md:py-10">
+      <div className="mb-5 h-14 w-14 rounded-2xl bg-primary/8 flex items-center justify-center ring-1 ring-primary/10 shadow-sm group-hover:bg-primary/12 group-hover:ring-primary/20 group-hover:shadow-md group-hover:scale-105 transition-all duration-500 ease-out">
+        <Icon className="h-6 w-6 text-primary/80 group-hover:text-primary transition-colors duration-500" />
       </div>
-      <div className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-b from-primary to-primary/80 bg-clip-text text-transparent tracking-tighter leading-none">
+      <div className="text-4xl md:text-5xl lg:text-[3.5rem] font-black text-primary tracking-tighter leading-none">
         {prefix}{count}{suffix}
       </div>
-      <div className="text-sm md:text-base text-muted-foreground mt-2.5 font-semibold tracking-wide">
+      <div className="text-sm md:text-[15px] text-muted-foreground mt-3 font-medium tracking-normal">
         {label}
       </div>
     </div>
@@ -594,17 +594,25 @@ const Index = () => {
       </section>
 
       {/* Animated Stats Section */}
-      <section className="relative py-8 md:py-12 overflow-hidden">
+      <section className="relative py-12 md:py-20 overflow-hidden">
         <div className="container mx-auto px-4 relative">
           <div className="text-center mb-10 md:mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-extrabold text-foreground tracking-tight">
               Trusted by treatment centers <span className="text-primary">nationwide</span>
             </h2>
           </div>
-          <div className="max-w-5xl mx-auto bg-card/50 backdrop-blur-sm rounded-3xl border border-border/40 p-4 md:p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/40">
+          <div className="max-w-5xl mx-auto bg-gradient-to-br from-card/80 via-card/60 to-primary/[0.03] backdrop-blur-sm rounded-3xl border border-border/30 shadow-[0_2px_40px_-12px_hsl(var(--primary)/0.08)] p-2 md:p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4">
               {stats.map((stat, index) => (
-                <StatCounter key={index} {...stat} />
+                <div key={index} className={cn(
+                  "relative",
+                  index < 2 && "border-b border-border/20 md:border-b-0",
+                  index % 2 === 0 && "border-r border-border/20 md:border-r",
+                  index === 1 && "md:border-r md:border-border/20",
+                  index === 2 && "md:border-r md:border-border/20 border-r-0"
+                )}>
+                  <StatCounter {...stat} />
+                </div>
               ))}
             </div>
           </div>
