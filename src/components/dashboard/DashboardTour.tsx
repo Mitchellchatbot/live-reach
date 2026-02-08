@@ -6,38 +6,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { Button } from '@/components/ui/button';
 import { TourCelebration } from './TourCelebration';
-import { ArrowRight, Settings, Users, Cloud, Bell, Code, Bot, Clock, AlertTriangle, Sparkles, BarChart3 } from 'lucide-react';
+import { ArrowRight, Sparkles, BarChart3, Code, Cloud, Bell, Users, Bot, Clock, AlertTriangle, MessageCircle, Settings, Palette, Wand2, Mail, Share2 } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
 }
 
-// Dashboard tour steps (before AI Support)
-const dashboardSteps: Step[] = [
+// ─── Quick Tour Steps (merged, high-level) ───────────────────────────
+// Each phase gets 1 merged overview step + 1 transition step to next section
+
+const quickDashboardSteps: Step[] = [
   {
     target: '[data-tour="sidebar-logo"]',
-    content: "Welcome to your command center! Let me show you around so you can start helping visitors right away.",
+    content: "quick-welcome",
     title: "Welcome! 👋",
     placement: 'right',
     disableBeacon: true,
-  },
-  {
-    target: '[data-tour="inbox-section"]',
-    content: "All your visitor conversations appear here. New messages will show a badge so you never miss one.",
-    title: "Your Inbox",
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="active-filter"]',
-    content: "Quick filter to see ongoing conversations that need your attention.",
-    title: "Active Chats",
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="conversation-list"]',
-    content: "Click any conversation to open it. Unread ones are highlighted so they're easy to spot.",
-    title: "Conversation List",
-    placement: 'right-start',
+    data: { isQuickWelcome: true },
   },
   {
     target: '[data-tour="ai-support"]',
@@ -48,8 +33,128 @@ const dashboardSteps: Step[] = [
   },
 ];
 
-// AI Support page tour steps (4 steps)
-const aiSupportSteps: Step[] = [
+const quickAISupportSteps: Step[] = [
+  {
+    target: '[data-tour="ai-personas"]',
+    content: "quick-ai-overview",
+    title: "AI Configuration",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickAIOverview: true },
+  },
+  {
+    target: '[data-tour="analytics-sidebar"]',
+    content: "analytics-sidebar-special",
+    title: "Analytics",
+    placement: 'right',
+    data: { isAnalyticsSidebar: true },
+  },
+];
+
+const quickAnalyticsSteps: Step[] = [
+  {
+    target: '[data-tour="analytics-stats"]',
+    content: "quick-analytics-overview",
+    title: "Performance Tracking",
+    placement: 'bottom',
+    disableBeacon: true,
+    data: { isQuickAnalyticsOverview: true },
+  },
+  {
+    target: '[data-tour="widget-code-sidebar"]',
+    content: "widget-code-sidebar-special",
+    title: "Widget Code",
+    placement: 'right',
+    data: { isWidgetCodeSidebar: true },
+  },
+];
+
+const quickWidgetSteps: Step[] = [
+  {
+    target: '[data-tour="widget-preview"]',
+    content: "quick-widget-overview",
+    title: "Widget Customization",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickWidgetOverview: true },
+  },
+  {
+    target: '[data-tour="salesforce"]',
+    content: "salesforce-sidebar-special",
+    title: "Salesforce Integration",
+    placement: 'right',
+    data: { isSalesforceSidebar: true },
+  },
+];
+
+const quickSalesforceSteps: Step[] = [
+  {
+    target: '[data-tour="salesforce-visitor-leads"]',
+    content: "quick-salesforce-overview",
+    title: "Salesforce & Leads",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickSalesforceOverview: true },
+  },
+  {
+    target: '[data-tour="notifications"]',
+    content: "notifications-sidebar-special",
+    title: "Notifications",
+    placement: 'right',
+    data: { isNotificationsSidebar: true },
+  },
+];
+
+const quickNotificationsSteps: Step[] = [
+  {
+    target: '[data-tour="slack-connection"]',
+    content: "quick-notifications-overview",
+    title: "Stay Informed",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickNotificationsOverview: true },
+  },
+  {
+    target: '[data-tour="team-members"]',
+    content: "team-sidebar-special",
+    title: "Team Members",
+    placement: 'right',
+    data: { isTeamSidebar: true },
+  },
+];
+
+const quickTeamSteps: Step[] = [
+  {
+    target: '[data-tour="team-table"]',
+    content: "quick-team-overview",
+    title: "Team Management",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickTeamOverview: true },
+  },
+  {
+    target: '[data-tour="info-indicator"]',
+    content: "See these little ℹ️ icons next to page titles? Click any of them to jump to the relevant docs. You can also click 'Tour this page' in any section header to get a detailed walkthrough!",
+    title: "Quick Help & Deep Dives",
+    placement: 'bottom',
+  },
+  {
+    target: '[data-tour="get-help"]',
+    content: "Have questions? Visit 'Get Help' anytime for support, FAQs, and direct assistance from our team.",
+    title: "Get Help",
+    placement: 'right',
+  },
+];
+
+// ─── Deep Dive Steps (detailed, per-section) ─────────────────────────
+// These are triggered from PageHeader "Tour this page" buttons
+
+const deepDiveAISupport: Step[] = [
   {
     target: '[data-tour="ai-personas"]',
     content: "Create AI personas with unique personalities. Each persona can have different conversation styles and be assigned to specific properties.",
@@ -83,16 +188,9 @@ const aiSupportSteps: Step[] = [
     floaterProps: { disableFlip: true },
     data: { icon: 'message' },
   },
-  {
-    target: '[data-tour="analytics-sidebar"]',
-    content: "analytics-sidebar-special",
-    title: "Analytics",
-    placement: 'right',
-    data: { isAnalyticsSidebar: true },
-  },
 ];
-// Analytics page tour steps
-const analyticsSteps: Step[] = [
+
+const deepDiveAnalytics: Step[] = [
   {
     target: '[data-tour="analytics-top-pages"]',
     content: "See which pages on your website generate the most conversations. The page address shows exactly where visitors are engaging with your chat widget.",
@@ -108,17 +206,9 @@ const analyticsSteps: Step[] = [
     placement: 'bottom',
     disableBeacon: true,
   },
-  {
-    target: '[data-tour="widget-code-sidebar"]',
-    content: "widget-code-sidebar-special",
-    title: "Widget Code",
-    placement: 'right',
-    data: { isWidgetCodeSidebar: true },
-  },
 ];
 
-// Widget Code page tour steps
-const widgetCodeSteps: Step[] = [
+const deepDiveWidget: Step[] = [
   {
     target: '[data-tour="widget-icon-card"]',
     content: "Choose an icon that matches your brand. This is the button visitors click to open your chat widget.",
@@ -179,17 +269,9 @@ const widgetCodeSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="salesforce"]',
-    content: "salesforce-sidebar-special",
-    title: "Salesforce Integration",
-    placement: 'right',
-    data: { isSalesforceSidebar: true },
-  },
 ];
 
-// Salesforce page tour steps
-const salesforceSteps: Step[] = [
+const deepDiveSalesforce: Step[] = [
   {
     target: '[data-tour="salesforce-leads-tab"]',
     content: "The Visitor Leads tab shows all visitors who have chatted on your site. This is your lead pipeline ready to be exported to Salesforce.",
@@ -238,17 +320,9 @@ const salesforceSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="notifications"]',
-    content: "notifications-sidebar-special",
-    title: "Notifications",
-    placement: 'right',
-    data: { isNotificationsSidebar: true },
-  },
 ];
 
-// Notifications page tour steps
-const notificationsSteps: Step[] = [
+const deepDiveNotifications: Step[] = [
   {
     target: '[data-tour="notifications-tabs"]',
     content: "Switch between Slack and Email notification channels. Configure both to never miss an important conversation.",
@@ -291,17 +365,9 @@ const notificationsSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="team-members"]',
-    content: "team-sidebar-special",
-    title: "Team Members",
-    placement: 'right',
-    data: { isTeamSidebar: true },
-  },
 ];
 
-// Team phase steps (after Notifications)
-const teamSteps: Step[] = [
+const deepDiveTeam: Step[] = [
   {
     target: '[data-tour="team-table"]',
     content: "This is your team hub. Here you'll see all your human agents, their status, and assigned properties.",
@@ -329,27 +395,121 @@ const teamSteps: Step[] = [
     placement: 'left',
     floaterProps: { disableFlip: true },
   },
-  {
-    target: '[data-tour="ai-support"]',
-    content: "You can also create and manage AI personas directly from AI Support settings. Customize personality prompts, choose from preset personas, or build your own.",
-    title: "AI Settings",
-    placement: 'right',
-  },
-  {
-    target: '[data-tour="info-indicator"]',
-    content: "See these little ℹ️ icons next to page titles? Click any of them to jump straight to the relevant documentation page. They're on every section!",
-    title: "Quick Help Tips",
-    placement: 'bottom',
-  },
-  {
-    target: '[data-tour="get-help"]',
-    content: "Have questions? Visit 'Get Help' anytime for support, FAQs, and direct assistance from our team.",
-    title: "Get Help",
-    placement: 'right',
-  },
 ];
 
-// Custom tooltip component
+// Map section names to deep dive steps
+export const deepDiveStepsMap: Record<string, Step[]> = {
+  'ai-support': deepDiveAISupport,
+  'analytics': deepDiveAnalytics,
+  'widget': deepDiveWidget,
+  'salesforce': deepDiveSalesforce,
+  'notifications': deepDiveNotifications,
+  'team': deepDiveTeam,
+};
+
+// ─── Feature Item Component (for merged quick tour tooltips) ─────────
+
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+}
+
+const FeatureItem = ({ icon, label, description }: FeatureItemProps) => (
+  <div className="flex items-start gap-2.5">
+    <div className="p-1.5 rounded-lg bg-primary/10 shrink-0 mt-0.5">
+      {icon}
+    </div>
+    <div>
+      <p className="text-sm font-medium text-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+    </div>
+  </div>
+);
+
+// ─── Quick Tour Content Renderers ────────────────────────────────────
+
+const QuickWelcomeContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Welcome to your command center! Here's a quick overview of everything you can do:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<MessageCircle className="h-3.5 w-3.5 text-primary" />} label="Inbox" description="All visitor conversations in one place with unread badges" />
+      <FeatureItem icon={<Bot className="h-3.5 w-3.5 text-primary" />} label="AI Support" description="Configure AI personas, timing, and escalation rules" />
+      <FeatureItem icon={<Code className="h-3.5 w-3.5 text-primary" />} label="Widget" description="Customize and embed your chat widget" />
+    </div>
+  </div>
+);
+
+const QuickAIOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">This is where you configure your AI assistant's behavior:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Bot className="h-3.5 w-3.5 text-primary" />} label="Personas" description="Create AI agents with unique personalities and assign them to properties" />
+      <FeatureItem icon={<Clock className="h-3.5 w-3.5 text-primary" />} label="Timing" description="Response delays and smart typing make AI feel human" />
+      <FeatureItem icon={<AlertTriangle className="h-3.5 w-3.5 text-primary" />} label="Escalation" description="Set rules for when AI hands off to a human agent" />
+      <FeatureItem icon={<Share2 className="h-3.5 w-3.5 text-primary" />} label="Lead Capture" description="Natural conversational capture or traditional form-based collection" />
+    </div>
+    <p className="text-xs text-muted-foreground italic">💡 Use "Tour this page" in the header for a detailed walkthrough</p>
+  </div>
+);
+
+const QuickAnalyticsOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Track your widget's performance at a glance:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<BarChart3 className="h-3.5 w-3.5 text-primary" />} label="Top Pages" description="See which pages drive the most conversations" />
+      <FeatureItem icon={<Sparkles className="h-3.5 w-3.5 text-primary" />} label="Opens & Escalations" description="Measure AI effectiveness and staffing needs" />
+    </div>
+  </div>
+);
+
+const QuickWidgetOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Customize your chat widget and go live:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Palette className="h-3.5 w-3.5 text-primary" />} label="Appearance" description="Icon, color, welcome message, and launcher effects" />
+      <FeatureItem icon={<Code className="h-3.5 w-3.5 text-primary" />} label="Embed Code" description="Copy one snippet to your site and you're live" />
+      <FeatureItem icon={<MessageCircle className="h-3.5 w-3.5 text-primary" />} label="Live Preview" description="See exactly how your widget looks on desktop and mobile" />
+    </div>
+    <p className="text-xs text-muted-foreground italic">💡 Use "Tour this page" for a step-by-step customization walkthrough</p>
+  </div>
+);
+
+const QuickSalesforceOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Your CRM integration hub:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Users className="h-3.5 w-3.5 text-cyan-500" />} label="Visitor Leads" description="View all chat leads with contact info and export status" />
+      <FeatureItem icon={<Cloud className="h-3.5 w-3.5 text-cyan-500" />} label="Salesforce Sync" description="Connect your account, map fields, and enable auto-export" />
+    </div>
+    <p className="text-xs text-muted-foreground italic">💡 Use "Tour this page" for detailed setup instructions</p>
+  </div>
+);
+
+const QuickNotificationsOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Get alerted when it matters:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Share2 className="h-3.5 w-3.5 text-amber-500" />} label="Slack" description="Connect your workspace and choose triggers for instant alerts" />
+      <FeatureItem icon={<Mail className="h-3.5 w-3.5 text-amber-500" />} label="Email" description="Add team recipients and control which events trigger notifications" />
+    </div>
+    <p className="text-xs text-muted-foreground italic">💡 Use "Tour this page" for channel-by-channel setup</p>
+  </div>
+);
+
+const QuickTeamOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Manage your human agents:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Users className="h-3.5 w-3.5 text-blue-500" />} label="Team Hub" description="View agents, their status, and assigned properties" />
+      <FeatureItem icon={<Settings className="h-3.5 w-3.5 text-blue-500" />} label="Onboard Agents" description="Create accounts instantly or send email invitations" />
+      <FeatureItem icon={<Bot className="h-3.5 w-3.5 text-blue-500" />} label="AI Linking" description="Create AI personas that mirror agents for offline coverage" />
+    </div>
+  </div>
+);
+
+// ─── Custom Tooltip ──────────────────────────────────────────────────
+
 const CustomTooltip = ({
   continuous,
   index,
@@ -360,46 +520,117 @@ const CustomTooltip = ({
   tooltipProps,
   isLastStep,
   size,
-  onSetupAI,
-  onSetupTeam,
-  onSetupSalesforce,
-  onSetupNotifications,
-  onSetupWidget,
-  onSetupAnalytics,
-  onSetupWidgetCode,
-  onSetupSalesforceSidebar,
-  onSetupNotificationsSidebar,
-  onSetupTeamSidebar,
+  onNavigatePhase,
   tourPhase,
-}: TooltipRenderProps & { 
-  onSetupAI: () => void; 
-  onSetupTeam: () => void;
-  onSetupSalesforce: () => void;
-  onSetupNotifications: () => void;
-  onSetupWidget: () => void;
-  onSetupAnalytics: () => void;
-  onSetupWidgetCode: () => void;
-  onSetupSalesforceSidebar: () => void;
-  onSetupNotificationsSidebar: () => void;
-  onSetupTeamSidebar: () => void;
+  tourMode,
+}: TooltipRenderProps & {
+  onNavigatePhase: (phase: string) => void;
   tourPhase: string;
+  tourMode: string;
 }) => {
   const isAISettings = step.data?.isAISettings;
-  const isSalesforce = step.data?.isSalesforce;
-  const isNotifications = step.data?.isNotifications;
-  const isWidgetCode = step.data?.isWidgetCode;
   const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
   const isSalesforceSidebar = step.data?.isSalesforceSidebar;
   const isNotificationsSidebar = step.data?.isNotificationsSidebar;
   const isTeamSidebar = step.data?.isTeamSidebar;
 
+  // Check for quick tour merged content types
+  const isQuickWelcome = step.data?.isQuickWelcome;
+  const isQuickAIOverview = step.data?.isQuickAIOverview;
+  const isQuickAnalyticsOverview = step.data?.isQuickAnalyticsOverview;
+  const isQuickWidgetOverview = step.data?.isQuickWidgetOverview;
+  const isQuickSalesforceOverview = step.data?.isQuickSalesforceOverview;
+  const isQuickNotificationsOverview = step.data?.isQuickNotificationsOverview;
+  const isQuickTeamOverview = step.data?.isQuickTeamOverview;
+
+  // Determine sidebar transition targets
+  const isSidebarTransition = isAISettings || isAnalyticsSidebar || isWidgetCodeSidebar || isSalesforceSidebar || isNotificationsSidebar || isTeamSidebar;
+
+  const getTransitionPhase = () => {
+    if (isAISettings) return 'ai-support';
+    if (isAnalyticsSidebar) return 'analytics';
+    if (isWidgetCodeSidebar) return 'widget-code';
+    if (isSalesforceSidebar) return 'salesforce';
+    if (isNotificationsSidebar) return 'notifications';
+    if (isTeamSidebar) return 'team';
+    return '';
+  };
+
+  const getTransitionLabel = () => {
+    if (isAISettings) return 'Tour AI Settings';
+    if (isAnalyticsSidebar) return 'View Analytics';
+    if (isWidgetCodeSidebar) return 'Tour Widget';
+    if (isSalesforceSidebar) return 'Tour Salesforce';
+    if (isNotificationsSidebar) return 'Tour Notifications';
+    if (isTeamSidebar) return 'Tour Team';
+    return 'Next';
+  };
+
+  const getTransitionIcon = () => {
+    if (isAISettings) return <Sparkles className="h-4 w-4 text-primary" />;
+    if (isAnalyticsSidebar) return <BarChart3 className="h-4 w-4 text-primary" />;
+    if (isWidgetCodeSidebar) return <Code className="h-4 w-4 text-green-500" />;
+    if (isSalesforceSidebar) return <Cloud className="h-4 w-4 text-cyan-500" />;
+    if (isNotificationsSidebar) return <Bell className="h-4 w-4 text-amber-500" />;
+    if (isTeamSidebar) return <Users className="h-4 w-4 text-blue-500" />;
+    return null;
+  };
+
+  const getTransitionDescription = () => {
+    if (isAISettings) return "Customize your AI's tone, style, and conversation approach to match your brand voice.";
+    if (isAnalyticsSidebar) return "See which pages drive the most conversations and how often AI escalates to human agents.";
+    if (isWidgetCodeSidebar) return "Customize your chat widget's appearance and get the embed code to add it to your website.";
+    if (isSalesforceSidebar) return "Connect Salesforce to automatically export visitor leads and track Google Ads conversions.";
+    if (isNotificationsSidebar) return "Get instant alerts via email or Slack when new conversations start or escalate.";
+    if (isTeamSidebar) return "Manage human agents, create accounts or send invitations, and link AI personas to team members.";
+    return '';
+  };
+
+  const renderContent = () => {
+    // Quick tour merged content
+    if (isQuickWelcome) return <QuickWelcomeContent />;
+    if (isQuickAIOverview) return <QuickAIOverviewContent />;
+    if (isQuickAnalyticsOverview) return <QuickAnalyticsOverviewContent />;
+    if (isQuickWidgetOverview) return <QuickWidgetOverviewContent />;
+    if (isQuickSalesforceOverview) return <QuickSalesforceOverviewContent />;
+    if (isQuickNotificationsOverview) return <QuickNotificationsOverviewContent />;
+    if (isQuickTeamOverview) return <QuickTeamOverviewContent />;
+
+    // Sidebar transition steps (used in both quick and deep dive)
+    if (isSidebarTransition) {
+      const icon = getTransitionIcon();
+      const description = getTransitionDescription();
+      const colorClass = isAISettings || isAnalyticsSidebar ? 'primary' : 
+        isWidgetCodeSidebar ? 'green-500' : 
+        isSalesforceSidebar ? 'cyan-500' : 
+        isNotificationsSidebar ? 'amber-500' : 'blue-500';
+
+      return (
+        <div className="space-y-4">
+          <div className={`flex items-start gap-3 p-3 rounded-lg bg-${colorClass}/5 border border-${colorClass}/10`}>
+            <div className={`p-2 rounded-full bg-${colorClass}/10`}>
+              {icon}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">{step.title}</p>
+              <p className="text-xs text-muted-foreground">{description}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default text content
+    return <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>;
+  };
+
   return (
     <div
       {...tooltipProps}
       className="bg-background rounded-2xl shadow-2xl max-w-sm overflow-hidden border border-border/50"
     >
-      {/* Progress bar at top */}
+      {/* Progress bar */}
       <div className="h-1 bg-muted">
         <div 
           className="h-full bg-primary transition-all duration-300 ease-out"
@@ -411,156 +642,27 @@ const CustomTooltip = ({
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-            Step {index + 1} of {size}
+            {tourMode === 'deep' ? `Detail ${index + 1} of ${size}` : `Step ${index + 1} of ${size}`}
           </span>
+          {tourMode === 'deep' && (
+            <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              Deep Dive
+            </span>
+          )}
         </div>
         
         {step.title && (
           <h3 className="text-xl font-bold text-foreground mb-3">{step.title}</h3>
         )}
         
-        {isAISettings ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">AI Personality</p>
-                <p className="text-xs text-muted-foreground">Customize your AI's tone, style, and conversation approach to match your brand voice.</p>
-              </div>
-            </div>
-          </div>
-        ) : isSalesforce ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
-              <div className="p-2 rounded-full bg-cyan-500/10">
-                <Cloud className="h-4 w-4 text-cyan-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">CRM Sync</p>
-                <p className="text-xs text-muted-foreground">Auto-export visitor leads to Salesforce. Track conversions and keep your sales team in the loop.</p>
-              </div>
-            </div>
-            <Button 
-              onClick={onSetupSalesforce}
-              className="w-full"
-              size="sm"
-            >
-              <Cloud className="mr-2 h-4 w-4" />
-              Connect Salesforce Now
-            </Button>
-          </div>
-        ) : isNotifications ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-              <div className="p-2 rounded-full bg-amber-500/10">
-                <Bell className="h-4 w-4 text-amber-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Stay Informed</p>
-                <p className="text-xs text-muted-foreground">Get instant alerts via email or Slack when new conversations start or when AI escalates to a human.</p>
-              </div>
-            </div>
-            <Button 
-              onClick={onSetupNotifications}
-              className="w-full"
-              size="sm"
-            >
-              <Bell className="mr-2 h-4 w-4" />
-              Set Up Notifications Now
-            </Button>
-          </div>
-        ) : isWidgetCode ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
-              <div className="p-2 rounded-full bg-green-500/10">
-                <Code className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Go Live</p>
-                <p className="text-xs text-muted-foreground">Copy a single line of code to your website. Your chat widget will be live and ready to engage visitors.</p>
-              </div>
-            </div>
-            <Button 
-              onClick={onSetupWidget}
-              className="w-full"
-              size="sm"
-            >
-              <Code className="mr-2 h-4 w-4" />
-              Get Widget Code Now
-            </Button>
-          </div>
-        ) : isAnalyticsSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-              <div className="p-2 rounded-full bg-primary/10">
-                <BarChart3 className="h-4 w-4 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Track Performance</p>
-                <p className="text-xs text-muted-foreground">See which pages drive the most conversations and how often AI escalates to human agents.</p>
-              </div>
-            </div>
-          </div>
-        ) : isWidgetCodeSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
-              <div className="p-2 rounded-full bg-green-500/10">
-                <Code className="h-4 w-4 text-green-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Go Live</p>
-                <p className="text-xs text-muted-foreground">Customize your chat widget's appearance and get the embed code to add it to your website.</p>
-              </div>
-            </div>
-          </div>
-        ) : isSalesforceSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
-              <div className="p-2 rounded-full bg-cyan-500/10">
-                <Cloud className="h-4 w-4 text-cyan-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">CRM Integration</p>
-                <p className="text-xs text-muted-foreground">Connect Salesforce to automatically export visitor leads and track Google Ads conversions.</p>
-              </div>
-            </div>
-          </div>
-        ) : isNotificationsSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-              <div className="p-2 rounded-full bg-amber-500/10">
-                <Bell className="h-4 w-4 text-amber-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Stay Informed</p>
-                <p className="text-xs text-muted-foreground">Get instant alerts via email or Slack when new conversations start or escalate.</p>
-              </div>
-            </div>
-          </div>
-        ) : isTeamSidebar ? (
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
-              <div className="p-2 rounded-full bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-500" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Your Team</p>
-                <p className="text-xs text-muted-foreground">Manage human agents, create accounts or send invitations, and link AI personas to team members.</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
-        )}
+        {renderContent()}
 
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/50">
           <button
             {...skipProps}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            Skip Tour
+            {tourMode === 'deep' ? 'Close' : 'Skip Tour'}
           </button>
           <div className="flex items-center gap-3">
             {index > 0 && (
@@ -575,9 +677,16 @@ const CustomTooltip = ({
               {...primaryProps}
               size="sm"
               className="gap-1.5 px-4"
-              onClick={isAISettings ? onSetupAI : isAnalyticsSidebar ? onSetupAnalytics : isWidgetCodeSidebar ? onSetupWidgetCode : isSalesforceSidebar ? onSetupSalesforceSidebar : isNotificationsSidebar ? onSetupNotificationsSidebar : isTeamSidebar ? onSetupTeamSidebar : primaryProps.onClick}
+              onClick={isSidebarTransition && tourMode !== 'deep'
+                ? () => onNavigatePhase(getTransitionPhase())
+                : primaryProps.onClick
+              }
             >
-              {isAISettings ? 'Tour AI Settings' : isAnalyticsSidebar ? 'View Analytics' : isWidgetCodeSidebar ? 'Tour Widget Code' : isSalesforceSidebar ? 'Tour Salesforce' : isNotificationsSidebar ? 'Tour Notifications' : isTeamSidebar ? 'Tour Team' : (isLastStep && tourPhase === 'team') ? 'Finish Tour!' : isLastStep ? 'Next' : 'Next'}
+              {isSidebarTransition && tourMode !== 'deep'
+                ? getTransitionLabel()
+                : isLastStep
+                  ? (tourMode === 'deep' ? 'Done' : 'Finish Tour!')
+                  : 'Next'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -586,6 +695,8 @@ const CustomTooltip = ({
     </div>
   );
 };
+
+// ─── Main Component ──────────────────────────────────────────────────
 
 export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const [run, setRun] = useState(false);
@@ -597,54 +708,33 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
   const { user } = useAuth();
   const { setCollapsed } = useSidebarState();
 
-  // Determine which steps to show based on current route
-  const isOnAISupport = location.pathname === '/dashboard/ai-support';
   const tourPhase = searchParams.get('tourPhase') || 'dashboard';
-  
-  // Build the current tour steps based on phase
+  const tourMode = searchParams.get('tourMode') || 'quick'; // 'quick' or 'deep'
+  const deepSection = searchParams.get('deepSection') || '';
+
+  // Build current steps based on mode and phase
   const currentSteps = useMemo(() => {
-    switch (tourPhase) {
-      case 'ai-support':
-        return aiSupportSteps;
-      case 'analytics':
-        return analyticsSteps;
-      case 'widget-code':
-        return widgetCodeSteps;
-      case 'salesforce':
-        return salesforceSteps;
-      case 'notifications':
-        return notificationsSteps;
-      case 'team':
-        return teamSteps;
-      default:
-        return dashboardSteps;
+    if (tourMode === 'deep' && deepSection) {
+      return deepDiveStepsMap[deepSection] || [];
     }
-  }, [tourPhase]);
 
-  const totalSteps = dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length + notificationsSteps.length + teamSteps.length - 1;
+    // Quick tour steps by phase
+    switch (tourPhase) {
+      case 'ai-support': return quickAISupportSteps;
+      case 'analytics': return quickAnalyticsSteps;
+      case 'widget-code': return quickWidgetSteps;
+      case 'salesforce': return quickSalesforceSteps;
+      case 'notifications': return quickNotificationsSteps;
+      case 'team': return quickTeamSteps;
+      default: return quickDashboardSteps;
+    }
+  }, [tourPhase, tourMode, deepSection]);
 
-  // Calculate display step number
-  const getDisplayStepNumber = () => {
-    const offsets: Record<string, number> = {
-      dashboard: 0,
-      'ai-support': dashboardSteps.length,
-      analytics: dashboardSteps.length + aiSupportSteps.length,
-      'widget-code': dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length,
-      salesforce: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length,
-      notifications: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length,
-      team: dashboardSteps.length + aiSupportSteps.length + analyticsSteps.length + widgetCodeSteps.length + salesforceSteps.length + notificationsSteps.length,
-    };
-    return (offsets[tourPhase] || 0) + stepIndex + 1;
-  };
-
-  // Check for tour param and start tour
+  // Start tour when params are set
   useEffect(() => {
     const shouldStartTour = searchParams.get('tour') === '1';
     if (shouldStartTour) {
-      // Expand sidebar when tour starts so elements are visible
       setCollapsed(false);
-      
-      // Longer delay to ensure DOM elements are rendered and sidebar is expanded
       const timer = setTimeout(() => {
         setRun(true);
         setStepIndex(0);
@@ -653,67 +743,45 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
   }, [searchParams, location.pathname, setCollapsed]);
 
-  const handleSetupAI = () => {
-    // Navigate to AI Support and continue tour there
-    setRun(false);
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('tourPhase', 'ai-support');
-    navigate(`/dashboard/ai-support?tour=1&tourPhase=ai-support`);
+  // Phase navigation map for quick tour
+  const phaseNavigationMap: Record<string, string> = {
+    'ai-support': '/dashboard/ai-support?tour=1&tourPhase=ai-support',
+    'analytics': '/dashboard/analytics?tour=1&tourPhase=analytics',
+    'widget-code': '/dashboard/widget?tour=1&tourPhase=widget-code',
+    'salesforce': '/dashboard/salesforce?tour=1&tourPhase=salesforce',
+    'notifications': '/dashboard/notifications?tour=1&tourPhase=notifications',
+    'team': '/dashboard/team?tour=1&tourPhase=team',
   };
 
-  const endTourAndNavigate = async (path: string) => {
+  const handleNavigatePhase = (phase: string) => {
+    setRun(false);
+    const path = phaseNavigationMap[phase];
+    if (path) {
+      navigate(path);
+    }
+  };
+
+  const endTour = async () => {
     setRun(false);
     searchParams.delete('tour');
     searchParams.delete('tourPhase');
+    searchParams.delete('tourMode');
+    searchParams.delete('deepSection');
     setSearchParams(searchParams, { replace: true });
 
-    if (user) {
+    if (tourMode === 'quick' && user) {
       await supabase
         .from('profiles')
         .update({ dashboard_tour_complete: true })
         .eq('user_id', user.id);
     }
-
-    navigate(path);
-  };
-
-  const handleSetupTeam = () => endTourAndNavigate('/dashboard/team');
-  const handleSetupSalesforce = () => endTourAndNavigate('/dashboard/salesforce');
-  const handleSetupNotifications = () => endTourAndNavigate('/dashboard/notifications');
-  const handleSetupWidget = () => endTourAndNavigate('/dashboard/widget');
-
-  const handleSetupAnalytics = () => {
-    setRun(false);
-    navigate(`/dashboard/analytics?tour=1&tourPhase=analytics`);
-  };
-
-  const handleSetupWidgetCode = () => {
-    setRun(false);
-    navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
-  };
-
-  const handleSetupSalesforceSidebar = () => {
-    setRun(false);
-    navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
-  };
-
-  const handleSetupNotificationsSidebar = () => {
-    setRun(false);
-    navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
-  };
-
-  const handleSetupTeamSidebar = () => {
-    setRun(false);
-    navigate('/dashboard/team?tour=1&tourPhase=team');
   };
 
   const scrollTargetIntoView = (stepTarget: string): Promise<void> => {
     return new Promise((resolve) => {
-      const selector = stepTarget;
-      const el = document.querySelector(selector);
+      const el = document.querySelector(stepTarget);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Wait for smooth scroll to finish
         setTimeout(resolve, 600);
       } else {
         resolve();
@@ -727,74 +795,42 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
       const nextIndex = index + (action === ACTIONS.PREV ? -1 : 1);
-      
-      // After AI Support steps → navigate to Analytics
-      if (tourPhase === 'ai-support' && nextIndex >= aiSupportSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        navigate(`/dashboard/analytics?tour=1&tourPhase=analytics`);
-        return;
-      }
 
-      // After Analytics steps → navigate to Widget Code page
-      if (tourPhase === 'analytics' && nextIndex >= analyticsSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        navigate(`/dashboard/widget?tour=1&tourPhase=widget-code`);
-        return;
-      }
-
-      // After Widget Code steps → navigate to Salesforce
-      if (tourPhase === 'widget-code' && nextIndex >= widgetCodeSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        navigate(`/dashboard/salesforce?tour=1&tourPhase=salesforce`);
-        return;
-      }
-
-      // After Salesforce steps → navigate to Notifications
-      if (tourPhase === 'salesforce' && nextIndex >= salesforceSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        navigate(`/dashboard/notifications?tour=1&tourPhase=notifications`);
-        return;
-      }
-
-      // After Notifications steps → navigate to Team
-      if (tourPhase === 'notifications' && nextIndex >= notificationsSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        navigate(`/dashboard/team?tour=1&tourPhase=team`);
-        return;
-      }
-
-      // After Team steps → show celebration
-      if (tourPhase === 'team' && nextIndex >= teamSteps.length && action !== ACTIONS.PREV) {
-        setRun(false);
-        searchParams.delete('tour');
-        searchParams.delete('tourPhase');
-        setSearchParams(searchParams, { replace: true });
+      // Quick tour: check if we've completed the current phase
+      if (tourMode !== 'deep' && nextIndex >= currentSteps.length && action !== ACTIONS.PREV) {
+        const phaseOrder = ['dashboard', 'ai-support', 'analytics', 'widget-code', 'salesforce', 'notifications', 'team'];
+        const currentIdx = phaseOrder.indexOf(tourPhase);
         
-        if (user) {
-          await supabase
-            .from('profiles')
-            .update({ dashboard_tour_complete: true })
-            .eq('user_id', user.id);
+        if (currentIdx >= 0 && currentIdx < phaseOrder.length - 1) {
+          // Navigate to next phase
+          const nextPhase = phaseOrder[currentIdx + 1];
+          handleNavigatePhase(nextPhase);
+          return;
+        } else {
+          // Final phase completed — show celebration
+          await endTour();
+          setShowCelebration(true);
+          return;
         }
-        
-        setShowCelebration(true);
+      }
+
+      // Deep dive: completed all steps
+      if (tourMode === 'deep' && nextIndex >= currentSteps.length && action !== ACTIONS.PREV) {
+        await endTour();
+        onComplete?.();
         return;
       }
-      
-      const nextStep = stepsToUse[nextIndex];
-      const currentStep = stepsToUse[index];
-      
-      // Determine if we need to auto-click a tab.
-      // Case 1: Current step has isClickRequired (user pressed Next on the tab step)
-      // Case 2: TARGET_NOT_FOUND — the previous step had isClickRequired but user 
-      //         pressed Next without clicking the tab, so Joyride jumped to the next
-      //         step whose target doesn't exist yet. Go back and click the tab.
+
+      // Handle tab-click steps
+      const currentStep = currentSteps[index];
+      const nextStep = currentSteps[nextIndex];
+
       let tabStep = currentStep?.data?.isClickRequired ? currentStep : null;
       let targetNextStep = nextStep;
       let targetNextIndex = nextIndex;
-      
+
       if (!tabStep && type === EVENTS.TARGET_NOT_FOUND) {
-        const prevStep = stepsToUse[index - 1];
+        const prevStep = currentSteps[index - 1];
         if (prevStep?.data?.isClickRequired) {
           tabStep = prevStep;
           targetNextStep = currentStep;
@@ -809,12 +845,10 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
           : `[data-tour="${clickTarget}"]`;
         const tabEl = document.querySelector(tabSelector) as HTMLButtonElement;
         if (tabEl) {
-          // Dispatch a custom event to switch tabs (Radix tabs need controlled state)
           const tabValue = tabStep.data?.tabValue || tabEl.getAttribute('value') || tabEl.getAttribute('data-value');
           if (tabValue) {
             window.dispatchEvent(new CustomEvent('tour-switch-tab', { detail: { tab: tabValue } }));
           }
-          // Also click for any non-tab click-required steps
           tabEl.click();
           await new Promise(resolve => setTimeout(resolve, 500));
           if (targetNextStep?.target && typeof targetNextStep.target === 'string') {
@@ -831,12 +865,11 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         }
       }
 
-      // Scroll next target into view before advancing
+      // Scroll next target into view
       if (nextStep?.target && typeof nextStep.target === 'string') {
         setRun(false);
         await scrollTargetIntoView(nextStep.target);
         setStepIndex(nextIndex);
-        // Small delay to let DOM settle after scroll
         setTimeout(() => setRun(true), 100);
       } else {
         setStepIndex(nextIndex);
@@ -844,53 +877,27 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
     }
 
     if (finishedStatuses.includes(status)) {
-      setRun(false);
+      if (tourMode === 'deep') {
+        await endTour();
+        onComplete?.();
+        return;
+      }
 
-      // Each phase's last step has a custom button handler that navigates to the next phase.
-      // STATUS.FINISHED only fires if:
-      // 1. User skipped the tour
-      // 2. The team phase completed (final phase)
-      // 3. Fallback for any edge case
-      
       if (tourPhase === 'team' && status === STATUS.FINISHED) {
-        searchParams.delete('tour');
-        searchParams.delete('tourPhase');
-        setSearchParams(searchParams, { replace: true });
-        
-        if (user) {
-          await supabase
-            .from('profiles')
-            .update({ dashboard_tour_complete: true })
-            .eq('user_id', user.id);
-        }
-        
+        await endTour();
         setShowCelebration(true);
         return;
       }
 
-      // For skip or any other finished status, end the tour
-      searchParams.delete('tour');
-      searchParams.delete('tourPhase');
-      setSearchParams(searchParams, { replace: true });
-
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({ dashboard_tour_complete: true })
-          .eq('user_id', user.id);
-      }
-
+      await endTour();
       onComplete?.();
     }
   };
 
-  // currentSteps already handles all phases via the useMemo above
-  const stepsToUse = currentSteps;
-
   return (
     <>
       <Joyride
-        steps={stepsToUse}
+        steps={currentSteps}
         run={run}
         stepIndex={stepIndex}
         continuous
@@ -904,19 +911,11 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         spotlightClicks
         callback={handleJoyrideCallback}
         tooltipComponent={(props) => (
-          <CustomTooltip 
-            {...props} 
-            onSetupAI={handleSetupAI} 
-            onSetupTeam={handleSetupTeam}
-            onSetupSalesforce={handleSetupSalesforce}
-            onSetupNotifications={handleSetupNotifications}
-            onSetupWidget={handleSetupWidget}
-            onSetupAnalytics={handleSetupAnalytics}
-            onSetupWidgetCode={handleSetupWidgetCode}
-            onSetupSalesforceSidebar={handleSetupSalesforceSidebar}
-            onSetupNotificationsSidebar={handleSetupNotificationsSidebar}
-            onSetupTeamSidebar={handleSetupTeamSidebar}
+          <CustomTooltip
+            {...props}
+            onNavigatePhase={handleNavigatePhase}
             tourPhase={tourPhase}
+            tourMode={tourMode}
           />
         )}
         styles={{
@@ -938,14 +937,14 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
         locale={{
           back: 'Back',
           close: 'Close',
-          last: 'Finish Tour!',
+          last: tourMode === 'deep' ? 'Done' : 'Finish Tour!',
           next: 'Next',
-          skip: 'Skip Tour',
+          skip: tourMode === 'deep' ? 'Close' : 'Skip Tour',
         }}
       />
-      <TourCelebration 
-        open={showCelebration} 
-        onClose={() => setShowCelebration(false)} 
+      <TourCelebration
+        open={showCelebration}
+        onClose={() => setShowCelebration(false)}
       />
     </>
   );

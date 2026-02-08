@@ -647,7 +647,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <PageHeader title="AI Support" docsLink="/documentation/ai-support/personas">
+        <PageHeader title="AI Support" docsLink="/documentation/ai-support/personas" tourSection="ai-support">
           <PropertySelector
             properties={properties}
             selectedPropertyId={selectedPropertyId}
