@@ -6,6 +6,68 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// --- Decryption helpers (AES-256-GCM, key derived from service role key) ---
+
+async function deriveKey(usage: "encrypt" | "decrypt"): Promise<CryptoKey> {
+  const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode("salesforce-token-encryption-salt"),
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    [usage]
+  );
+}
+
+async function decryptToken(encrypted: string): Promise<string> {
+  // If not encrypted (legacy plaintext), return as-is
+  if (!encrypted.startsWith("enc:")) {
+    return encrypted;
+  }
+  const parts = encrypted.split(":");
+  if (parts.length !== 3) throw new Error("Invalid encrypted token format");
+
+  const ivB64 = parts[1];
+  const ctB64 = parts[2];
+  const iv = Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
+  const ciphertext = Uint8Array.from(atob(ctB64), (c) => c.charCodeAt(0));
+
+  const key = await deriveKey("decrypt");
+  const plainBuffer = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv },
+    key,
+    ciphertext
+  );
+  return new TextDecoder().decode(plainBuffer);
+}
+
+async function encryptToken(plaintext: string): Promise<string> {
+  const key = await deriveKey("encrypt");
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    enc.encode(plaintext)
+  );
+  const ivB64 = btoa(String.fromCharCode(...iv));
+  const ctB64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
+  return `enc:${ivB64}:${ctB64}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -86,12 +148,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Decrypt the access token
+    const accessToken = await decryptToken(settings.access_token);
+
     // Call Salesforce Lead describe API
     const describeUrl = `${settings.instance_url}/services/data/v59.0/sobjects/Lead/describe`;
     
     const sfResponse = await fetch(describeUrl, {
       headers: {
-        "Authorization": `Bearer ${settings.access_token}`,
+        "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -104,7 +169,7 @@ Deno.serve(async (req) => {
           // Retry with new token
           const retryResponse = await fetch(describeUrl, {
             headers: {
-              "Authorization": `Bearer ${refreshed.access_token}`,
+              "Authorization": `Bearer ${refreshed}`,
               "Content-Type": "application/json",
             },
           });
@@ -156,14 +221,17 @@ function extractLeadFields(describeData: any) {
     .sort((a: any, b: any) => a.label.localeCompare(b.label));
 }
 
-async function refreshAccessToken(supabase: any, settings: any) {
+async function refreshAccessToken(supabase: any, settings: any): Promise<string | null> {
   try {
+    // Decrypt the refresh token
+    const refreshToken = await decryptToken(settings.refresh_token);
+
     const tokenUrl = "https://login.salesforce.com/services/oauth2/token";
     const params = new URLSearchParams({
       grant_type: "refresh_token",
       client_id: settings.client_id,
       client_secret: settings.client_secret,
-      refresh_token: settings.refresh_token,
+      refresh_token: refreshToken,
     });
 
     const response = await fetch(tokenUrl, {
@@ -179,16 +247,19 @@ async function refreshAccessToken(supabase: any, settings: any) {
 
     const tokenData = await response.json();
 
+    // Encrypt the new access token before storing
+    const encryptedAccessToken = await encryptToken(tokenData.access_token);
+
     // Update stored tokens
     await supabase
       .from("salesforce_settings")
       .update({
-        access_token: tokenData.access_token,
+        access_token: encryptedAccessToken,
         updated_at: new Date().toISOString(),
       })
       .eq("id", settings.id);
 
-    return tokenData;
+    return tokenData.access_token; // Return plaintext for immediate use
   } catch (error) {
     console.error("Error refreshing token:", error);
     return null;

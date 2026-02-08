@@ -5,6 +5,47 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// --- Encryption helpers (AES-256-GCM, key derived from service role key) ---
+
+async function deriveKey(): Promise<CryptoKey> {
+  const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode("salesforce-token-encryption-salt"),
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt"]
+  );
+}
+
+async function encryptToken(plaintext: string): Promise<string> {
+  const key = await deriveKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    enc.encode(plaintext)
+  );
+  // Encode as base64: iv:ciphertext
+  const ivB64 = btoa(String.fromCharCode(...iv));
+  const ctB64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
+  return `enc:${ivB64}:${ctB64}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -142,12 +183,19 @@ Deno.serve(async (req) => {
     // Calculate token expiration
     const expiresAt = new Date(Date.now() + (tokenData.expires_in || 7200) * 1000).toISOString();
 
-    // Update the settings with tokens
+    // Encrypt tokens before storage
+    console.log("Encrypting Salesforce tokens before storage...");
+    const encryptedAccessToken = await encryptToken(tokenData.access_token);
+    const encryptedRefreshToken = tokenData.refresh_token
+      ? await encryptToken(tokenData.refresh_token)
+      : null;
+
+    // Update the settings with encrypted tokens
     const { error: updateError } = await supabase
       .from("salesforce_settings")
       .update({
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
+        access_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
         instance_url: tokenData.instance_url,
         token_expires_at: expiresAt,
         enabled: true,
@@ -162,7 +210,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("Salesforce OAuth successful for property:", propertyId);
+    console.log("Salesforce OAuth successful for property:", propertyId, "(tokens encrypted)");
 
     return new Response(
       `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-success'},'*');window.close();</script><p>Connected to Salesforce successfully! You can close this window.</p></body></html>`,
