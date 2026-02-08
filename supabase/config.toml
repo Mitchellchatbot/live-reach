@@ -47,3 +47,15 @@ verify_jwt = false
 
 [functions.sales-chat]
 verify_jwt = false
+
+[functions.create-agent-account]
+verify_jwt = false
+
+[functions.salesforce-export-leads]
+verify_jwt = false
+
+[functions.salesforce-describe-lead]
+verify_jwt = false
+
+[functions.send-agent-invitation]
+verify_jwt = false
