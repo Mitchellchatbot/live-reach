@@ -26,7 +26,7 @@ const features = [
     title: 'Medical-Safe Responses',
     description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
     backInfo: [
-      'HIPAA-aware response filtering',
+      'Compliance-aware response filtering',
       'Avoids diagnoses & medical advice',
       'Custom safety guardrails per facility',
       'Liability-reducing language templates',
