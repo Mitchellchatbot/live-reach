@@ -654,6 +654,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             onPropertyChange={setSelectedPropertyId}
             onDeleteProperty={async () => false}
             variant="header"
+            showAddButton
           />
           <HeaderButton size="icon" onClick={fetchAIAgents}>
             <RefreshCw className="h-4 w-4" />
