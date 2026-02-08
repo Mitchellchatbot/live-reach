@@ -66,15 +66,17 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour, iconCo
       )}
       <div 
         className={cn(
-          "h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-110",
+          "h-8 w-8 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:scale-105",
+          isActive && "ring-1 ring-black/[0.04] shadow-sm"
         )}
         style={{ 
-          backgroundColor: iconColor ? `${iconColor}18` : 'hsl(var(--sidebar-accent))',
+          backgroundColor: iconColor ? `${iconColor}12` : 'hsl(var(--sidebar-accent))',
+          ...(iconColor ? { borderColor: `${iconColor}18` } : {}),
         }}
       >
         <Icon
           className={cn(
-            "h-[18px] w-[18px] transition-all duration-200",
+            "h-4 w-4 transition-all duration-200",
             !iconColor && (isActive 
               ? "text-sidebar-primary" 
               : "text-sidebar-foreground/50 group-hover:text-sidebar-primary"),
