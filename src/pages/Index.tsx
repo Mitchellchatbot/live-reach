@@ -25,31 +25,67 @@ const features = [
     icon: Shield,
     title: 'Medical-Safe Responses',
     description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
+    backInfo: [
+      'HIPAA-aware response filtering',
+      'Avoids diagnoses & medical advice',
+      'Custom safety guardrails per facility',
+      'Liability-reducing language templates',
+    ],
   },
   {
     icon: AlertTriangle,
     title: 'Crisis Detection',
     description: 'Instantly detects crisis keywords and alerts your team for immediate human intervention.',
+    backInfo: [
+      'Real-time keyword monitoring',
+      'Instant Slack & email alerts',
+      'Auto-escalation to live agents',
+      'Customizable trigger phrases',
+    ],
   },
   {
     icon: Brain,
     title: 'Natural Lead Capture',
     description: 'Collects visitor info through natural conversation—name, phone, insurance, and more.',
+    backInfo: [
+      'No forms — conversational capture',
+      'Name, phone, email & insurance',
+      'Smart follow-up questions',
+      'Auto-populates CRM fields',
+    ],
   },
   {
     icon: UserCheck,
     title: 'Qualified Handoffs',
     description: 'Human agents start conversations informed with full context and visitor details.',
+    backInfo: [
+      'Full chat history transferred',
+      'Visitor profile & intent summary',
+      'Warm handoff notifications',
+      'Priority queue for urgent cases',
+    ],
   },
   {
     icon: BarChart3,
     title: 'Conversion Analytics',
     description: 'Track chat-to-lead conversion, drop-off points, and peak inquiry times.',
+    backInfo: [
+      'Chat-to-lead conversion rates',
+      'Peak inquiry time heatmaps',
+      'Drop-off point analysis',
+      'ROI tracking dashboard',
+    ],
   },
   {
     icon: Zap,
     title: 'Salesforce Integration',
     description: 'Export captured leads directly to Salesforce with one click.',
+    backInfo: [
+      'One-click lead export',
+      'Custom field mapping',
+      'Auto-export on escalation',
+      'Bi-directional sync support',
+    ],
   },
 ];
 
@@ -184,7 +220,68 @@ const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.React
   );
 };
 
-// Stat counter component
+// Flip card component for features
+const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
+  const [flipped, setFlipped] = useState(false);
+  const Icon = feature.icon;
+
+  return (
+    <div
+      className="group cursor-pointer [perspective:1000px] h-[180px] sm:h-[200px]"
+      onClick={() => setFlipped(!flipped)}
+    >
+      <div
+        className={cn(
+          "relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d]",
+          flipped && "[transform:rotateY(180deg)]"
+        )}
+      >
+        {/* Front */}
+        <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 overflow-hidden">
+          <div className="p-5 md:p-6 h-full flex flex-col justify-center">
+            <div className="flex items-start gap-4 sm:flex-col sm:items-start md:flex-row md:items-start">
+              <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:shadow-md transition-all duration-300">
+                <Icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-foreground mb-1">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <span className="text-[11px] text-muted-foreground/60 font-medium">Tap to learn more →</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Back */}
+        <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-primary to-primary/85 rounded-2xl border border-primary/30 shadow-lg shadow-primary/10 overflow-hidden">
+          <div className="p-5 md:p-6 h-full flex flex-col justify-center text-primary-foreground">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                <Icon className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <h3 className="text-base font-bold">{feature.title}</h3>
+            </div>
+            <ul className="space-y-2">
+              {feature.backInfo.map((info, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-primary-foreground/90">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{info}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-3 flex justify-end">
+              <span className="text-[11px] text-primary-foreground/60 font-medium">← Tap to go back</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: number; suffix: string; label: string; prefix: string; icon: React.ElementType }) => {
   const { count, ref } = useCountUp(value, 2000);
   
@@ -704,23 +801,8 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
-            {features.map((feature, index) => (
-              <div 
-                key={feature.title}
-                className="group relative bg-card rounded-2xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden"
-              >
-                <div className="p-5 md:p-6">
-                  <div className="flex items-start gap-4 sm:flex-col sm:items-start md:flex-row md:items-start">
-                    <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:shadow-md transition-all duration-300">
-                      <feature.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-base font-bold text-foreground mb-1">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {features.map((feature) => (
+              <FlipCard key={feature.title} feature={feature} />
             ))}
           </div>
         </div>
