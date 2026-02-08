@@ -124,8 +124,8 @@ export const TourCelebration = ({ open, onClose }: TourCelebrationProps) => {
               </div>
             </div>
 
-            {/* CTAs */}
-            <div className="space-y-3">
+            {/* CTA */}
+            <div>
               <Button
                 onClick={() => {
                   onClose();
@@ -136,14 +136,6 @@ export const TourCelebration = ({ open, onClose }: TourCelebrationProps) => {
               >
                 Start 7-Day Free Trial
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                size="lg"
-                className="w-full text-base font-medium text-muted-foreground"
-              >
-                Continue Exploring
               </Button>
             </div>
           </div>
