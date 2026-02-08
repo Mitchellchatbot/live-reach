@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Trash2, ChevronDown, Check, Plus } from 'lucide-react';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -34,6 +39,8 @@ interface PropertySelectorProps {
   variant?: 'default' | 'header';
   /** Show "All Properties" option */
   showAllOption?: boolean;
+  /** Show a visible "+" button next to the selector */
+  showAddButton?: boolean;
 }
 
 export const PropertySelector = ({
@@ -46,6 +53,7 @@ export const PropertySelector = ({
   className = 'w-[220px]',
   variant = 'default',
   showAllOption = false,
+  showAddButton = false,
 }: PropertySelectorProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<DbProperty | null>(null);
@@ -95,95 +103,119 @@ export const PropertySelector = ({
 
   const isHeader = variant === 'header';
 
+  const handleAddProperty = () => {
+    if (properties.length >= 1) {
+      navigate('/dashboard/subscription?reason=add-property');
+    } else {
+      navigate('/onboarding');
+    }
+  };
+
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant={isHeader ? "default" : "outline"}
-            className={cn(
-              'justify-between',
-              isHeader && 'bg-primary text-primary-foreground hover:bg-primary/90',
-              className
-            )}
-          >
-            <span className="flex items-center gap-2 truncate">
-              {showIcon && <Building2 className={cn("h-4 w-4 shrink-0", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />}
-              <span className="truncate">
-                {showAllOption && !selectedPropertyId 
-                  ? 'All Properties' 
-                  : selectedProperty 
-                    ? getPropertyLabel(selectedProperty) 
-                    : 'Select property'}
+      <div className="flex items-center gap-1.5">
+        <DropdownMenu open={open} onOpenChange={setOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={isHeader ? "default" : "outline"}
+              className={cn(
+                'justify-between',
+                isHeader && 'bg-primary text-primary-foreground hover:bg-primary/90',
+                className
+              )}
+            >
+              <span className="flex items-center gap-2 truncate">
+                {showIcon && <Building2 className={cn("h-4 w-4 shrink-0", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />}
+                <span className="truncate">
+                  {showAllOption && !selectedPropertyId 
+                    ? 'All Properties' 
+                    : selectedProperty 
+                      ? getPropertyLabel(selectedProperty) 
+                      : 'Select property'}
+                </span>
               </span>
-            </span>
-            <ChevronDown className={cn("h-4 w-4 shrink-0 ml-2", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[280px]">
-          {showAllOption && (
-            <DropdownMenuItem
-              className="flex items-center gap-2 cursor-pointer"
-              onSelect={() => {
-                onPropertyChange('all');
-                setOpen(false);
-              }}
-            >
-              {!selectedPropertyId && (
-                <Check className="h-4 w-4 text-primary shrink-0" />
-              )}
-              {selectedPropertyId && (
-                <span className="w-4 shrink-0" />
-              )}
-              <span className="truncate font-medium">All Properties</span>
-            </DropdownMenuItem>
-          )}
-          {properties.map((property) => (
-            <DropdownMenuItem
-              key={property.id}
-              className="flex items-center justify-between gap-2 cursor-pointer"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <div 
-                className="flex items-center gap-2 flex-1 min-w-0"
-                onClick={() => handleSelectProperty(property)}
+              <ChevronDown className={cn("h-4 w-4 shrink-0 ml-2", isHeader ? "text-primary-foreground/80" : "text-muted-foreground")} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[280px]">
+            {showAllOption && (
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onSelect={() => {
+                  onPropertyChange('all');
+                  setOpen(false);
+                }}
               >
-                {selectedPropertyId === property.id && (
+                {!selectedPropertyId && (
                   <Check className="h-4 w-4 text-primary shrink-0" />
                 )}
-                {selectedPropertyId !== property.id && (
+                {selectedPropertyId && (
                   <span className="w-4 shrink-0" />
                 )}
-                <span className="truncate">{getPropertyLabel(property)}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
-                onClick={(e) => handleDeleteClick(e, property)}
+                <span className="truncate font-medium">All Properties</span>
+              </DropdownMenuItem>
+            )}
+            {properties.map((property) => (
+              <DropdownMenuItem
+                key={property.id}
+                className="flex items-center justify-between gap-2 cursor-pointer"
+                onSelect={(e) => e.preventDefault()}
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+                <div 
+                  className="flex items-center gap-2 flex-1 min-w-0"
+                  onClick={() => handleSelectProperty(property)}
+                >
+                  {selectedPropertyId === property.id && (
+                    <Check className="h-4 w-4 text-primary shrink-0" />
+                  )}
+                  {selectedPropertyId !== property.id && (
+                    <span className="w-4 shrink-0" />
+                  )}
+                  <span className="truncate">{getPropertyLabel(property)}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                  onClick={(e) => handleDeleteClick(e, property)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuItem>
+            ))}
+            <Separator className="my-1" />
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer text-primary"
+              onSelect={() => {
+                setOpen(false);
+                handleAddProperty();
+              }}
+            >
+              <Plus className="h-4 w-4 shrink-0" />
+              <span className="font-medium">Add Property</span>
             </DropdownMenuItem>
-          ))}
-          <Separator className="my-1" />
-          <DropdownMenuItem
-            className="flex items-center gap-2 cursor-pointer text-primary"
-            onSelect={() => {
-              setOpen(false);
-              // First property is free; additional ones require payment
-              if (properties.length >= 1) {
-                navigate('/dashboard/subscription?reason=add-property');
-              } else {
-                navigate('/onboarding');
-              }
-            }}
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            <span className="font-medium">Add Property</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {showAddButton && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isHeader ? "default" : "outline"}
+                size="icon"
+                className={cn(
+                  "h-9 w-9 shrink-0",
+                  isHeader && "bg-primary/80 text-primary-foreground hover:bg-primary border-0"
+                )}
+                onClick={handleAddProperty}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add another website</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

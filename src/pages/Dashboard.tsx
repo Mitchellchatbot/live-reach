@@ -359,6 +359,7 @@ const DashboardContent = () => {
                   className="w-auto max-w-[150px] h-8 text-xs"
                   variant="header"
                   showAllOption={true}
+                  showAddButton
                 />
               </div>
             </div>

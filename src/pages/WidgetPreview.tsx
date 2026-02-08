@@ -346,7 +346,7 @@ const WidgetPreview = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <PageHeader title="Widget Customization" docsLink="/documentation/widget/customization" tourSection="widget">
-          <PropertySelector properties={properties} selectedPropertyId={selectedPropertyId} onPropertyChange={handlePropertyChange} onDeleteProperty={deleteProperty} variant="header" />
+          <PropertySelector properties={properties} selectedPropertyId={selectedPropertyId} onPropertyChange={handlePropertyChange} onDeleteProperty={deleteProperty} variant="header" showAddButton />
         </PageHeader>
 
         <main className="flex-1 p-2 overflow-hidden">

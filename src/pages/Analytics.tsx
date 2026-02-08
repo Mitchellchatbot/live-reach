@@ -37,6 +37,7 @@ const Analytics = () => {
               onPropertyChange={setSelectedPropertyId}
               onDeleteProperty={deleteProperty}
               variant="header"
+              showAddButton
             />
           ) : null}
         </PageHeader>
