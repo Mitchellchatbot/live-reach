@@ -397,46 +397,6 @@ const TeamMembers = () => {
     setUploadingAvatarFor(null);
   };
 
-  const handleCreateTestAgent = async () => {
-    if (!user) return;
-
-    const testEmail = `test-agent-${Date.now()}@test.local`;
-    const testName = `Test Agent ${Math.floor(Math.random() * 1000)}`;
-
-    try {
-      const { data: newAgent, error: agentError } = await supabase
-        .from('agents')
-        .insert({
-          name: testName,
-          email: testEmail,
-          user_id: user.id,
-          invited_by: user.id,
-          invitation_status: 'accepted',
-          status: 'online',
-        })
-        .select()
-        .single();
-
-      if (agentError) {
-        toast.error('Failed to create test agent: ' + agentError.message);
-        return;
-      }
-
-      if (properties.length > 0 && newAgent) {
-        const assignments = properties.map((prop) => ({
-          agent_id: newAgent.id,
-          property_id: prop.id,
-        }));
-        await supabase.from('property_agents').insert(assignments);
-      }
-
-      toast.success(`Test agent "${testName}" created and assigned to all properties!`);
-      fetchAgents();
-    } catch (error) {
-      console.error('Error creating test agent:', error);
-      toast.error('Failed to create test agent');
-    }
-  };
 
   const handleCreateAIFromAgent = async (agent: Agent) => {
     if (!user) return;
@@ -529,10 +489,6 @@ const TeamMembers = () => {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleCreateTestAgent} className="text-xs">
-                  + Test Agent
-                </Button>
-                
                 {/* Create Account Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogTrigger asChild>
