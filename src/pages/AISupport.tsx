@@ -1229,7 +1229,12 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   <div className="border-t pt-6 mt-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label>Natural Lead Capture</Label>
+                        <div className="flex items-center gap-2">
+                          <Label>Natural Lead Capture</Label>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                            Recommended
+                          </span>
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           AI conversationally asks for selected fields instead of showing a form
                         </p>
