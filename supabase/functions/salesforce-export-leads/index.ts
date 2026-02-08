@@ -12,6 +12,33 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const callerUserId = userData.user.id;
+
     const { propertyId, visitorIds } = await req.json();
 
     if (!propertyId || !visitorIds || visitorIds.length === 0) {
@@ -21,9 +48,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // --- Authorization: Verify caller owns the property ---
+    const { data: property, error: propError } = await supabase
+      .from("properties")
+      .select("user_id")
+      .eq("id", propertyId)
+      .single();
+
+    if (propError || !property || property.user_id !== callerUserId) {
+      console.error("Forbidden: caller does not own property", propertyId);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: you do not own this property" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Fetch Salesforce settings
     const { data: settings, error: settingsError } = await supabase
@@ -50,7 +90,8 @@ Deno.serve(async (req) => {
     const { data: visitors, error: visitorsError } = await supabase
       .from("visitors")
       .select("*")
-      .in("id", visitorIds);
+      .in("id", visitorIds)
+      .eq("property_id", propertyId); // Ensure visitors belong to this property
 
     if (visitorsError || !visitors || visitors.length === 0) {
       return new Response(
@@ -124,7 +165,7 @@ Deno.serve(async (req) => {
         if (response.ok) {
           const result = await response.json();
           
-          // Find or create a conversation for this visitor to record the export
+          // Find conversation for this visitor to record the export
           const { data: conversation } = await supabase
             .from("conversations")
             .select("id")
@@ -140,6 +181,7 @@ Deno.serve(async (req) => {
                 conversation_id: conversation.id,
                 salesforce_lead_id: result.id,
                 export_type: "manual",
+                exported_by: callerUserId,
               });
           }
 
@@ -154,6 +196,8 @@ Deno.serve(async (req) => {
         errors.push(`Error exporting ${visitor.name || visitor.email || visitor.id}`);
       }
     }
+
+    console.log(`Exported ${exported}/${visitors.length} leads by user ${callerUserId}`);
 
     return new Response(
       JSON.stringify({ 

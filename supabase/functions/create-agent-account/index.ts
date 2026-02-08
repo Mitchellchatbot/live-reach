@@ -22,8 +22,32 @@ serve(async (req: Request) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
+
+    // --- Authentication: Verify the caller ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
+    if (claimsError || !claimsData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const callerUserId = claimsData.user.id;
+
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -39,6 +63,32 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // --- Authorization: Verify invitedBy matches the caller ---
+    if (invitedBy !== callerUserId) {
+      console.error("Forbidden: invitedBy does not match authenticated user");
+      return new Response(
+        JSON.stringify({ error: "Forbidden: can only invite on your behalf" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- Authorization: Verify caller owns all specified properties ---
+    if (propertyIds && propertyIds.length > 0) {
+      const { data: ownedProps, error: propsError } = await supabaseAdmin
+        .from("properties")
+        .select("id")
+        .in("id", propertyIds)
+        .eq("user_id", callerUserId);
+
+      if (propsError || !ownedProps || ownedProps.length !== propertyIds.length) {
+        console.error("Forbidden: caller does not own all specified properties");
+        return new Response(
+          JSON.stringify({ error: "Forbidden: you do not own all specified properties" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     if (password.length < 6) {
@@ -66,7 +116,7 @@ serve(async (req: Request) => {
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm the email
+      email_confirm: true,
       user_metadata: {
         full_name: name,
       },
@@ -82,7 +132,7 @@ serve(async (req: Request) => {
 
     const userId = newUser.user.id;
 
-    // Create agent record (the trigger handle_agent_signup will handle role assignment)
+    // Create agent record
     const { data: agentData, error: agentError } = await supabaseAdmin
       .from("agents")
       .insert({
@@ -98,7 +148,6 @@ serve(async (req: Request) => {
 
     if (agentError) {
       console.error("Error creating agent record:", agentError);
-      // Try to clean up the created user
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return new Response(
         JSON.stringify({ error: "Failed to create agent record" }),
@@ -106,8 +155,7 @@ serve(async (req: Request) => {
       );
     }
 
-    // The database trigger assigns 'client' role by default for new users
-    // We need to update it to 'agent' instead
+    // Update role to 'agent'
     const { error: roleError } = await supabaseAdmin
       .from("user_roles")
       .update({ role: "agent" })
@@ -115,13 +163,12 @@ serve(async (req: Request) => {
 
     if (roleError) {
       console.error("Error updating to agent role:", roleError);
-      // Try inserting if update fails (in case trigger didn't fire)
       await supabaseAdmin
         .from("user_roles")
         .insert({ user_id: userId, role: "agent" });
     }
 
-    // Delete any duplicate 'client' role that might have been created
+    // Delete any duplicate 'client' role
     await supabaseAdmin
       .from("user_roles")
       .delete()
@@ -143,6 +190,8 @@ serve(async (req: Request) => {
         console.error("Error assigning properties:", assignError);
       }
     }
+
+    console.log("Agent account created successfully for:", email, "by:", callerUserId);
 
     return new Response(
       JSON.stringify({ 

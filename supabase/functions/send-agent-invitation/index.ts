@@ -21,18 +21,65 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const callerUserId = userData.user.id;
+
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { agentId, agentName, agentEmail, inviterName, appUrl }: InvitationRequest = await req.json();
 
-    console.log("Sending invitation to:", agentEmail, "from:", inviterName);
+    // --- Authorization: Verify caller owns the agent (invited_by) ---
+    const { data: agentRecord, error: agentError } = await supabase
+      .from("agents")
+      .select("invited_by")
+      .eq("id", agentId)
+      .single();
+
+    if (agentError || !agentRecord) {
+      return new Response(
+        JSON.stringify({ error: "Agent not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (agentRecord.invited_by !== callerUserId) {
+      console.error("Forbidden: caller did not invite this agent");
+      return new Response(
+        JSON.stringify({ error: "Forbidden: you did not create this agent" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Sending invitation to:", agentEmail, "from:", inviterName, "by user:", callerUserId);
 
     // Generate invitation token
     const invitationToken = crypto.randomUUID();
