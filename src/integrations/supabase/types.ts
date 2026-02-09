@@ -200,6 +200,44 @@ export type Database = {
           },
         ]
       }
+      data_retention_settings: {
+        Row: {
+          auto_purge_enabled: boolean
+          created_at: string
+          id: string
+          last_purge_at: string | null
+          property_id: string
+          retention_days: number
+          updated_at: string
+        }
+        Insert: {
+          auto_purge_enabled?: boolean
+          created_at?: string
+          id?: string
+          last_purge_at?: string | null
+          property_id: string
+          retention_days?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_purge_enabled?: boolean
+          created_at?: string
+          id?: string
+          last_purge_at?: string | null
+          property_id?: string
+          retention_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_retention_settings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_notification_settings: {
         Row: {
           created_at: string
@@ -317,6 +355,51 @@ export type Database = {
           },
         ]
       }
+      phi_audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          phi_fields_accessed: string[] | null
+          property_id: string | null
+          resource_id: string
+          resource_type: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          phi_fields_accessed?: string[] | null
+          property_id?: string | null
+          resource_id: string
+          resource_type: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          phi_fields_accessed?: string[] | null
+          property_id?: string | null
+          resource_id?: string
+          resource_type?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -327,6 +410,7 @@ export type Database = {
           full_name: string | null
           id: string
           onboarding_complete: boolean
+          session_timeout_minutes: number
           updated_at: string
           user_id: string
         }
@@ -339,6 +423,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           onboarding_complete?: boolean
+          session_timeout_minutes?: number
           updated_at?: string
           user_id: string
         }
@@ -351,6 +436,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           onboarding_complete?: boolean
+          session_timeout_minutes?: number
           updated_at?: string
           user_id?: string
         }

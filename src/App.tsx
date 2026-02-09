@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -74,6 +75,7 @@ const queryClient = new QueryClient({
 // Route guard for clients only
 const RequireClient = ({ children }: { children: React.ReactNode }) => {
   const { user, isClient, isAdmin, loading } = useAuth();
+  useSessionTimeout();
   
   if (loading) return <PageLoader />;
   

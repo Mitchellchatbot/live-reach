@@ -17,10 +17,12 @@ import {
   Plus,
   Loader2,
   MessageCircle,
-  Mail
+  Mail,
+  Shield
 } from 'lucide-react';
 import { SlackSettings } from '@/components/settings/SlackSettings';
 import { EmailSettings } from '@/components/settings/EmailSettings';
+import { HipaaSettings } from '@/components/settings/HipaaSettings';
 import {
   Dialog,
   DialogContent,
@@ -180,7 +182,7 @@ const Notifications = () => {
 
               {selectedPropertyId && (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-2" data-tour="notifications-tabs">
+                  <TabsList className="grid w-full grid-cols-3" data-tour="notifications-tabs">
                     <TabsTrigger value="slack" className="gap-2" data-tour="notifications-slack-tab">
                       <MessageCircle className="h-4 w-4" />
                       Slack
@@ -188,6 +190,10 @@ const Notifications = () => {
                     <TabsTrigger value="email" className="gap-2" data-tour="notifications-email-tab">
                       <Mail className="h-4 w-4" />
                       Email
+                    </TabsTrigger>
+                    <TabsTrigger value="hipaa" className="gap-2">
+                      <Shield className="h-4 w-4" />
+                      HIPAA
                     </TabsTrigger>
                   </TabsList>
 
@@ -199,6 +205,11 @@ const Notifications = () => {
                   {/* Email Tab */}
                   <TabsContent value="email">
                     <EmailSettings propertyId={selectedPropertyId} />
+                  </TabsContent>
+
+                  {/* HIPAA Tab */}
+                  <TabsContent value="hipaa">
+                    <HipaaSettings propertyId={selectedPropertyId} />
                   </TabsContent>
                 </Tabs>
               )}
