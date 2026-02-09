@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.purge-expired-data]
 verify_jwt = false
+
+[functions.close-stale-conversations]
+verify_jwt = false
