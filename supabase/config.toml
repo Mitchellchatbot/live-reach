@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.close-stale-conversations]
 verify_jwt = false
+
+[functions.send-email-notification]
+verify_jwt = false

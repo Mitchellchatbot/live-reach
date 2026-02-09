@@ -890,6 +890,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           });
         }
       }
+
+      // Fire escalation email notification (non-blocking)
+      const lastVisitorMsg = [...messages].reverse().find(m => m.sender_type === 'visitor');
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId,
+          eventType: 'escalation',
+          conversationId,
+          message: lastVisitorMsg?.content,
+        }),
+      }).catch(err => console.error('Escalation email notification error:', err));
     }
 
     // NO announcement message - AI will keep chatting until human takes over
