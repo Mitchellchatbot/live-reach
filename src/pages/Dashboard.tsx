@@ -504,6 +504,7 @@ const DashboardContent = () => {
                 onCloseConversation={handleCloseConversation}
                 isAIEnabled={isAIEnabled}
                 onToggleAI={handleToggleAI}
+                propertyName={selectedConversation ? properties.find(p => p.id === selectedConversation.propertyId)?.name : undefined}
               />
             </div>
           </div>
