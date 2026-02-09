@@ -891,18 +891,27 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Fire escalation email notification (non-blocking)
+      // Fire escalation notifications (non-blocking)
       const lastVisitorMsg = [...messages].reverse().find(m => m.sender_type === 'visitor');
+      const escalationPayload = JSON.stringify({
+        propertyId,
+        eventType: 'escalation',
+        conversationId,
+        message: lastVisitorMsg?.content,
+      });
+      const notifyHeaders = { 'Content-Type': 'application/json' };
+
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          propertyId,
-          eventType: 'escalation',
-          conversationId,
-          message: lastVisitorMsg?.content,
-        }),
+        headers: notifyHeaders,
+        body: escalationPayload,
       }).catch(err => console.error('Escalation email notification error:', err));
+
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-slack-notification`, {
+        method: 'POST',
+        headers: notifyHeaders,
+        body: escalationPayload,
+      }).catch(err => console.error('Escalation Slack notification error:', err));
     }
 
     // NO announcement message - AI will keep chatting until human takes over
