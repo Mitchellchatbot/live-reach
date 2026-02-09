@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Bot, ImagePlus, Monitor, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -50,35 +50,82 @@ const colorPresets = [{
   color: 'hsl(190, 30%, 45%)'
 }];
 
-// Convert hex to HSL
-const hexToHsl = (hex: string): string => {
+// --- Color conversion utilities ---
+const hexToRgb = (hex: string): [number, number, number] | null => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return hex;
-  let r = parseInt(result[1], 16) / 255;
-  let g = parseInt(result[2], 16) / 255;
-  let b = parseInt(result[3], 16) / 255;
-  const max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
-  let h = 0,
-    s = 0,
-    l = (max + min) / 2;
+  if (!result) return null;
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
+};
+
+const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
     }
   }
-  return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 };
+
+const hslToRgb = (h: number, s: number, l: number): [number, number, number] => {
+  h /= 360; s /= 100; l /= 100;
+  let r: number, g: number, b: number;
+  if (s === 0) { r = g = b = l; } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+};
+
+const rgbToHex = (r: number, g: number, b: number): string =>
+  '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+
+// Parse any color string to RGB
+const parseColorToRgb = (color: string): [number, number, number] | null => {
+  const hexMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color.trim());
+  if (hexMatch) return [parseInt(hexMatch[1], 16), parseInt(hexMatch[2], 16), parseInt(hexMatch[3], 16)];
+  const rgbMatch = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i.exec(color.trim());
+  if (rgbMatch) return [parseInt(rgbMatch[1]), parseInt(rgbMatch[2]), parseInt(rgbMatch[3])];
+  const hslMatch = /^hsl\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*\)$/i.exec(color.trim());
+  if (hslMatch) return hslToRgb(parseFloat(hslMatch[1]), parseFloat(hslMatch[2]), parseFloat(hslMatch[3]));
+  return null;
+};
+
+const formatColor = (color: string, format: 'hex' | 'rgb' | 'hsl'): string => {
+  const rgb = parseColorToRgb(color);
+  if (!rgb) return color;
+  switch (format) {
+    case 'hex': return rgbToHex(...rgb);
+    case 'rgb': return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    case 'hsl': { const [h, s, l] = rgbToHsl(...rgb); return `hsl(${h}, ${s}%, ${l}%)`; }
+  }
+};
+
+// Legacy wrapper used elsewhere
+const hexToHsl = (hex: string): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  const [h, s, l] = rgbToHsl(...rgb);
+  return `hsl(${h}, ${s}%, ${l}%)`;
+};
+
+type ColorFormat = 'hex' | 'rgb' | 'hsl';
 
 // Display Settings Card with Save button
 const DisplaySettingsCard = ({
@@ -155,6 +202,7 @@ const WidgetPreview = () => {
   } = useConversations();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
   const [primaryColor, setPrimaryColor] = useState('#F97316');
+  const [colorFormat, setColorFormat] = useState<ColorFormat>('hsl');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");
   const [copied, setCopied] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -461,13 +509,43 @@ const WidgetPreview = () => {
                       <div className="grid grid-cols-6 gap-3 mb-4">
                         {colorPresets.map(preset => <button key={preset.name} onClick={() => setPrimaryColor(preset.color)} className="h-10 w-10 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" style={{ backgroundColor: preset.color }} title={preset.name} />)}
                       </div>
+                      <div className="flex items-center gap-1 mb-2">
+                        {(['hex', 'rgb', 'hsl'] as ColorFormat[]).map(fmt => (
+                          <button
+                            key={fmt}
+                            onClick={() => {
+                              setColorFormat(fmt);
+                              setPrimaryColor(formatColor(primaryColor, fmt));
+                            }}
+                            className={cn(
+                              "px-2.5 py-1 rounded-md text-xs font-semibold uppercase transition-colors",
+                              colorFormat === fmt
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-accent"
+                            )}
+                          >
+                            {fmt}
+                          </button>
+                        ))}
+                      </div>
                       <div className="flex gap-2">
-                        <Input value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} placeholder="Custom color (HSL)" className="font-mono text-sm" />
+                        <Input
+                          value={primaryColor}
+                          onChange={e => setPrimaryColor(e.target.value)}
+                          placeholder={
+                            colorFormat === 'hex' ? '#FF6600' :
+                            colorFormat === 'rgb' ? 'rgb(255, 102, 0)' :
+                            'hsl(24, 100%, 50%)'
+                          }
+                          className="font-mono text-sm"
+                        />
                         <Button
                           variant="outline"
                           onClick={async () => {
                             if (!selectedPropertyId) return;
-                            const { error } = await supabase.from('properties').update({ widget_color: primaryColor }).eq('id', selectedPropertyId);
+                            // Always save as HSL for consistency
+                            const hslValue = formatColor(primaryColor, 'hsl');
+                            const { error } = await supabase.from('properties').update({ widget_color: hslValue }).eq('id', selectedPropertyId);
                             if (error) { toast.error('Failed to save color'); return; }
                             toast.success('Brand color saved!');
                           }}
