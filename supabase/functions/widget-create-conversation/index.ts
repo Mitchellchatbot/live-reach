@@ -95,20 +95,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fire email notification (non-blocking)
-    const notifyUrl = `${supabaseUrl}/functions/v1/send-email-notification`;
-    fetch(notifyUrl, {
+    // Fire email + Slack notifications (non-blocking)
+    const notifyPayload = JSON.stringify({
+      propertyId,
+      eventType: "new_conversation",
+      conversationId: newConv.id,
+    });
+    const notifyHeaders = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${serviceKey}`,
+    };
+
+    fetch(`${supabaseUrl}/functions/v1/send-email-notification`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${serviceKey}`,
-      },
-      body: JSON.stringify({
-        propertyId,
-        eventType: "new_conversation",
-        conversationId: newConv.id,
-      }),
-    }).catch((err) => console.error("Email notification fire-and-forget error:", err));
+      headers: notifyHeaders,
+      body: notifyPayload,
+    }).catch((err) => console.error("Email notification error:", err));
+
+    fetch(`${supabaseUrl}/functions/v1/send-slack-notification`, {
+      method: "POST",
+      headers: notifyHeaders,
+      body: notifyPayload,
+    }).catch((err) => console.error("Slack notification error:", err));
 
     return new Response(JSON.stringify({ conversationId: newConv.id, created: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
