@@ -23,6 +23,7 @@ interface ChatPanelProps {
   onCloseConversation: () => void;
   isAIEnabled?: boolean;
   onToggleAI?: () => void;
+  propertyName?: string;
 }
 const formatMessageTime = (date: Date) => {
   if (isToday(date)) {
@@ -101,10 +102,12 @@ const InfoItem = ({
 // Collapsible visitor info sidebar
 const VisitorInfoSidebar = ({
   visitor,
-  assignedAgent
+  assignedAgent,
+  propertyName
 }: {
   visitor: any;
   assignedAgent: any;
+  propertyName?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -136,6 +139,16 @@ const VisitorInfoSidebar = ({
   return (
     <div ref={sidebarRef} className={cn("border-l border-border/30 hidden lg:flex flex-col transition-all duration-200 bg-card w-64")}>
       <div className="flex-1 overflow-y-auto">
+
+        {/* Property Info */}
+        {propertyName && (
+          <div className="px-3 pt-3 pb-1">
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-primary/5 border border-primary/10">
+              <Building className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+              <span className="text-xs font-medium text-primary truncate">{propertyName}</span>
+            </div>
+          </div>
+        )}
 
         {/* Personal Info Section */}
         <div className="p-3 space-y-1">
@@ -200,7 +213,8 @@ export const ChatPanel = ({
   onSendMessage,
   onCloseConversation,
   isAIEnabled = true,
-  onToggleAI
+  onToggleAI,
+  propertyName
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
@@ -404,7 +418,7 @@ export const ChatPanel = ({
       </div>
 
       {/* Visitor Info Sidebar - Collapsible on large screens */}
-      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} />
+      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} propertyName={propertyName} />
 
       {/* Video Call Modal */}
       <VideoCallModal isOpen={isVideoCallOpen} onClose={() => setIsVideoCallOpen(false)} status={videoChat.status} isMuted={videoChat.isMuted} isVideoOff={videoChat.isVideoOff} error={videoChat.error} localVideoRef={videoChat.localVideoRef} remoteVideoRef={videoChat.remoteVideoRef} onEndCall={handleEndVideoCall} onToggleMute={videoChat.toggleMute} onToggleVideo={videoChat.toggleVideo} participantName={visitorName} isInitiator={true} />
