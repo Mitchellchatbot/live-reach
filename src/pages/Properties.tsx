@@ -40,11 +40,7 @@ const Properties = () => {
   const displayProperties = isTourMode && properties.length === 0 ? mockProperties : properties;
 
   const handleAdd = () => {
-    if (properties.length === 0) {
-      navigate('/onboarding');
-    } else {
-      navigate('/dashboard/subscription');
-    }
+    navigate('/onboarding');
   };
 
   const handleDelete = async () => {
