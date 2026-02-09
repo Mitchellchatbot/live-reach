@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useConversations } from '@/hooks/useConversations';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,10 +24,20 @@ import { Building2, Globe, Plus, Trash2, ExternalLink } from 'lucide-react';
 
 const Properties = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { properties, refetch } = useConversations();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const isTourMode = searchParams.get('tour') === '1';
+
+  // Mock data for tour mode on empty accounts
+  const mockProperties = useMemo(() => [
+    { id: 'mock-1', name: 'alcoholawareness.org', domain: 'alcoholawareness.org', widget_color: 'hsl(255, 100%, 17%)' },
+    { id: 'mock-2', name: 'recoveryhelp.com', domain: 'recoveryhelp.com', widget_color: '#22C55E' },
+  ], []);
+
+  const displayProperties = isTourMode && properties.length === 0 ? mockProperties : properties;
 
   const handleAdd = () => {
     if (properties.length === 0) {
@@ -55,16 +66,17 @@ const Properties = () => {
   return (
     <div className="flex h-screen bg-background">
       <DashboardSidebar />
+      <DashboardTour />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <PageHeader title="Properties">
-          <Button onClick={handleAdd} size="sm" className="gap-2">
+        <PageHeader title="Properties" tourSection="properties">
+          <Button data-tour="properties-add-btn" onClick={handleAdd} size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
             Add Property
           </Button>
         </PageHeader>
 
-        <main className="flex-1 overflow-y-auto p-6">
-          {properties.length === 0 ? (
+        <main className="flex-1 overflow-y-auto p-6" data-tour="properties-grid">
+          {displayProperties.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
@@ -82,7 +94,7 @@ const Properties = () => {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {properties.map((property) => (
+              {displayProperties.map((property) => (
                 <Card key={property.id} className="group relative hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">

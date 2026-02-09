@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { Button } from '@/components/ui/button';
 import { TourCelebration } from './TourCelebration';
-import { ArrowRight, Sparkles, BarChart3, Code, Cloud, Bell, Users, Bot, Clock, AlertTriangle, MessageCircle, Settings, Palette, Wand2, Mail, Share2 } from 'lucide-react';
+import { ArrowRight, Sparkles, BarChart3, Code, Cloud, Bell, Users, Bot, Clock, AlertTriangle, MessageCircle, Settings, Palette, Wand2, Mail, Share2, Building2, Globe, Trash2, Plus } from 'lucide-react';
 
 interface DashboardTourProps {
   onComplete?: () => void;
@@ -23,6 +23,25 @@ const quickDashboardSteps: Step[] = [
     placement: 'right',
     disableBeacon: true,
     data: { isQuickWelcome: true },
+  },
+  {
+    target: '[data-tour="properties-sidebar"]',
+    content: "properties-sidebar-special",
+    title: "Properties",
+    placement: 'right',
+    data: { isPropertiesSidebar: true },
+  },
+];
+
+const quickPropertiesSteps: Step[] = [
+  {
+    target: '[data-tour="properties-grid"]',
+    content: "quick-properties-overview",
+    title: "Your Properties",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { isQuickPropertiesOverview: true },
   },
   {
     target: '[data-tour="ai-support"]',
@@ -397,8 +416,28 @@ const deepDiveTeam: Step[] = [
   },
 ];
 
+const deepDiveProperties: Step[] = [
+  {
+    target: '[data-tour="properties-grid"]',
+    content: "This is your property hub. Each card represents a website where your chat widget is deployed. You can see the domain, widget color, and manage each property.",
+    title: "Property Overview",
+    placement: 'left',
+    disableBeacon: true,
+    floaterProps: { disableFlip: true },
+    data: { icon: 'building' },
+  },
+  {
+    target: '[data-tour="properties-add-btn"]',
+    content: "Click here to add a new website. Your first property is free — additional properties require a subscription upgrade.",
+    title: "Add Property",
+    placement: 'bottom',
+    data: { icon: 'plus' },
+  },
+];
+
 // Map section names to deep dive steps
 export const deepDiveStepsMap: Record<string, Step[]> = {
+  'properties': deepDiveProperties,
   'ai-support': deepDiveAISupport,
   'analytics': deepDiveAnalytics,
   'widget': deepDiveWidget,
@@ -497,6 +536,18 @@ const QuickNotificationsOverviewContent = () => (
   </div>
 );
 
+const QuickPropertiesOverviewContent = () => (
+  <div className="space-y-3">
+    <p className="text-sm text-muted-foreground">Manage all the websites where your chat widget lives:</p>
+    <div className="space-y-2.5">
+      <FeatureItem icon={<Building2 className="h-3.5 w-3.5 text-primary" />} label="Property Cards" description="Each card shows a website with its domain and widget color" />
+      <FeatureItem icon={<Globe className="h-3.5 w-3.5 text-primary" />} label="Multi-Site" description="Deploy chat widgets across multiple websites from one dashboard" />
+      <FeatureItem icon={<Plus className="h-3.5 w-3.5 text-primary" />} label="Add Properties" description="Add new websites and configure them in seconds" />
+    </div>
+    <p className="text-xs text-muted-foreground italic">💡 Use "Tour this page" in the header for a detailed walkthrough</p>
+  </div>
+);
+
 const QuickTeamOverviewContent = () => (
   <div className="space-y-3">
     <p className="text-sm text-muted-foreground">Manage your human agents:</p>
@@ -529,6 +580,7 @@ const CustomTooltip = ({
   tourMode: string;
 }) => {
   const isAISettings = step.data?.isAISettings;
+  const isPropertiesSidebar = step.data?.isPropertiesSidebar;
   const isAnalyticsSidebar = step.data?.isAnalyticsSidebar;
   const isWidgetCodeSidebar = step.data?.isWidgetCodeSidebar;
   const isSalesforceSidebar = step.data?.isSalesforceSidebar;
@@ -537,6 +589,7 @@ const CustomTooltip = ({
 
   // Check for quick tour merged content types
   const isQuickWelcome = step.data?.isQuickWelcome;
+  const isQuickPropertiesOverview = step.data?.isQuickPropertiesOverview;
   const isQuickAIOverview = step.data?.isQuickAIOverview;
   const isQuickAnalyticsOverview = step.data?.isQuickAnalyticsOverview;
   const isQuickWidgetOverview = step.data?.isQuickWidgetOverview;
@@ -545,9 +598,10 @@ const CustomTooltip = ({
   const isQuickTeamOverview = step.data?.isQuickTeamOverview;
 
   // Determine sidebar transition targets
-  const isSidebarTransition = isAISettings || isAnalyticsSidebar || isWidgetCodeSidebar || isSalesforceSidebar || isNotificationsSidebar || isTeamSidebar;
+  const isSidebarTransition = isPropertiesSidebar || isAISettings || isAnalyticsSidebar || isWidgetCodeSidebar || isSalesforceSidebar || isNotificationsSidebar || isTeamSidebar;
 
   const getTransitionPhase = () => {
+    if (isPropertiesSidebar) return 'properties';
     if (isAISettings) return 'ai-support';
     if (isAnalyticsSidebar) return 'analytics';
     if (isWidgetCodeSidebar) return 'widget-code';
@@ -558,6 +612,7 @@ const CustomTooltip = ({
   };
 
   const getTransitionLabel = () => {
+    if (isPropertiesSidebar) return 'Tour Properties';
     if (isAISettings) return 'Tour AI Settings';
     if (isAnalyticsSidebar) return 'View Analytics';
     if (isWidgetCodeSidebar) return 'Tour Widget';
@@ -568,6 +623,7 @@ const CustomTooltip = ({
   };
 
   const getTransitionIcon = () => {
+    if (isPropertiesSidebar) return <Building2 className="h-4 w-4 text-orange-500" />;
     if (isAISettings) return <Sparkles className="h-4 w-4 text-primary" />;
     if (isAnalyticsSidebar) return <BarChart3 className="h-4 w-4 text-primary" />;
     if (isWidgetCodeSidebar) return <Code className="h-4 w-4 text-green-500" />;
@@ -578,6 +634,7 @@ const CustomTooltip = ({
   };
 
   const getTransitionDescription = () => {
+    if (isPropertiesSidebar) return "View and manage all your websites in one place. Add new properties or remove existing ones.";
     if (isAISettings) return "Customize your AI's tone, style, and conversation approach to match your brand voice.";
     if (isAnalyticsSidebar) return "See which pages drive the most conversations and how often AI escalates to human agents.";
     if (isWidgetCodeSidebar) return "Customize your chat widget's appearance and get the embed code to add it to your website.";
@@ -590,6 +647,7 @@ const CustomTooltip = ({
   const renderContent = () => {
     // Quick tour merged content
     if (isQuickWelcome) return <QuickWelcomeContent />;
+    if (isQuickPropertiesOverview) return <QuickPropertiesOverviewContent />;
     if (isQuickAIOverview) return <QuickAIOverviewContent />;
     if (isQuickAnalyticsOverview) return <QuickAnalyticsOverviewContent />;
     if (isQuickWidgetOverview) return <QuickWidgetOverviewContent />;
@@ -601,7 +659,8 @@ const CustomTooltip = ({
     if (isSidebarTransition) {
       const icon = getTransitionIcon();
       const description = getTransitionDescription();
-      const colorClass = isAISettings || isAnalyticsSidebar ? 'primary' : 
+      const colorClass = isPropertiesSidebar ? 'orange-500' :
+        isAISettings || isAnalyticsSidebar ? 'primary' : 
         isWidgetCodeSidebar ? 'green-500' : 
         isSalesforceSidebar ? 'cyan-500' : 
         isNotificationsSidebar ? 'amber-500' : 'blue-500';
@@ -720,6 +779,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
     // Quick tour steps by phase
     switch (tourPhase) {
+      case 'properties': return quickPropertiesSteps;
       case 'ai-support': return quickAISupportSteps;
       case 'analytics': return quickAnalyticsSteps;
       case 'widget-code': return quickWidgetSteps;
@@ -745,6 +805,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
   // Phase navigation map for quick tour
   const phaseNavigationMap: Record<string, string> = {
+    'properties': '/dashboard/properties?tour=1&tourPhase=properties',
     'ai-support': '/dashboard/ai-support?tour=1&tourPhase=ai-support',
     'analytics': '/dashboard/analytics?tour=1&tourPhase=analytics',
     'widget-code': '/dashboard/widget?tour=1&tourPhase=widget-code',
@@ -798,7 +859,7 @@ export const DashboardTour = ({ onComplete }: DashboardTourProps) => {
 
       // Quick tour: check if we've completed the current phase
       if (tourMode !== 'deep' && nextIndex >= currentSteps.length && action !== ACTIONS.PREV) {
-        const phaseOrder = ['dashboard', 'ai-support', 'analytics', 'widget-code', 'salesforce', 'notifications', 'team'];
+        const phaseOrder = ['dashboard', 'properties', 'ai-support', 'analytics', 'widget-code', 'salesforce', 'notifications', 'team'];
         const currentIdx = phaseOrder.indexOf(tourPhase);
         
         if (currentIdx >= 0 && currentIdx < phaseOrder.length - 1) {
