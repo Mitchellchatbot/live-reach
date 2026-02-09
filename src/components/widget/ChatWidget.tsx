@@ -374,7 +374,7 @@ export const ChatWidget = ({
           {/* Welcome Message */}
           <div className="px-5 py-3 bg-gradient-to-r from-accent/30 to-muted/30 border-b border-border/30">
             <p className="text-xs text-muted-foreground text-center">
-              You're in a safe space. Take your time. 💚
+              🔒 100% Private & Confidential. Take your time. 💚
             </p>
           </div>
 
