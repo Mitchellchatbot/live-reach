@@ -1,37 +1,33 @@
 
 
-## Fix: Auto-Click Tabs Should Fully Handle Step Advancement
+## Add Properties Page to Sidebar
 
-### Problem
-When the tour reaches a "click this tab" step (Widget Embed tab, Salesforce Settings tab, Email tab) and the user presses **Next**, the auto-click logic runs but then falls through to the generic scroll-and-advance code. This causes a race condition: the tab content hasn't rendered yet, so the next step's target element doesn't exist, and the tour stops with `TARGET_NOT_FOUND`.
+### Overview
+Add a "Properties" navigation item under the **Manage** section in the sidebar, linking to a new `/dashboard/properties` route. This page will let users view and manage their properties (websites) in a dedicated full-page view, consistent with the existing sidebar style.
 
-### Root Cause
-After the `isClickRequired` block clicks the tab and waits for the next target, the code continues to the scroll block at line 776. That block calls `setRun(false)`, tries to scroll to the target (which may still not be in the DOM), sets the step index, then re-enables the tour. The timing is off because the tab click already waited, but the scroll block doesn't know that.
+### Changes
 
-### Solution
-After the `isClickRequired` auto-click block successfully clicks the tab and confirms the next target exists, it should **advance the step and return immediately** instead of falling through.
+**1. Sidebar Update** (`src/components/dashboard/DashboardSidebar.tsx`)
+- Add a `Building2` icon import (from lucide-react, already used in PropertySelector)
+- Insert a new `SidebarItem` under the "Manage" section, after "Team Members":
+  - Route: `/dashboard/properties`
+  - Icon: `Building2`
+  - Label: "Properties"
+  - Icon color: `#F97316` (orange, matching the property/building theme)
 
-### File to Modify
+**2. New Properties Page** (`src/pages/Properties.tsx`)
+- Create a new page component that displays properties in a card-based layout
+- Reuse the existing `useConversations` hook (which already fetches properties) or query properties directly
+- Include ability to view, delete, and add properties (leveraging existing `PropertySelector` logic)
+- Match the page layout pattern used by TeamMembers, Analytics, etc. (PageHeader + content area with sidebar)
 
-**`src/components/dashboard/DashboardTour.tsx`** (~lines 756-774)
+**3. Route Registration** (`src/App.tsx`)
+- Lazy-load the new Properties page
+- Add route: `/dashboard/properties` wrapped in `RequireClient`
 
-After the auto-click block (clicking the tab, waiting for the next target to appear), add:
-- `setRun(false)`
-- `setStepIndex(nextIndex)`
-- `setTimeout(() => setRun(true), 200)` (slightly longer delay to let tab content settle)
-- `return` to prevent falling through to the generic scroll logic
+### Technical Details
 
-This mirrors the same pattern used for sidebar navigation transitions (e.g., analytics-to-widget-code), where the handler sets `run=false`, navigates, and returns -- letting the `useEffect` re-engage the tour on the new page. Here, instead of navigating to a new page, we just advance the step after the tab switch.
+- The `Building2` icon is already imported in `PropertySelector.tsx`, confirming it's available from `lucide-react`
+- The sidebar item will use `iconColor="#F97316"` for the orange tint, keeping the duotone icon container style consistent with existing items
+- The new page will follow the same dashboard layout pattern (DashboardSidebar + main content area) as other `/dashboard/*` pages
 
-### Technical Detail
-
-```text
-Current flow (broken):
-  isClickRequired block runs -> clicks tab -> waits -> falls through
-  scroll block runs -> target may not exist -> tour breaks
-
-Fixed flow:
-  isClickRequired block runs -> clicks tab -> waits for target ->
-  setRun(false) -> setStepIndex(next) -> setRun(true) -> return
-  (scroll block is skipped)
-```
