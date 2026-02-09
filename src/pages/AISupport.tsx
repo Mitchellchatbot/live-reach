@@ -210,7 +210,7 @@ const AISupport = () => {
   const [settings, setSettings] = useState<PropertySettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [newKeyword, setNewKeyword] = useState('');
-  const [isBasePromptDialogOpen, setIsBasePromptDialogOpen] = useState(false);
+  // Base prompt dialog removed — prompt is now immutable for HIPAA compliance
 
   useEffect(() => {
     fetchAIAgents();
@@ -1329,26 +1329,23 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 </CardContent>
               </Card>
 
-              {/* AI Base Prompt Button */}
+               {/* AI Base Prompt - Read Only */}
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <CardTitle>AI Base Prompt</CardTitle>
+                    <Badge variant="outline" className="ml-2 text-xs">HIPAA Protected</Badge>
                   </div>
                   <CardDescription>
-                    Customize the foundational system prompt that defines how the AI behaves
+                    This foundational prompt is enforced server-side and cannot be modified to ensure HIPAA compliance. AI persona personalities are layered on top of this base prompt.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      {settings.ai_base_prompt ? 'Using custom prompt' : 'Using default prompt'}
-                    </div>
-                    <Button onClick={() => setIsBasePromptDialogOpen(true)}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Change AI Base Prompt
-                    </Button>
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <p className="text-xs text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                      The base prompt enforces: radically human tone, 2-3 sentence max responses, no medical advice, crisis protocol (988 Lifeline), no AI identity disclosure, and a validate-first engagement strategy. Persona personalities layer additional behavioral guidance on top.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -1359,65 +1356,6 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         </div>
       </div>
 
-      {/* AI Base Prompt Dialog */}
-      <Dialog open={isBasePromptDialogOpen} onOpenChange={setIsBasePromptDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>AI Base Prompt</DialogTitle>
-            <DialogDescription>
-              Customize the system prompt that defines how the AI behaves. This is the foundation for all AI responses.
-            </DialogDescription>
-          </DialogHeader>
-          {settings && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="base-prompt">System Prompt</Label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSettings({ ...settings, ai_base_prompt: null })}
-                    className="text-xs"
-                  >
-                    Reset to Default
-                  </Button>
-                </div>
-                <Textarea
-                  id="base-prompt"
-                  placeholder={DEFAULT_AI_PROMPT}
-                  value={settings.ai_base_prompt ?? ''}
-                  onChange={(e) => setSettings({ ...settings, ai_base_prompt: e.target.value || null })}
-                  rows={12}
-                  className="font-mono text-sm"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leave empty to use the default prompt. AI persona personalities will be added on top of this base prompt.
-                </p>
-              </div>
-              {!settings.ai_base_prompt && (
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Currently using default prompt:</p>
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono">
-                    {DEFAULT_AI_PROMPT}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBasePromptDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              handleSaveSettings();
-              setIsBasePromptDialogOpen(false);
-            }} disabled={isSaving}>
-              {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete AI Agent Confirmation */}
       <AlertDialog open={!!deleteAIAgentId} onOpenChange={(open) => !open && setDeleteAIAgentId(null)}>
