@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { documentationSections } from '@/data/documentation';
 import { ChevronRight, BookOpen } from 'lucide-react';
 
-export const DocsSidebar = () => {
+export const DocsSidebar = ({ onNavigate }: { onNavigate?: () => void }) => {
   const { section: currentSection, topic: currentTopic } = useParams();
 
   return (
@@ -33,6 +33,7 @@ export const DocsSidebar = () => {
                     <li key={topic.id}>
                       <Link
                         to={`/documentation/${section.id}/${topic.id}`}
+                        onClick={onNavigate}
                         className={cn(
                           "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
                           isActive 
