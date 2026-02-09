@@ -20,6 +20,7 @@ import { PropertySelector } from '@/components/PropertySelector';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { SidebarStateProvider, useSidebarState } from '@/hooks/useSidebarState';
 import { InfoIndicator } from '@/components/docs/InfoIndicator';
 type FilterStatus = 'all' | 'active' | 'closed';
@@ -197,10 +198,26 @@ const DashboardContent = () => {
 
     return { all: unreadConversations, active: activeCount };
   }, [dbConversations]);
+  const { logAccess } = useAuditLog();
+
   const handleSelectConversation = async (conversation: Conversation) => {
     setSelectedConversationId(conversation.id);
-    setCollapsed(true); // Auto-collapse sidebar when selecting a conversation
+    setCollapsed(true);
     await markMessagesAsRead(conversation.id);
+    
+    // Audit log: viewing visitor PHI
+    const phiFields = ['name', 'email', 'phone', 'addiction_history', 'drug_of_choice', 'treatment_interest', 'insurance_info', 'urgency_level'].filter(
+      f => (conversation.visitor as any)?.[f]
+    );
+    if (phiFields.length > 0) {
+      logAccess({
+        action: 'view',
+        resource_type: 'visitor',
+        resource_id: conversation.visitorId,
+        property_id: conversation.propertyId,
+        phi_fields_accessed: phiFields,
+      });
+    }
   };
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user) return;
