@@ -14,7 +14,8 @@ import {
   LifeBuoy,
   Bot,
   BookOpen,
-  CreditCard
+  CreditCard,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -250,6 +251,7 @@ export const DashboardSidebar = ({
               <div data-tour="team-members">
                 <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} iconColor="#8B5CF6" />
               </div>
+              <SidebarItem to="/dashboard/properties" icon={Building2} label="Properties" collapsed={collapsed} iconColor="#F97316" />
               <div data-tour="ai-support">
                 <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} iconColor="#06B6D4" />
               </div>
