@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   MessageSquare,
@@ -15,13 +15,16 @@ import {
   Bot,
   BookOpen,
   CreditCard,
-  Building2
+  Building2,
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import gmailLogo from '@/assets/logos/gmail.svg';
@@ -141,18 +144,22 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
 
 export const DashboardSidebar = ({
   badgeCounts,
+  mobileOpen,
+  onMobileOpenChange,
 }: {
   badgeCounts?: { all?: number; active?: number };
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
 }) => {
   const { collapsed, setCollapsed } = useSidebarState();
   const navigate = useNavigate();
   const { profile, updateAvatarUrl } = useUserProfile();
   const { signOut, user, isClient, isAgent, isAdmin } = useAuth();
+  const isMobile = useIsMobile();
   
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  // Badge counts are provided by the page (prevents duplicate useConversations mounts/subscriptions)
   const resolvedBadgeCounts = useMemo(() => {
     return {
       all: badgeCounts?.all ?? 0,
@@ -165,12 +172,14 @@ export const DashboardSidebar = ({
     navigate('/auth');
   };
 
-  return (
+  const sidebarContent = (forMobile: boolean) => (
     <TooltipProvider>
       <aside 
         className={cn(
-          "h-screen flex flex-col transition-all duration-300 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm",
-          collapsed ? "w-14 sm:w-[72px]" : "w-72"
+          "h-full flex flex-col bg-sidebar text-sidebar-foreground",
+          !forMobile && "border-r border-sidebar-border shadow-sm transition-all duration-300",
+          !forMobile && (collapsed ? "w-14 sm:w-[72px]" : "w-72"),
+          forMobile && "w-full"
         )}
       >
         {/* Logo */}
@@ -178,19 +187,18 @@ export const DashboardSidebar = ({
           data-tour="sidebar-logo"
           className={cn(
             "h-16 flex items-center border-b border-sidebar-border px-4",
-            collapsed ? "justify-center" : "justify-between"
+            !forMobile && collapsed ? "justify-center" : "justify-between"
           )}
         >
-          {!collapsed && (
+          {(!forMobile && collapsed) ? (
+            <img src={careAssistLogo} alt="Care Assist" className="w-10 h-10 rounded-xl object-contain" />
+          ) : (
             <div className="flex items-center gap-2">
               <img src={careAssistLogo} alt="Care Assist" className="w-8 h-8 rounded-lg object-contain" />
               <span className="font-bold text-lg text-sidebar-foreground">Care Assist</span>
             </div>
           )}
-          {collapsed && (
-            <img src={careAssistLogo} alt="Care Assist" className="w-10 h-10 rounded-xl object-contain" />
-          )}
-          {!collapsed && (
+          {!forMobile && !collapsed && (
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <Button
@@ -209,8 +217,8 @@ export const DashboardSidebar = ({
           )}
         </div>
         
-        {/* Expand button when collapsed */}
-        {collapsed && (
+        {/* Expand button when collapsed (desktop only) */}
+        {!forMobile && collapsed && (
           <div className="flex justify-center py-2 border-b border-sidebar-border">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -232,80 +240,73 @@ export const DashboardSidebar = ({
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-thin">
-          {/* Inbox - Available to clients and admins */}
           {(isClient || isAdmin) && (
             <div data-tour="inbox-section">
-              <SidebarSection title="Inbox" collapsed={collapsed}>
-                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={collapsed} iconColor="#6366F1" />
+              <SidebarSection title="Inbox" collapsed={!forMobile && collapsed}>
+                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={!forMobile && collapsed} iconColor="#6366F1" />
                 <div data-tour="active-filter">
-                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={collapsed} iconColor="#22C55E" />
+                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={!forMobile && collapsed} iconColor="#22C55E" />
                 </div>
-                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={collapsed} iconColor="#94A3B8" />
+                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={!forMobile && collapsed} iconColor="#94A3B8" />
               </SidebarSection>
             </div>
           )}
 
-          {/* Manage - Available to clients and admins */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Manage" collapsed={collapsed}>
+            <SidebarSection title="Manage" collapsed={!forMobile && collapsed}>
               <div data-tour="team-members">
-                <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={collapsed} iconColor="#8B5CF6" />
+                <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={!forMobile && collapsed} iconColor="#8B5CF6" />
               </div>
               <div data-tour="properties-sidebar">
-                <SidebarItem to="/dashboard/properties" icon={Building2} label="Properties" collapsed={collapsed} iconColor="#F97316" />
+                <SidebarItem to="/dashboard/properties" icon={Building2} label="Properties" collapsed={!forMobile && collapsed} iconColor="#F97316" />
               </div>
               <div data-tour="ai-support">
-                <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={collapsed} iconColor="#06B6D4" />
+                <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={!forMobile && collapsed} iconColor="#06B6D4" />
               </div>
               <div data-tour="analytics-sidebar">
-                <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={collapsed} iconColor="#F59E0B" />
+                <SidebarItem to="/dashboard/analytics" icon={BarChart3} label="Analytics" collapsed={!forMobile && collapsed} iconColor="#F59E0B" />
               </div>
             </SidebarSection>
           )}
 
-          {/* Setup - Available to clients and admins */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Setup" collapsed={collapsed}>
+            <SidebarSection title="Setup" collapsed={!forMobile && collapsed}>
               <div data-tour="widget-code" data-tour-sidebar="widget-code-sidebar">
-                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={collapsed} dataTour="widget-code-sidebar" iconColor="#EC4899" />
+                <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={!forMobile && collapsed} dataTour="widget-code-sidebar" iconColor="#EC4899" />
               </div>
             </SidebarSection>
           )}
 
-          {/* Integrations - Available to clients and admins */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Integrations" collapsed={collapsed}>
+            <SidebarSection title="Integrations" collapsed={!forMobile && collapsed}>
               <div data-tour="salesforce">
-                <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-[18px] w-[18px]", className)} />} label="Salesforce" collapsed={collapsed} iconColor="#00A1E0" />
+                <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-[18px] w-[18px]", className)} />} label="Salesforce" collapsed={!forMobile && collapsed} iconColor="#00A1E0" />
               </div>
               <div data-tour="notifications">
-                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-[18px] w-[18px]", className)} />} label="Notifications" collapsed={collapsed} iconColor="#EA4335" />
+                <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-[18px] w-[18px]", className)} />} label="Notifications" collapsed={!forMobile && collapsed} iconColor="#EA4335" />
               </div>
             </SidebarSection>
           )}
 
-          {/* Account */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Account" collapsed={collapsed}>
-              <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-[18px] w-[18px]", className)} />} label="Subscription" collapsed={collapsed} iconColor="#F97316" />
+            <SidebarSection title="Account" collapsed={!forMobile && collapsed}>
+              <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-[18px] w-[18px]", className)} />} label="Subscription" collapsed={!forMobile && collapsed} iconColor="#F97316" />
             </SidebarSection>
           )}
 
-          {/* Support */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Support" collapsed={collapsed}>
+            <SidebarSection title="Support" collapsed={!forMobile && collapsed}>
               <div data-tour="get-help">
-                <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={collapsed} iconColor="#EF4444" />
+                <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={!forMobile && collapsed} iconColor="#EF4444" />
               </div>
-              <SidebarItem to="/documentation" icon={BookOpen} label="Documentation" collapsed={collapsed} iconColor="#14B8A6" />
+              <SidebarItem to="/documentation" icon={BookOpen} label="Documentation" collapsed={!forMobile && collapsed} iconColor="#14B8A6" />
             </SidebarSection>
           )}
 
-          {/* Dev Tools */}
           {(isClient || isAdmin) && (
-            <SidebarSection title="Dev" collapsed={collapsed}>
-              <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={collapsed} iconColor="#A855F7" />
-              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={collapsed} iconColor="#A855F7" />
+            <SidebarSection title="Dev" collapsed={!forMobile && collapsed}>
+              <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
+              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
             </SidebarSection>
           )}
         </nav>
@@ -313,14 +314,14 @@ export const DashboardSidebar = ({
         {/* User Profile */}
         <div className={cn(
           "border-t border-sidebar-border/80 p-3",
-          collapsed ? "flex flex-col items-center gap-2" : ""
+          !forMobile && collapsed ? "flex flex-col items-center gap-2" : ""
         )}>
           <div className={cn(
             "flex items-center gap-2 p-2 rounded-lg",
-            collapsed ? "justify-center flex-col" : ""
+            !forMobile && collapsed ? "justify-center flex-col" : ""
           )}>
             <div className="relative flex-shrink-0">
-              {collapsed ? (
+              {!forMobile && collapsed ? (
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <div>
@@ -349,13 +350,13 @@ export const DashboardSidebar = ({
                 />
               )}
             </div>
-            {!collapsed && (
+            {(forMobile || !collapsed) && (
               <div className="flex-1 min-w-0 overflow-hidden">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
               </div>
             )}
-            {!collapsed && (
+            {(forMobile || !collapsed) && (
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
@@ -367,7 +368,7 @@ export const DashboardSidebar = ({
                 </Button>
               </div>
             )}
-            {collapsed && (
+            {!forMobile && collapsed && (
               <div className="flex flex-col items-center gap-1">
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
@@ -391,4 +392,20 @@ export const DashboardSidebar = ({
       </aside>
     </TooltipProvider>
   );
+
+  // Mobile: render as a sheet
+  if (isMobile) {
+    return (
+      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
+        <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
+          <div onClick={() => onMobileOpenChange?.(false)}>
+            {sidebarContent(true)}
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop: render inline
+  return sidebarContent(false);
 };

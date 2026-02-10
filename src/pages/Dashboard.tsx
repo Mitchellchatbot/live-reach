@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft, Menu } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { SidebarStateProvider, useSidebarState } from '@/hooks/useSidebarState';
 import { InfoIndicator } from '@/components/docs/InfoIndicator';
+import { useIsMobile } from '@/hooks/use-mobile';
 type FilterStatus = 'all' | 'active' | 'closed';
 
 // Convert DB conversation to UI conversation format
@@ -79,6 +80,8 @@ const DashboardContent = () => {
   } = useSidebarState();
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Property filter state - used to scope data fetching
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
@@ -347,13 +350,21 @@ const DashboardContent = () => {
   }
   return <div ref={containerRef} className="flex h-screen bg-gradient-subtle overflow-hidden page-enter">
       <DashboardTour />
-      <DashboardSidebar badgeCounts={sidebarBadgeCounts} />
+      <DashboardSidebar badgeCounts={sidebarBadgeCounts} mobileOpen={sidebarOpen} onMobileOpenChange={setSidebarOpen} />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Unified Header - Black spanning all sections */}
+        {/* Unified Header */}
         <div className="flex shrink-0 bg-sidebar text-sidebar-foreground pl-2">
+          {/* Mobile hamburger */}
+          {isMobile && !selectedConversationId && (
+            <div className="flex items-center px-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent" onClick={() => setSidebarOpen(true)}>
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
           {/* Conversation List Header */}
-          <div className={cn("w-80 px-4 py-3 border-r border-sidebar-border shrink-0", selectedConversationId && "hidden md:block")}>
+          <div className={cn("px-4 py-3 border-r border-sidebar-border shrink-0", isMobile ? "flex-1" : "w-80", selectedConversationId && "hidden md:block")}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
@@ -439,9 +450,9 @@ const DashboardContent = () => {
           </div>
         </div>
 
-        {/* Main Content Row - Wrapped in glass container */}
-        <div className="flex flex-1 min-h-0 overflow-hidden p-2 bg-sidebar">
-          <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm">
+        {/* Main Content Row */}
+        <div className="flex flex-1 min-h-0 overflow-hidden p-0 md:p-2 bg-sidebar">
+          <div className="flex flex-1 min-h-0 overflow-hidden md:rounded-lg md:border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm">
             {/* Conversation List Column */}
             <div ref={listRef} data-tour="conversation-list" className={cn("w-full md:w-80 border-r border-border/30 flex flex-col md:shrink-0", selectedConversationId && "hidden md:flex")}>
               {/* Search - White/light background */}
