@@ -19,6 +19,7 @@ interface EmailConfig {
   notification_emails: string[];
   notify_on_new_conversation: boolean;
   notify_on_escalation: boolean;
+  notify_on_phone_submission: boolean;
 }
 
 export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
@@ -53,6 +54,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
         notification_emails: data.notification_emails || [],
         notify_on_new_conversation: data.notify_on_new_conversation,
         notify_on_escalation: data.notify_on_escalation,
+        notify_on_phone_submission: data.notify_on_phone_submission ?? true,
       });
     } else {
       setConfig(null);
@@ -69,6 +71,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
       notification_emails: config?.notification_emails || [],
       notify_on_new_conversation: config?.notify_on_new_conversation ?? true,
       notify_on_escalation: config?.notify_on_escalation ?? true,
+      notify_on_phone_submission: config?.notify_on_phone_submission ?? true,
     };
 
     let result;
@@ -128,6 +131,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
       notification_emails: [newEmail.trim().toLowerCase()],
       notify_on_new_conversation: true,
       notify_on_escalation: true,
+      notify_on_phone_submission: true,
     });
     setNewEmail('');
   };
@@ -248,6 +252,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
                 notification_emails: [],
                 notify_on_new_conversation: true,
                 notify_on_escalation: true,
+                notify_on_phone_submission: true,
               })}
             />
           </div>
@@ -276,6 +281,20 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
             <Switch
               checked={config?.notify_on_escalation ?? true}
               onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, notify_on_escalation: checked } : null)}
+              disabled={!config?.enabled}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Phone Number Submitted</Label>
+              <p className="text-sm text-muted-foreground">
+                Notify when a visitor shares their phone number
+              </p>
+            </div>
+            <Switch
+              checked={config?.notify_on_phone_submission ?? true}
+              onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, notify_on_phone_submission: checked } : null)}
               disabled={!config?.enabled}
             />
           </div>

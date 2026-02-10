@@ -246,6 +246,7 @@ export type Database = {
           notification_emails: string[] | null
           notify_on_escalation: boolean
           notify_on_new_conversation: boolean
+          notify_on_phone_submission: boolean
           property_id: string
           updated_at: string
         }
@@ -256,6 +257,7 @@ export type Database = {
           notification_emails?: string[] | null
           notify_on_escalation?: boolean
           notify_on_new_conversation?: boolean
+          notify_on_phone_submission?: boolean
           property_id: string
           updated_at?: string
         }
@@ -266,6 +268,7 @@ export type Database = {
           notification_emails?: string[] | null
           notify_on_escalation?: boolean
           notify_on_new_conversation?: boolean
+          notify_on_phone_submission?: boolean
           property_id?: string
           updated_at?: string
         }
@@ -753,6 +756,7 @@ export type Database = {
           legacy_webhook_url: string | null
           notify_on_escalation: boolean
           notify_on_new_conversation: boolean
+          notify_on_phone_submission: boolean
           property_id: string
           team_id: string | null
           team_name: string | null
@@ -770,6 +774,7 @@ export type Database = {
           legacy_webhook_url?: string | null
           notify_on_escalation?: boolean
           notify_on_new_conversation?: boolean
+          notify_on_phone_submission?: boolean
           property_id: string
           team_id?: string | null
           team_name?: string | null
@@ -787,6 +792,7 @@ export type Database = {
           legacy_webhook_url?: string | null
           notify_on_escalation?: boolean
           notify_on_new_conversation?: boolean
+          notify_on_phone_submission?: boolean
           property_id?: string
           team_id?: string | null
           team_name?: string | null

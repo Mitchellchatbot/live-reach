@@ -9,9 +9,10 @@ const corsHeaders = {
 
 interface NotificationRequest {
   propertyId: string;
-  eventType: "new_conversation" | "escalation";
+  eventType: "new_conversation" | "escalation" | "phone_submission";
   visitorName?: string;
   visitorEmail?: string;
+  visitorPhone?: string;
   conversationId: string;
   message?: string;
 }
@@ -35,7 +36,7 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const { propertyId, eventType, visitorName, visitorEmail, conversationId, message }: NotificationRequest = await req.json();
+    const { propertyId, eventType, visitorName, visitorEmail, visitorPhone, conversationId, message }: NotificationRequest = await req.json();
 
     if (!propertyId || !eventType || !conversationId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -86,6 +87,11 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (eventType === "phone_submission" && !settings.notify_on_phone_submission) {
+      return new Response(JSON.stringify({ skipped: true, reason: "event_disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Fetch property name for the email
     const { data: property } = await supabase
@@ -99,12 +105,49 @@ Deno.serve(async (req) => {
 
     // Build email content
     const isEscalation = eventType === "escalation";
-    const subject = isEscalation
-      ? `🔴 Escalation Alert — ${propertyName}`
-      : `💬 New Conversation — ${propertyName}`;
+    const isPhoneSubmission = eventType === "phone_submission";
+    
+    let subject: string;
+    if (isEscalation) {
+      subject = `🔴 Escalation Alert — ${propertyName}`;
+    } else if (isPhoneSubmission) {
+      subject = `📞 Phone Number Captured — ${propertyName}`;
+    } else {
+      subject = `💬 New Conversation — ${propertyName}`;
+    }
 
     const visitorLabel = visitorName || visitorEmail || "Anonymous Visitor";
     const messagePreview = message ? `<p style="background:#f5f5f5;border-radius:8px;padding:12px;color:#555;font-style:italic;">"${message.slice(0, 300)}"</p>` : "";
+
+    let bannerGradient: string;
+    let bannerBorder: string;
+    let bannerColor: string;
+    let bannerTitle: string;
+    let bannerDescription: string;
+
+    if (isEscalation) {
+      bannerGradient = "linear-gradient(135deg,#fef2f2,#fee2e2)";
+      bannerBorder = "#ef4444";
+      bannerColor = "#dc2626";
+      bannerTitle = "Conversation Escalated";
+      bannerDescription = "A visitor conversation requires human attention.";
+    } else if (isPhoneSubmission) {
+      bannerGradient = "linear-gradient(135deg,#f0fdf4,#dcfce7)";
+      bannerBorder = "#22c55e";
+      bannerColor = "#16a34a";
+      bannerTitle = "Phone Number Captured";
+      bannerDescription = "A visitor shared their phone number during chat.";
+    } else {
+      bannerGradient = "linear-gradient(135deg,#f0fdf4,#dcfce7)";
+      bannerBorder = "#22c55e";
+      bannerColor = "#16a34a";
+      bannerTitle = "New Conversation Started";
+      bannerDescription = "A visitor has started a new chat on your website.";
+    }
+
+    const phoneRow = visitorPhone
+      ? `<tr><td style="padding:8px 0;color:#888;width:120px;">Phone</td><td style="padding:8px 0;font-weight:600;">${visitorPhone}</td></tr>`
+      : "";
 
     const html = `
       <!DOCTYPE html>
@@ -115,12 +158,12 @@ Deno.serve(async (req) => {
           <h1 style="color:#F97316;margin:0;">Care Assist</h1>
         </div>
 
-        <div style="background:${isEscalation ? "linear-gradient(135deg,#fef2f2,#fee2e2)" : "linear-gradient(135deg,#f0fdf4,#dcfce7)"};border-radius:12px;padding:24px;margin-bottom:20px;border-left:4px solid ${isEscalation ? "#ef4444" : "#22c55e"};">
-          <h2 style="margin:0 0 8px;color:${isEscalation ? "#dc2626" : "#16a34a"};">
-            ${isEscalation ? "Conversation Escalated" : "New Conversation Started"}
+        <div style="background:${bannerGradient};border-radius:12px;padding:24px;margin-bottom:20px;border-left:4px solid ${bannerBorder};">
+          <h2 style="margin:0 0 8px;color:${bannerColor};">
+            ${bannerTitle}
           </h2>
           <p style="margin:0;color:#555;">
-            ${isEscalation ? "A visitor conversation requires human attention." : "A visitor has started a new chat on your website."}
+            ${bannerDescription}
           </p>
         </div>
 
@@ -129,6 +172,7 @@ Deno.serve(async (req) => {
             <td style="padding:8px 0;color:#888;width:120px;">Visitor</td>
             <td style="padding:8px 0;font-weight:600;">${visitorLabel}</td>
           </tr>
+          ${phoneRow}
           <tr>
             <td style="padding:8px 0;color:#888;">Property</td>
             <td style="padding:8px 0;">${propertyName} (${propertyDomain})</td>
