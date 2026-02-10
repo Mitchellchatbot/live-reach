@@ -1,33 +1,41 @@
 
+# Notify on Phone Number Detection
 
-## Add Properties Page to Sidebar
+## Overview
+Add a new notification trigger -- "Phone Number Submitted" -- to both Slack and Email notification settings. When the `extract-visitor-info` function detects a phone number for the first time, it will fire notifications to the configured channels.
 
-### Overview
-Add a "Properties" navigation item under the **Manage** section in the sidebar, linking to a new `/dashboard/properties` route. This page will let users view and manage their properties (websites) in a dedicated full-page view, consistent with the existing sidebar style.
+## Changes
 
-### Changes
+### 1. Database Migration
+Add a `notify_on_phone_submission` boolean column (default `true`) to both notification settings tables:
+- `slack_notification_settings` 
+- `email_notification_settings`
 
-**1. Sidebar Update** (`src/components/dashboard/DashboardSidebar.tsx`)
-- Add a `Building2` icon import (from lucide-react, already used in PropertySelector)
-- Insert a new `SidebarItem` under the "Manage" section, after "Team Members":
-  - Route: `/dashboard/properties`
-  - Icon: `Building2`
-  - Label: "Properties"
-  - Icon color: `#F97316` (orange, matching the property/building theme)
+### 2. UI Updates
 
-**2. New Properties Page** (`src/pages/Properties.tsx`)
-- Create a new page component that displays properties in a card-based layout
-- Reuse the existing `useConversations` hook (which already fetches properties) or query properties directly
-- Include ability to view, delete, and add properties (leveraging existing `PropertySelector` logic)
-- Match the page layout pattern used by TeamMembers, Analytics, etc. (PageHeader + content area with sidebar)
+**SlackSettings.tsx** and **EmailSettings.tsx**:
+- Add a new "Phone Number Submitted" toggle under the existing Notification Triggers card
+- Description: "Notify when a visitor shares their phone number"
+- Include it in the config interface and save logic
 
-**3. Route Registration** (`src/App.tsx`)
-- Lazy-load the new Properties page
-- Add route: `/dashboard/properties` wrapped in `RequireClient`
+### 3. Edge Function: `extract-visitor-info`
+After successfully updating a visitor's phone number (line ~172-174), fire non-blocking calls to `send-email-notification` and `send-slack-notification` with a new event type `phone_submission`. Pass the visitor name, phone, and conversation ID.
 
-### Technical Details
+### 4. Edge Function: `send-email-notification`
+- Add `phone_submission` to the `eventType` union type
+- Add a check for `settings.notify_on_phone_submission`
+- Build a phone-specific email template (e.g., green "Phone Number Captured" banner with visitor name and phone)
 
-- The `Building2` icon is already imported in `PropertySelector.tsx`, confirming it's available from `lucide-react`
-- The sidebar item will use `iconColor="#F97316"` for the orange tint, keeping the duotone icon container style consistent with existing items
-- The new page will follow the same dashboard layout pattern (DashboardSidebar + main content area) as other `/dashboard/*` pages
+### 5. Edge Function: `send-slack-notification`
+- Add `phone_submission` to the `eventType` union type
+- Add a check for `settings.notify_on_phone_submission`
+- Build a Slack message block for phone capture (e.g., "Phone Number Captured" header with visitor/phone fields)
 
+### 6. Notification Log
+The existing `notification_logs` table should already capture these since the edge functions log activity there. The new `phone_submission` event type will appear naturally in the Logs tab.
+
+## Technical Details
+
+- The `extract-visitor-info` function needs the `conversationId` to pass to notification functions. It currently receives `visitorId` and `conversationHistory`. We will look up the active conversation for that visitor to get the `conversationId` and `propertyId`.
+- Both notification functions already support fire-and-forget patterns, so no changes to the calling pattern are needed.
+- The new column defaults to `true` so existing properties get phone notifications automatically.
