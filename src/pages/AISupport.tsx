@@ -744,34 +744,35 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                       Create Persona
                     </Button>
                   </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{editingAIAgent ? 'Edit AI Persona' : 'Create AI Persona'}</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-base">{editingAIAgent ? 'Edit AI Persona' : 'Create AI Persona'}</DialogTitle>
+                    <DialogDescription className="text-xs">
                       {editingAIAgent ? 'Update this AI persona\'s details.' : 'Create a virtual agent with a unique personality.'}
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="ai-name">Name</Label>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="ai-name" className="text-xs">Name</Label>
                       <Input
                         id="ai-name"
                         placeholder="Luna"
+                        className="h-8 text-sm"
                         value={aiAgentName}
                         onChange={(e) => setAIAgentName(e.target.value)}
                       />
                     </div>
                     
                     {/* Personality Preset Selection */}
-                    <div className="space-y-3">
-                      <Label>Personality</Label>
-                      <div className="space-y-2">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Personality</Label>
+                      <div className="space-y-1.5">
                         {[
-                          { value: 'emily' as const, title: 'Emily', description: 'Warm & Reassuring – gentle, safe, supportive' },
-                          { value: 'sarah' as const, title: 'Sarah', description: 'Kind & Encouraging – compassionate, optimistic' },
-                          { value: 'michael' as const, title: 'Michael', description: 'Calm & Supportive – steady, patient, grounding' },
-                          { value: 'daniel' as const, title: 'Daniel', description: 'Friendly & Uplifting – warm, confident, caring' },
-                          { value: 'custom' as const, title: 'Custom', description: 'Write your own personality traits' },
+                          { value: 'emily' as const, title: 'Emily', description: 'Warm & Reassuring' },
+                          { value: 'sarah' as const, title: 'Sarah', description: 'Kind & Encouraging' },
+                          { value: 'michael' as const, title: 'Michael', description: 'Calm & Supportive' },
+                          { value: 'daniel' as const, title: 'Daniel', description: 'Friendly & Uplifting' },
+                          { value: 'custom' as const, title: 'Custom', description: 'Write your own' },
                         ].map((tone) => (
                           <ToneCard
                             key={tone.value}
@@ -780,6 +781,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             selected={aiPersonalityPreset === tone.value}
                             onClick={() => setAiPersonalityPreset(tone.value)}
                             avatarSrc={tone.value !== 'custom' ? personaAvatars[tone.value] : undefined}
+                            compact
                           />
                         ))}
                       </div>
@@ -789,24 +791,26 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         <div className="animate-in fade-in slide-in-from-top-2 duration-200">
                           <Textarea
                             id="ai-personality"
-                            placeholder="Describe how your AI should communicate. E.g., 'Speak gently and use simple language. Be patient and never rush. Use phrases like 'take your time' and 'you're doing great.''"
+                            placeholder="Describe how your AI should communicate..."
                             value={aiAgentPersonality}
                             onChange={(e) => setAIAgentPersonality(e.target.value)}
-                            rows={4}
+                            rows={2}
+                            className="text-sm"
                           />
                         </div>
                       )}
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label>Assign to Properties</Label>
-                      <div className="space-y-2 max-h-40 overflow-auto border rounded-lg p-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Assign to Properties</Label>
+                      <div className="space-y-1.5 max-h-20 overflow-auto border rounded-md p-2">
                         {properties.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No properties available</p>
+                          <p className="text-xs text-muted-foreground">No properties available</p>
                         ) : (
                           properties.map((prop) => (
-                            <label key={prop.id} className="flex items-center gap-2 cursor-pointer">
+                            <label key={prop.id} className="flex items-center gap-1.5 cursor-pointer">
                               <Checkbox
+                                className="h-3.5 w-3.5"
                                 checked={aiSelectedPropertyIds.includes(prop.id)}
                                 onCheckedChange={(checked) => {
                                   if (checked) {
@@ -816,8 +820,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                                   }
                                 }}
                               />
-                              <span className="text-sm">{prop.name}</span>
-                              <span className="text-xs text-muted-foreground">({prop.domain})</span>
+                              <span className="text-xs truncate">{prop.name}</span>
                             </label>
                           ))
                         )}
@@ -825,14 +828,15 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAIDialogOpen(false)}>
+                    <Button variant="outline" size="sm" onClick={() => setIsAIDialogOpen(false)}>
                       Cancel
                     </Button>
                     <Button 
+                      size="sm"
                       onClick={editingAIAgent ? handleUpdateAIAgent : handleCreateAIAgent} 
                       disabled={isCreatingAI || !aiAgentName.trim()}
                     >
-                      {isCreatingAI && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isCreatingAI && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                       {editingAIAgent ? 'Save Changes' : 'Create Persona'}
                     </Button>
                   </DialogFooter>
@@ -1392,42 +1396,46 @@ const ToneCard = ({
   selected,
   onClick,
   avatarSrc,
+  compact,
 }: {
   title: string;
   description: string;
   selected: boolean;
   onClick: () => void;
   avatarSrc?: string;
+  compact?: boolean;
 }) => (
   <button
     type="button"
     onClick={onClick}
     className={cn(
-      "w-full p-3 rounded-lg border-2 text-left transition-all",
+      "w-full rounded-lg border-2 text-left transition-all",
+      compact ? "p-2" : "p-3",
       selected
         ? "border-primary bg-primary/5"
         : "border-border hover:border-muted-foreground/30"
     )}
   >
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center justify-between gap-2">
       {avatarSrc && (
         <img 
           src={avatarSrc} 
           alt={title} 
-          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          className={cn("rounded-full object-cover flex-shrink-0", compact ? "w-7 h-7" : "w-10 h-10")}
         />
       )}
       <div className="flex-1 min-w-0">
-        <span className="font-medium text-foreground">{title}</span>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <span className={cn("font-medium text-foreground", compact && "text-sm")}>{title}</span>
+        <p className={cn("text-muted-foreground", compact ? "text-xs" : "text-sm")}>{description}</p>
       </div>
       <div
         className={cn(
-          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
+          "rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
+          compact ? "w-4 h-4" : "w-5 h-5",
           selected ? "border-primary bg-primary" : "border-muted-foreground/30"
         )}
       >
-        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+        {selected && <Check className={cn(compact ? "h-2.5 w-2.5" : "h-3 w-3", "text-primary-foreground")} />}
       </div>
     </div>
   </button>
