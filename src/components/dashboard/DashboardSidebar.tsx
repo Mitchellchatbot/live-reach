@@ -170,7 +170,7 @@ export const DashboardSidebar = ({
       <aside 
         className={cn(
           "h-screen flex flex-col transition-all duration-300 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm",
-          collapsed ? "w-[72px]" : "w-72"
+          collapsed ? "w-14 sm:w-[72px]" : "w-72"
         )}
       >
         {/* Logo */}
