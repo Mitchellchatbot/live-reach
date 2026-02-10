@@ -45,6 +45,7 @@ interface PropertySettings {
   greeting: string | null;
   ai_base_prompt: string | null;
   widget_icon: string | null;
+  calendly_url: string | null;
 }
 
 interface WidgetChatConfig {
@@ -74,6 +75,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   greeting: null,
   ai_base_prompt: null,
   widget_icon: 'message-circle',
+  calendly_url: null,
 };
 
 const getOrCreateSessionId = (): string => {
@@ -317,6 +319,7 @@ async function streamAIResponse({
   agentName,
   basePrompt,
   naturalLeadCaptureFields,
+  calendlyUrl,
 }: {
   messages: { role: 'user' | 'assistant'; content: string }[];
   onDelta: (text: string) => void;
@@ -326,6 +329,7 @@ async function streamAIResponse({
   agentName?: string;
   basePrompt?: string | null;
   naturalLeadCaptureFields?: string[];
+  calendlyUrl?: string | null;
 }) {
   try {
     const resp = await fetch(CHAT_URL, {
@@ -334,7 +338,7 @@ async function streamAIResponse({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields }),
+      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl }),
     });
 
     if (!resp.ok) {
@@ -592,6 +596,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         greeting: s.greeting ?? null,
         ai_base_prompt: s.ai_base_prompt ?? null,
         widget_icon: s.widget_icon ?? DEFAULT_SETTINGS.widget_icon,
+        calendly_url: s.calendly_url ?? null,
       };
 
       setSettings(merged);
@@ -1018,7 +1023,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           personalityPrompt: respondingAgent?.personality_prompt,
           agentName: respondingAgent?.name,
           basePrompt: settings.ai_base_prompt,
-          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+           calendlyUrl: settings.calendly_url,
           onDelta: (delta) => {
             aiContent += delta;
           },
@@ -1073,7 +1079,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           personalityPrompt: respondingAgent?.personality_prompt,
           agentName: respondingAgent?.name,
           basePrompt: settings.ai_base_prompt,
-          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+           calendlyUrl: settings.calendly_url,
           onDelta: (delta) => {
             aiContent += delta;
             setMessages(prev => {
@@ -1318,7 +1325,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         personalityPrompt: respondingAgent?.personality_prompt,
         agentName: respondingAgent?.name,
         basePrompt: settings.ai_base_prompt,
-        naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+         naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+         calendlyUrl: settings.calendly_url,
         onDelta: (delta) => {
           aiContent += delta;
           // Don't update UI yet - just buffer
@@ -1394,7 +1402,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         personalityPrompt: respondingAgent?.personality_prompt,
         agentName: respondingAgent?.name,
         basePrompt: settings.ai_base_prompt,
-        naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+         naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+         calendlyUrl: settings.calendly_url,
         onDelta: (delta) => {
           aiContent += delta;
           setMessages(prev => {

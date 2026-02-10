@@ -81,6 +81,7 @@ interface PropertySettings {
   proactive_message_enabled: boolean;
   ai_base_prompt: string | null;
   greeting: string | null;
+  calendly_url: string | null;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -274,6 +275,7 @@ const AISupport = () => {
         proactive_message_enabled: data.proactive_message_enabled ?? false,
         ai_base_prompt: data.ai_base_prompt ?? null,
         greeting: data.greeting ?? null,
+        calendly_url: data.calendly_url ?? null,
       });
     };
 
@@ -604,6 +606,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         proactive_message_enabled: settings.proactive_message_enabled,
         ai_base_prompt: settings.ai_base_prompt,
         greeting: settings.greeting,
+        calendly_url: settings.calendly_url,
       })
       .eq('id', settings.id);
 
@@ -1342,6 +1345,33 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         {!settings.require_name_before_chat && !settings.require_email_before_chat && !settings.require_phone_before_chat && !settings.require_insurance_card_before_chat && ' (no fields selected)'}
                       </p>
                     )}
+                  </div>
+
+                  {/* Calendly Integration */}
+                  <div className="border-t pt-6 mt-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Link className="h-4 w-4 text-muted-foreground" />
+                        <Label>Calendly Booking Link</Label>
+                        <Badge variant="outline" className="text-xs">Optional</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        After collecting contact info, the AI will offer visitors a link to book a call via Calendly.
+                      </p>
+                      <Input
+                        placeholder="https://calendly.com/your-team/consultation"
+                        value={settings.calendly_url || ''}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          calendly_url: e.target.value || null,
+                        })}
+                      />
+                      {settings.calendly_url && (
+                        <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                          ✅ After the visitor shares their name and phone number, the AI will offer this booking link once during the conversation.
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Greeting Message */}

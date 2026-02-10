@@ -34,7 +34,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const messages = Array.isArray(body.messages) ? body.messages : [];
-    const { propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields } = body;
+    const { propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl } = body;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
@@ -163,9 +163,22 @@ IMPORTANT RULES:
 - If they share info voluntarily, acknowledge it warmly.`;
     }
 
+    // Build Calendly booking prompt if URL is configured
+    let calendlyInstructions = '';
+    if (calendlyUrl) {
+      calendlyInstructions = `
+
+CALENDLY BOOKING:
+After you have collected the visitor's contact information (name and phone number), offer them the option to schedule a call at a time that works for them.
+Say something like: "I'd also love to help you schedule a call with one of our experts at a time that works best for you. You can book a time here: ${calendlyUrl}"
+- Only mention the booking link ONCE, after contact info has been collected.
+- Do not pressure them to book. If they decline, that's fine.
+- The link should be presented as a clickable URL.`;
+    }
+
     // Build system prompt - base prompt is ALWAYS included (immutable).
     // Personality is layered on top as additional behavioral guidance.
-    let systemPrompt = BASE_PROMPT + leadCaptureInstructions;
+    let systemPrompt = BASE_PROMPT + leadCaptureInstructions + calendlyInstructions;
     
     if (personalityPrompt) {
       // Layer personality ON TOP of the base prompt
