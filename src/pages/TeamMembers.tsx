@@ -479,19 +479,20 @@ const TeamMembers = () => {
             </div>
           )}
           <Card data-tour="team-table">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Team Members</CardTitle>
-                <CardDescription>
-                  Agents can respond to conversations on assigned properties
-                </CardDescription>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
+            <CardHeader className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg">Team Members</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Agents can respond to conversations on assigned properties
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
                 {/* Create Account Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" data-tour="create-account-btn">
-                      <KeyRound className="mr-2 h-4 w-4" />
+                    <Button variant="outline" data-tour="create-account-btn" size="sm" className="flex-1 sm:flex-initial text-xs sm:text-sm">
+                      <KeyRound className="mr-1.5 h-3.5 w-3.5" />
                       Create Account
                     </Button>
                   </DialogTrigger>
@@ -586,8 +587,8 @@ const TeamMembers = () => {
                 {/* Invite Agent Dialog */}
                 <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button data-tour="invite-agent-btn">
-                      <UserPlus className="mr-2 h-4 w-4" />
+                    <Button data-tour="invite-agent-btn" size="sm" className="flex-1 sm:flex-initial text-xs sm:text-sm">
+                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
                       Invite Agent
                     </Button>
                   </DialogTrigger>
@@ -661,6 +662,7 @@ const TeamMembers = () => {
                   </DialogContent>
                 </Dialog>
               </div>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -679,65 +681,202 @@ const TeamMembers = () => {
                   </Button>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Agent</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Assigned Properties</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {displayAgents.map((agent) => (
-                      <TableRow key={agent.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="relative group">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={agent.avatar_url} />
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {agent.name.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                {uploadingAvatarFor === agent.id ? (
-                                  <Loader2 className="h-4 w-4 text-white animate-spin" />
-                                ) : (
-                                  <Upload className="h-4 w-4 text-white" />
+                <>
+                  {/* Desktop table */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Agent</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Assigned Properties</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {displayAgents.map((agent) => (
+                          <TableRow key={agent.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className="relative group">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={agent.avatar_url} />
+                                    <AvatarFallback className="bg-primary/10 text-primary">
+                                      {agent.name.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                                    {uploadingAvatarFor === agent.id ? (
+                                      <Loader2 className="h-4 w-4 text-white animate-spin" />
+                                    ) : (
+                                      <Upload className="h-4 w-4 text-white" />
+                                    )}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleAvatarUpload(agent.id, file);
+                                      }}
+                                    />
+                                  </label>
+                                </div>
+                                <div>
+                                  <p className="font-medium">{agent.name}</p>
+                                  <p className="text-sm text-muted-foreground">{agent.email}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {getInvitationBadge(agent.invitation_status)}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-8">
+                                    <Globe className="h-3.5 w-3.5 mr-2" />
+                                    {agent.assigned_properties.length === 0 
+                                      ? 'None' 
+                                      : agent.assigned_properties.length === 1
+                                        ? properties.find(p => p.id === agent.assigned_properties[0])?.name || '1 property'
+                                        : `${agent.assigned_properties.length} properties`
+                                    }
+                                    <ChevronDown className="h-3.5 w-3.5 ml-2" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-48">
+                                  {properties.length === 0 ? (
+                                    <DropdownMenuItem disabled>No properties available</DropdownMenuItem>
+                                  ) : (
+                                    properties.map((prop) => {
+                                      const isAssigned = agent.assigned_properties.includes(prop.id);
+                                      return (
+                                        <DropdownMenuItem
+                                          key={prop.id}
+                                          onClick={() => handleToggleProperty(agent.id, prop.id, isAssigned)}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <Checkbox checked={isAssigned} className="pointer-events-none" />
+                                          <span className="truncate">{prop.name}</span>
+                                        </DropdownMenuItem>
+                                      );
+                                    })
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                {/* Create AI button */}
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleCreateAIFromAgent(agent)}
+                                      disabled={creatingAIForId === agent.id || !!linkedAIAgents[agent.id]}
+                                      className={linkedAIAgents[agent.id] 
+                                        ? "text-primary/50" 
+                                        : "text-muted-foreground hover:text-primary"
+                                      }
+                                    >
+                                      {creatingAIForId === agent.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Bot className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {linkedAIAgents[agent.id] 
+                                      ? `AI "${linkedAIAgents[agent.id]}" linked` 
+                                      : "Create AI Persona"
+                                    }
+                                  </TooltipContent>
+                                </Tooltip>
+
+                                {agent.invitation_status === 'pending' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleResendInvitation(agent)}
+                                    disabled={resendingId === agent.id}
+                                    className="text-muted-foreground hover:text-foreground"
+                                  >
+                                    {resendingId === agent.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Send className="h-4 w-4" />
+                                    )}
+                                  </Button>
                                 )}
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleAvatarUpload(agent.id, file);
-                                  }}
-                                />
-                              </label>
-                            </div>
-                            <div>
-                              <p className="font-medium">{agent.name}</p>
-                              <p className="text-sm text-muted-foreground">{agent.email}</p>
-                            </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeleteAgentId(agent.id)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className="md:hidden space-y-3">
+                    {displayAgents.map((agent) => (
+                      <div key={agent.id} className="rounded-xl border border-border/50 p-3 space-y-3">
+                        {/* Agent info row */}
+                        <div className="flex items-center gap-3">
+                          <div className="relative group flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={agent.avatar_url} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                                {agent.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                              {uploadingAvatarFor === agent.id ? (
+                                <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
+                              ) : (
+                                <Upload className="h-3.5 w-3.5 text-white" />
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleAvatarUpload(agent.id, file);
+                                }}
+                              />
+                            </label>
                           </div>
-                        </TableCell>
-                        <TableCell>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{agent.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{agent.email}</p>
+                          </div>
                           {getInvitationBadge(agent.invitation_status)}
-                        </TableCell>
-                        <TableCell>
+                        </div>
+
+                        {/* Properties + Actions row */}
+                        <div className="flex items-center justify-between gap-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" className="h-8">
-                                <Globe className="h-3.5 w-3.5 mr-2" />
+                              <Button variant="outline" size="sm" className="h-7 text-xs">
+                                <Globe className="h-3 w-3 mr-1.5" />
                                 {agent.assigned_properties.length === 0 
-                                  ? 'None' 
+                                  ? 'No properties' 
                                   : agent.assigned_properties.length === 1
                                     ? properties.find(p => p.id === agent.assigned_properties[0])?.name || '1 property'
                                     : `${agent.assigned_properties.length} properties`
                                 }
-                                <ChevronDown className="h-3.5 w-3.5 ml-2" />
+                                <ChevronDown className="h-3 w-3 ml-1" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48">
@@ -760,66 +899,50 @@ const TeamMembers = () => {
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* Create AI button */}
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleCreateAIFromAgent(agent)}
-                                  disabled={creatingAIForId === agent.id || !!linkedAIAgents[agent.id]}
-                                  className={linkedAIAgents[agent.id] 
-                                    ? "text-primary/50" 
-                                    : "text-muted-foreground hover:text-primary"
-                                  }
-                                >
-                                  {creatingAIForId === agent.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Bot className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {linkedAIAgents[agent.id] 
-                                  ? `AI "${linkedAIAgents[agent.id]}" linked` 
-                                  : "Create AI Persona"
-                                }
-                              </TooltipContent>
-                            </Tooltip>
 
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleCreateAIFromAgent(agent)}
+                              disabled={creatingAIForId === agent.id || !!linkedAIAgents[agent.id]}
+                            >
+                              {creatingAIForId === agent.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </Button>
                             {agent.invitation_status === 'pending' && (
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-7 w-7"
                                 onClick={() => handleResendInvitation(agent)}
                                 disabled={resendingId === agent.id}
-                                className="text-muted-foreground hover:text-foreground"
                               >
                                 {resendingId === agent.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 ) : (
-                                  <Send className="h-4 w-4" />
+                                  <Send className="h-3.5 w-3.5 text-muted-foreground" />
                                 )}
                               </Button>
                             )}
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={() => setDeleteAgentId(agent.id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
