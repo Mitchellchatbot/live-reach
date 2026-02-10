@@ -110,16 +110,17 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     // Best-effort: close stale "active" conversations (visitor tab closed, unload not fired, etc.)
     try {
-      const { error } = await supabase.functions.invoke('close-stale-conversations', {
-        body: {
-          // When no property filter is applied, the backend will close stale convos for
-          // all properties the user has access to.
-          propertyId: selectedPropertyId ?? null,
-          staleSeconds: 45,
-        },
-      });
-      if (error) {
-        console.warn('[useConversations] close-stale-conversations failed:', error.message);
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.access_token) {
+        const { error } = await supabase.functions.invoke('close-stale-conversations', {
+          body: {
+            propertyId: selectedPropertyId ?? null,
+            staleSeconds: 45,
+          },
+        });
+        if (error) {
+          console.warn('[useConversations] close-stale-conversations failed:', error.message);
+        }
       }
     } catch (e) {
       console.warn('[useConversations] close-stale-conversations error:', e);
