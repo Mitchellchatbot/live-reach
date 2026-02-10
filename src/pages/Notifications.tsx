@@ -8,21 +8,27 @@ import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { 
   Globe, 
   Plus,
   Loader2,
   MessageCircle,
   Mail,
-  Shield
+  Shield,
+  Bell,
+  Volume2,
+  ClipboardList,
 } from 'lucide-react';
 import { SlackSettings } from '@/components/settings/SlackSettings';
 import { EmailSettings } from '@/components/settings/EmailSettings';
 import { HipaaSettings } from '@/components/settings/HipaaSettings';
+import { NotificationLog } from '@/components/settings/NotificationLog';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +43,7 @@ const Notifications = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { properties, loading: dataLoading, createProperty, deleteProperty } = useConversations();
+  const { enabled: soundEnabled, setEnabled: setSoundEnabled, playSound } = useNotificationSound();
   
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
   
@@ -86,6 +93,11 @@ const Notifications = () => {
     }
   };
 
+  const handleTestSound = () => {
+    playSound();
+    toast.info('Notification sound played');
+  };
+
   if (authLoading || dataLoading || !user) {
     return (
       <DashboardLayout>
@@ -104,8 +116,41 @@ const Notifications = () => {
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
-          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
-            <div className="max-w-4xl mx-auto space-y-6">
+          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-4 md:p-6">
+            <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+
+              {/* Dashboard-Level Notification Settings */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-base">Dashboard Notifications</CardTitle>
+                  </div>
+                  <CardDescription>Global notification preferences for your dashboard</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="flex items-center gap-2">
+                        <Volume2 className="h-4 w-4 text-muted-foreground" />
+                        Notification Sound
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Play a sound when new notifications arrive
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={handleTestSound} className="text-xs h-7 px-2">
+                        Test
+                      </Button>
+                      <Switch
+                        checked={soundEnabled}
+                        onCheckedChange={setSoundEnabled}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Property Selector */}
               <Card>
@@ -178,33 +223,38 @@ const Notifications = () => {
               </Card>
 
               {selectedPropertyId && (
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-3" data-tour="notifications-tabs">
-                    <TabsTrigger value="slack" className="gap-2" data-tour="notifications-slack-tab">
-                      <MessageCircle className="h-4 w-4" />
-                      Slack
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+                  <TabsList className="grid w-full grid-cols-4" data-tour="notifications-tabs">
+                    <TabsTrigger value="slack" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-slack-tab">
+                      <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Slack</span>
                     </TabsTrigger>
-                    <TabsTrigger value="email" className="gap-2" data-tour="notifications-email-tab">
-                      <Mail className="h-4 w-4" />
-                      Email
+                    <TabsTrigger value="email" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-email-tab">
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Email</span>
                     </TabsTrigger>
-                    <TabsTrigger value="hipaa" className="gap-2">
-                      <Shield className="h-4 w-4" />
-                      HIPAA
+                    <TabsTrigger value="logs" className="gap-1.5 text-xs sm:text-sm">
+                      <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Logs</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="hipaa" className="gap-1.5 text-xs sm:text-sm">
+                      <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">HIPAA</span>
                     </TabsTrigger>
                   </TabsList>
 
-                  {/* Slack Tab */}
                   <TabsContent value="slack">
                     <SlackSettings propertyId={selectedPropertyId} />
                   </TabsContent>
 
-                  {/* Email Tab */}
                   <TabsContent value="email">
                     <EmailSettings propertyId={selectedPropertyId} />
                   </TabsContent>
 
-                  {/* HIPAA Tab */}
+                  <TabsContent value="logs">
+                    <NotificationLog propertyId={selectedPropertyId} />
+                  </TabsContent>
+
                   <TabsContent value="hipaa">
                     <HipaaSettings propertyId={selectedPropertyId} />
                   </TabsContent>
