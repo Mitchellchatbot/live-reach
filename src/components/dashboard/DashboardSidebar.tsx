@@ -413,7 +413,7 @@ export const DashboardSidebar = ({
             "fixed z-50 top-4 bottom-4 left-4 w-[calc(50vw-8px)] max-w-[280px] min-w-[220px]",
             "rounded-2xl border border-white/20",
             "bg-sidebar/80 backdrop-blur-xl shadow-2xl shadow-black/20",
-            "transition-all duration-300 ease-out overflow-hidden",
+            "transition-all duration-300 ease-out overflow-y-auto scrollbar-hide",
             mobileOpen
               ? "translate-x-0 opacity-100 scale-100"
               : "-translate-x-[120%] opacity-0 scale-95"
