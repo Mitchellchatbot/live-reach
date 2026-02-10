@@ -45,7 +45,7 @@ export const PageHeader = ({ title, children, className, docsLink, tourSection }
           </Button>
         )}
         <h1 className="text-lg md:text-xl font-semibold text-sidebar-foreground truncate">{title}</h1>
-        {docsLink && <span data-tour="info-indicator"><InfoIndicator to={docsLink} size="md" variant="header" /></span>}
+        {docsLink && <span data-tour="info-indicator" className="hidden md:inline"><InfoIndicator to={docsLink} size="md" variant="header" /></span>}
         {hasDeepDive && (
           <Button
             variant="ghost"
