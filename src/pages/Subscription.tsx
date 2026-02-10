@@ -35,7 +35,7 @@ const Subscription = () => {
           title="Subscription"
         />
 
-        <div className="flex-1 p-6 space-y-8 max-w-6xl mx-auto w-full">
+        <div className="flex-1 p-3 md:p-6 space-y-4 md:space-y-8 max-w-6xl mx-auto w-full">
           {/* Add Property Paywall Banner */}
           {isAddPropertyIntent && (
             <Card className="border-primary/30 bg-primary/5">
@@ -172,7 +172,7 @@ const Subscription = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 <button
                   disabled
                   className="flex flex-col items-center gap-3 p-5 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors text-center opacity-60 cursor-not-allowed"
