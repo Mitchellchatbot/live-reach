@@ -26,12 +26,12 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto -mt-12">
+      <div className="grid md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-6xl mx-auto -mt-12">
         {pricingPlans.map((plan) => (
           <div
             key={plan.id}
             className={cn(
-              "relative group rounded-3xl border p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 flex flex-col",
+              "relative group rounded-2xl md:rounded-3xl border p-5 md:p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 flex flex-col",
               plan.highlightClasses
                 ? plan.highlightClasses
                 : "bg-card/60 border-border/50 hover:border-primary/30",
@@ -60,10 +60,10 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             </div>
 
             {/* Price */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-black text-foreground">${plan.price}</span>
-                <span className="text-muted-foreground font-medium">/mo</span>
+                <span className="text-4xl md:text-5xl font-black text-foreground">${plan.price}</span>
+                <span className="text-muted-foreground font-medium text-sm">/mo</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
                 Up to <span className="font-semibold text-foreground">{plan.conversations}</span> conversations
@@ -115,20 +115,21 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
       {/* Comparison Table */}
       {showComparison && (
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-foreground mb-3">
+          <h3 className="text-xl md:text-2xl font-bold text-center text-foreground mb-2 md:mb-3">
             Compare Plans in Detail
           </h3>
-          <p className="text-center text-muted-foreground mb-10 text-sm">
+          <p className="text-center text-muted-foreground mb-6 md:mb-10 text-sm">
             See exactly what's included in each plan
           </p>
 
-          <div className="rounded-2xl border border-border/40 overflow-x-auto bg-card shadow-lg">
+          {/* Desktop: grid comparison table */}
+          <div className="hidden md:block rounded-2xl border border-border/40 overflow-hidden bg-card shadow-lg">
             {/* Table header */}
-            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] border-b border-border/40">
-              <div className="p-4 md:p-5" />
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] border-b border-border/40">
+              <div className="p-5" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
-                  "p-4 md:p-5 text-center",
+                  "p-5 text-center",
                   plan.popular && "bg-primary/5 border-x border-primary/10",
                 )}>
                   <p className="font-extrabold text-lg text-foreground">{plan.name}</p>
@@ -140,20 +141,18 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             {/* Category rows */}
             {comparisonCategories.map((category) => (
               <div key={category.name}>
-                {/* Category header */}
-                <div className="px-4 md:px-5 py-3 bg-muted/50 border-b border-border/30">
+                <div className="px-5 py-3 bg-muted/50 border-b border-border/30">
                   <p className="text-xs font-extrabold text-foreground/70 uppercase tracking-widest">{category.name}</p>
                 </div>
-
                 {category.features.map((feature, idx) => (
                   <div
                     key={feature.name}
                     className={cn(
-                      "grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] border-b border-border/10 transition-colors hover:bg-muted/10",
+                      "grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] border-b border-border/10 transition-colors hover:bg-muted/10",
                       idx % 2 !== 0 && "bg-muted/[0.03]"
                     )}
                   >
-                    <div className="px-4 md:px-5 py-3 text-sm text-foreground/80 flex items-center font-medium">
+                    <div className="px-5 py-3 text-sm text-foreground/80 flex items-center font-medium">
                       {feature.name}
                     </div>
                     {(['basic', 'professional', 'enterprise'] as const).map((planId) => {
@@ -161,11 +160,11 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                       const isPro = planId === 'professional';
                       return (
                         <div key={planId} className={cn(
-                          "px-4 md:px-5 py-3 text-center flex items-center justify-center",
+                          "px-5 py-3 text-center flex items-center justify-center",
                           isPro && "bg-primary/[0.03] border-x border-primary/5",
                         )}>
                           {value === true ? (
-                          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center shadow-sm shadow-primary/15 ring-1 ring-primary/15">
+                            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 flex items-center justify-center shadow-sm shadow-primary/15 ring-1 ring-primary/15">
                               <Check className="h-4 w-4 text-primary" strokeWidth={3} />
                             </div>
                           ) : value === false ? (
@@ -182,7 +181,7 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             ))}
 
             {/* Bottom CTA row */}
-            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] bg-muted/20 border-t border-border/30">
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] bg-muted/20 border-t border-border/30">
               <div className="p-4" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
@@ -205,6 +204,80 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Mobile: stacked per-plan cards */}
+          <div className="md:hidden space-y-4">
+            {pricingPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className={cn(
+                  "rounded-2xl border overflow-hidden",
+                  plan.popular
+                    ? "border-primary/30 bg-primary/[0.02] shadow-md"
+                    : "border-border/40 bg-card"
+                )}
+              >
+                {/* Plan header */}
+                <div className={cn(
+                  "flex items-center justify-between px-4 py-3 border-b",
+                  plan.popular ? "bg-primary/5 border-primary/10" : "bg-muted/30 border-border/30"
+                )}>
+                  <div>
+                    <p className="font-bold text-foreground">{plan.name}</p>
+                    <p className="text-sm font-bold text-primary">${plan.price}<span className="text-muted-foreground font-normal text-xs">/mo</span></p>
+                  </div>
+                  {plan.popular && (
+                    <Badge className="bg-gradient-to-r from-primary to-orange-500 text-primary-foreground border-0 text-xs">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Popular
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Features list */}
+                <div className="divide-y divide-border/10">
+                  {comparisonCategories.map((category) => (
+                    category.features.map((feature) => {
+                      const value = feature[plan.id as keyof typeof feature];
+                      return (
+                        <div key={feature.name} className="flex items-center justify-between px-4 py-2.5">
+                          <span className="text-xs text-muted-foreground">{feature.name}</span>
+                          <div className="flex-shrink-0 ml-3">
+                            {value === true ? (
+                              <div className="h-5 w-5 rounded-full bg-primary/15 flex items-center justify-center">
+                                <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                              </div>
+                            ) : value === false ? (
+                              <span className="text-muted-foreground/30 text-xs">—</span>
+                            ) : (
+                              <span className="text-xs font-semibold text-foreground">{value}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <div className="p-3 border-t border-border/20">
+                  <Link to={ctaPath}>
+                    <Button
+                      variant={plan.popular ? 'default' : 'outline'}
+                      size="sm"
+                      className={cn(
+                        "w-full rounded-xl gap-1.5 font-semibold text-xs h-9",
+                        plan.popular && "bg-gradient-to-r from-primary to-orange-500 text-primary-foreground border-0 shadow-md"
+                      )}
+                    >
+                      {ctaLabel || 'Get Started'}
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
