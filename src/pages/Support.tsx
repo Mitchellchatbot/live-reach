@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -158,9 +158,7 @@ const Support = () => {
   };
 
   return (
-    <div className="flex h-screen bg-sidebar">
-      <DashboardSidebar />
-      
+    <DashboardLayout>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <PageHeader title="Support" />
@@ -401,7 +399,7 @@ const Support = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

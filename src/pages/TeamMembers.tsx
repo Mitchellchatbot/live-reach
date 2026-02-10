@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useSearchParams } from 'react-router-dom';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
@@ -456,9 +456,7 @@ const TeamMembers = () => {
   };
 
   return (
-    <div className="flex h-screen bg-sidebar">
-      <DashboardSidebar />
-      
+    <DashboardLayout>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <PageHeader title="Team Members" docsLink="/documentation/team/inviting-agents" tourSection="team">
@@ -473,7 +471,7 @@ const TeamMembers = () => {
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
-          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
+          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-3 md:p-6">
             <div className="max-w-4xl mx-auto">
           {isDemoMode && (
             <div className="mb-4 p-3 rounded-lg bg-primary/5 border border-primary/20 text-sm text-muted-foreground">
@@ -488,7 +486,7 @@ const TeamMembers = () => {
                   Agents can respond to conversations on assigned properties
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {/* Create Account Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogTrigger asChild>
@@ -852,7 +850,7 @@ const TeamMembers = () => {
         </AlertDialogContent>
       </AlertDialog>
       <DashboardTour />
-    </div>
+    </DashboardLayout>
   );
 };
 

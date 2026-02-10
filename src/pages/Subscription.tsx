@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useConversations } from '@/hooks/useConversations';
@@ -29,8 +29,7 @@ const Subscription = () => {
   const usagePercent = Math.min((conversationsUsed / conversationLimit) * 100, 100);
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      <DashboardSidebar />
+    <DashboardLayout className="bg-background">
       <div className="flex-1 flex flex-col overflow-y-auto">
         <PageHeader
           title="Subscription"
@@ -251,7 +250,7 @@ const Subscription = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
