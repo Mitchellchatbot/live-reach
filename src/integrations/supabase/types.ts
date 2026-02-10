@@ -448,6 +448,7 @@ export type Database = {
           ai_response_delay_max_ms: number | null
           ai_response_delay_min_ms: number | null
           auto_escalation_enabled: boolean | null
+          calendly_url: string | null
           created_at: string
           domain: string
           escalation_keywords: string[] | null
@@ -481,6 +482,7 @@ export type Database = {
           ai_response_delay_max_ms?: number | null
           ai_response_delay_min_ms?: number | null
           auto_escalation_enabled?: boolean | null
+          calendly_url?: string | null
           created_at?: string
           domain: string
           escalation_keywords?: string[] | null
@@ -514,6 +516,7 @@ export type Database = {
           ai_response_delay_max_ms?: number | null
           ai_response_delay_min_ms?: number | null
           auto_escalation_enabled?: boolean | null
+          calendly_url?: string | null
           created_at?: string
           domain?: string
           escalation_keywords?: string[] | null
