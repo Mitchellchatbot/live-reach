@@ -499,59 +499,60 @@ const TeamMembers = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Create Agent Account</DialogTitle>
-                      <DialogDescription>
-                        Create login credentials for an agent. They can sign in immediately with these details.
+                      <DialogTitle className="text-base">Create Agent Account</DialogTitle>
+                      <DialogDescription className="text-xs">
+                        Create login credentials for an agent.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="create-name">Name</Label>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="create-name" className="text-xs">Name</Label>
                         <Input
                           id="create-name"
                           placeholder="John Smith"
+                          className="h-8 text-sm"
                           value={createName}
                           onChange={(e) => setCreateName(e.target.value)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="create-email">Email</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="create-email" className="text-xs">Email</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
                             id="create-email"
                             type="email"
                             placeholder="agent@company.com"
-                            className="pl-10"
+                            className="pl-8 h-8 text-sm"
                             value={createEmail}
                             onChange={(e) => setCreateEmail(e.target.value)}
                           />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="create-password">Password</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="create-password" className="text-xs">Password</Label>
                         <div className="relative">
-                          <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <KeyRound className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
                             id="create-password"
                             type="password"
                             placeholder="At least 6 characters"
-                            className="pl-10"
+                            className="pl-8 h-8 text-sm"
                             value={createPassword}
                             onChange={(e) => setCreatePassword(e.target.value)}
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground">Share this password securely with the agent</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Assign to Properties</Label>
-                        <div className="space-y-2 max-h-40 overflow-auto border rounded-lg p-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Assign to Properties</Label>
+                        <div className="space-y-1.5 max-h-24 overflow-auto border rounded-md p-2">
                           {properties.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No properties available</p>
+                            <p className="text-xs text-muted-foreground">No properties available</p>
                           ) : (
                             properties.map((prop) => (
-                              <label key={prop.id} className="flex items-center gap-2 cursor-pointer">
+                              <label key={prop.id} className="flex items-center gap-1.5 cursor-pointer">
                                 <Checkbox
+                                  className="h-3.5 w-3.5"
                                   checked={createPropertyIds.includes(prop.id)}
                                   onCheckedChange={(checked) => {
                                     if (checked) {
@@ -561,8 +562,7 @@ const TeamMembers = () => {
                                     }
                                   }}
                                 />
-                                <span className="text-sm">{prop.name}</span>
-                                <span className="text-xs text-muted-foreground">({prop.domain})</span>
+                                <span className="text-xs truncate">{prop.name}</span>
                               </label>
                             ))
                           )}
@@ -570,14 +570,15 @@ const TeamMembers = () => {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                      <Button variant="outline" size="sm" onClick={() => setIsCreateDialogOpen(false)}>
                         Cancel
                       </Button>
                       <Button 
+                        size="sm"
                         onClick={handleCreateAccount} 
                         disabled={isCreating || !createEmail.trim() || !createName.trim() || createPassword.length < 6}
                       >
-                        {isCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isCreating && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                         Create Account
                       </Button>
                     </DialogFooter>
@@ -594,44 +595,46 @@ const TeamMembers = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Invite Agent</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-base">Invite Agent</DialogTitle>
+                      <DialogDescription className="text-xs">
                         Send an email invitation. The agent will create their own password.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="agent-name">Name</Label>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="agent-name" className="text-xs">Name</Label>
                         <Input
                           id="agent-name"
                           placeholder="John Smith"
+                          className="h-8 text-sm"
                           value={inviteName}
                           onChange={(e) => setInviteName(e.target.value)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="agent-email">Email</Label>
+                      <div className="space-y-1">
+                        <Label htmlFor="agent-email" className="text-xs">Email</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
                             id="agent-email"
                             type="email"
                             placeholder="agent@company.com"
-                            className="pl-10"
+                            className="pl-8 h-8 text-sm"
                             value={inviteEmail}
                             onChange={(e) => setInviteEmail(e.target.value)}
                           />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Assign to Properties</Label>
-                        <div className="space-y-2 max-h-40 overflow-auto border rounded-lg p-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Assign to Properties</Label>
+                        <div className="space-y-1.5 max-h-24 overflow-auto border rounded-md p-2">
                           {properties.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No properties available</p>
+                            <p className="text-xs text-muted-foreground">No properties available</p>
                           ) : (
                             properties.map((prop) => (
-                              <label key={prop.id} className="flex items-center gap-2 cursor-pointer">
+                              <label key={prop.id} className="flex items-center gap-1.5 cursor-pointer">
                                 <Checkbox
+                                  className="h-3.5 w-3.5"
                                   checked={selectedPropertyIds.includes(prop.id)}
                                   onCheckedChange={(checked) => {
                                     if (checked) {
@@ -641,8 +644,7 @@ const TeamMembers = () => {
                                     }
                                   }}
                                 />
-                                <span className="text-sm">{prop.name}</span>
-                                <span className="text-xs text-muted-foreground">({prop.domain})</span>
+                                <span className="text-xs truncate">{prop.name}</span>
                               </label>
                             ))
                           )}
@@ -650,11 +652,11 @@ const TeamMembers = () => {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+                      <Button variant="outline" size="sm" onClick={() => setIsInviteDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleInviteAgent} disabled={isInviting || !inviteEmail.trim() || !inviteName.trim()}>
-                        {isInviting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button size="sm" onClick={handleInviteAgent} disabled={isInviting || !inviteEmail.trim() || !inviteName.trim()}>
+                        {isInviting && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                         Send Invitation
                       </Button>
                     </DialogFooter>
