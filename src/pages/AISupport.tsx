@@ -665,19 +665,19 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
-          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">
+          <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-3 md:p-6">
             <div className="max-w-4xl mx-auto space-y-6">
 
           {/* AI Personas Card */}
           <Card data-tour="ai-personas">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>AI Personas</CardTitle>
                 <CardDescription>
                   Create virtual agents with unique personalities
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Import from Team Dropdown */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -859,6 +859,86 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   </Button>
                 </div>
               ) : (
+                <>
+                <div className="space-y-3 md:hidden">
+                  {aiAgents.map((agent) => (
+                    <div key={agent.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/50">
+                      <div className="relative group flex-shrink-0">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={agent.avatar_url} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            <Bot className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                          {uploadingAvatarFor === agent.id ? (
+                            <Loader2 className="h-4 w-4 text-white animate-spin" />
+                          ) : (
+                            <Upload className="h-4 w-4 text-white" />
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleAvatarUpload(agent.id, file);
+                            }}
+                          />
+                        </label>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{agent.name}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                          {agent.personality_prompt || 'No personality set'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-7 text-xs">
+                                <Globe className="h-3 w-3 mr-1" />
+                                {agent.assigned_properties.length === 0 
+                                  ? 'None' 
+                                  : `${agent.assigned_properties.length} prop`
+                                }
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48">
+                              {properties.length === 0 ? (
+                                <DropdownMenuItem disabled>No properties available</DropdownMenuItem>
+                              ) : (
+                                properties.map((prop) => {
+                                  const isAssigned = agent.assigned_properties.includes(prop.id);
+                                  return (
+                                    <DropdownMenuItem
+                                      key={prop.id}
+                                      onClick={() => handleToggleAIProperty(agent.id, prop.id, isAssigned)}
+                                      className="flex items-center gap-2"
+                                    >
+                                      <Checkbox checked={isAssigned} className="pointer-events-none" />
+                                      <span className="truncate">{prop.name}</span>
+                                    </DropdownMenuItem>
+                                  );
+                                })
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => openEditAIAgent(agent)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteAIAgentId(agent.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop: table */}
+                <div className="hidden md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -966,6 +1046,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     ))}
                   </TableBody>
                 </Table>
+                </div>
+                </>
               )}
             </CardContent>
           </Card>
