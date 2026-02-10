@@ -144,7 +144,7 @@ ENGAGEMENT STRATEGY:
         fieldInstructions.push('- Ask for their phone number');
       }
       if (hasInsurance) {
-        fieldInstructions.push('- Ask for a photo of the FRONT of their insurance card (mention they can tap the image button to upload). If they decline or refuse to upload the front, do NOT ask for the back.');
+        fieldInstructions.push('- Ask about their insurance. Let them know they can either share a photo of their insurance card (they can tap the image button to upload) OR simply tell you the name of their insurance company. Both options are perfectly fine. If they provide either one, acknowledge it warmly and move on. Do NOT pressure them for more details if they decline.');
       }
       
       leadCaptureInstructions = `
