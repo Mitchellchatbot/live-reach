@@ -320,6 +320,63 @@ export type Database = {
           },
         ]
       }
+      notification_logs: {
+        Row: {
+          channel: string
+          conversation_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          notification_type: string
+          property_id: string
+          recipient: string
+          recipient_type: string
+          status: string
+          visitor_name: string | null
+        }
+        Insert: {
+          channel: string
+          conversation_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notification_type: string
+          property_id: string
+          recipient: string
+          recipient_type?: string
+          status?: string
+          visitor_name?: string | null
+        }
+        Update: {
+          channel?: string
+          conversation_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notification_type?: string
+          property_id?: string
+          recipient?: string
+          recipient_type?: string
+          status?: string
+          visitor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_logs_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_analytics_events: {
         Row: {
           created_at: string
