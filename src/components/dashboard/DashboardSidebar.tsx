@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 
 import salesforceLogo from '@/assets/logos/salesforce.svg';
@@ -393,16 +393,37 @@ export const DashboardSidebar = ({
     </TooltipProvider>
   );
 
-  // Mobile: render as a sheet
+  // Mobile: render as floating glass panel
   if (isMobile) {
     return (
-      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
-        <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
+      <>
+        {/* Backdrop blur overlay */}
+        <div
+          className={cn(
+            "fixed inset-0 z-50 transition-all duration-300 ease-out",
+            mobileOpen
+              ? "bg-black/30 backdrop-blur-md opacity-100 pointer-events-auto"
+              : "bg-transparent backdrop-blur-none opacity-0 pointer-events-none"
+          )}
+          onClick={() => onMobileOpenChange?.(false)}
+        />
+        {/* Floating glass sidebar */}
+        <div
+          className={cn(
+            "fixed z-50 top-4 bottom-4 left-4 w-[calc(50vw-8px)] max-w-[280px] min-w-[220px]",
+            "rounded-2xl border border-white/20",
+            "bg-sidebar/80 backdrop-blur-xl shadow-2xl shadow-black/20",
+            "transition-all duration-300 ease-out overflow-hidden",
+            mobileOpen
+              ? "translate-x-0 opacity-100 scale-100"
+              : "-translate-x-[120%] opacity-0 scale-95"
+          )}
+        >
           <div onClick={() => onMobileOpenChange?.(false)}>
             {sidebarContent(true)}
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      </>
     );
   }
 
