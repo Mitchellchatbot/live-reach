@@ -37,7 +37,7 @@ const DialogContent = React.forwardRef<
         ref={ref}
         onPointerDownOutside={(e) => e.preventDefault()}
         className={cn(
-          "relative z-50 grid w-[calc(100%-2rem)] max-w-sm gap-4 border bg-background p-5 shadow-lg duration-150 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 sm:rounded-lg overflow-hidden [&_input]:max-w-full [&_input]:box-border",
+          "relative z-50 grid w-[calc(100%-2rem)] max-w-sm max-h-[85vh] overflow-y-auto gap-4 border bg-background p-5 shadow-lg duration-150 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 sm:rounded-lg",
           className,
         )}
         {...props}
