@@ -390,16 +390,14 @@ const WidgetPreview = () => {
   return <DashboardLayout>
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="shrink-0">
-          <PageHeader title="Widget" docsLink="/documentation/widget/customization" tourSection="widget">
-            <div className="hidden md:contents">
-              <PropertySelector properties={properties} selectedPropertyId={selectedPropertyId} onPropertyChange={handlePropertyChange} onDeleteProperty={deleteProperty} variant="header" showAddButton />
-            </div>
-          </PageHeader>
-          <div className="md:hidden px-3 pb-2 bg-sidebar">
+        <PageHeader
+          title="Widget"
+          docsLink="/documentation/widget/customization"
+          tourSection="widget"
+          propertySelector={
             <PropertySelector properties={properties} selectedPropertyId={selectedPropertyId} onPropertyChange={handlePropertyChange} onDeleteProperty={deleteProperty} variant="header" showAddButton />
-          </div>
-        </div>
+          }
+        />
 
         <main className="flex-1 p-2 overflow-hidden">
           <div className="h-full overflow-auto scrollbar-hide rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm p-6">

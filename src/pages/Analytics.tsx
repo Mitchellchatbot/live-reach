@@ -22,29 +22,12 @@ const Analytics = () => {
     <DashboardLayout>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="shrink-0">
-          <PageHeader title="Analytics" docsLink="/documentation/analytics/overview" tourSection="analytics">
-            {loading ? (
-              <div className="flex items-center gap-2 text-sidebar-foreground/60">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Loading...</span>
-              </div>
-            ) : properties.length > 0 ? (
-              <div className="hidden md:contents">
-                <PropertySelector
-                  properties={properties}
-                  selectedPropertyId={selectedPropertyId}
-                  onPropertyChange={setSelectedPropertyId}
-                  onDeleteProperty={deleteProperty}
-                  variant="header"
-                  showAddButton
-                />
-              </div>
-            ) : null}
-          </PageHeader>
-          {/* Mobile property selector */}
-          {!loading && properties.length > 0 && (
-            <div className="md:hidden px-3 pb-2 bg-sidebar">
+        <PageHeader
+          title="Analytics"
+          docsLink="/documentation/analytics/overview"
+          tourSection="analytics"
+          propertySelector={
+            !loading && properties.length > 0 ? (
               <PropertySelector
                 properties={properties}
                 selectedPropertyId={selectedPropertyId}
@@ -53,9 +36,16 @@ const Analytics = () => {
                 variant="header"
                 showAddButton
               />
+            ) : undefined
+          }
+        >
+          {loading ? (
+            <div className="flex items-center gap-2 text-sidebar-foreground/60">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Loading...</span>
             </div>
-          )}
-        </div>
+          ) : null}
+        </PageHeader>
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">

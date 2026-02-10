@@ -648,28 +648,11 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
     <DashboardLayout>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <div className="shrink-0">
-          <PageHeader title="AI Support" docsLink="/documentation/ai-support/personas" tourSection="ai-support">
-            <div className="hidden md:contents">
-              <PropertySelector
-                properties={properties}
-                selectedPropertyId={selectedPropertyId}
-                onPropertyChange={setSelectedPropertyId}
-                onDeleteProperty={async () => false}
-                variant="header"
-                showAddButton
-              />
-            </div>
-            <HeaderButton size="icon" onClick={fetchAIAgents}>
-              <RefreshCw className="h-4 w-4" />
-            </HeaderButton>
-            <HeaderButton onClick={handleSaveSettings} disabled={isSaving}>
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              Save
-            </HeaderButton>
-          </PageHeader>
-          {/* Mobile property selector below header */}
-          <div className="md:hidden px-3 pb-2 bg-sidebar">
+        <PageHeader
+          title="AI Support"
+          docsLink="/documentation/ai-support/personas"
+          tourSection="ai-support"
+          propertySelector={
             <PropertySelector
               properties={properties}
               selectedPropertyId={selectedPropertyId}
@@ -678,8 +661,16 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               variant="header"
               showAddButton
             />
-          </div>
-        </div>
+          }
+        >
+          <HeaderButton size="icon" onClick={fetchAIAgents}>
+            <RefreshCw className="h-4 w-4" />
+          </HeaderButton>
+          <HeaderButton onClick={handleSaveSettings} disabled={isSaving}>
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+            Save
+          </HeaderButton>
+        </PageHeader>
 
         {/* Content */}
         <div className="flex-1 p-2 overflow-hidden">
