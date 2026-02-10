@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,8 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
 
   const [roleLoading, setRoleLoading] = useState(false);
+  const lastRoleUserId = useRef<string | null>(null);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string, force = false) => {
+    // Skip if we already have the role for this user (avoids reload on tab switch)
+    if (!force && lastRoleUserId.current === userId && role !== null) return;
+    
     setRoleLoading(true);
     const { data } = await supabase
       .from('user_roles')
@@ -37,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (data) {
       setRole(data.role as AppRole);
+      lastRoleUserId.current = userId;
     }
     setRoleLoading(false);
   };
@@ -74,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Fetch role BEFORE setting loading to false
         if (session?.user) {
-          await fetchUserRole(session.user.id);
+          await fetchUserRole(session.user.id, true);
         }
       } catch (error) {
         console.error('Error getting session:', error);
