@@ -122,9 +122,9 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             See exactly what's included in each plan
           </p>
 
-          <div className="rounded-2xl border border-border/40 overflow-hidden bg-card shadow-lg">
+          <div className="rounded-2xl border border-border/40 overflow-x-auto bg-card shadow-lg">
             {/* Table header */}
-            <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-border/40">
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] border-b border-border/40">
               <div className="p-4 md:p-5" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
@@ -149,7 +149,7 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
                   <div
                     key={feature.name}
                     className={cn(
-                      "grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-border/10 transition-colors hover:bg-muted/10",
+                      "grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] border-b border-border/10 transition-colors hover:bg-muted/10",
                       idx % 2 !== 0 && "bg-muted/[0.03]"
                     )}
                   >
@@ -182,7 +182,7 @@ export const PricingSection = ({ showComparison = true, ctaPath = '/auth', ctaLa
             ))}
 
             {/* Bottom CTA row */}
-            <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] bg-muted/20 border-t border-border/30">
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] min-w-[500px] bg-muted/20 border-t border-border/30">
               <div className="p-4" />
               {pricingPlans.map((plan) => (
                 <div key={plan.id} className={cn(
