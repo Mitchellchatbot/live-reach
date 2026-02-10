@@ -19,14 +19,12 @@ import {
   Loader2,
   MessageCircle,
   Mail,
-  Shield,
   Bell,
   Volume2,
   ClipboardList,
 } from 'lucide-react';
 import { SlackSettings } from '@/components/settings/SlackSettings';
 import { EmailSettings } from '@/components/settings/EmailSettings';
-import { HipaaSettings } from '@/components/settings/HipaaSettings';
 import { NotificationLog } from '@/components/settings/NotificationLog';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import {
@@ -224,22 +222,18 @@ const Notifications = () => {
 
               {selectedPropertyId && (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-                  <TabsList className="grid w-full grid-cols-4" data-tour="notifications-tabs">
+                  <TabsList className="grid w-full grid-cols-3" data-tour="notifications-tabs">
                     <TabsTrigger value="slack" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-slack-tab">
                       <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Slack</span>
+                      Slack
                     </TabsTrigger>
                     <TabsTrigger value="email" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-email-tab">
                       <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Email</span>
+                      Email
                     </TabsTrigger>
                     <TabsTrigger value="logs" className="gap-1.5 text-xs sm:text-sm">
                       <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Logs</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="hipaa" className="gap-1.5 text-xs sm:text-sm">
-                      <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">HIPAA</span>
+                      Logs
                     </TabsTrigger>
                   </TabsList>
 
@@ -253,10 +247,6 @@ const Notifications = () => {
 
                   <TabsContent value="logs">
                     <NotificationLog propertyId={selectedPropertyId} />
-                  </TabsContent>
-
-                  <TabsContent value="hipaa">
-                    <HipaaSettings propertyId={selectedPropertyId} />
                   </TabsContent>
                 </Tabs>
               )}

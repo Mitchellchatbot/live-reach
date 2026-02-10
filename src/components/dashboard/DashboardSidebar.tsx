@@ -16,7 +16,8 @@ import {
   BookOpen,
   CreditCard,
   Building2,
-  Menu
+  Menu,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -285,6 +286,12 @@ export const DashboardSidebar = ({
               <div data-tour="notifications">
                 <SidebarItem to="/dashboard/notifications" icon={({ className }: { className?: string }) => <img src={gmailLogo} alt="Notifications" className={cn("h-[18px] w-[18px]", className)} />} label="Notifications" collapsed={!forMobile && collapsed} iconColor="#EA4335" />
               </div>
+            </SidebarSection>
+          )}
+
+          {(isClient || isAdmin) && (
+            <SidebarSection title="Compliance" collapsed={!forMobile && collapsed}>
+              <SidebarItem to="/dashboard/hipaa" icon={Shield} label="HIPAA" collapsed={!forMobile && collapsed} iconColor="#10B981" />
             </SidebarSection>
           )}
 

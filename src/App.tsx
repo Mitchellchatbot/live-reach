@@ -59,6 +59,7 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const Demo = lazy(() => import("./pages/Demo"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Properties = lazy(() => import("./pages/Properties"));
+const HipaaCompliance = lazy(() => import("./pages/HipaaCompliance"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -141,6 +142,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/widget" element={<RequireClient><WidgetPreview /></RequireClient>} />
         <Route path="/dashboard/salesforce" element={<RequireClient><Salesforce /></RequireClient>} />
         <Route path="/dashboard/notifications" element={<RequireClient><Notifications /></RequireClient>} />
+        <Route path="/dashboard/hipaa" element={<RequireClient><HipaaCompliance /></RequireClient>} />
         <Route path="/dashboard/subscription" element={<RequireClient><Subscription /></RequireClient>} />
         <Route path="/dashboard/support" element={<RequireClient><Support /></RequireClient>} />
         
