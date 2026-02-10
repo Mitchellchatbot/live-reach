@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -642,9 +642,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
   // Status color removed - no longer using online indicators for AI
 
   return (
-    <div className="flex h-screen bg-sidebar">
-      <DashboardSidebar />
-      
+    <DashboardLayout>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <PageHeader title="AI Support" docsLink="/documentation/ai-support/personas" tourSection="ai-support">
@@ -1385,7 +1383,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       
       {/* Dashboard Tour */}
       <DashboardTour />
-    </div>
+    </DashboardLayout>
   );
 };
 

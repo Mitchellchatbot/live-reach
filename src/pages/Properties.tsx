@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { useConversations } from '@/hooks/useConversations';
@@ -60,8 +60,7 @@ const Properties = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <DashboardSidebar />
+    <DashboardLayout className="bg-background">
       <DashboardTour />
       <div className="flex-1 flex flex-col overflow-hidden">
         <PageHeader title="Properties" tourSection="properties">
@@ -156,7 +155,7 @@ const Properties = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DashboardLayout>
   );
 };
 

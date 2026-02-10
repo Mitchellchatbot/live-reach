@@ -3,7 +3,7 @@ import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '@/components/widget/ChatWidget';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -360,16 +360,14 @@ const WidgetPreview = () => {
     setTimeout(() => setCopied(false), 2000);
   };
   if (loading) {
-    return <div className="flex h-screen bg-sidebar">
-        <DashboardSidebar />
+    return <DashboardLayout>
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </div>;
+      </DashboardLayout>;
   }
   if (properties.length === 0) {
-    return <div className="flex h-screen bg-sidebar">
-        <DashboardSidebar />
+    return <DashboardLayout>
         <div className="flex-1 flex flex-col overflow-hidden">
           <PageHeader title="Widget Customization" />
           <div className="flex-1 p-2 overflow-hidden">
@@ -387,10 +385,9 @@ const WidgetPreview = () => {
             </div>
           </div>
         </div>
-      </div>;
+      </DashboardLayout>;
   }
-  return <div className="flex h-screen bg-sidebar">
-      <DashboardSidebar />
+  return <DashboardLayout>
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <PageHeader title="Widget Customization" docsLink="/documentation/widget/customization" tourSection="widget">
@@ -734,7 +731,7 @@ const WidgetPreview = () => {
       </main>
       </div>
       <DashboardTour />
-    </div>;
+    </DashboardLayout>;
 };
 
 type FitScaledIframeProps = {

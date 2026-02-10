@@ -2,8 +2,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { InfoIndicator } from '@/components/docs/InfoIndicator';
 import { useSearchParams } from 'react-router-dom';
-import { Compass } from 'lucide-react';
+import { Compass, Menu } from 'lucide-react';
 import { deepDiveStepsMap } from './DashboardTour';
+import { useDashboardLayout } from './DashboardLayout';
 
 interface PageHeaderProps {
   title: string;
@@ -16,6 +17,7 @@ interface PageHeaderProps {
 
 export const PageHeader = ({ title, children, className, docsLink, tourSection }: PageHeaderProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { openSidebar, isMobile } = useDashboardLayout();
   
   const hasDeepDive = tourSection && deepDiveStepsMap[tourSection]?.length > 0;
 
@@ -31,13 +33,18 @@ export const PageHeader = ({ title, children, className, docsLink, tourSection }
   return (
     <div 
       className={cn(
-        "h-16 shrink-0 flex items-center justify-between px-6 sticky top-0 z-10",
+        "h-14 md:h-16 shrink-0 flex items-center justify-between px-3 md:px-6 sticky top-0 z-10",
         "bg-sidebar text-sidebar-foreground",
         className
       )}
     >
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold text-sidebar-foreground">{title}</h1>
+        {isMobile && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent mr-1" onClick={openSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+        <h1 className="text-lg md:text-xl font-semibold text-sidebar-foreground truncate">{title}</h1>
         {docsLink && <span data-tour="info-indicator"><InfoIndicator to={docsLink} size="md" variant="header" /></span>}
         {hasDeepDive && (
           <Button
@@ -53,7 +60,7 @@ export const PageHeader = ({ title, children, className, docsLink, tourSection }
         )}
       </div>
       {children && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
           {children}
         </div>
       )}
