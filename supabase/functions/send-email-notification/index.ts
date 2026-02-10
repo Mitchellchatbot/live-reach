@@ -155,6 +155,20 @@ Deno.serve(async (req) => {
 
     console.log("Email notification sent:", emailResponse);
 
+    // Log notification to notification_logs
+    for (const email of recipients) {
+      await supabase.from("notification_logs").insert({
+        property_id: propertyId,
+        notification_type: eventType,
+        channel: "email",
+        recipient: email,
+        recipient_type: "team",
+        status: "sent",
+        conversation_id: conversationId,
+        visitor_name: visitorName || visitorEmail || null,
+      });
+    }
+
     return new Response(JSON.stringify({ success: true, emailId: emailResponse.data?.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

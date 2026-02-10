@@ -48,6 +48,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Support = lazy(() => import("./pages/Support"));
 const Salesforce = lazy(() => import("./pages/Salesforce"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const NotificationLogs = lazy(() => import("./pages/NotificationLogs"));
 const SlackApp = lazy(() => import("./pages/SlackApp"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -141,6 +142,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/widget" element={<RequireClient><WidgetPreview /></RequireClient>} />
         <Route path="/dashboard/salesforce" element={<RequireClient><Salesforce /></RequireClient>} />
         <Route path="/dashboard/notifications" element={<RequireClient><Notifications /></RequireClient>} />
+        <Route path="/dashboard/notification-logs" element={<RequireClient><NotificationLogs /></RequireClient>} />
         <Route path="/dashboard/subscription" element={<RequireClient><Subscription /></RequireClient>} />
         <Route path="/dashboard/support" element={<RequireClient><Support /></RequireClient>} />
         

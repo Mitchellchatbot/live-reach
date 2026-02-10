@@ -188,6 +188,24 @@ Deno.serve(async (req) => {
     const responseText = await slackResponse.text();
     console.log("Slack notification sent:", slackResponse.status, responseText);
 
+    // Log notification to notification_logs
+    const slackStatus = slackResponse.ok ? "sent" : "failed";
+    const slackChannel = webhookUrl
+      ? (settings.incoming_webhook_channel || "webhook")
+      : (settings.incoming_webhook_channel || settings.channel_name || "general");
+
+    await supabase.from("notification_logs").insert({
+      property_id: propertyId,
+      notification_type: eventType,
+      channel: "slack",
+      recipient: slackChannel,
+      recipient_type: "team",
+      status: slackStatus,
+      error_message: slackStatus === "failed" ? responseText.slice(0, 500) : null,
+      conversation_id: conversationId,
+      visitor_name: visitorName || visitorEmail || null,
+    });
+
     return new Response(
       JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
