@@ -63,88 +63,76 @@ export const PageHeader = ({ title, children, className, docsLink, propertySelec
   }
 
   return (
-    <div className={cn("shrink-0", className)}>
-      {/* Main header bar */}
-      <div 
-        className={cn(
-          "h-12 md:h-16 flex items-center justify-between px-3 md:px-6",
-          "bg-sidebar text-sidebar-foreground"
+    <div 
+      className={cn(
+        "h-12 md:h-16 shrink-0 flex items-center justify-between px-3 md:px-6",
+        "bg-sidebar text-sidebar-foreground",
+        className
+      )}
+    >
+      {/* Left: hamburger + title */}
+      <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-shrink-1">
+        {isMobile && (
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent flex-shrink-0" onClick={openSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
         )}
-      >
-        {/* Left: hamburger + title */}
-        <div className="flex items-center gap-2 min-w-0">
-          {isMobile && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent flex-shrink-0" onClick={openSidebar}>
-              <Menu className="h-5 w-5" />
-            </Button>
-          )}
-          <h1 className="text-base md:text-xl font-semibold text-sidebar-foreground truncate">{title}</h1>
-          
-          {/* Desktop-only: info + tour */}
-          {docsLink && (
-            <span data-tour="info-indicator" className="hidden md:inline flex-shrink-0">
-              <InfoIndicator to={docsLink} size="md" variant="header" />
-            </span>
-          )}
-          {hasDeepDive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={startDeepDive}
-              className="hidden md:inline-flex h-7 gap-1.5 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-full px-2.5 flex-shrink-0"
-              title="Take a detailed tour of this page"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              <span>Tour this page</span>
-            </Button>
-          )}
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-          {/* Desktop: show property selector + children inline */}
-          {propertySelector && (
-            <div className="hidden md:contents">
-              {propertySelector}
-            </div>
-          )}
-          {children && (
-            <div className="hidden md:flex items-center gap-1.5">
-              {children}
-            </div>
-          )}
-
-          {/* Mobile: overflow menu for children + extras */}
-          {isMobile && (hasChildren || mobileOverflowItems.length > 0) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px] p-1.5 space-y-0.5">
-                {/* Action buttons rendered as menu items */}
-                {hasChildren && (
-                  <div className="flex items-center gap-1 px-1 py-1 justify-end">
-                    {children}
-                  </div>
-                )}
-                {mobileOverflowItems.length > 0 && hasChildren && (
-                  <div className="h-px bg-border my-1" />
-                )}
-                {mobileOverflowItems}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+        <h1 className="text-sm md:text-xl font-semibold text-sidebar-foreground truncate">{title}</h1>
+        
+        {/* Desktop-only: info + tour */}
+        {docsLink && (
+          <span data-tour="info-indicator" className="hidden md:inline flex-shrink-0">
+            <InfoIndicator to={docsLink} size="md" variant="header" />
+          </span>
+        )}
+        {hasDeepDive && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={startDeepDive}
+            className="hidden md:inline-flex h-7 gap-1.5 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-full px-2.5 flex-shrink-0"
+            title="Take a detailed tour of this page"
+          >
+            <Compass className="h-3.5 w-3.5" />
+            <span>Tour this page</span>
+          </Button>
+        )}
       </div>
 
-      {/* Mobile: property selector row */}
-      {isMobile && propertySelector && (
-        <div className="px-3 pb-2 bg-sidebar">
-          {propertySelector}
-        </div>
-      )}
+      {/* Right side */}
+      <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+        {/* Property selector - inline on all sizes */}
+        {propertySelector}
+        
+        {/* Desktop: children inline */}
+        {children && (
+          <div className="hidden md:flex items-center gap-1.5">
+            {children}
+          </div>
+        )}
+
+        {/* Mobile: overflow menu for children + extras */}
+        {isMobile && (hasChildren || mobileOverflowItems.length > 0) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground/60 hover:bg-sidebar-accent">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[180px] p-1.5 space-y-0.5 bg-popover">
+              {hasChildren && (
+                <div className="flex items-center gap-1 px-1 py-1 justify-end">
+                  {children}
+                </div>
+              )}
+              {mobileOverflowItems.length > 0 && hasChildren && (
+                <div className="h-px bg-border my-1" />
+              )}
+              {mobileOverflowItems}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </div>
   );
 };
