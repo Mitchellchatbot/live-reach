@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -45,6 +45,9 @@ const Salesforce = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState('leads');
 
+  const [searchParams] = useSearchParams();
+  const isTourActive = searchParams.get('tour') === '1';
+
   // Listen for tour tab-switch events
   useEffect(() => {
     const handler = (e: Event) => {
@@ -61,12 +64,14 @@ const Salesforce = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Set first property as default
+  // Set first property as default, or use a demo ID during tour
   useEffect(() => {
     if (properties.length > 0 && !selectedPropertyId) {
       setSelectedPropertyId(properties[0].id);
+    } else if (isTourActive && properties.length === 0 && !selectedPropertyId) {
+      setSelectedPropertyId('demo-tour-property');
     }
-  }, [properties, selectedPropertyId]);
+  }, [properties, selectedPropertyId, isTourActive]);
 
   const handleCreateProperty = async () => {
     if (!newPropertyName.trim() || !newPropertyDomain.trim()) return;
