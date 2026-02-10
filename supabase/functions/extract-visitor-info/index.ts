@@ -207,6 +207,40 @@ Deno.serve(async (req) => {
         console.error('Error updating visitor:', error);
       }
 
+      // Fire phone submission notifications if a new phone was captured
+      if (updates.phone) {
+        try {
+          // Look up active conversation for this visitor to get conversationId and propertyId
+          const { data: conversation } = await supabase
+            .from('conversations')
+            .select('id, property_id')
+            .eq('visitor_id', visitorId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (conversation) {
+            const notificationPayload = {
+              propertyId: conversation.property_id,
+              eventType: 'phone_submission',
+              visitorName: updates.name || visitor?.name || null,
+              visitorPhone: updates.phone,
+              conversationId: conversation.id,
+            };
+
+            // Fire-and-forget notifications
+            supabase.functions.invoke('send-email-notification', { body: notificationPayload }).catch((e: any) =>
+              console.error('Phone email notification error:', e)
+            );
+            supabase.functions.invoke('send-slack-notification', { body: notificationPayload }).catch((e: any) =>
+              console.error('Phone slack notification error:', e)
+            );
+          }
+        } catch (notifErr) {
+          console.error('Error sending phone notifications:', notifErr);
+        }
+      }
+
       return new Response(JSON.stringify({ extracted: true, info: updates }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

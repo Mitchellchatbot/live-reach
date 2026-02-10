@@ -8,9 +8,10 @@ const corsHeaders = {
 
 interface SlackNotificationRequest {
   propertyId: string;
-  eventType: "new_conversation" | "escalation";
+  eventType: "new_conversation" | "escalation" | "phone_submission";
   visitorName?: string;
   visitorEmail?: string;
+  visitorPhone?: string;
   conversationId: string;
   message?: string;
 }
@@ -30,6 +31,7 @@ Deno.serve(async (req) => {
       eventType,
       visitorName,
       visitorEmail,
+      visitorPhone,
       conversationId,
       message,
     }: SlackNotificationRequest = await req.json();
@@ -90,6 +92,12 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    if (eventType === "phone_submission" && !settings.notify_on_phone_submission) {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "event_disabled" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Fetch property name
     const { data: property } = await supabase
@@ -101,17 +109,26 @@ Deno.serve(async (req) => {
     const propertyName = property?.name || "Your Property";
     const propertyDomain = property?.domain || "";
     const isEscalation = eventType === "escalation";
+    const isPhoneSubmission = eventType === "phone_submission";
     const visitorLabel = visitorName || visitorEmail || "Anonymous Visitor";
 
     // Build Slack message blocks
-    const blocks = [
+    let headerText = "💬 New Conversation";
+    let eventDetail = "New chat started";
+    if (isEscalation) {
+      headerText = "🔴 Conversation Escalated";
+      eventDetail = "Escalation — needs human agent";
+    } else if (isPhoneSubmission) {
+      headerText = "📞 Phone Number Captured";
+      eventDetail = `Phone: ${visitorPhone || "N/A"}`;
+    }
+
+    const blocks: any[] = [
       {
         type: "header",
         text: {
           type: "plain_text",
-          text: isEscalation
-            ? "🔴 Conversation Escalated"
-            : "💬 New Conversation",
+          text: headerText,
           emoji: true,
         },
       },
@@ -123,7 +140,7 @@ Deno.serve(async (req) => {
           { type: "mrkdwn", text: `*Visitor:*\n${visitorLabel}` },
           {
             type: "mrkdwn",
-            text: `*Event:*\n${isEscalation ? "Escalation — needs human agent" : "New chat started"}`,
+            text: `*Event:*\n${eventDetail}`,
           },
         ],
       },
@@ -150,10 +167,15 @@ Deno.serve(async (req) => {
       ],
     } as any);
 
+    let fallbackText = `💬 New conversation on ${propertyName} — ${visitorLabel}`;
+    if (isEscalation) {
+      fallbackText = `🔴 Escalation on ${propertyName} — ${visitorLabel}`;
+    } else if (isPhoneSubmission) {
+      fallbackText = `📞 Phone captured on ${propertyName} — ${visitorLabel}: ${visitorPhone || "N/A"}`;
+    }
+
     const payload = {
-      text: isEscalation
-        ? `🔴 Escalation on ${propertyName} — ${visitorLabel}`
-        : `💬 New conversation on ${propertyName} — ${visitorLabel}`,
+      text: fallbackText,
       blocks,
     };
 
