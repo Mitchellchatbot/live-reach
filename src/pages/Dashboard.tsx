@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon } from 'lucide-react';
+import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
@@ -353,7 +353,7 @@ const DashboardContent = () => {
         {/* Unified Header - Black spanning all sections */}
         <div className="flex shrink-0 bg-sidebar text-sidebar-foreground pl-2">
           {/* Conversation List Header */}
-          <div className="w-80 px-4 py-3 border-r border-sidebar-border shrink-0">
+          <div className={cn("w-80 px-4 py-3 border-r border-sidebar-border shrink-0", selectedConversationId && "hidden md:block")}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <h2 className="text-lg font-semibold text-sidebar-foreground">{getStatusTitle()}</h2>
@@ -383,9 +383,12 @@ const DashboardContent = () => {
           </div>
 
           {/* Chat Panel Header */}
-          <div className="flex-1 px-4 py-3 border-r border-sidebar-border flex items-center justify-between min-w-0">
+          <div className={cn("flex-1 px-4 py-3 border-r border-sidebar-border flex items-center justify-between min-w-0", !selectedConversationId && "hidden md:flex")}>
             {selectedConversation && <>
                 <div className="flex items-center gap-3 min-w-0">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden text-sidebar-foreground/60 hover:bg-sidebar-accent flex-shrink-0" onClick={() => setSelectedConversationId(null)}>
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
                   <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs">
                       {(selectedConversation.visitor.name || `Visitor ${selectedConversation.visitor.sessionId.slice(-4)}`).split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -440,7 +443,7 @@ const DashboardContent = () => {
         <div className="flex flex-1 min-h-0 overflow-hidden p-2 bg-sidebar">
           <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm">
             {/* Conversation List Column */}
-            <div ref={listRef} data-tour="conversation-list" className="w-80 border-r border-border/30 flex flex-col shrink-0">
+            <div ref={listRef} data-tour="conversation-list" className={cn("w-full md:w-80 border-r border-border/30 flex flex-col md:shrink-0", selectedConversationId && "hidden md:flex")}>
               {/* Search - White/light background */}
               <div className="px-4 py-3 border-b border-border/30">
                 <div className="relative">
@@ -497,7 +500,7 @@ const DashboardContent = () => {
             </div>
 
             {/* Chat Panel */}
-            <div className="flex-1 min-w-0">
+            <div className={cn("flex-1 min-w-0", !selectedConversationId && "hidden md:block")}>
               <ChatPanel 
                 conversation={selectedConversation} 
                 onSendMessage={handleSendMessage} 
