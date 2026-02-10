@@ -266,8 +266,8 @@ const AISupport = () => {
         escalation_keywords: data.escalation_keywords ?? ['crisis', 'emergency', 'suicide', 'help me', 'urgent'],
         auto_escalation_enabled: data.auto_escalation_enabled ?? true,
         require_email_before_chat: data.require_email_before_chat ?? false,
-        require_name_before_chat: true, // Always on per data collection order
-        require_phone_before_chat: true, // Always on per data collection order
+        require_name_before_chat: data.require_name_before_chat ?? false,
+        require_phone_before_chat: data.require_phone_before_chat ?? false,
         require_insurance_card_before_chat: data.require_insurance_card_before_chat ?? false,
         natural_lead_capture_enabled: data.natural_lead_capture_enabled ?? true,
         proactive_message: data.proactive_message ?? null,
@@ -1249,52 +1249,60 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Data Collection Order */}
-                  <div className="space-y-1 mb-2">
-                    <Label className="text-base font-semibold">Data Collection Order</Label>
-                    <p className="text-sm text-muted-foreground">
-                      The AI collects visitor information in the following order during conversation
-                    </p>
-                  </div>
-
-                  {/* 1. Name — always on */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold">1</span>
-                      <div className="space-y-0.5">
-                        <Label>Name</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Visitor's name is always collected first
-                        </p>
-                      </div>
+                    <div className="space-y-0.5">
+                      <Label>Require Name</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Ask for visitor's name before chat
+                      </p>
                     </div>
-                    <Badge variant="secondary" className="text-xs">Always On</Badge>
+                    <Switch
+                      checked={settings.require_name_before_chat}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        require_name_before_chat: checked,
+                      })}
+                    />
                   </div>
 
-                  {/* 2. Phone — always on */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold">2</span>
-                      <div className="space-y-0.5">
-                        <Label>Phone Number</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Phone number is collected after name
-                        </p>
-                      </div>
+                    <div className="space-y-0.5">
+                      <Label>Require Email</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Ask for visitor's email before chat
+                      </p>
                     </div>
-                    <Badge variant="secondary" className="text-xs">Always On</Badge>
+                    <Switch
+                      checked={settings.require_email_before_chat}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        require_email_before_chat: checked,
+                      })}
+                    />
                   </div>
 
-                  {/* 3. Insurance — toggleable, default on */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold">3</span>
-                      <div className="space-y-0.5">
-                        <Label>Insurance Info</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Ask for insurance information after phone number
-                        </p>
-                      </div>
+                    <div className="space-y-0.5">
+                      <Label>Require Phone</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Ask for visitor's phone number before chat
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.require_phone_before_chat}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        require_phone_before_chat: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Require Insurance Card</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Ask for front and back photos of insurance card
+                      </p>
                     </div>
                     <Switch
                       checked={settings.require_insurance_card_before_chat}
@@ -1315,7 +1323,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          AI conversationally asks for fields instead of showing a form
+                          AI conversationally asks for selected fields instead of showing a form
                         </p>
                       </div>
                       <Switch
@@ -1328,7 +1336,13 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     </div>
                     {settings.natural_lead_capture_enabled && (
                       <p className="text-xs text-muted-foreground mt-2 bg-muted/50 p-3 rounded-lg">
-                        The AI will naturally collect: name, phone{settings.require_insurance_card_before_chat ? ', insurance info' : ''} during conversation. No form will be shown.
+                        When enabled, the AI will naturally ask for the fields you've selected above during conversation. 
+                        No form will be shown. The AI will gently collect: 
+                        {settings.require_name_before_chat && ' name,'}
+                        {settings.require_email_before_chat && ' email,'}
+                        {settings.require_phone_before_chat && ' phone,'}
+                        {settings.require_insurance_card_before_chat && ' insurance card photos'}
+                        {!settings.require_name_before_chat && !settings.require_email_before_chat && !settings.require_phone_before_chat && !settings.require_insurance_card_before_chat && ' (no fields selected)'}
                       </p>
                     )}
                   </div>
@@ -1339,10 +1353,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                       <div className="flex items-center gap-2">
                         <Link className="h-4 w-4 text-muted-foreground" />
                         <Label>Calendly Booking Link</Label>
-                        <Badge variant="outline" className="text-xs">Optional · Internal Use</Badge>
+                        <Badge variant="outline" className="text-xs">Optional</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        After collecting contact info, the AI will offer visitors a link to book a call. Disabled by default — enable by adding a URL.
+                        After collecting contact info, the AI will offer visitors a link to book a call via Calendly.
                       </p>
                       <Input
                         placeholder="https://calendly.com/your-team/consultation"
@@ -1354,7 +1368,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                       />
                       {settings.calendly_url && (
                         <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                          ✅ After collecting name and phone, the AI will offer this booking link once during the conversation.
+                          ✅ After the visitor shares their name and phone number, the AI will offer this booking link once during the conversation.
                         </p>
                       )}
                     </div>
