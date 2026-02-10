@@ -569,7 +569,7 @@ const WidgetPreview = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="relative">
-                        <pre className="bg-sidebar text-sidebar-foreground p-4 rounded-lg text-sm overflow-x-auto">
+                        <pre className="bg-sidebar text-sidebar-foreground p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap break-all">
                           <code>{widgetScript}</code>
                         </pre>
                         <Button onClick={handleCopy} size="sm" variant="secondary" className="absolute top-2 right-2" disabled={!selectedPropertyId}>
