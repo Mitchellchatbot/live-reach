@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight, Mail, MailX, Send, SendHorizonal, Upload, UploadCloud, XCircle } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight, Mail, MailX, Send, XCircle, UploadCloud, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useInAppNotifications, InAppNotification, NotificationType } from '@/hooks/useInAppNotifications';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -23,14 +23,55 @@ const iconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: 
 };
 
 interface NotificationsBellProps {
-  /** Use 'header' for the dark sidebar-colored header bar */
   variant?: 'header' | 'default';
+}
+
+const DISMISSED_KEY = 'care-assist-notif-dismissed';
+
+function getDismissedIds(): Set<string> {
+  try {
+    const stored = localStorage.getItem(DISMISSED_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveDismissedIds(ids: Set<string>) {
+  // Only keep latest 200 to avoid localStorage bloat
+  const arr = Array.from(ids).slice(-200);
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(arr));
+}
+
+function getNavigationPath(notif: InAppNotification): string | null {
+  if (notif.conversationId) {
+    return `/dashboard?c=${notif.conversationId}`;
+  }
+  switch (notif.type) {
+    case 'property_added':
+      return '/dashboard/properties';
+    case 'export_success':
+      return '/dashboard/salesforce';
+    case 'export_failed':
+      return '/dashboard/salesforce';
+    case 'email_sent':
+    case 'email_failed':
+      return '/dashboard/notifications';
+    case 'slack_sent':
+    case 'slack_failed':
+      return '/dashboard/notifications';
+    default:
+      return null;
+  }
 }
 
 export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProps) => {
   const { notifications, unseenCount, markAllSeen } = useInAppNotifications();
   const [open, setOpen] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(getDismissedIds);
   const navigate = useNavigate();
+
+  const visibleNotifications = notifications.filter(n => !dismissedIds.has(n.id));
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -39,12 +80,27 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
     }
   };
 
-  const handleClick = (notif: InAppNotification) => {
-    if (notif.conversationId) {
-      navigate(`/dashboard?c=${notif.conversationId}`);
+  const handleClick = useCallback((notif: InAppNotification) => {
+    // Dismiss from bell dropdown (not from logs)
+    const newDismissed = new Set(dismissedIds);
+    newDismissed.add(notif.id);
+    setDismissedIds(newDismissed);
+    saveDismissedIds(newDismissed);
+
+    // Navigate
+    const path = getNavigationPath(notif);
+    if (path) {
+      navigate(path);
     }
     setOpen(false);
-  };
+  }, [dismissedIds, navigate]);
+
+  const handleClearAll = useCallback(() => {
+    const newDismissed = new Set(dismissedIds);
+    visibleNotifications.forEach(n => newDismissed.add(n.id));
+    setDismissedIds(newDismissed);
+    saveDismissedIds(newDismissed);
+  }, [dismissedIds, visibleNotifications]);
 
   const isHeader = variant === 'header';
 
@@ -62,9 +118,9 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
           )}
         >
           <Bell className="h-4 w-4" />
-          {unseenCount > 0 && (
+          {visibleNotifications.length > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-sm animate-scale-in">
-              {unseenCount > 9 ? '9+' : unseenCount}
+              {visibleNotifications.length > 9 ? '9+' : visibleNotifications.length}
             </span>
           )}
         </Button>
@@ -77,27 +133,28 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-muted/30">
           <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
-          {unseenCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {unseenCount} new
-            </span>
+          {visibleNotifications.length > 0 && (
+            <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2 text-muted-foreground hover:text-foreground" onClick={handleClearAll}>
+              Clear all
+            </Button>
           )}
         </div>
 
         {/* List */}
-        <ScrollArea className="max-h-[400px]">
-          {notifications.length === 0 ? (
+        <ScrollArea className="max-h-[420px]">
+          {visibleNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
                 <Bell className="h-5 w-5 text-muted-foreground/40" />
               </div>
-              <p className="text-sm font-medium text-muted-foreground">No notifications yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Events will appear here as they happen</p>
+              <p className="text-sm font-medium text-muted-foreground">All caught up!</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">No new notifications</p>
             </div>
           ) : (
             <div className="divide-y divide-border/30">
-              {notifications.map((notif) => {
+              {visibleNotifications.map((notif) => {
                 const { icon: Icon, color, bg } = iconMap[notif.type] || iconMap.new_chat;
+                const navPath = getNavigationPath(notif);
                 return (
                   <button
                     key={notif.id}
@@ -105,7 +162,7 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
                     className={cn(
                       "w-full flex items-start gap-3 px-4 py-3 text-left transition-colors duration-150",
                       "hover:bg-accent/50 focus-visible:bg-accent/50 outline-none",
-                      notif.conversationId && "cursor-pointer"
+                      navPath ? "cursor-pointer" : "cursor-default"
                     )}
                   >
                     <div className={cn("mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0", bg)}>
@@ -115,12 +172,12 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium text-foreground truncate">{notif.title}</p>
                         <span className="text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0">
-                          {formatDistanceToNow(notif.timestamp, { addSuffix: false })}
+                          {formatDistanceToNow(notif.timestamp, { addSuffix: true })}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notif.description}</p>
                     </div>
-                    {notif.conversationId && (
+                    {navPath && (
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 mt-1 flex-shrink-0" />
                     )}
                   </button>
@@ -142,7 +199,7 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
                 setOpen(false);
               }}
             >
-              View all notification settings
+              View all notification history
             </Button>
           </div>
         )}
