@@ -31,9 +31,10 @@ const Analytics = () => {
               <PropertySelector
                 properties={properties}
                 selectedPropertyId={selectedPropertyId}
-                onPropertyChange={setSelectedPropertyId}
+                onPropertyChange={(id) => setSelectedPropertyId(id === 'all' ? undefined : id)}
                 onDeleteProperty={deleteProperty}
                 variant="header"
+                showAllOption
                 showAddButton
               />
             ) : undefined

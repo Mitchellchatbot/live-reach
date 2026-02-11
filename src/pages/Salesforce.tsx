@@ -171,10 +171,11 @@ const Salesforce = () => {
                   <PropertySelector
                     properties={properties}
                     selectedPropertyId={selectedPropertyId}
-                    onPropertyChange={setSelectedPropertyId}
+                    onPropertyChange={(id) => setSelectedPropertyId(id === 'all' ? '' : id)}
                     onDeleteProperty={deleteProperty}
                     showDomain
                     showIcon={false}
+                    showAllOption
                     className="w-full"
                   />
                 </CardContent>
