@@ -49,10 +49,24 @@ export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
 
   const fetchVisitors = async () => {
     setLoading(true);
+    // Only fetch visitors who actually chatted (have a conversation)
+    const { data: conversations } = await supabase
+      .from('conversations')
+      .select('visitor_id')
+      .eq('property_id', propertyId);
+
+    const visitorIds = [...new Set((conversations || []).map(c => c.visitor_id))];
+
+    if (visitorIds.length === 0) {
+      setVisitors([]);
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('visitors')
       .select('*')
-      .eq('property_id', propertyId)
+      .in('id', visitorIds)
       .order('created_at', { ascending: false });
 
     if (error) {
