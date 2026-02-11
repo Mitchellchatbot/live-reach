@@ -467,7 +467,7 @@ const DashboardContent = () => {
         <div className="flex flex-1 min-h-0 overflow-hidden p-0 md:p-2 bg-sidebar">
           <div className="flex flex-1 min-h-0 overflow-hidden md:rounded-lg md:border border-border/30 bg-background dark:bg-background/50 dark:backdrop-blur-sm">
             {/* Conversation List Column */}
-            <div ref={listRef} data-tour="conversation-list" className={cn("w-full md:w-80 border-r border-border/30 flex flex-col md:shrink-0", selectedConversationId && "hidden md:flex")}>
+            <div ref={listRef} data-tour="conversation-list" className={cn("w-full md:w-80 border-r border-border/30 flex flex-col md:shrink-0 bg-[hsl(220_14%_97%)]", selectedConversationId && "hidden md:flex")}>
               {/* Search - White/light background */}
               <div className="px-4 py-3 border-b border-border/30">
                 <div className="relative">

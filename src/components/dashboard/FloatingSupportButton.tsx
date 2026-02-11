@@ -52,7 +52,7 @@ export const FloatingSupportButton = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center",
-          "shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40",
+          "shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30",
           "transition-all duration-300 hover:scale-105 active:scale-95"
         )}
       >
