@@ -246,7 +246,7 @@ const Notifications = () => {
                   </TabsContent>
 
                   <TabsContent value="logs">
-                    <NotificationLog propertyId={selectedPropertyId} />
+                    <NotificationLog />
                   </TabsContent>
                 </Tabs>
               )}
