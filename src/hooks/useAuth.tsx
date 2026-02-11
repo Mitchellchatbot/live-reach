@@ -53,6 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
+
+        // Skip redundant updates on TOKEN_REFRESHED to prevent re-renders on tab switch
+        if (event === 'TOKEN_REFRESHED') {
+          // Only update session ref for token freshness; skip state updates if user hasn't changed
+          const newUserId = session?.user?.id ?? null;
+          const currentUserId = lastRoleUserId.current;
+          if (newUserId === currentUserId) {
+            // Silently update session without triggering re-renders
+            return;
+          }
+        }
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -64,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }, 0);
         } else {
           setRole(null);
+          lastRoleUserId.current = null;
         }
       }
     );

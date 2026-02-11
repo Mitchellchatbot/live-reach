@@ -3,7 +3,9 @@ import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -74,6 +76,9 @@ const queryClient = new QueryClient({
   },
 });
 
+const persister = createSyncStoragePersister({
+  storage: window.sessionStorage,
+});
 // Route guard for clients only
 const RequireClient = ({ children }: { children: React.ReactNode }) => {
   const { user, isClient, isAdmin, loading } = useAuth();
@@ -169,7 +174,7 @@ const App = () => {
   
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 10 * 60 * 1000 }}>
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
@@ -179,7 +184,7 @@ const App = () => {
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </ErrorBoundary>
   );
 };
