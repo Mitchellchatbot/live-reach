@@ -58,7 +58,7 @@ const SidebarItem = ({ to, icon: Icon, label, badge, collapsed, dataTour, iconCo
       to={to}
       data-tour={dataTour}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-[10px] transition-all duration-200 relative group",
+        "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group",
         "hover:bg-sidebar-accent",
         isActive 
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" 
@@ -240,7 +240,7 @@ export const DashboardSidebar = ({
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-5 px-4 space-y-6 scrollbar-thin">
+        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-thin">
           {(isClient || isAdmin) && (
             <div data-tour="inbox-section">
               <SidebarSection title="Inbox" collapsed={!forMobile && collapsed}>
