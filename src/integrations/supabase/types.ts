@@ -684,6 +684,7 @@ export type Database = {
           auto_export_on_conversation_end: boolean
           auto_export_on_escalation: boolean
           auto_export_on_insurance_detected: boolean
+          auto_export_on_phone_detected: boolean
           client_id: string | null
           client_secret: string | null
           created_at: string
@@ -704,6 +705,7 @@ export type Database = {
           auto_export_on_conversation_end?: boolean
           auto_export_on_escalation?: boolean
           auto_export_on_insurance_detected?: boolean
+          auto_export_on_phone_detected?: boolean
           client_id?: string | null
           client_secret?: string | null
           created_at?: string
@@ -724,6 +726,7 @@ export type Database = {
           auto_export_on_conversation_end?: boolean
           auto_export_on_escalation?: boolean
           auto_export_on_insurance_detected?: boolean
+          auto_export_on_phone_detected?: boolean
           client_id?: string | null
           client_secret?: string | null
           created_at?: string
