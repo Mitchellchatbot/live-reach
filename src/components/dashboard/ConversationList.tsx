@@ -74,7 +74,7 @@ const ConversationItem = ({
         }
       }}
       className={cn(
-        "p-4 border-b border-border/50 cursor-pointer transition-all duration-200",
+        "px-4 py-[18px] border-b border-border/40 cursor-pointer transition-all duration-200",
         "hover:bg-accent/40 hover:border-l-2 hover:border-l-primary/30",
         isSelected && !selectionMode && "bg-accent border-l-2 border-l-primary shadow-sm",
         isChecked && selectionMode && "bg-primary/10 border-l-2 border-l-primary",
@@ -201,17 +201,17 @@ const EmptyConversationState = () => {
     gsap.fromTo(
       ref.current,
       { opacity: 0, scale: 0.95 },
-      { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.5)' }
+      { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' }
     );
   }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <MessageSquare className="h-8 w-8 text-muted-foreground" />
+    <div ref={ref} className="flex flex-col items-center justify-center h-full p-12 text-center">
+      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-6 shadow-sm">
+        <MessageSquare className="h-9 w-9 text-primary/60" />
       </div>
-      <h3 className="font-medium text-foreground mb-1">No conversations</h3>
-      <p className="text-sm text-muted-foreground">
+      <h3 className="font-medium text-foreground/80 mb-2">No conversations yet</h3>
+      <p className="text-sm text-muted-foreground/70 max-w-[200px] leading-relaxed">
         Conversations will appear here when visitors start chatting
       </p>
     </div>
@@ -264,7 +264,7 @@ const ConversationListAnimated = ({
   return (
     <div ref={listRef} className="overflow-y-auto flex-1 min-h-0 scrollbar-thin">
       {conversations.map((conversation) => (
-        <div key={conversation.id} className="conversation-item">
+        <div key={conversation.id} className="conversation-item" style={{ cursor: 'pointer' }}>
           <ConversationItem
             conversation={conversation}
             isSelected={conversation.id === selectedId}
