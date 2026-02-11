@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft, Menu } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
@@ -134,7 +134,20 @@ const DashboardContent = () => {
     }
   }, [authLoading, dataLoading, user, properties.length, navigate]);
 
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  // Persist selected conversation in URL search params so it survives tab switches
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedConversationId = searchParams.get('c') || null;
+  const setSelectedConversationId = useCallback((id: string | null) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (id) {
+        next.set('c', id);
+      } else {
+        next.delete('c');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [searchQuery, setSearchQuery] = useState('');
   const [leadFilters, setLeadFilters] = useState<Set<'phone' | 'email' | 'name'>>(new Set());
 
