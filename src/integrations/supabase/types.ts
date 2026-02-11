@@ -691,6 +691,7 @@ export type Database = {
           field_mappings: Json
           id: string
           instance_url: string | null
+          pending_code_verifier: string | null
           pending_oauth_expires_at: string | null
           pending_oauth_token: string | null
           property_id: string
@@ -710,6 +711,7 @@ export type Database = {
           field_mappings?: Json
           id?: string
           instance_url?: string | null
+          pending_code_verifier?: string | null
           pending_oauth_expires_at?: string | null
           pending_oauth_token?: string | null
           property_id: string
@@ -729,6 +731,7 @@ export type Database = {
           field_mappings?: Json
           id?: string
           instance_url?: string | null
+          pending_code_verifier?: string | null
           pending_oauth_expires_at?: string | null
           pending_oauth_token?: string | null
           property_id?: string

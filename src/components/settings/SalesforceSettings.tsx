@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Link2, Unlink, Save, Plus, Trash2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Loader2, Link2, Unlink, Save, Plus, Trash2, RefreshCw } from 'lucide-react';
+import salesforceLogo from '@/assets/logos/salesforce.svg';
 
 interface SalesforceSettingsProps {
   propertyId: string;
@@ -33,8 +33,6 @@ interface SalesforceConfig {
   auto_export_on_conversation_end: boolean;
   auto_export_on_insurance_detected: boolean;
   field_mappings: Record<string, string>;
-  client_id: string;
-  client_secret: string;
 }
 
 interface SalesforceField {
@@ -68,7 +66,6 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fieldMappings, setFieldMappings] = useState<FieldMapping[]>([]);
-  const [showClientSecret, setShowClientSecret] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [salesforceFields, setSalesforceFields] = useState<SalesforceField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
@@ -127,8 +124,6 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         auto_export_on_conversation_end: data.auto_export_on_conversation_end,
         auto_export_on_insurance_detected: (data as any).auto_export_on_insurance_detected ?? false,
         field_mappings: data.field_mappings as Record<string, string>,
-        client_id: (data as any).client_id || '',
-        client_secret: (data as any).client_secret || '',
       });
       
       // Convert field_mappings object to array
@@ -140,7 +135,6 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       );
       setFieldMappings(mappings);
     } else {
-      // No settings exist - start with empty mappings
       setConfig(null);
       setFieldMappings([]);
     }
@@ -165,8 +159,6 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       auto_export_on_conversation_end: config?.auto_export_on_conversation_end ?? false,
       auto_export_on_insurance_detected: config?.auto_export_on_insurance_detected ?? false,
       field_mappings: mappingsObject,
-      client_id: config?.client_id || null,
-      client_secret: config?.client_secret || null,
     };
 
     let result;
@@ -196,83 +188,27 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         ...settingsData,
         id: result.data.id,
         instance_url: null,
-        client_id: config?.client_id || '',
-        client_secret: config?.client_secret || '',
       });
     }
 
     toast.success('Salesforce settings saved');
   };
 
-  // Generate PKCE code verifier and challenge
-  const generatePKCE = async () => {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    const codeVerifier = btoa(String.fromCharCode(...array))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-    
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = new Uint8Array(hashBuffer);
-    const codeChallenge = btoa(String.fromCharCode(...hashArray))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-    
-    return { codeVerifier, codeChallenge };
-  };
-
   const handleConnect = async () => {
-    if (!config?.client_id || !config?.client_secret) {
-      toast.error('Please enter your Client ID and Client Secret first');
-      return;
-    }
-
-    // Save credentials first
-    await handleSave();
-
     setConnecting(true);
 
     try {
-      // Generate PKCE parameters
-      const { codeVerifier, codeChallenge } = await generatePKCE();
-      
-      // Store code verifier in sessionStorage for the callback
-      sessionStorage.setItem(`sf_code_verifier_${propertyId}`, codeVerifier);
+      // Call the salesforce-oauth-start edge function
+      const { data, error } = await supabase.functions.invoke('salesforce-oauth-start', {
+        body: { propertyId },
+      });
 
-      // Generate CSRF token and store it in the database for server-side validation
-      const csrfToken = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
-      
-      const { error: csrfError } = await supabase
-        .from('salesforce_settings')
-        .update({
-          pending_oauth_token: csrfToken,
-          pending_oauth_expires_at: expiresAt,
-        })
-        .eq('property_id', propertyId);
-
-      if (csrfError) {
-        console.error('Error storing CSRF token:', csrfError);
-        toast.error('Failed to initiate connection. Please try again.');
+      if (error || !data?.url) {
+        console.error('Error initiating OAuth:', error);
+        toast.error(data?.error || 'Failed to start Salesforce connection');
         setConnecting(false);
         return;
       }
-
-      // Salesforce OAuth authorization URL
-      const redirectUri = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/salesforce-oauth-callback`;
-      const authUrl = new URL('https://login.salesforce.com/services/oauth2/authorize');
-      authUrl.searchParams.set('response_type', 'code');
-      authUrl.searchParams.set('client_id', config.client_id);
-      authUrl.searchParams.set('redirect_uri', redirectUri);
-      authUrl.searchParams.set('scope', 'api refresh_token openid');
-      // State now includes CSRF token: "propertyId:csrfToken:codeVerifier"
-      authUrl.searchParams.set('state', `${propertyId}:${csrfToken}:${codeVerifier}`);
-      authUrl.searchParams.set('code_challenge', codeChallenge);
-      authUrl.searchParams.set('code_challenge_method', 'S256');
 
       // Listen for OAuth result message from popup
       const handleMessage = (event: MessageEvent) => {
@@ -281,12 +217,10 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
           setConnecting(false);
           fetchSettings();
           window.removeEventListener('message', handleMessage);
-          sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
         } else if (event.data?.type === 'salesforce-oauth-error') {
           toast.error(`Salesforce connection failed: ${event.data.error || 'Unknown error'}`);
           setConnecting(false);
           window.removeEventListener('message', handleMessage);
-          sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
         }
       };
       window.addEventListener('message', handleMessage);
@@ -298,7 +232,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       const top = window.screenY + (window.outerHeight - height) / 2;
       
       const popup = window.open(
-        authUrl.toString(),
+        data.url,
         'salesforce-oauth',
         `width=${width},height=${height},left=${left},top=${top},popup=1`
       );
@@ -307,12 +241,10 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       const checkPopup = setInterval(() => {
         if (!popup || popup.closed) {
           clearInterval(checkPopup);
-          // Give a bit of time for message to arrive
           setTimeout(() => {
             window.removeEventListener('message', handleMessage);
             setConnecting(false);
             fetchSettings();
-            sessionStorage.removeItem(`sf_code_verifier_${propertyId}`);
           }, 500);
         }
       }, 500);
@@ -352,7 +284,6 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
     if (availableField) {
       setFieldMappings([...fieldMappings, { salesforceField: availableField.name, visitorField: '' }]);
     } else {
-      // Fallback if no SF fields loaded yet
       setFieldMappings([...fieldMappings, { salesforceField: '', visitorField: '' }]);
     }
   };
@@ -392,71 +323,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* OAuth Credentials */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="client_id">Client ID</Label>
-              <Input
-                id="client_id"
-                type="text"
-                placeholder="Enter your Salesforce Connected App Client ID"
-                value={config?.client_id || ''}
-                onChange={(e) => setConfig(prev => prev ? { ...prev, client_id: e.target.value } : {
-                  id: '',
-                  enabled: false,
-                  instance_url: null,
-                  auto_export_on_escalation: false,
-                  auto_export_on_conversation_end: false,
-                  auto_export_on_insurance_detected: false,
-                  field_mappings: {},
-                  client_id: e.target.value,
-                  client_secret: '',
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="client_secret">Client Secret</Label>
-              <div className="relative">
-                <Input
-                  id="client_secret"
-                  type={showClientSecret ? 'text' : 'password'}
-                  placeholder="Enter your Salesforce Connected App Client Secret"
-                  value={config?.client_secret || ''}
-                  onChange={(e) => setConfig(prev => prev ? { ...prev, client_secret: e.target.value } : {
-                    id: '',
-                    enabled: false,
-                    instance_url: null,
-                    auto_export_on_escalation: false,
-                    auto_export_on_conversation_end: false,
-                    auto_export_on_insurance_detected: false,
-                    field_mappings: {},
-                    client_id: '',
-                    client_secret: e.target.value,
-                  })}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowClientSecret(!showClientSecret)}
-                >
-                  {showClientSecret ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                You can find these in your Salesforce Connected App settings
-              </p>
-            </div>
-          </div>
-
-          {/* Connection Status */}
+        <CardContent>
           {config?.instance_url ? (
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
               <div>
@@ -469,12 +336,16 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4 py-4 border rounded-lg bg-muted/50">
-              <p className="text-sm text-muted-foreground text-center">
-                Enter your OAuth credentials above, save, then connect your account.
-              </p>
+            <div className="flex flex-col items-center gap-4 py-8 border rounded-lg bg-muted/50">
+              <img src={salesforceLogo} alt="Salesforce" className="h-12 w-12" />
+              <div className="text-center space-y-1">
+                <p className="font-medium">Connect your Salesforce account</p>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Click below to sign in with Salesforce and grant access. No credentials needed — just log in and approve.
+                </p>
+              </div>
               <Button 
-                disabled={!config?.client_id || !config?.client_secret || connecting}
+                disabled={connecting}
                 onClick={handleConnect}
               >
                 {connecting ? (
@@ -482,7 +353,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
                 ) : (
                   <Link2 className="mr-2 h-4 w-4" />
                 )}
-                {connecting ? 'Connecting...' : 'Connect Salesforce'}
+                {connecting ? 'Connecting...' : 'Connect to Salesforce'}
               </Button>
             </div>
           )}
