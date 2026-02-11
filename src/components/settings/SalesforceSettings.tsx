@@ -31,6 +31,7 @@ interface SalesforceConfig {
   instance_url: string | null;
   auto_export_on_escalation: boolean;
   auto_export_on_conversation_end: boolean;
+  auto_export_on_insurance_detected: boolean;
   field_mappings: Record<string, string>;
   client_id: string;
   client_secret: string;
@@ -124,6 +125,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         instance_url: data.instance_url,
         auto_export_on_escalation: data.auto_export_on_escalation,
         auto_export_on_conversation_end: data.auto_export_on_conversation_end,
+        auto_export_on_insurance_detected: (data as any).auto_export_on_insurance_detected ?? false,
         field_mappings: data.field_mappings as Record<string, string>,
         client_id: (data as any).client_id || '',
         client_secret: (data as any).client_secret || '',
@@ -161,6 +163,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       enabled: config?.enabled ?? false,
       auto_export_on_escalation: config?.auto_export_on_escalation ?? false,
       auto_export_on_conversation_end: config?.auto_export_on_conversation_end ?? false,
+      auto_export_on_insurance_detected: config?.auto_export_on_insurance_detected ?? false,
       field_mappings: mappingsObject,
       client_id: config?.client_id || null,
       client_secret: config?.client_secret || null,
@@ -405,6 +408,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
                   instance_url: null,
                   auto_export_on_escalation: false,
                   auto_export_on_conversation_end: false,
+                  auto_export_on_insurance_detected: false,
                   field_mappings: {},
                   client_id: e.target.value,
                   client_secret: '',
@@ -425,6 +429,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
                     instance_url: null,
                     auto_export_on_escalation: false,
                     auto_export_on_conversation_end: false,
+                    auto_export_on_insurance_detected: false,
                     field_mappings: {},
                     client_id: '',
                     client_secret: e.target.value,
@@ -516,6 +521,19 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
             <Switch
               checked={config?.auto_export_on_conversation_end ?? false}
               onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, auto_export_on_conversation_end: checked } : null)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Export on Insurance Detected</Label>
+              <p className="text-sm text-muted-foreground">
+                Automatically create a lead when insurance details are extracted from the conversation
+              </p>
+            </div>
+            <Switch
+              checked={config?.auto_export_on_insurance_detected ?? false}
+              onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, auto_export_on_insurance_detected: checked } : null)}
             />
           </div>
         </CardContent>
