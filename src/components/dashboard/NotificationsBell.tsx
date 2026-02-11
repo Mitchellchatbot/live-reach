@@ -141,7 +141,7 @@ export const NotificationsBell = ({ variant = 'default' }: NotificationsBellProp
         </div>
 
         {/* List */}
-        <ScrollArea className="max-h-[420px]">
+        <ScrollArea className="h-[420px]">
           {visibleNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
