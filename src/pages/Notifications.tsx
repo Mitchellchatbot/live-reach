@@ -68,12 +68,7 @@ const Notifications = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Set first property as default
-  useEffect(() => {
-    if (properties.length > 0 && !selectedPropertyId) {
-      setSelectedPropertyId(properties[0].id);
-    }
-  }, [properties, selectedPropertyId]);
+  // Default is "All Properties" (empty string) — no auto-select needed
 
   const handleCreateProperty = async () => {
     if (!newPropertyName.trim() || !newPropertyDomain.trim()) return;
@@ -211,16 +206,17 @@ const Notifications = () => {
                   <PropertySelector
                     properties={properties}
                     selectedPropertyId={selectedPropertyId}
-                    onPropertyChange={setSelectedPropertyId}
+                    onPropertyChange={(id) => setSelectedPropertyId(id === 'all' ? '' : id)}
                     onDeleteProperty={deleteProperty}
                     showDomain
                     showIcon={false}
+                    showAllOption
                     className="w-full"
                   />
                 </CardContent>
               </Card>
 
-              {selectedPropertyId && (
+              {(
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
                   <TabsList className="grid w-full grid-cols-3" data-tour="notifications-tabs">
                     <TabsTrigger value="slack" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-slack-tab">
@@ -238,15 +234,33 @@ const Notifications = () => {
                   </TabsList>
 
                   <TabsContent value="slack">
-                    <SlackSettings propertyId={selectedPropertyId} />
+                    {selectedPropertyId ? (
+                      <SlackSettings propertyId={selectedPropertyId} />
+                    ) : (
+                      <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                          <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                          <p className="text-sm text-muted-foreground">Select a specific property to configure Slack settings</p>
+                        </CardContent>
+                      </Card>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="email">
-                    <EmailSettings propertyId={selectedPropertyId} />
+                    {selectedPropertyId ? (
+                      <EmailSettings propertyId={selectedPropertyId} />
+                    ) : (
+                      <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                          <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                          <p className="text-sm text-muted-foreground">Select a specific property to configure Email settings</p>
+                        </CardContent>
+                      </Card>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="logs">
-                    <NotificationLog />
+                    <NotificationLog propertyId={selectedPropertyId || undefined} />
                   </TabsContent>
                 </Tabs>
               )}
