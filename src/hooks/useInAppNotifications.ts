@@ -26,29 +26,29 @@ export function useInAppNotifications() {
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
 
-    // Fetch recent conversations (new chats) from user's properties
     const since = new Date();
-    since.setDate(since.getDate() - 7); // last 7 days
+    since.setDate(since.getDate() - 7);
 
-    const [convResult, logsResult, propsResult] = await Promise.all([
+    // Fetch properties first for name lookup
+    const { data: properties } = await supabase
+      .from('properties')
+      .select('id, name, created_at');
+
+    const propMap = new Map((properties || []).map(p => [p.id, p.name]));
+
+    const [convResult, logsResult] = await Promise.all([
       supabase
         .from('conversations')
-        .select('id, status, created_at, property_id, visitor_id, visitors!inner(name), properties!inner(name)')
+        .select('id, status, created_at, property_id, visitor_id')
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
         .limit(30),
       supabase
         .from('notification_logs')
-        .select('id, notification_type, channel, visitor_name, created_at, property_id, properties!inner(name)')
+        .select('id, notification_type, channel, visitor_name, created_at, property_id')
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
         .limit(30),
-      supabase
-        .from('properties')
-        .select('id, name, created_at')
-        .gte('created_at', since.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10),
     ]);
 
     const items: InAppNotification[] = [];
@@ -56,13 +56,12 @@ export function useInAppNotifications() {
     // New conversations
     if (convResult.data) {
       for (const c of convResult.data) {
-        const propName = (c as any).properties?.name || 'Unknown';
-        const visitorName = (c as any).visitors?.name || 'A visitor';
+        const propName = propMap.get(c.property_id) || 'Unknown';
         items.push({
           id: `conv-${c.id}`,
           type: 'new_chat',
           title: 'New Conversation',
-          description: `${visitorName} started a chat on ${propName}`,
+          description: `A visitor started a chat on ${propName}`,
           timestamp: new Date(c.created_at),
           propertyName: propName,
           conversationId: c.id,
@@ -73,7 +72,7 @@ export function useInAppNotifications() {
     // Notification logs (escalations, phone submissions)
     if (logsResult.data) {
       for (const log of logsResult.data) {
-        const propName = (log as any).properties?.name || 'Unknown';
+        const propName = propMap.get(log.property_id) || 'Unknown';
         const notifType = log.notification_type;
         if (notifType === 'escalation') {
           items.push({
@@ -98,20 +97,21 @@ export function useInAppNotifications() {
     }
 
     // New properties
-    if (propsResult.data) {
-      for (const p of propsResult.data) {
-        items.push({
-          id: `prop-${p.id}`,
-          type: 'property_added',
-          title: 'Property Added',
-          description: `${p.name} was added to your account`,
-          timestamp: new Date(p.created_at),
-          propertyName: p.name,
-        });
+    if (properties) {
+      for (const p of properties) {
+        if (new Date(p.created_at) >= since) {
+          items.push({
+            id: `prop-${p.id}`,
+            type: 'property_added',
+            title: 'Property Added',
+            description: `${p.name} was added to your account`,
+            timestamp: new Date(p.created_at),
+            propertyName: p.name,
+          });
+        }
       }
     }
 
-    // Sort by timestamp descending
     items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     setNotifications(items.slice(0, 50));
     setLoading(false);
