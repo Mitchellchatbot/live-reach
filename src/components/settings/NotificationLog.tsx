@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 
 interface NotificationLogProps {
-  propertyId: string;
+  propertyId?: string;
 }
 
 interface LogEntry {
@@ -28,12 +28,17 @@ export const NotificationLog = ({ propertyId }: NotificationLogProps) => {
 
   const fetchLogs = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from('notification_logs')
       .select('*')
-      .eq('property_id', propertyId)
       .order('created_at', { ascending: false })
       .limit(50);
+
+    if (propertyId) {
+      query = query.eq('property_id', propertyId);
+    }
+
+    const { data, error } = await query;
 
     if (!error && data) {
       setLogs(data);
@@ -47,20 +52,20 @@ export const NotificationLog = ({ propertyId }: NotificationLogProps) => {
 
   // Realtime subscription
   useEffect(() => {
+    const channelConfig: any = {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notification_logs',
+    };
+    if (propertyId) {
+      channelConfig.filter = `property_id=eq.${propertyId}`;
+    }
+
     const channel = supabase
-      .channel(`notification-logs-${propertyId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notification_logs',
-          filter: `property_id=eq.${propertyId}`,
-        },
-        (payload) => {
-          setLogs((prev) => [payload.new as LogEntry, ...prev].slice(0, 50));
-        }
-      )
+      .channel(`notification-logs-${propertyId || 'all'}`)
+      .on('postgres_changes', channelConfig, (payload) => {
+        setLogs((prev) => [payload.new as LogEntry, ...prev].slice(0, 50));
+      })
       .subscribe();
 
     return () => {
