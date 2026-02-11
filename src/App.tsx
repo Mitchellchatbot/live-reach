@@ -8,6 +8,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { WorkspaceProvider } from "./hooks/useWorkspace";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { PageLoader } from "./components/ui/loading";
 
@@ -176,13 +177,15 @@ const App = () => {
     <ErrorBoundary>
       <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 10 * 60 * 1000 }}>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </TooltipProvider>
+          <WorkspaceProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </TooltipProvider>
+          </WorkspaceProvider>
         </AuthProvider>
       </PersistQueryClientProvider>
     </ErrorBoundary>

@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useWorkspace } from '@/hooks/useWorkspace';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -32,6 +33,7 @@ import gmailLogo from '@/assets/logos/gmail.svg';
 import careAssistLogo from '@/assets/care-assist-logo.png';
 import subscriptionCardLogo from '@/assets/logos/subscription-card.svg';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
+import { WorkspaceSwitcher } from '@/components/sidebar/WorkspaceSwitcher';
 import {
   Tooltip,
   TooltipContent,
@@ -156,7 +158,11 @@ export const DashboardSidebar = ({
   const navigate = useNavigate();
   const { profile, updateAvatarUrl } = useUserProfile();
   const { signOut, user, isClient, isAgent, isAdmin } = useAuth();
+  const { isAgentMode, workspaces } = useWorkspace();
   const isMobile = useIsMobile();
+
+  // In agent mode, show only agent-level sidebar items
+  const showAdminItems = (isClient || isAdmin) && !isAgentMode;
   
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -239,21 +245,30 @@ export const DashboardSidebar = ({
           </div>
         )}
 
+        {/* Workspace Switcher */}
+        {workspaces.length > 1 && (
+          <div className={cn(
+            "border-b border-sidebar-border px-3 py-2",
+            !forMobile && collapsed ? "px-1.5" : ""
+          )}>
+            <WorkspaceSwitcher collapsed={!forMobile && collapsed} />
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-6 scrollbar-thin">
-          {(isClient || isAdmin) && (
-            <div data-tour="inbox-section">
-              <SidebarSection title="Inbox" collapsed={!forMobile && collapsed}>
-                <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={!forMobile && collapsed} iconColor="#6366F1" />
-                <div data-tour="active-filter">
-                  <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={!forMobile && collapsed} iconColor="#22C55E" />
-                </div>
-                <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={!forMobile && collapsed} iconColor="#94A3B8" />
-              </SidebarSection>
-            </div>
-          )}
+          {/* Inbox - shown in both admin and agent mode */}
+          <div data-tour="inbox-section">
+            <SidebarSection title="Inbox" collapsed={!forMobile && collapsed}>
+              <SidebarItem to="/dashboard" icon={Inbox} label="All Conversations" badge={resolvedBadgeCounts.all > 0 ? resolvedBadgeCounts.all : undefined} collapsed={!forMobile && collapsed} iconColor="#6366F1" />
+              <div data-tour="active-filter">
+                <SidebarItem to="/dashboard/active" icon={MessageSquare} label="Active" badge={resolvedBadgeCounts.active > 0 ? resolvedBadgeCounts.active : undefined} collapsed={!forMobile && collapsed} iconColor="#22C55E" />
+              </div>
+              <SidebarItem to="/dashboard/closed" icon={Archive} label="Closed" collapsed={!forMobile && collapsed} iconColor="#94A3B8" />
+            </SidebarSection>
+          </div>
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Manage" collapsed={!forMobile && collapsed}>
               <div data-tour="team-members">
                 <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={!forMobile && collapsed} iconColor="#8B5CF6" />
@@ -270,7 +285,7 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Setup" collapsed={!forMobile && collapsed}>
               <div data-tour="widget-code" data-tour-sidebar="widget-code-sidebar">
                 <SidebarItem to="/dashboard/widget" icon={Code} label="Widget Code" collapsed={!forMobile && collapsed} dataTour="widget-code-sidebar" iconColor="#EC4899" />
@@ -278,7 +293,7 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Integrations" collapsed={!forMobile && collapsed}>
               <div data-tour="salesforce">
                 <SidebarItem to="/dashboard/salesforce" icon={({ className }: { className?: string }) => <img src={salesforceLogo} alt="Salesforce" className={cn("h-[18px] w-[18px]", className)} />} label="Salesforce" collapsed={!forMobile && collapsed} iconColor="#00A1E0" />
@@ -289,19 +304,19 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Compliance" collapsed={!forMobile && collapsed}>
               <SidebarItem to="/dashboard/hipaa" icon={Shield} label="HIPAA" collapsed={!forMobile && collapsed} iconColor="#10B981" />
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Account" collapsed={!forMobile && collapsed}>
               <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-[18px] w-[18px]", className)} />} label="Subscription" collapsed={!forMobile && collapsed} iconColor="#F97316" />
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Support" collapsed={!forMobile && collapsed}>
               <div data-tour="get-help">
                 <SidebarItem to="/dashboard/support" icon={LifeBuoy} label="Get Help" collapsed={!forMobile && collapsed} iconColor="#EF4444" />
@@ -310,7 +325,7 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {(isClient || isAdmin) && (
+          {showAdminItems && (
             <SidebarSection title="Dev" collapsed={!forMobile && collapsed}>
               <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
               <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
