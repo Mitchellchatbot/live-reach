@@ -241,6 +241,49 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Auto-export to Salesforce if insurance info was newly captured
+      if (updates.insurance_info) {
+        try {
+          const conv = conversation || (await (async () => {
+            const { data } = await supabase
+              .from('conversations')
+              .select('id, property_id')
+              .eq('visitor_id', visitorId)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
+            return data;
+          })());
+
+          if (conv) {
+            const { data: sfSettings } = await supabase
+              .from('salesforce_settings')
+              .select('auto_export_on_insurance_detected, enabled, instance_url, access_token')
+              .eq('property_id', conv.property_id)
+              .single();
+
+            if (sfSettings?.enabled && sfSettings?.auto_export_on_insurance_detected && sfSettings?.instance_url && sfSettings?.access_token) {
+              console.log('Insurance detected – triggering Salesforce auto-export for visitor', visitorId);
+              // Use direct fetch with service role key since this runs without user JWT
+              fetch(`${SUPABASE_URL}/functions/v1/salesforce-export-leads`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  propertyId: conv.property_id,
+                  visitorIds: [visitorId],
+                  _serviceRoleExport: true,
+                }),
+              }).catch((e: any) => console.error('SF insurance auto-export error:', e));
+            }
+          }
+        } catch (sfErr) {
+          console.error('Error checking SF insurance auto-export:', sfErr);
+        }
+      }
+
       return new Response(JSON.stringify({ extracted: true, info: updates }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

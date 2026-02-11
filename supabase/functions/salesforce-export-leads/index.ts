@@ -87,21 +87,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await authClient.auth.getUser(token);
-    if (authError || !userData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    const callerUserId = userData.user.id;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { propertyId, visitorIds } = await req.json();
+    const { propertyId, visitorIds, _serviceRoleExport } = await req.json();
 
     if (!propertyId || !visitorIds || visitorIds.length === 0) {
       return new Response(
@@ -110,21 +99,40 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    let exportType = "manual";
 
-    // --- Authorization: Verify caller owns the property ---
-    const { data: property, error: propError } = await supabase
-      .from("properties")
-      .select("user_id")
-      .eq("id", propertyId)
-      .single();
+    // If called with service role key (automated export from extract-visitor-info), skip user ownership check
+    if (_serviceRoleExport && token === supabaseServiceKey) {
+      exportType = "auto_insurance";
+      console.log("Service-role auto-export for property", propertyId);
+    } else {
+      // Standard user auth
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData, error: authError } = await authClient.auth.getUser(token);
+      if (authError || !userData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const callerUserId = userData.user.id;
 
-    if (propError || !property || property.user_id !== callerUserId) {
-      console.error("Forbidden: caller does not own property", propertyId);
-      return new Response(
-        JSON.stringify({ error: "Forbidden: you do not own this property" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // --- Authorization: Verify caller owns the property ---
+      const { data: property, error: propError } = await supabase
+        .from("properties")
+        .select("user_id")
+        .eq("id", propertyId)
+        .single();
+
+      if (propError || !property || property.user_id !== callerUserId) {
+        console.error("Forbidden: caller does not own property", propertyId);
+        return new Response(
+          JSON.stringify({ error: "Forbidden: you do not own this property" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Fetch Salesforce settings
@@ -243,8 +251,8 @@ Deno.serve(async (req) => {
               .insert({
                 conversation_id: conversation.id,
                 salesforce_lead_id: result.id,
-                export_type: "manual",
-                exported_by: callerUserId,
+                export_type: exportType,
+                exported_by: null,
               });
           }
 
