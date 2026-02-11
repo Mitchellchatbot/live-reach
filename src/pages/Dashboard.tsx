@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
+import { NotificationsBell } from '@/components/dashboard/NotificationsBell';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft, Menu } from 'lucide-react';
 import gsap from 'gsap';
@@ -387,6 +388,7 @@ const DashboardContent = () => {
                 />
               </div>
               <div className="flex items-center gap-1.5">
+                <NotificationsBell variant="header" />
                 {totalUnread > 0 && <span className="text-xs text-sidebar-primary font-medium bg-sidebar-primary/20 px-2 py-0.5 rounded-full">
                     {totalUnread}
                   </span>}

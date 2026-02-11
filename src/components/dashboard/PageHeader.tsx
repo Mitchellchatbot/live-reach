@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Compass, Menu, MoreVertical } from 'lucide-react';
 import { deepDiveStepsMap } from './DashboardTour';
 import { useDashboardLayout } from './DashboardLayout';
+import { NotificationsBell } from './NotificationsBell';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,6 +102,9 @@ export const PageHeader = ({ title, children, className, docsLink, propertySelec
 
       {/* Right side */}
       <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
+        {/* Notifications bell */}
+        <NotificationsBell variant="header" />
+        
         {/* Property selector - inline on all sizes */}
         {propertySelector}
         
