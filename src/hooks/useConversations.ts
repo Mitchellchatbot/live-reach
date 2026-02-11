@@ -64,6 +64,8 @@ export interface DbConversation {
 
 export interface UseConversationsOptions {
   selectedPropertyId?: string;
+  /** When set, filter properties to only those owned by this user (for agent workspace mode) */
+  workspaceOwnerId?: string;
 }
 
 // Query key factory
@@ -74,7 +76,7 @@ const QUERY_KEYS = {
 };
 
 export const useConversations = (options: UseConversationsOptions = {}) => {
-  const { selectedPropertyId } = options;
+  const { selectedPropertyId, workspaceOwnerId } = options;
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -84,7 +86,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
   // Fetch properties with React Query
   const { 
-    data: properties = [], 
+    data: allProperties = [], 
     isLoading: propertiesLoading 
   } = useQuery({
     queryKey: QUERY_KEYS.properties(user?.id || ''),
@@ -103,6 +105,11 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Filter properties by workspace owner when in agent mode
+  const properties = workspaceOwnerId 
+    ? allProperties.filter(p => p.user_id === workspaceOwnerId)
+    : allProperties;
 
   // Fetch conversations with React Query
   const fetchConversationsData = useCallback(async (): Promise<DbConversation[]> => {

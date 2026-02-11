@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { PropertySelector } from '@/components/PropertySelector';
 import { useAuth } from '@/hooks/useAuth';
+import { useWorkspace } from '@/hooks/useWorkspace';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuditLog } from '@/hooks/useAuditLog';
@@ -83,6 +84,7 @@ const DashboardContent = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isAgentMode, activeWorkspace } = useWorkspace();
 
   // Property filter state - used to scope data fetching
   const [propertyFilter, setPropertyFilter] = useState<string>('all');
@@ -101,7 +103,8 @@ const DashboardContent = () => {
     deleteProperty,
     toggleAI
   } = useConversations({ 
-    selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter 
+    selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
+    workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
   });
 
   // Determine filter from path
