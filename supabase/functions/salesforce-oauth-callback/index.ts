@@ -40,7 +40,6 @@ async function encryptToken(plaintext: string): Promise<string> {
     key,
     enc.encode(plaintext)
   );
-  // Encode as base64: iv:ciphertext
   const ivB64 = btoa(String.fromCharCode(...iv));
   const ctB64 = btoa(String.fromCharCode(...new Uint8Array(ciphertext)));
   return `enc:${ivB64}:${ctB64}`;
@@ -54,7 +53,7 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state"); // "propertyId:csrfToken:codeVerifier"
+    const state = url.searchParams.get("state"); // "propertyId:csrfToken"
     const error = url.searchParams.get("error");
     const errorDescription = url.searchParams.get("error_description");
 
@@ -73,22 +72,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse state: "propertyId:csrfToken:codeVerifier"
-    const stateParts = state.split(':');
-    if (stateParts.length < 3) {
-      console.error("Invalid state format - expected propertyId:csrfToken:codeVerifier");
+    // Parse state: "propertyId:csrfToken"
+    const colonIdx = state.indexOf(":");
+    if (colonIdx === -1) {
+      console.error("Invalid state format - expected propertyId:csrfToken");
       return new Response(
         `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
 
-    const propertyId = stateParts[0];
-    const csrfToken = stateParts[1];
-    // codeVerifier may contain colons, so join remaining parts
-    const codeVerifier = stateParts.slice(2).join(':');
+    const propertyId = state.substring(0, colonIdx);
+    const csrfToken = state.substring(colonIdx + 1);
 
-    if (!propertyId || !csrfToken || !codeVerifier) {
+    if (!propertyId || !csrfToken) {
       return new Response(
         `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
@@ -99,7 +96,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch the Salesforce settings and validate CSRF token
+    // Fetch settings and validate CSRF token
     const { data: settings, error: settingsError } = await supabase
       .from("salesforce_settings")
       .select("*")
@@ -114,7 +111,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // CSRF validation: verify the token matches what was stored when OAuth was initiated
+    // CSRF validation
     if (!settings.pending_oauth_token || settings.pending_oauth_token !== csrfToken) {
       console.error("CSRF token mismatch for property:", propertyId);
       return new Response(
@@ -126,10 +123,9 @@ Deno.serve(async (req) => {
     // Check token expiration (10 minute window)
     if (settings.pending_oauth_expires_at && new Date(settings.pending_oauth_expires_at) < new Date()) {
       console.error("OAuth CSRF token expired for property:", propertyId);
-      // Clear the expired token
       await supabase
         .from("salesforce_settings")
-        .update({ pending_oauth_token: null, pending_oauth_expires_at: null })
+        .update({ pending_oauth_token: null, pending_oauth_expires_at: null, pending_code_verifier: null })
         .eq("property_id", propertyId);
       return new Response(
         `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'token_expired'},'*');window.close();</script><p>Connection request expired. Please try again. You can close this window.</p></body></html>`,
@@ -137,18 +133,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Clear the CSRF token immediately (single-use)
+    // Get code verifier from database (stored by salesforce-oauth-start)
+    const codeVerifier = (settings as any).pending_code_verifier;
+    if (!codeVerifier) {
+      console.error("Missing code verifier for property:", propertyId);
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_verifier'},'*');window.close();</script><p>Missing security data. Please try connecting again. You can close this window.</p></body></html>`,
+        { headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+
+    // Clear the CSRF token + code verifier immediately (single-use)
     await supabase
       .from("salesforce_settings")
-      .update({ pending_oauth_token: null, pending_oauth_expires_at: null })
+      .update({ pending_oauth_token: null, pending_oauth_expires_at: null, pending_code_verifier: null })
       .eq("property_id", propertyId);
 
-    const clientId = settings.client_id;
-    const clientSecret = settings.client_secret;
+    // Read managed credentials from env secrets
+    const clientId = Deno.env.get("SALESFORCE_CLIENT_ID");
+    const clientSecret = Deno.env.get("SALESFORCE_CLIENT_SECRET");
 
     if (!clientId || !clientSecret) {
+      console.error("Missing SALESFORCE_CLIENT_ID or SALESFORCE_CLIENT_SECRET env vars");
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');window.close();</script><p>Missing OAuth credentials. You can close this window.</p></body></html>`,
+        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');window.close();</script><p>Salesforce integration not configured. You can close this window.</p></body></html>`,
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }

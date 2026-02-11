@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.send-slack-notification]
 verify_jwt = false
+
+[functions.salesforce-oauth-start]
+verify_jwt = false
