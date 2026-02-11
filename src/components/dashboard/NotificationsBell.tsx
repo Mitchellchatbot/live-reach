@@ -1,19 +1,25 @@
 import { useState } from 'react';
-import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight } from 'lucide-react';
+import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight, Mail, MailX, Send, SendHorizonal, Upload, UploadCloud, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useInAppNotifications, InAppNotification } from '@/hooks/useInAppNotifications';
+import { useInAppNotifications, InAppNotification, NotificationType } from '@/hooks/useInAppNotifications';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
-const iconMap: Record<InAppNotification['type'], { icon: typeof Bell; color: string; bg: string }> = {
+const iconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: string }> = {
   new_chat: { icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-500/10' },
   escalation: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
   phone_captured: { icon: Phone, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   property_added: { icon: Building2, color: 'text-violet-500', bg: 'bg-violet-500/10' },
   new_message: { icon: MessageSquare, color: 'text-primary', bg: 'bg-primary/10' },
+  email_sent: { icon: Mail, color: 'text-sky-500', bg: 'bg-sky-500/10' },
+  email_failed: { icon: MailX, color: 'text-red-500', bg: 'bg-red-500/10' },
+  slack_sent: { icon: Send, color: 'text-teal-500', bg: 'bg-teal-500/10' },
+  slack_failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
+  export_success: { icon: UploadCloud, color: 'text-green-500', bg: 'bg-green-500/10' },
+  export_failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
 };
 
 interface NotificationsBellProps {

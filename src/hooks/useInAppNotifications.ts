@@ -2,9 +2,22 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+export type NotificationType =
+  | 'new_chat'
+  | 'escalation'
+  | 'phone_captured'
+  | 'property_added'
+  | 'new_message'
+  | 'email_sent'
+  | 'email_failed'
+  | 'slack_sent'
+  | 'slack_failed'
+  | 'export_success'
+  | 'export_failed';
+
 export interface InAppNotification {
   id: string;
-  type: 'new_chat' | 'escalation' | 'phone_captured' | 'property_added' | 'new_message';
+  type: NotificationType;
   title: string;
   description: string;
   timestamp: Date;
@@ -45,10 +58,10 @@ export function useInAppNotifications() {
         .limit(30),
       supabase
         .from('notification_logs')
-        .select('id, notification_type, channel, visitor_name, created_at, property_id')
+        .select('id, notification_type, channel, status, visitor_name, created_at, property_id, conversation_id')
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
-        .limit(30),
+        .limit(50),
     ]);
 
     const items: InAppNotification[] = [];
@@ -69,30 +82,48 @@ export function useInAppNotifications() {
       }
     }
 
-    // Notification logs (escalations, phone submissions)
+    // Notification logs — map all types
     if (logsResult.data) {
       for (const log of logsResult.data) {
         const propName = propMap.get(log.property_id) || 'Unknown';
-        const notifType = log.notification_type;
-        if (notifType === 'escalation') {
-          items.push({
-            id: `log-${log.id}`,
-            type: 'escalation',
-            title: 'Escalation Alert',
-            description: `${log.visitor_name || 'A visitor'} needs human help on ${propName}`,
-            timestamp: new Date(log.created_at),
-            propertyName: propName,
-          });
-        } else if (notifType === 'phone_submission') {
-          items.push({
-            id: `log-${log.id}`,
-            type: 'phone_captured',
-            title: 'Phone Number Captured',
-            description: `${log.visitor_name || 'A visitor'} shared their phone on ${propName}`,
-            timestamp: new Date(log.created_at),
-            propertyName: propName,
-          });
+        const visitor = log.visitor_name || 'A visitor';
+        const nt = log.notification_type;
+        const ch = log.channel;
+        const failed = log.status === 'failed';
+
+        let mapped: { type: NotificationType; title: string; description: string } | null = null;
+
+        if (nt === 'escalation') {
+          mapped = { type: 'escalation', title: 'Escalation Alert', description: `${visitor} needs human help on ${propName}` };
+        } else if (nt === 'phone_submission') {
+          mapped = { type: 'phone_captured', title: 'Phone Number Captured', description: `${visitor} shared their phone on ${propName}` };
+        } else if (nt === 'new_conversation') {
+          // Already covered by conversations query — skip to avoid duplicates
+          continue;
+        } else if (nt === 'export_success' || nt === 'salesforce_export') {
+          mapped = { type: 'export_success', title: 'Export Successful', description: `Lead exported to Salesforce from ${propName}` };
+        } else if (nt === 'export_failed') {
+          mapped = { type: 'export_failed', title: 'Export Failed', description: `Salesforce export failed for ${propName}` };
+        } else if (ch === 'email' || nt === 'email') {
+          mapped = failed
+            ? { type: 'email_failed', title: 'Email Failed', description: `Email notification failed for ${propName}` }
+            : { type: 'email_sent', title: 'Email Sent', description: `Email notification sent for ${visitor} on ${propName}` };
+        } else if (ch === 'slack' || nt === 'slack') {
+          mapped = failed
+            ? { type: 'slack_failed', title: 'Slack Failed', description: `Slack notification failed for ${propName}` }
+            : { type: 'slack_sent', title: 'Slack Sent', description: `Slack alert delivered for ${visitor} on ${propName}` };
+        } else {
+          // Catch-all for any other log types
+          mapped = { type: failed ? 'email_failed' : 'new_message', title: nt?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Notification', description: `${nt} on ${propName}` };
         }
+
+        items.push({
+          id: `log-${log.id}`,
+          ...mapped,
+          timestamp: new Date(log.created_at),
+          propertyName: propName,
+          conversationId: log.conversation_id ?? undefined,
+        });
       }
     }
 
@@ -138,17 +169,9 @@ export function useInAppNotifications() {
           conversationId: c.id,
         }, ...prev].slice(0, 50));
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification_logs' }, (payload) => {
-        const log = payload.new as any;
-        if (log.notification_type === 'escalation') {
-          setNotifications(prev => [{
-            id: `log-${log.id}`,
-            type: 'escalation' as const,
-            title: 'Escalation Alert',
-            description: `${log.visitor_name || 'A visitor'} needs human help`,
-            timestamp: new Date(log.created_at),
-          }, ...prev].slice(0, 50));
-        }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification_logs' }, () => {
+        // Re-fetch to pick up any new log type with full context
+        fetchNotifications();
       })
       .subscribe();
 
