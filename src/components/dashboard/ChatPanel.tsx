@@ -66,12 +66,12 @@ const EmptyState = () => {
   }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center h-full text-center p-8">
-      <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
-        <MessageSquare className="h-10 w-10 text-muted-foreground" />
+    <div ref={ref} className="flex flex-col items-center justify-center h-full text-center p-10">
+      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center mb-6">
+        <MessageSquare className="h-10 w-10 text-primary/60" />
       </div>
-      <h3 className="text-lg font-medium text-foreground mb-2">Select a conversation</h3>
-      <p className="text-sm text-muted-foreground max-w-xs">
+      <h3 className="text-lg font-medium text-foreground/80 mb-2">Select a conversation</h3>
+      <p className="text-sm text-muted-foreground/60 max-w-xs leading-relaxed">
         Choose a conversation from the list to start chatting with visitors
       </p>
     </div>

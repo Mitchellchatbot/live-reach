@@ -74,10 +74,10 @@ const ConversationItem = ({
         }
       }}
       className={cn(
-        "p-4 border-b border-border/50 cursor-pointer transition-all duration-200",
-        "hover:bg-accent/40 hover:border-l-2 hover:border-l-primary/30",
-        isSelected && !selectionMode && "bg-accent border-l-2 border-l-primary shadow-sm",
-        isChecked && selectionMode && "bg-primary/10 border-l-2 border-l-primary",
+        "px-4 py-3.5 cursor-pointer transition-all duration-200 rounded-lg mx-1.5 my-0.5",
+        "hover:bg-accent/50",
+        isSelected && !selectionMode && "bg-accent border-l-[3px] border-l-primary shadow-sm",
+        isChecked && selectionMode && "bg-primary/10 border-l-[3px] border-l-primary",
         unreadCount > 0 && !isSelected && !isChecked && "bg-primary/5"
       )}
     >
@@ -94,11 +94,11 @@ const ConversationItem = ({
         <div className="relative flex-shrink-0">
           <Avatar className="h-10 w-10">
             <AvatarFallback className={cn(
-              "text-sm font-medium",
-              isTest ? "bg-amber-500/10 text-amber-600" :
-              status === 'active' ? "bg-primary/10 text-primary" :
-              status === 'pending' ? "bg-status-pending/10 text-status-pending" :
-              "bg-muted text-muted-foreground"
+              "text-sm font-medium shadow-inner",
+              isTest ? "bg-gradient-to-br from-amber-400/20 to-amber-500/10 text-amber-600" :
+              status === 'active' ? "bg-gradient-to-br from-primary/15 to-primary/5 text-primary" :
+              status === 'pending' ? "bg-gradient-to-br from-status-pending/15 to-status-pending/5 text-status-pending" :
+              "bg-gradient-to-br from-muted to-muted/60 text-muted-foreground"
             )}>
               {isTest ? <FlaskConical className="h-4 w-4" /> : initials}
             </AvatarFallback>
@@ -112,8 +112,8 @@ const ConversationItem = ({
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2 min-w-0">
               <h4 className={cn(
-                "text-sm truncate",
-                unreadCount > 0 ? "font-semibold text-foreground" : "font-medium text-foreground/90"
+                "text-[13px] truncate",
+                unreadCount > 0 ? "font-semibold text-foreground" : "font-medium text-foreground/80"
               )}>
                 {visitorName}
               </h4>
@@ -164,15 +164,15 @@ const ConversationItem = ({
                   {unreadCount}
                 </Badge>
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground/70">
                 {lastMessage && formatDistanceToNow(new Date(lastMessage.timestamp), { addSuffix: false })}
               </span>
             </div>
           </div>
 
           <p className={cn(
-            "text-sm truncate mb-2",
-            unreadCount > 0 ? "text-foreground" : "text-muted-foreground"
+            "text-[13px] truncate mb-2",
+            unreadCount > 0 ? "text-foreground/80" : "text-muted-foreground/70"
           )}>
             {lastMessage?.senderType === 'agent' && (
               <span className="text-muted-foreground">You: </span>
@@ -206,12 +206,12 @@ const EmptyConversationState = () => {
   }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <MessageSquare className="h-8 w-8 text-muted-foreground" />
+    <div ref={ref} className="flex flex-col items-center justify-center h-full p-10 text-center">
+      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center mb-6">
+        <MessageSquare className="h-9 w-9 text-primary/60" />
       </div>
-      <h3 className="font-medium text-foreground mb-1">No conversations</h3>
-      <p className="text-sm text-muted-foreground">
+      <h3 className="font-medium text-foreground/80 mb-2">No conversations yet</h3>
+      <p className="text-sm text-muted-foreground/60 max-w-[200px] leading-relaxed">
         Conversations will appear here when visitors start chatting
       </p>
     </div>
