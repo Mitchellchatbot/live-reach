@@ -32,6 +32,7 @@ interface SalesforceConfig {
   auto_export_on_escalation: boolean;
   auto_export_on_conversation_end: boolean;
   auto_export_on_insurance_detected: boolean;
+  auto_export_on_phone_detected: boolean;
   field_mappings: Record<string, string>;
 }
 
@@ -123,6 +124,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         auto_export_on_escalation: data.auto_export_on_escalation,
         auto_export_on_conversation_end: data.auto_export_on_conversation_end,
         auto_export_on_insurance_detected: (data as any).auto_export_on_insurance_detected ?? false,
+        auto_export_on_phone_detected: (data as any).auto_export_on_phone_detected ?? false,
         field_mappings: data.field_mappings as Record<string, string>,
       });
       
@@ -158,6 +160,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       auto_export_on_escalation: config?.auto_export_on_escalation ?? false,
       auto_export_on_conversation_end: config?.auto_export_on_conversation_end ?? false,
       auto_export_on_insurance_detected: config?.auto_export_on_insurance_detected ?? false,
+      auto_export_on_phone_detected: config?.auto_export_on_phone_detected ?? false,
       field_mappings: mappingsObject,
     };
 
@@ -405,6 +408,19 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
             <Switch
               checked={config?.auto_export_on_insurance_detected ?? false}
               onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, auto_export_on_insurance_detected: checked } : null)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Export on Phone Number Detected</Label>
+              <p className="text-sm text-muted-foreground">
+                Automatically create a lead when a phone number is captured from the conversation
+              </p>
+            </div>
+            <Switch
+              checked={config?.auto_export_on_phone_detected ?? false}
+              onCheckedChange={(checked) => setConfig(prev => prev ? { ...prev, auto_export_on_phone_detected: checked } : null)}
             />
           </div>
         </CardContent>
