@@ -332,6 +332,7 @@ const WidgetPreview = () => {
   const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
 <script>
   (function () {
+    if (window.location.search.indexOf('scaledbot_preview=true') !== -1) return;
     var params = ${JSON.stringify(embedParams.toString())};
     var parentUrl = encodeURIComponent(window.location.href);
     var src = 'https://live-reach.lovable.app/widget-embed/${selectedPropertyId}?' + params + '&parentUrl=' + parentUrl;
@@ -650,7 +651,7 @@ const WidgetPreview = () => {
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
                     <FitScaledIframe
-                      src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`}
+                      src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}?scaledbot_preview=true`}
                       title={`Mobile preview of ${selectedProperty.name}`}
                       viewportWidth={390}
                       viewportHeight={844}
@@ -696,7 +697,7 @@ const WidgetPreview = () => {
                     <div className="relative h-[calc(100%-2rem)] overflow-hidden">
                       {selectedProperty?.domain ? (
                         <FitScaledIframe
-                          src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}`}
+                        src={`https://${selectedProperty.domain.replace(/^https?:\/\//, '')}?scaledbot_preview=true`}
                           title={`Desktop preview of ${selectedProperty.name}`}
                           viewportWidth={1440}
                           viewportHeight={900}
