@@ -85,6 +85,7 @@ export default function AgentDashboard() {
       .from('conversations')
       .select(`*, visitors!inner(*)`)
       .in('property_id', assignedPropertyIds)
+      .or(`assigned_agent_id.is.null,assigned_agent_id.eq.${agentProfile?.id}`)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -146,7 +147,7 @@ export default function AgentDashboard() {
 
       setConversations(conversationsWithMessages);
     }
-  }, [user, assignedPropertyIds]);
+  }, [user, assignedPropertyIds, agentProfile?.id]);
 
   // Fetch conversations when assigned properties change
   useEffect(() => {

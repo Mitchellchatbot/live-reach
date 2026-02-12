@@ -105,6 +105,7 @@ const DashboardContent = () => {
   } = useConversations({ 
     selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
+    agentId: isAgentMode ? activeWorkspace?.agentId : undefined,
   });
 
   // Determine filter from path
@@ -241,7 +242,9 @@ const DashboardContent = () => {
   };
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user) return;
-    await sendMessage(selectedConversation.id, content, user.id);
+    // When in agent mode, assign conversation to the agent on first reply
+    const assignId = isAgentMode ? activeWorkspace?.agentId : undefined;
+    await sendMessage(selectedConversation.id, content, user.id, assignId);
   };
   const handleCloseConversation = async () => {
     if (!selectedConversation) return;
