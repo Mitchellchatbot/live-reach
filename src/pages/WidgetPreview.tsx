@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 import { Copy, Check, Code, Palette, Loader2, Building2, Sparkles, MessageCircle, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Bot, ImagePlus, Monitor, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
@@ -200,7 +201,7 @@ const WidgetPreview = () => {
     loading,
     deleteProperty
   } = useConversations();
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
   const [primaryColor, setPrimaryColor] = useState('#F97316');
   const [colorFormat, setColorFormat] = useState<ColorFormat>('hsl');
   const [greeting, setGreeting] = useState("Hi there! 👋 How can I help you today?");

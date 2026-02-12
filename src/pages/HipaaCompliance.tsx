@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -12,7 +13,7 @@ const HipaaCompliance = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { properties, loading: dataLoading } = useConversations();
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
 
   useEffect(() => {
     if (!authLoading && !user) {
