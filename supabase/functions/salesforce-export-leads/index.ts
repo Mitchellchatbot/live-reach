@@ -198,8 +198,13 @@ Deno.serve(async (req) => {
         leadData.Company = '[Not Provided]';
       }
 
-      // Add lead source
-      leadData.LeadSource = 'Website Chat';
+      // Add lead source with property name
+      const { data: propertyData } = await supabase
+        .from("properties")
+        .select("name")
+        .eq("id", propertyId)
+        .single();
+      leadData.LeadSource = propertyData?.name ? `Website Chat - ${propertyData.name}` : 'Website Chat';
 
       try {
         let response = await fetch(
