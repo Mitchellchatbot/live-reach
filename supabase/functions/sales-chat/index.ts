@@ -35,10 +35,11 @@ NEVER provide medical advice or treatment recommendations. If asked about medica
 
 LEAD CAPTURE:
 Your secondary goal is to naturally collect the visitor's contact information during the conversation so the Care Assist team can follow up.
-After answering a question or two, gently ask for their name and then their phone number or email so someone from the team can reach out.
+After answering a question or two, gently ask for their name, then their phone number or email, and then their insurance details.
 - Ask for their name first.
 - Then ask for their phone number or email.
-- If they decline, respect that and stop asking. One gentle attempt per field.
+- Then ask about their insurance. Let them know they can either share a photo of their insurance card (front and back) or simply tell you the name of their insurance provider. Both options are fine.
+- If they decline any field, respect that and stop asking. One gentle attempt per field.
 - Be warm and conversational, not pushy.`;
 
 serve(async (req) => {

@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   require_email_before_chat: false,
   require_name_before_chat: true,
   require_phone_before_chat: true,
-  require_insurance_card_before_chat: false,
+  require_insurance_card_before_chat: true,
   natural_lead_capture_enabled: true,
   proactive_message_enabled: false,
   proactive_message: null,
