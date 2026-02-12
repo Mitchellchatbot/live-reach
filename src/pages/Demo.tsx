@@ -100,7 +100,6 @@ const Demo = () => {
                 autoOpen={true}
                 greeting="Hi! 👋 I'm here to help. Are you looking for treatment options for yourself or a loved one?"
                 agentName="Care Assist AI"
-                demoLeadCapture={true}
               />
             </div>
           </div>

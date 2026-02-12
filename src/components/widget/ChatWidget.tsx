@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, User, Mail, Phone, Shield, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useWidgetChat } from '@/hooks/useWidgetChat';
@@ -21,7 +21,6 @@ interface ChatWidgetProps {
   effectType?: string;
   effectInterval?: number;
   effectIntensity?: string;
-  demoLeadCapture?: boolean;
 }
 
 export const ChatWidget = ({
@@ -40,7 +39,6 @@ export const ChatWidget = ({
   effectType = 'none',
   effectInterval = 5,
   effectIntensity = 'medium',
-  demoLeadCapture = false,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -51,9 +49,6 @@ export const ChatWidget = ({
   const [inputValue, setInputValue] = useState('');
   const [leadName, setLeadName] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
-  const [leadPhone, setLeadPhone] = useState('');
-  const [leadInsurance, setLeadInsurance] = useState('');
-  const [demoLeadDone, setDemoLeadDone] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -206,14 +201,6 @@ export const ChatWidget = ({
 
   const handleLeadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (demoLeadCapture) {
-      if (!leadName.trim() || !leadEmail.trim() || !leadPhone.trim()) return;
-      if (!leadEmail.includes('@')) return;
-      setDemoLeadDone(true);
-      return;
-    }
-
     const name = settings.require_name_before_chat ? leadName.trim() : undefined;
     const email = settings.require_email_before_chat ? leadEmail.trim() : undefined;
     
@@ -304,8 +291,8 @@ export const ChatWidget = ({
     '--widget-message-radius-sm': messageRadiusSmall,
   } as React.CSSProperties;
 
-  // Show lead capture form (either from property settings or demo mode)
-  const showLeadForm = (demoLeadCapture && !demoLeadDone) || (requiresLeadCapture && !visitorInfo.name && !visitorInfo.email);
+  // Show lead capture form
+  const showLeadForm = requiresLeadCapture && !visitorInfo.name && !visitorInfo.email;
 
   return (
     <div 
@@ -404,8 +391,8 @@ export const ChatWidget = ({
               <p className="text-sm text-muted-foreground text-center mb-6">
                 Please share a few details so we can better assist you.
               </p>
-              <form onSubmit={handleLeadSubmit} className="w-full space-y-3">
-                {(demoLeadCapture || settings.require_name_before_chat) && (
+              <form onSubmit={handleLeadSubmit} className="w-full space-y-4">
+                {settings.require_name_before_chat && (
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
@@ -419,7 +406,7 @@ export const ChatWidget = ({
                     />
                   </div>
                 )}
-                {(demoLeadCapture || settings.require_email_before_chat) && (
+                {settings.require_email_before_chat && (
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
@@ -428,33 +415,6 @@ export const ChatWidget = ({
                       onChange={(e) => setLeadEmail(e.target.value)}
                       placeholder="Your email"
                       required
-                      className="w-full pl-11 pr-4 py-3 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
-                      style={{ borderRadius: `${Math.min(borderRadius, 16)}px` }}
-                    />
-                  </div>
-                )}
-                {(demoLeadCapture || settings.require_phone_before_chat) && (
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="tel"
-                      value={leadPhone}
-                      onChange={(e) => setLeadPhone(e.target.value)}
-                      placeholder="Phone number"
-                      required
-                      className="w-full pl-11 pr-4 py-3 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
-                      style={{ borderRadius: `${Math.min(borderRadius, 16)}px` }}
-                    />
-                  </div>
-                )}
-                {(demoLeadCapture || settings.require_insurance_card_before_chat) && (
-                  <div className="relative">
-                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      value={leadInsurance}
-                      onChange={(e) => setLeadInsurance(e.target.value)}
-                      placeholder="Insurance provider (optional)"
                       className="w-full pl-11 pr-4 py-3 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
                       style={{ borderRadius: `${Math.min(borderRadius, 16)}px` }}
                     />
