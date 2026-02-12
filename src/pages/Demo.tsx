@@ -98,7 +98,7 @@ const Demo = () => {
                 propertyId="demo"
                 isPreview={true}
                 autoOpen={true}
-                greeting="Hi! 👋 I'm here to help. Are you looking for treatment options for yourself or a loved one?"
+                greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
                 agentName="Care Assist AI"
               />
             </div>
