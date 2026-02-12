@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
@@ -6,10 +6,11 @@ import { BlogAnalytics } from '@/components/dashboard/BlogAnalytics';
 import { Building2, Loader2 } from 'lucide-react';
 import { useConversations } from '@/hooks/useConversations';
 import { PropertySelector } from '@/components/PropertySelector';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 
 const Analytics = () => {
   const { properties, loading, deleteProperty } = useConversations();
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>();
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
 
   // Auto-select first property when properties load
   useEffect(() => {

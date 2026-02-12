@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
@@ -36,7 +37,7 @@ const Salesforce = () => {
   const navigate = useNavigate();
   const { properties, loading: dataLoading, createProperty, deleteProperty } = useConversations();
   
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
   
   // New property dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);

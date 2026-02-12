@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
@@ -43,7 +44,7 @@ const Notifications = () => {
   const { properties, loading: dataLoading, createProperty, deleteProperty } = useConversations();
   const { enabled: soundEnabled, setEnabled: setSoundEnabled, playSound } = useNotificationSound();
   
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
   
   // New property dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);

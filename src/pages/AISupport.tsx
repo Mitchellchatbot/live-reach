@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePersistedProperty } from '@/hooks/usePersistedProperty';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
@@ -207,7 +208,7 @@ const AISupport = () => {
   const [humanAgents, setHumanAgents] = useState<HumanAgent[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   // AI Settings state
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
   const [settings, setSettings] = useState<PropertySettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [newKeyword, setNewKeyword] = useState('');
