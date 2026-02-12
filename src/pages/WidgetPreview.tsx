@@ -784,15 +784,14 @@ function FitScaledIframe({
 
   const ready = containerSize.width > 0 && containerSize.height > 0;
   const scale = ready
-    ? Math.min(
-        maxScale,
+    ? Math.max(
         containerSize.width / viewportWidth,
         containerSize.height / viewportHeight
       )
     : 1;
 
-  const left = ready ? Math.max(0, (containerSize.width - viewportWidth * scale) / 2) : 0;
-  const top = ready ? Math.max(0, (containerSize.height - viewportHeight * scale) / 2) : 0;
+  const left = 0;
+  const top = 0;
 
   return (
     <div ref={containerRef} className={cn("relative w-full h-full overflow-hidden", className)}>
