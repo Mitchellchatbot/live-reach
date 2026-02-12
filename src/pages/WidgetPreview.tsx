@@ -228,24 +228,29 @@ const WidgetPreview = () => {
     return () => window.removeEventListener('tour-switch-tab', handler);
   }, []);
 
-  // Auto-select first property and load its settings when properties load
+  // Load settings whenever selectedPropertyId or properties change
   useEffect(() => {
-    if (properties.length > 0 && !selectedPropertyId) {
-      const firstProperty = properties[0];
-      setSelectedPropertyId(firstProperty.id);
-      // Load property settings
-      if (firstProperty.widget_color && firstProperty.widget_color !== '#6B7280') {
-        setPrimaryColor(firstProperty.widget_color);
-      } else {
-        // Only auto-extract if no brand color has been saved yet
-        extractBrandFromProperty(firstProperty.domain, firstProperty.id);
-      }
-      if (firstProperty.greeting) setGreeting(firstProperty.greeting);
-      if (firstProperty.widget_icon) setWidgetIcon(firstProperty.widget_icon);
-      setEffectType((firstProperty as any).widget_effect_type || 'none');
-      setEffectInterval((firstProperty as any).widget_effect_interval_seconds || 5);
-      setEffectIntensity((firstProperty as any).widget_effect_intensity || 'medium');
+    if (properties.length === 0) return;
+
+    // Auto-select first property if none persisted
+    if (!selectedPropertyId) {
+      setSelectedPropertyId(properties[0].id);
+      return; // will re-run with the new ID
     }
+
+    const property = properties.find(p => p.id === selectedPropertyId);
+    if (!property) return;
+
+    if (property.widget_color && property.widget_color !== '#6B7280') {
+      setPrimaryColor(property.widget_color);
+    } else {
+      extractBrandFromProperty(property.domain, property.id);
+    }
+    if (property.greeting) setGreeting(property.greeting);
+    if (property.widget_icon) setWidgetIcon(property.widget_icon);
+    setEffectType((property as any).widget_effect_type || 'none');
+    setEffectInterval((property as any).widget_effect_interval_seconds || 5);
+    setEffectIntensity((property as any).widget_effect_intensity || 'medium');
   }, [properties, selectedPropertyId]);
 
   // Update settings when property changes
