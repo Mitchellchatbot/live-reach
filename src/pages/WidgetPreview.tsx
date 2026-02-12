@@ -648,7 +648,7 @@ const WidgetPreview = () => {
             </CardHeader>
             <CardContent className="p-4 flex justify-center">
               {previewMode === 'mobile' ? (
-                <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] border-4 border-foreground/20 shadow-xl">
+                <div className="relative w-[75vw] max-w-[400px] aspect-[9/19.5] bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-[2.5rem] shadow-xl">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-foreground/20 rounded-b-xl z-10" />
                   {selectedProperty?.domain ? (
                     <FitScaledIframe
@@ -674,13 +674,13 @@ const WidgetPreview = () => {
                       </div>
                     </div>
                   )}
-                  <div className="absolute bottom-4 right-4">
+                  <div className="absolute bottom-4 right-4 origin-bottom-right scale-75">
                     <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} effectType={effectType} effectInterval={effectInterval} effectIntensity={effectIntensity} />
                   </div>
                 </div>
               ) : (
               <div className="relative w-full aspect-[16/9] max-h-[calc(100vh-200px)]">
-                  <div className="relative w-full h-full bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg border border-border shadow-lg">
+                  <div className="relative w-full h-full bg-gradient-to-br from-secondary to-muted overflow-hidden rounded-lg shadow-lg">
                     <div className="h-8 bg-foreground/10 flex items-center px-3 gap-2">
                       <div className="flex gap-1.5">
                         <div className="w-3 h-3 rounded-full bg-destructive/50" />
@@ -724,7 +724,7 @@ const WidgetPreview = () => {
                           </div>
                         </div>
                       )}
-                      <div className="absolute bottom-4 right-4">
+                      <div className="absolute bottom-4 right-4 origin-bottom-right scale-75">
                         <ChatWidget propertyId={selectedPropertyId || ''} primaryColor={primaryColor} greeting={greeting} isPreview={true} widgetIcon={widgetIcon} effectType={effectType} effectInterval={effectInterval} effectIntensity={effectIntensity} />
                       </div>
                     </div>
