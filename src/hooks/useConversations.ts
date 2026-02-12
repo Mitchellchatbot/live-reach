@@ -66,17 +66,19 @@ export interface UseConversationsOptions {
   selectedPropertyId?: string;
   /** When set, filter properties to only those owned by this user (for agent workspace mode) */
   workspaceOwnerId?: string;
+  /** When set, only show conversations unassigned or assigned to this agent ID */
+  agentId?: string;
 }
 
 // Query key factory
 const QUERY_KEYS = {
   properties: (userId: string) => ['properties', userId] as const,
-  conversations: (userId: string, propertyId?: string) => 
-    ['conversations', userId, propertyId || 'all'] as const,
+  conversations: (userId: string, propertyId?: string, agentId?: string) => 
+    ['conversations', userId, propertyId || 'all', agentId || 'none'] as const,
 };
 
 export const useConversations = (options: UseConversationsOptions = {}) => {
-  const { selectedPropertyId, workspaceOwnerId } = options;
+  const { selectedPropertyId, workspaceOwnerId, agentId } = options;
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -143,6 +145,11 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       query = query.eq('property_id', selectedPropertyId);
     }
 
+    // In agent mode, only show unassigned or self-assigned conversations
+    if (agentId) {
+      query = query.or(`assigned_agent_id.is.null,assigned_agent_id.eq.${agentId}`);
+    }
+
     const { data: convData, error: convError } = await query;
 
     if (convError) {
@@ -198,14 +205,14 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     return conversationsWithMessages.filter(
       (conv) => conv.messages && conv.messages.some((m) => m.sender_type === 'visitor')
     ) as DbConversation[];
-  }, [user, selectedPropertyId]);
+  }, [user, selectedPropertyId, agentId]);
 
   const { 
     data: conversations = [], 
     isLoading: conversationsLoading,
     refetch: refetchConversations,
   } = useQuery({
-    queryKey: QUERY_KEYS.conversations(user?.id || '', selectedPropertyId),
+    queryKey: QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
     queryFn: fetchConversationsData,
     enabled: !!user,
     staleTime: 30 * 1000, // 30 seconds
@@ -217,14 +224,14 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
   const updateConversationsCache = useCallback(
     (updater: (prev: DbConversation[]) => DbConversation[]) => {
       queryClient.setQueryData<DbConversation[]>(
-        QUERY_KEYS.conversations(user?.id || '', selectedPropertyId),
+        QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
         (old) => updater(old || [])
       );
     },
-    [queryClient, user?.id, selectedPropertyId]
+    [queryClient, user?.id, selectedPropertyId, agentId]
   );
 
-  const sendMessage = async (conversationId: string, content: string, senderId: string) => {
+  const sendMessage = async (conversationId: string, content: string, senderId: string, assignAgentId?: string) => {
     const { data: maxSeqData } = await supabase
       .from('messages')
       .select('sequence_number')
@@ -254,13 +261,18 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       return null;
     }
 
+    const updatePayload: Record<string, any> = { 
+      status: 'active', 
+      updated_at: new Date().toISOString(),
+      ai_enabled: false,
+    };
+    if (assignAgentId) {
+      updatePayload.assigned_agent_id = assignAgentId;
+    }
+
     await supabase
       .from('conversations')
-      .update({ 
-        status: 'active', 
-        updated_at: new Date().toISOString(),
-        ai_enabled: false,
-      })
+      .update(updatePayload)
       .eq('id', conversationId);
 
     const newMessage: DbMessage = { ...data, sender_type: 'agent' };

@@ -7,6 +7,7 @@ export interface Workspace {
   name: string; // company name or full name of the workspace owner
   type: 'owner' | 'agent';
   avatarUrl?: string | null;
+  agentId?: string; // The agents table id when type is 'agent'
 }
 
 interface WorkspaceContextType {
@@ -56,12 +57,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     // 2. Agent workspaces - find all admins who invited this user as an agent
     const { data: agentRecords } = await supabase
       .from('agents')
-      .select('invited_by')
+      .select('id, invited_by')
       .eq('user_id', user.id)
       .eq('invitation_status', 'accepted');
 
     if (agentRecords && agentRecords.length > 0) {
-      const ownerIds = [...new Set(agentRecords.map(a => a.invited_by).filter(Boolean))] as string[];
+      // Build a map of invited_by -> agent id
+      const agentByOwner = new Map<string, string>();
+      for (const a of agentRecords) {
+        if (a.invited_by) agentByOwner.set(a.invited_by, a.id);
+      }
+      const ownerIds = [...agentByOwner.keys()];
       
       // Don't include own workspace again
       const otherOwnerIds = ownerIds.filter(id => id !== user.id);
@@ -79,6 +85,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
               name: profile.company_name || profile.full_name || 'Workspace',
               type: 'agent',
               avatarUrl: profile.avatar_url,
+              agentId: agentByOwner.get(profile.user_id),
             });
           }
         }
