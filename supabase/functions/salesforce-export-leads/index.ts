@@ -259,6 +259,20 @@ Deno.serve(async (req) => {
                 export_type: exportType,
                 exported_by: null,
               });
+
+            // Log notification for the export
+            await supabase
+              .from("notification_logs")
+              .insert({
+                property_id: propertyId,
+                conversation_id: conversation.id,
+                notification_type: "salesforce_export",
+                channel: "in_app",
+                recipient: "system",
+                recipient_type: "system",
+                status: "sent",
+                visitor_name: visitor.name || visitor.email || null,
+              });
           }
 
           exported++;
@@ -266,6 +280,20 @@ Deno.serve(async (req) => {
           const errorData = await response.json();
           console.error("Salesforce error:", errorData);
           errors.push(`Failed to export ${visitor.name || visitor.email || visitor.id}`);
+
+          // Log failed export notification
+          await supabase
+            .from("notification_logs")
+            .insert({
+              property_id: propertyId,
+              notification_type: "export_failed",
+              channel: "in_app",
+              recipient: "system",
+              recipient_type: "system",
+              status: "failed",
+              visitor_name: visitor.name || visitor.email || null,
+              error_message: JSON.stringify(errorData).substring(0, 500),
+            });
         }
       } catch (err) {
         console.error("Export error:", err);
