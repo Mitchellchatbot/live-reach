@@ -182,26 +182,30 @@ const Salesforce = () => {
                 </CardContent>
               </Card>
 
-              {selectedPropertyId && (
+              {properties.length > 0 && (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                   <TabsList data-tour="salesforce-tabs">
                     <TabsTrigger value="leads" className="gap-2" data-tour="salesforce-leads-tab">
                       <Users className="h-4 w-4" />
                       Visitor Leads
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="gap-2" data-tour="salesforce-settings-tab">
-                      <Settings className="h-4 w-4" />
-                      Settings
-                    </TabsTrigger>
+                    {selectedPropertyId && (
+                      <TabsTrigger value="settings" className="gap-2" data-tour="salesforce-settings-tab">
+                        <Settings className="h-4 w-4" />
+                        Settings
+                      </TabsTrigger>
+                    )}
                   </TabsList>
                   
                   <TabsContent value="leads" data-tour="salesforce-leads-content">
-                    <VisitorLeadsTable propertyId={selectedPropertyId} />
+                    <VisitorLeadsTable propertyId={selectedPropertyId || 'all'} allPropertyIds={!selectedPropertyId ? properties.map(p => p.id) : undefined} />
                   </TabsContent>
                   
-                  <TabsContent value="settings" data-tour="salesforce-settings-content">
-                    <SalesforceSettings propertyId={selectedPropertyId} />
-                  </TabsContent>
+                  {selectedPropertyId && (
+                    <TabsContent value="settings" data-tour="salesforce-settings-content">
+                      <SalesforceSettings propertyId={selectedPropertyId} />
+                    </TabsContent>
+                  )}
                 </Tabs>
               )}
 

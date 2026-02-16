@@ -18,6 +18,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface VisitorLeadsTableProps {
   propertyId: string;
+  allPropertyIds?: string[];
 }
 
 interface Visitor {
@@ -35,7 +36,7 @@ interface Visitor {
   exported?: boolean;
 }
 
-export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
+export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTableProps) => {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -49,11 +50,15 @@ export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
 
   const fetchVisitors = async () => {
     setLoading(true);
+    const isAll = allPropertyIds && allPropertyIds.length > 0;
     // Only fetch visitors who actually chatted (have a conversation)
-    const { data: conversations } = await supabase
-      .from('conversations')
-      .select('visitor_id')
-      .eq('property_id', propertyId);
+    let query = supabase.from('conversations').select('visitor_id');
+    if (isAll) {
+      query = query.in('property_id', allPropertyIds);
+    } else {
+      query = query.eq('property_id', propertyId);
+    }
+    const { data: conversations } = await query;
 
     const visitorIds = [...new Set((conversations || []).map(c => c.visitor_id))];
 
@@ -79,11 +84,14 @@ export const VisitorLeadsTable = ({ propertyId }: VisitorLeadsTableProps) => {
   };
 
   const fetchExportedVisitors = async () => {
-    // Get all conversations for this property to check which visitors have been exported
-    const { data: conversations } = await supabase
-      .from('conversations')
-      .select('id, visitor_id')
-      .eq('property_id', propertyId);
+    const isAll = allPropertyIds && allPropertyIds.length > 0;
+    let query = supabase.from('conversations').select('id, visitor_id');
+    if (isAll) {
+      query = query.in('property_id', allPropertyIds);
+    } else {
+      query = query.eq('property_id', propertyId);
+    }
+    const { data: conversations } = await query;
 
     if (conversations && conversations.length > 0) {
       const conversationIds = conversations.map(c => c.id);
