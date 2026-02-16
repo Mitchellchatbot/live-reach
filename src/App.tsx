@@ -125,6 +125,7 @@ const AppRoutes = () => {
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/conversations" element={<RequireAgent><AgentDashboard /></RequireAgent>} />
+        <Route path="/conversations/:conversationId" element={<RequireAgent><AgentDashboard /></RequireAgent>} />
         <Route path="/onboarding" element={<Onboarding />} />
 
         {/* Legacy redirects */}

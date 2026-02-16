@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,13 +18,14 @@ export default function AgentDashboard() {
   const { user, isAgent, loading, signOut, role } = useAuth();
   const { profile, updateAvatarUrl } = useUserProfile();
   const navigate = useNavigate();
+  const { conversationId: urlConversationId } = useParams();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'away'>('online');
   const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('active');
   
 
   // Redirect if not agent
@@ -166,6 +167,16 @@ export default function AgentDashboard() {
   // Badge counts
   const activeCount = useMemo(() => conversations.filter(c => c.status !== 'closed').length, [conversations]);
   const closedCount = useMemo(() => conversations.filter(c => c.status === 'closed').length, [conversations]);
+
+  // Sync selected conversation from URL
+  useEffect(() => {
+    if (urlConversationId && conversations.length > 0) {
+      const conv = conversations.find(c => c.id === urlConversationId);
+      if (conv && conv.id !== selectedConversation?.id) {
+        setSelectedConversation(conv);
+      }
+    }
+  }, [urlConversationId, conversations]);
 
   // Fetch conversations when assigned properties change
   useEffect(() => {
@@ -493,7 +504,10 @@ export default function AgentDashboard() {
             <ConversationList
               conversations={filteredConversations}
               selectedId={selectedConversation?.id}
-              onSelect={(conv) => setSelectedConversation(conv)}
+              onSelect={(conv) => {
+                setSelectedConversation(conv);
+                navigate(`/conversations/${conv.id}`, { replace: true });
+              }}
             />
           </div>
         </div>
