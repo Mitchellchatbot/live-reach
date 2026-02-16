@@ -241,19 +241,55 @@ Deno.serve(async (req) => {
         }
       }
 
+      // Auto-export to Salesforce if phone was newly captured
+      if (updates.phone) {
+        try {
+          const { data: phoneConv } = await supabase
+            .from('conversations')
+            .select('id, property_id')
+            .eq('visitor_id', visitorId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (phoneConv) {
+            const { data: sfPhoneSettings } = await supabase
+              .from('salesforce_settings')
+              .select('auto_export_on_phone_detected, enabled, instance_url, access_token')
+              .eq('property_id', phoneConv.property_id)
+              .single();
+
+            if (sfPhoneSettings?.enabled && sfPhoneSettings?.auto_export_on_phone_detected && sfPhoneSettings?.instance_url && sfPhoneSettings?.access_token) {
+              console.log('Phone detected – triggering Salesforce auto-export for visitor', visitorId);
+              fetch(`${SUPABASE_URL}/functions/v1/salesforce-export-leads`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  propertyId: phoneConv.property_id,
+                  visitorIds: [visitorId],
+                  _serviceRoleExport: true,
+                }),
+              }).catch((e: any) => console.error('SF phone auto-export error:', e));
+            }
+          }
+        } catch (sfPhoneErr) {
+          console.error('Error checking SF phone auto-export:', sfPhoneErr);
+        }
+      }
+
       // Auto-export to Salesforce if insurance info was newly captured
       if (updates.insurance_info) {
         try {
-          const conv = conversation || (await (async () => {
-            const { data } = await supabase
-              .from('conversations')
-              .select('id, property_id')
-              .eq('visitor_id', visitorId)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .single();
-            return data;
-          })());
+          const { data: conv } = await supabase
+            .from('conversations')
+            .select('id, property_id')
+            .eq('visitor_id', visitorId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
 
           if (conv) {
             const { data: sfSettings } = await supabase
