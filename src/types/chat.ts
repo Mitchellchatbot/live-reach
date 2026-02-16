@@ -60,6 +60,7 @@ export interface Message {
 export interface Conversation {
   id: string;
   propertyId: string;
+  propertyName?: string;
   visitorId: string;
   visitor: Visitor;
   assignedAgentId?: string;

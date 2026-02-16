@@ -84,7 +84,7 @@ export default function AgentDashboard() {
 
     const { data: convData, error } = await supabase
       .from('conversations')
-      .select(`*, visitors!inner(*)`)
+      .select(`*, visitors!inner(*), property:properties(name, domain)`)
       .in('property_id', assignedPropertyIds)
       .or(`assigned_agent_id.is.null,assigned_agent_id.eq.${agentProfile?.id}`)
       .order('updated_at', { ascending: false });
@@ -131,6 +131,7 @@ export default function AgentDashboard() {
             id: c.id,
             visitorId: c.visitor_id,
             propertyId: c.property_id,
+            propertyName: (c as any).property?.name || (c as any).property?.domain || undefined,
             status: c.status as 'pending' | 'active' | 'closed',
             assignedAgentId: c.assigned_agent_id,
             createdAt: new Date(c.created_at),
