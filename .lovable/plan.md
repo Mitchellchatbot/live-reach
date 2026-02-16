@@ -1,24 +1,23 @@
 
 
-# Hide Existing Widget in Preview
+## Add "Export to CSV" Button to Visitor Leads Table
 
-## Problem
-When a customer's website already has the Care Assist chat widget installed, loading that site in the dashboard preview iframe causes the **real embedded widget** to appear alongside the **preview overlay widget**, resulting in two widgets visible at once.
+Add a CSV export button next to the existing action buttons that downloads all visible visitor lead data as a `.csv` file.
 
-## Solution
-A two-part approach that makes the embed script self-aware of when it's being shown inside the dashboard preview:
+### What it does
+- Adds a "CSV" download button in the action bar alongside the existing Refresh, Delete, and Export to Salesforce buttons.
+- If leads are selected, only those are exported to CSV. If none are selected, all visible leads are exported.
+- The CSV includes: Name, Email, Phone, Location, Treatment Interest, Drug of Choice, Insurance Info, Urgency Level, GCLID, Status (Exported/New), and Date.
+- Downloads instantly in the browser -- no backend call needed.
 
-### 1. Add a query parameter to the preview iframe URL
-In `src/pages/WidgetPreview.tsx`, append `?scaledbot_preview=true` to the customer website URL loaded in the `FitScaledIframe` for both desktop and mobile previews.
+### Technical Details
 
-### 2. Update the embed script to check for this parameter
-In the generated embed code (also in `WidgetPreview.tsx`), add a guard at the top of the script: if `window.location.search` contains `scaledbot_preview=true`, skip widget initialization entirely. This way, when the customer's site loads inside the preview iframe, the real widget won't render -- only the dashboard's overlay `ChatWidget` component will show.
+**File: `src/components/settings/VisitorLeadsTable.tsx`**
 
-## Files to Modify
-- **`src/pages/WidgetPreview.tsx`**:
-  - Update `FitScaledIframe` `src` URLs (desktop line ~699, mobile line ~653) to append `?scaledbot_preview=true`
-  - Update the `widgetScript` template (line ~333) to add `if (window.location.search.indexOf('scaledbot_preview=true') !== -1) return;` at the start of the IIFE
-
-## Limitation
-Customers who already embedded the **old** script (without the preview check) will still see the duplicate widget in previews until they update their embed code. New embeds will work correctly immediately.
+1. Import `Download` icon from `lucide-react`.
+2. Add a `handleExportCsv` function that:
+   - Determines the rows to export (selected or all).
+   - Builds CSV header + rows, escaping commas/quotes properly.
+   - Creates a Blob, generates a download URL, and triggers a click on a temporary anchor element.
+3. Add a new `Button` between the Refresh and Delete buttons with the `Download` icon labeled "CSV".
 
