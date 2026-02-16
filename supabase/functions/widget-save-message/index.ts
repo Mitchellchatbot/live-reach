@@ -109,13 +109,13 @@ Deno.serve(async (req) => {
     if (senderType === "visitor" && conv.status === "closed") {
       const { error: reopenErr } = await supabase
         .from("conversations")
-        .update({ status: "active", ai_enabled: false, updated_at: new Date().toISOString() })
+        .update({ status: "active", updated_at: new Date().toISOString() })
         .eq("id", conversationId);
 
       if (reopenErr) {
         console.error("widget-save-message: failed to reopen conversation", reopenErr);
       } else {
-        console.log("widget-save-message: reopened closed conversation", conversationId, "without AI");
+        console.log("widget-save-message: reopened closed conversation", conversationId);
       }
     }
 

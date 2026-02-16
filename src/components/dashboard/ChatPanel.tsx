@@ -387,13 +387,11 @@ export const ChatPanel = ({
               onChange={e => setMessage(e.target.value)} 
               onKeyDown={handleKeyDown} 
               placeholder={
-                status === 'closed' 
-                  ? 'Conversation closed' 
-                  : isAIEnabled 
-                    ? 'AI mode is active — disable to reply' 
-                    : 'Type a message...'
+                isAIEnabled && status !== 'closed'
+                  ? 'AI mode is active — disable to reply' 
+                  : 'Type a message...'
               } 
-              disabled={status === 'closed' || isAIEnabled} 
+              disabled={isAIEnabled && status !== 'closed'} 
               className={cn(
                 "flex-1 transition-colors rounded-xl",
                 isAIEnabled 
@@ -403,7 +401,7 @@ export const ChatPanel = ({
             />
             <Button 
               onClick={handleSend} 
-              disabled={!message.trim() || status === 'closed' || isAIEnabled} 
+              disabled={!message.trim() || (isAIEnabled && status !== 'closed')} 
               className={cn(
                 "transition-all rounded-xl",
                 isAIEnabled
