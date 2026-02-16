@@ -186,9 +186,11 @@ Deno.serve(async (req) => {
 
       const errorText = await sfResponse.text();
       console.error("Salesforce API error:", errorText);
+      // Detect session expiry and return a specific error
+      const isSessionExpired = errorText.includes("INVALID_SESSION_ID") || errorText.includes("Session expired");
       return new Response(
-        JSON.stringify({ error: "Failed to fetch Lead fields from Salesforce" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: isSessionExpired ? "Session expired or invalid. Please reconnect your Salesforce account." : "Failed to fetch Lead fields from Salesforce" }),
+        { status: isSessionExpired ? 401 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
