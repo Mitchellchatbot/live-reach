@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Upload, Users, RefreshCw, Trash2, Download } from 'lucide-react';
+import { Loader2, Upload, Users, RefreshCw, Trash2, Download, Phone } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +54,13 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [exportedIds, setExportedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
+  const [phoneFilter, setPhoneFilter] = useState<'all' | 'with' | 'without'>('all');
+
+  const filteredVisitors = visitors.filter(v => {
+    if (phoneFilter === 'with') return !!v.phone;
+    if (phoneFilter === 'without') return !v.phone;
+    return true;
+  });
 
   useEffect(() => {
     fetchVisitors();
@@ -135,10 +142,10 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === visitors.length) {
+    if (selectedIds.size === filteredVisitors.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(visitors.map(v => v.id)));
+      setSelectedIds(new Set(filteredVisitors.map(v => v.id)));
     }
   };
 
@@ -231,8 +238,8 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
 
   const handleExportCsv = () => {
     const rows = selectedIds.size > 0
-      ? visitors.filter(v => selectedIds.has(v.id))
-      : visitors;
+      ? filteredVisitors.filter(v => selectedIds.has(v.id))
+      : filteredVisitors;
 
     if (rows.length === 0) {
       toast.error('No leads to export');
@@ -351,11 +358,27 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
         </div>
       </CardHeader>
       <CardContent>
-        {visitors.length === 0 ? (
+        {visitors.length > 0 && (
+          <div className="flex items-center gap-2 mb-4">
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Phone:</span>
+            {(['all', 'with', 'without'] as const).map(val => (
+              <Button
+                key={val}
+                variant={phoneFilter === val ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => { setPhoneFilter(val); setSelectedIds(new Set()); }}
+              >
+                {val === 'all' ? 'All' : val === 'with' ? 'Has phone' : 'No phone'}
+              </Button>
+            ))}
+          </div>
+        )}
+        {filteredVisitors.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No visitors yet</p>
-            <p className="text-sm">Visitors will appear here when they chat on your site</p>
+            <p>{visitors.length === 0 ? 'No visitors yet' : 'No visitors match the filter'}</p>
+            {visitors.length === 0 && <p className="text-sm">Visitors will appear here when they chat on your site</p>}
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
@@ -364,7 +387,7 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
                 <TableRow>
                   <TableHead className="w-12">
                     <Checkbox
-                      checked={selectedIds.size === visitors.length && visitors.length > 0}
+                      checked={selectedIds.size === filteredVisitors.length && filteredVisitors.length > 0}
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
@@ -378,7 +401,7 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visitors.map((visitor) => (
+                {filteredVisitors.map((visitor) => (
                   <TableRow key={visitor.id}>
                     <TableCell>
                       <Checkbox
