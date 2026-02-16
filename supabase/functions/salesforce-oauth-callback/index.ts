@@ -5,6 +5,43 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function renderPage(type: 'success' | 'error', message: string, postMessageScript: string): string {
+  const isSuccess = type === 'success';
+  const iconColor = isSuccess ? '#16a34a' : '#dc2626';
+  const iconBg = isSuccess ? '#dcfce7' : '#fee2e2';
+  const icon = isSuccess
+    ? `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+    : `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Salesforce ${isSuccess ? 'Connected' : 'Error'}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc}
+.card{background:#fff;border-radius:16px;padding:48px 40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);max-width:400px;width:90%;animation:fadeIn .4s ease}
+.icon{width:80px;height:80px;border-radius:50%;background:${iconBg};display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+h1{font-size:20px;font-weight:600;color:#0f172a;margin-bottom:8px}
+p{font-size:14px;color:#64748b;line-height:1.5}
+.close-btn{margin-top:24px;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;background:${isSuccess ? '#16a34a' : '#64748b'};color:#fff;transition:opacity .2s}
+.close-btn:hover{opacity:.85}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">${icon}</div>
+  <h1>${isSuccess ? 'Connected Successfully' : 'Connection Failed'}</h1>
+  <p>${message}</p>
+  <button class="close-btn" onclick="window.close()">Close Window</button>
+</div>
+<script>${postMessageScript}setTimeout(()=>window.close(),5000);</script>
+</body>
+</html>`;
+}
+
 // --- Encryption helpers (AES-256-GCM, key derived from service role key) ---
 
 async function deriveKey(): Promise<CryptoKey> {
@@ -60,14 +97,14 @@ Deno.serve(async (req) => {
     if (error) {
       console.error("OAuth error:", error, errorDescription);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'${error}'},'*');window.close();</script><p>Authentication failed: ${errorDescription || error}. You can close this window.</p></body></html>`,
+        renderPage('error', errorDescription || error || 'Authentication failed.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'${error}'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
 
     if (!code || !state) {
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_params'},'*');window.close();</script><p>Missing required parameters. You can close this window.</p></body></html>`,
+        renderPage('error', 'Missing required parameters.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_params'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -77,7 +114,7 @@ Deno.serve(async (req) => {
     if (colonIdx === -1) {
       console.error("Invalid state format - expected propertyId:csrfToken");
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
+        renderPage('error', 'Invalid state parameter.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -87,7 +124,7 @@ Deno.serve(async (req) => {
 
     if (!propertyId || !csrfToken) {
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');window.close();</script><p>Invalid state parameter. You can close this window.</p></body></html>`,
+        renderPage('error', 'Invalid state parameter.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'invalid_state'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -106,7 +143,7 @@ Deno.serve(async (req) => {
     if (settingsError || !settings) {
       console.error("Error fetching settings:", settingsError);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'settings_not_found'},'*');window.close();</script><p>Settings not found. You can close this window.</p></body></html>`,
+        renderPage('error', 'Settings not found for this property.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'settings_not_found'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -115,7 +152,7 @@ Deno.serve(async (req) => {
     if (!settings.pending_oauth_token || settings.pending_oauth_token !== csrfToken) {
       console.error("CSRF token mismatch for property:", propertyId);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'csrf_mismatch'},'*');window.close();</script><p>Security validation failed. Please try connecting again. You can close this window.</p></body></html>`,
+        renderPage('error', 'Security validation failed. Please try connecting again.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'csrf_mismatch'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -128,7 +165,7 @@ Deno.serve(async (req) => {
         .update({ pending_oauth_token: null, pending_oauth_expires_at: null, pending_code_verifier: null })
         .eq("property_id", propertyId);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'token_expired'},'*');window.close();</script><p>Connection request expired. Please try again. You can close this window.</p></body></html>`,
+        renderPage('error', 'Connection request expired. Please try again.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'token_expired'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -138,7 +175,7 @@ Deno.serve(async (req) => {
     if (!codeVerifier) {
       console.error("Missing code verifier for property:", propertyId);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_verifier'},'*');window.close();</script><p>Missing security data. Please try connecting again. You can close this window.</p></body></html>`,
+        renderPage('error', 'Missing security data. Please try connecting again.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_verifier'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -156,7 +193,7 @@ Deno.serve(async (req) => {
     if (!clientId || !clientSecret) {
       console.error("Missing SALESFORCE_CLIENT_ID or SALESFORCE_CLIENT_SECRET env vars");
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');window.close();</script><p>Salesforce integration not configured. You can close this window.</p></body></html>`,
+        renderPage('error', 'Salesforce integration is not configured.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -183,7 +220,7 @@ Deno.serve(async (req) => {
     if (!tokenResponse.ok || tokenData.error) {
       console.error("Token exchange error:", tokenData);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'${tokenData.error || 'token_error'}'},'*');window.close();</script><p>Token exchange failed: ${tokenData.error_description || tokenData.error}. You can close this window.</p></body></html>`,
+        renderPage('error', `Token exchange failed: ${tokenData.error_description || tokenData.error}`, `window.opener?.postMessage({type:'salesforce-oauth-error',error:'${tokenData.error || 'token_error'}'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -213,7 +250,7 @@ Deno.serve(async (req) => {
     if (updateError) {
       console.error("Error updating settings:", updateError);
       return new Response(
-        `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'update_failed'},'*');window.close();</script><p>Failed to save tokens. You can close this window.</p></body></html>`,
+        renderPage('error', 'Failed to save connection tokens.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'update_failed'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
@@ -221,13 +258,13 @@ Deno.serve(async (req) => {
     console.log("Salesforce OAuth successful for property:", propertyId, "(tokens encrypted)");
 
     return new Response(
-      `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-success'},'*');window.close();</script><p>Connected to Salesforce successfully! You can close this window.</p></body></html>`,
+      renderPage('success', 'Your Salesforce account has been connected. This window will close automatically.', `window.opener?.postMessage({type:'salesforce-oauth-success'},'*');`),
       { headers: { ...corsHeaders, "Content-Type": "text/html" } }
     );
   } catch (error) {
     console.error("Unexpected error:", error);
     return new Response(
-      `<html><body><script>window.opener?.postMessage({type:'salesforce-oauth-error',error:'unexpected'},'*');window.close();</script><p>An unexpected error occurred. You can close this window.</p></body></html>`,
+      renderPage('error', 'An unexpected error occurred. Please try again.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'unexpected'},'*');`),
       { headers: { ...corsHeaders, "Content-Type": "text/html" } }
     );
   }
