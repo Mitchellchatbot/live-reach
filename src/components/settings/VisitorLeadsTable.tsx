@@ -148,9 +148,18 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
 
       if (error) {
         console.error('Export error:', error);
-        toast.error('Failed to export leads to Salesforce');
+        const errMsg = data?.error || error?.message || '';
+        if (errMsg.includes('Failed to fetch') || errMsg.includes('Session expired') || errMsg.includes('INVALID_SESSION_ID')) {
+          toast.error('Salesforce session expired. Please reconnect in the Settings tab.');
+        } else {
+          toast.error('Failed to export leads to Salesforce');
+        }
       } else if (data?.error) {
-        toast.error(data.error);
+        if (data.error.includes('Session expired') || data.error.includes('not connected')) {
+          toast.error('Salesforce session expired. Please reconnect in the Settings tab.');
+        } else {
+          toast.error(data.error);
+        }
       } else {
         toast.success(`Successfully exported ${data?.exported || selectedIds.size} leads to Salesforce`);
         setSelectedIds(new Set());
