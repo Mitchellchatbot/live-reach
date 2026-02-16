@@ -58,7 +58,7 @@ const ConversationItem = ({
   onDelete 
 }: ConversationItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { visitor, lastMessage, unreadCount, status } = conversation;
+  const { visitor, lastMessage, unreadCount, status, propertyName } = conversation;
   const isTest = (conversation as any).isTest;
   const visitorName = visitor.name || (isTest ? 'Test Visitor' : `Visitor ${visitor.sessionId.slice(-4)}`);
   const initials = visitorName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -180,12 +180,20 @@ const ConversationItem = ({
             {lastMessage?.content || 'No messages yet'}
           </p>
 
-          {status === 'pending' && (
-            <Badge variant="outline" className="text-status-pending border-status-pending/30 bg-status-pending/10 text-xs py-0 w-fit">
-              <Clock className="h-3 w-3 mr-1" />
-              Pending
-            </Badge>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {propertyName && (
+              <Badge variant="outline" className="text-xs py-0 bg-muted/50 text-muted-foreground border-border/60 w-fit">
+                <Globe className="h-3 w-3 mr-1" />
+                {propertyName}
+              </Badge>
+            )}
+            {status === 'pending' && (
+              <Badge variant="outline" className="text-status-pending border-status-pending/30 bg-status-pending/10 text-xs py-0 w-fit">
+                <Clock className="h-3 w-3 mr-1" />
+                Pending
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
     </div>

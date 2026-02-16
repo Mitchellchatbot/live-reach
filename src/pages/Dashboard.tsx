@@ -34,6 +34,7 @@ const toUiConversation = (dbConv: DbConversation): Conversation & {
 } => ({
   id: dbConv.id,
   propertyId: dbConv.property_id,
+  propertyName: dbConv.property?.name || dbConv.property?.domain || undefined,
   visitorId: dbConv.visitor_id,
   visitor: {
     id: dbConv.visitor?.id || '',
