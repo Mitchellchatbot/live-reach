@@ -138,9 +138,10 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
 
     setExporting(true);
     try {
+      const isAll = allPropertyIds && allPropertyIds.length > 0;
       const { data, error } = await supabase.functions.invoke('salesforce-export-leads', {
         body: { 
-          propertyId,
+          propertyId: isAll ? 'all' : propertyId,
           visitorIds: Array.from(selectedIds)
         },
       });
