@@ -245,8 +245,60 @@ export const DashboardSidebar = ({
           </div>
         )}
 
-        {/* Workspace Switcher */}
-        {workspaces.length > 1 && (
+        {/* Role Switcher for users with both admin + agent access */}
+        {hasAgentAccess && (isClient || isAdmin) && (
+          <div className={cn(
+            "border-b border-sidebar-border px-3 py-2",
+            !forMobile && collapsed ? "px-1.5" : ""
+          )}>
+            {workspaces.length > 1 ? (
+              <WorkspaceSwitcher collapsed={!forMobile && collapsed} />
+            ) : (
+              /* Fallback toggle when workspace switcher isn't available */
+              <div className="flex items-center justify-center">
+                {(!forMobile && collapsed) ? (
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg border-sidebar-border text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => navigate(isAgentMode ? '/dashboard' : '/conversations')}
+                      >
+                        {isAgentMode ? <Building2 className="h-4 w-4" /> : <Inbox className="h-4 w-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      {isAgentMode ? 'Switch to Admin' : 'Switch to Agent'}
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start gap-2 h-9 rounded-lg border-sidebar-border text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent text-xs font-medium"
+                    onClick={() => navigate(isAgentMode ? '/dashboard' : '/conversations')}
+                  >
+                    {isAgentMode ? (
+                      <>
+                        <Building2 className="h-3.5 w-3.5" />
+                        Switch to Admin View
+                      </>
+                    ) : (
+                      <>
+                        <Inbox className="h-3.5 w-3.5" />
+                        Switch to Agent View
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Workspace Switcher for users without dual role */}
+        {workspaces.length > 1 && !(hasAgentAccess && (isClient || isAdmin)) && (
           <div className={cn(
             "border-b border-sidebar-border px-3 py-2",
             !forMobile && collapsed ? "px-1.5" : ""
@@ -332,12 +384,7 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {/* Agent Portal link for admin/client users who also have agent access */}
-          {showAdminItems && hasAgentAccess && (
-            <SidebarSection title="Agent" collapsed={!forMobile && collapsed}>
-              <SidebarItem to="/conversations" icon={Inbox} label="Agent Portal" collapsed={!forMobile && collapsed} iconColor="#F97316" />
-            </SidebarSection>
-          )}
+          {/* Role switcher is now at the top of the sidebar */}
         </nav>
 
         {/* User Profile */}
