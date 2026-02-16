@@ -11,7 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
-import { LogOut, MessageSquare, RefreshCw, Inbox, Archive, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { LogOut, MessageSquare, RefreshCw, Inbox, Archive, ArrowLeft, Pencil, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Conversation, Message, Visitor } from '@/types/chat';
 
 export default function AgentDashboard() {
@@ -45,6 +47,8 @@ export default function AgentDashboard() {
   const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('active');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState('');
   
 
   // Redirect if no agent access at all
@@ -298,6 +302,21 @@ export default function AgentDashboard() {
     navigate('/auth');
   };
 
+  const handleSaveName = async () => {
+    if (!editName.trim() || !user || !agentProfile) return;
+    const { error } = await supabase
+      .from('agents')
+      .update({ name: editName.trim() })
+      .eq('user_id', user.id);
+    if (error) {
+      toast.error('Failed to update name');
+      return;
+    }
+    setAgentProfile({ ...agentProfile, name: editName.trim() });
+    setIsEditingName(false);
+    toast.success('Name updated');
+  };
+
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user || !agentProfile) return;
 
@@ -481,8 +500,39 @@ export default function AgentDashboard() {
                 onAvatarUpdate={updateAvatarUrl}
                 size="md"
               />
-              <div>
-                <p className="font-medium text-sm">{agentProfile?.name || 'Agent'}</p>
+              <div className="flex-1 min-w-0">
+                {isEditingName ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="h-6 text-sm px-1 py-0"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') setIsEditingName(false);
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" className="h-5 w-5" onClick={handleSaveName}>
+                      <Check className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => setIsEditingName(false)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 group">
+                    <p className="font-medium text-sm">{agentProfile?.name || 'Agent'}</p>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => { setEditName(agentProfile?.name || ''); setIsEditingName(true); }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">{agentProfile?.email}</p>
               </div>
             </div>
