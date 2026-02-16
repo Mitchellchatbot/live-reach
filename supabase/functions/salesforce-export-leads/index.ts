@@ -363,11 +363,20 @@ async function refreshAccessToken(supabase: any, settings: any): Promise<string 
     // Decrypt the refresh token
     const refreshToken = await decryptToken(settings.refresh_token);
 
+    // Use managed credentials from env vars (DB fields may be null for managed apps)
+    const clientId = Deno.env.get("SALESFORCE_CLIENT_ID") || settings.client_id;
+    const clientSecret = Deno.env.get("SALESFORCE_CLIENT_SECRET") || settings.client_secret;
+
+    if (!clientId || !clientSecret) {
+      console.error("No Salesforce client credentials available for token refresh");
+      return null;
+    }
+
     const tokenUrl = "https://login.salesforce.com/services/oauth2/token";
     const params = new URLSearchParams({
       grant_type: "refresh_token",
-      client_id: settings.client_id,
-      client_secret: settings.client_secret,
+      client_id: clientId,
+      client_secret: clientSecret,
       refresh_token: refreshToken,
     });
 
