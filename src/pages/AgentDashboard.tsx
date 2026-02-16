@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -8,9 +8,10 @@ import { ChatPanel } from '@/components/dashboard/ChatPanel';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
-import { LogOut, MessageSquare, RefreshCw } from 'lucide-react';
+import { LogOut, MessageSquare, RefreshCw, Inbox, Archive } from 'lucide-react';
 import type { Conversation, Message, Visitor } from '@/types/chat';
 
 export default function AgentDashboard() {
@@ -23,6 +24,7 @@ export default function AgentDashboard() {
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'away'>('online');
   const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('all');
   
 
   // Redirect if not agent
@@ -87,7 +89,8 @@ export default function AgentDashboard() {
       .select(`*, visitors!inner(*), property:properties(name, domain)`)
       .in('property_id', assignedPropertyIds)
       .or(`assigned_agent_id.is.null,assigned_agent_id.eq.${agentProfile?.id}`)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(200);
 
     if (error) {
       console.error('Error fetching conversations:', error);
@@ -150,6 +153,19 @@ export default function AgentDashboard() {
       setConversations(conversationsWithMessages);
     }
   }, [user, assignedPropertyIds, agentProfile?.id]);
+
+  // Filter conversations by status tab
+  const filteredConversations = useMemo(() => {
+    return conversations.filter(conv => {
+      if (statusFilter === 'active' && conv.status === 'closed') return false;
+      if (statusFilter === 'closed' && conv.status !== 'closed') return false;
+      return true;
+    });
+  }, [conversations, statusFilter]);
+
+  // Badge counts
+  const activeCount = useMemo(() => conversations.filter(c => c.status !== 'closed').length, [conversations]);
+  const closedCount = useMemo(() => conversations.filter(c => c.status === 'closed').length, [conversations]);
 
   // Fetch conversations when assigned properties change
   useEffect(() => {
@@ -447,13 +463,35 @@ export default function AgentDashboard() {
               <Button variant="ghost" size="icon" onClick={fetchConversations} className="h-7 w-7">
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
-              <Badge variant="secondary">{conversations.length}</Badge>
+              <Badge variant="secondary">{filteredConversations.length}</Badge>
             </div>
+          </div>
+
+          {/* Status Tabs */}
+          <div className="px-3 py-2 border-b border-border">
+            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'closed')}>
+              <TabsList className="w-full grid grid-cols-3 h-8">
+                <TabsTrigger value="all" className="text-xs h-7">
+                  All
+                  <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{conversations.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="active" className="text-xs h-7">
+                  <Inbox className="h-3 w-3 mr-1" />
+                  Active
+                  {activeCount > 0 && <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{activeCount}</Badge>}
+                </TabsTrigger>
+                <TabsTrigger value="closed" className="text-xs h-7">
+                  <Archive className="h-3 w-3 mr-1" />
+                  Closed
+                  {closedCount > 0 && <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">{closedCount}</Badge>}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           
           <div className="flex-1 overflow-auto">
             <ConversationList
-              conversations={conversations}
+              conversations={filteredConversations}
               selectedId={selectedConversation?.id}
               onSelect={(conv) => setSelectedConversation(conv)}
             />

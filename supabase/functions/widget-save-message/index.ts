@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     // Validate conversation belongs to visitor
     const { data: conv, error: convErr } = await supabase
       .from("conversations")
-      .select("id,visitor_id")
+      .select("id,visitor_id,status,ai_enabled")
       .eq("id", conversationId)
       .maybeSingle();
 
@@ -102,6 +102,21 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // If the conversation was closed and a visitor is sending a message, reopen it
+    // but keep AI disabled so the human agent handles the reply
+    if (senderType === "visitor" && conv.status === "closed") {
+      const { error: reopenErr } = await supabase
+        .from("conversations")
+        .update({ status: "active", ai_enabled: false, updated_at: new Date().toISOString() })
+        .eq("id", conversationId);
+
+      if (reopenErr) {
+        console.error("widget-save-message: failed to reopen conversation", reopenErr);
+      } else {
+        console.log("widget-save-message: reopened closed conversation", conversationId, "without AI");
+      }
     }
 
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq }), {
