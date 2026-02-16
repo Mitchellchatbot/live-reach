@@ -45,7 +45,7 @@ export default function Auth() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   
-  const { signIn, signUp, user, role, loading } = useAuth();
+  const { signIn, signUp, user, role, loading, refreshRole } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -168,10 +168,12 @@ export default function Auth() {
       return;
     }
 
-    // Add agent role
+    // Add agent role (keep existing role too)
     await supabase
       .from('user_roles')
-      .upsert({ user_id: userId, role: 'agent' }, { onConflict: 'user_id' });
+      .insert({ user_id: userId, role: 'agent' })
+      .select()
+      .maybeSingle();
 
     toast({
       title: 'Welcome to the team!',
@@ -212,6 +214,8 @@ export default function Auth() {
       const { data: { user: loggedInUser } } = await supabase.auth.getUser();
       if (loggedInUser) {
         await acceptInvitationForExistingUser(loggedInUser.id, loggedInUser.email || loginEmail);
+        // Refresh role so hasAgentAccess updates immediately
+        await refreshRole();
       }
     }
 

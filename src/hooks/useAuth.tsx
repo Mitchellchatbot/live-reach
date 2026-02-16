@@ -12,7 +12,8 @@ interface AuthContextType {
   isAdmin: boolean;
   isClient: boolean;
   isAgent: boolean;
-  hasAgentAccess: boolean; // true if user has accepted agent invitations (regardless of role)
+  hasAgentAccess: boolean;
+  refreshRole: () => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -152,6 +153,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
   };
 
+  const refreshRole = async () => {
+    if (user) {
+      await fetchUserRole(user.id, true);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -163,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isClient: role === 'client',
         isAgent: role === 'agent',
         hasAgentAccess,
+        refreshRole,
         signUp,
         signIn,
         signOut,
