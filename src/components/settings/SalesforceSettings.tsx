@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Link2, Unlink, Save, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Link2, Unlink, Save, Plus, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 
 interface SalesforceSettingsProps {
@@ -70,6 +70,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
   const [connecting, setConnecting] = useState(false);
   const [salesforceFields, setSalesforceFields] = useState<SalesforceField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -84,6 +85,7 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
 
   const fetchSalesforceFields = async () => {
     setLoadingFields(true);
+    setSessionExpired(false);
     try {
       const { data, error } = await supabase.functions.invoke('salesforce-describe-lead', {
         body: { propertyId },
@@ -91,9 +93,24 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
 
       if (error) {
         console.error('Error fetching Salesforce fields:', error);
-        toast.error('Failed to fetch Salesforce Lead fields');
+        // Check if it's a session expiry error
+        const errorMsg = typeof error === 'object' && error.message ? error.message : String(error);
+        const dataError = data?.error || '';
+        if (errorMsg.includes('Session expired') || errorMsg.includes('INVALID_SESSION_ID') || 
+            dataError.includes('Failed to fetch Lead fields') || dataError.includes('Session expired')) {
+          setSessionExpired(true);
+        } else {
+          toast.error('Failed to fetch Salesforce Lead fields');
+        }
+      } else if (data?.error) {
+        if (data.error.includes('Failed to fetch Lead fields') || data.error.includes('Session expired')) {
+          setSessionExpired(true);
+        } else {
+          toast.error(data.error);
+        }
       } else if (data?.fields) {
         setSalesforceFields(data.fields);
+        setSessionExpired(false);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -328,15 +345,32 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         </CardHeader>
         <CardContent>
           {config?.instance_url ? (
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-              <div>
-                <p className="font-medium">Connected to Salesforce</p>
-                <p className="text-sm text-muted-foreground">{config.instance_url}</p>
+            <div className="space-y-3">
+              {sessionExpired && (
+                <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">Salesforce session expired</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Your Salesforce OAuth session has expired or been revoked. Please reconnect to continue exporting leads.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={handleConnect} disabled={connecting}>
+                    {connecting ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Link2 className="mr-2 h-3 w-3" />}
+                    Reconnect
+                  </Button>
+                </div>
+              )}
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                <div>
+                  <p className="font-medium">Connected to Salesforce</p>
+                  <p className="text-sm text-muted-foreground">{config.instance_url}</p>
+                </div>
+                <Button variant="outline" size="sm" className="text-destructive" onClick={handleDisconnect}>
+                  <Unlink className="mr-2 h-4 w-4" />
+                  Disconnect
+                </Button>
               </div>
-              <Button variant="outline" size="sm" className="text-destructive" onClick={handleDisconnect}>
-                <Unlink className="mr-2 h-4 w-4" />
-                Disconnect
-              </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-4 py-8 border rounded-lg bg-muted/50">
