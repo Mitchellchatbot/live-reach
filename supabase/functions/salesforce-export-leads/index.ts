@@ -100,6 +100,7 @@ Deno.serve(async (req) => {
     }
 
     let exportType = "manual";
+    let callerUserId: string | null = null;
 
     // If called with service role key (automated export from extract-visitor-info), skip user ownership check
     if (_serviceRoleExport && token === supabaseServiceKey) {
@@ -117,51 +118,65 @@ Deno.serve(async (req) => {
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const callerUserId = userData.user.id;
+      callerUserId = userData.user.id;
 
-      // --- Authorization: Verify caller owns the property ---
-      const { data: property, error: propError } = await supabase
-        .from("properties")
-        .select("user_id")
-        .eq("id", propertyId)
-        .single();
+      if (propertyId !== 'all') {
+        // --- Authorization: Verify caller owns the property ---
+        const { data: property, error: propError } = await supabase
+          .from("properties")
+          .select("user_id")
+          .eq("id", propertyId)
+          .single();
 
-      if (propError || !property || property.user_id !== callerUserId) {
-        console.error("Forbidden: caller does not own property", propertyId);
+        if (propError || !property || property.user_id !== callerUserId) {
+          console.error("Forbidden: caller does not own property", propertyId);
+          return new Response(
+            JSON.stringify({ error: "Forbidden: you do not own this property" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+      // For 'all' properties, ownership is verified per-visitor below via RLS
+    }
+
+    // For 'all' properties mode, we handle settings per-visitor's property
+    // For single property, fetch settings once
+    let singleSettings: any = null;
+    if (propertyId !== 'all') {
+      const { data: settings, error: settingsError } = await supabase
+        .from("salesforce_settings")
+        .select("*")
+        .eq("property_id", propertyId)
+        .maybeSingle();
+
+      if (settingsError || !settings) {
         return new Response(
-          JSON.stringify({ error: "Forbidden: you do not own this property" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Salesforce settings not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-    }
 
-    // Fetch Salesforce settings
-    const { data: settings, error: settingsError } = await supabase
-      .from("salesforce_settings")
-      .select("*")
-      .eq("property_id", propertyId)
-      .single();
-
-    if (settingsError || !settings) {
-      return new Response(
-        JSON.stringify({ error: "Salesforce settings not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!settings.instance_url || !settings.access_token) {
-      return new Response(
-        JSON.stringify({ error: "Salesforce not connected. Please connect your account first." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!settings.instance_url || !settings.access_token) {
+        return new Response(
+          JSON.stringify({ error: "Salesforce not connected. Please connect your account first." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      singleSettings = settings;
     }
 
     // Fetch visitors
-    const { data: visitors, error: visitorsError } = await supabase
+    let visitorsQuery = supabase
       .from("visitors")
       .select("*")
-      .in("id", visitorIds)
-      .eq("property_id", propertyId); // Ensure visitors belong to this property
+      .in("id", visitorIds);
+    
+    // Only filter by property_id if not exporting across all properties
+    if (propertyId !== 'all') {
+      visitorsQuery = visitorsQuery.eq("property_id", propertyId);
+    }
+
+    const { data: visitors, error: visitorsError } = await visitorsQuery;
 
     if (visitorsError || !visitors || visitors.length === 0) {
       return new Response(
@@ -170,20 +185,41 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get field mappings
-    const fieldMappings = settings.field_mappings || {};
+    // Get field mappings from single settings or will be fetched per visitor
+    const fieldMappings = singleSettings ? (singleSettings.field_mappings || {}) : {};
     
-    // Decrypt the access token
-    let accessToken = await decryptToken(settings.access_token);
+    // Decrypt the access token if single settings
+    let accessToken = singleSettings ? await decryptToken(singleSettings.access_token) : '';
+    let currentSettings = singleSettings;
     let exported = 0;
     const errors: string[] = [];
 
     // Export each visitor as a Lead
     for (const visitor of visitors) {
+      // For 'all' properties mode, fetch settings per visitor's property
+      if (propertyId === 'all') {
+        const { data: visitorSettings } = await supabase
+          .from("salesforce_settings")
+          .select("*")
+          .eq("property_id", visitor.property_id)
+          .maybeSingle();
+
+        if (!visitorSettings || !visitorSettings.instance_url || !visitorSettings.access_token) {
+          errors.push(`No Salesforce connection for ${visitor.name || visitor.email || visitor.id}`);
+          continue;
+        }
+        currentSettings = visitorSettings;
+        accessToken = await decryptToken(visitorSettings.access_token);
+      }
+
+      const currentFieldMappings = propertyId === 'all' 
+        ? (currentSettings.field_mappings || {}) 
+        : fieldMappings;
+
       const leadData: Record<string, string> = {};
 
       // Map visitor fields to Salesforce Lead fields
-      for (const [sfField, visitorField] of Object.entries(fieldMappings)) {
+      for (const [sfField, visitorField] of Object.entries(currentFieldMappings)) {
         const value = visitor[visitorField as keyof typeof visitor];
         if (value !== null && value !== undefined) {
           leadData[sfField] = String(value);
@@ -199,16 +235,17 @@ Deno.serve(async (req) => {
       }
 
       // Add lead source with property name
+      const visitorPropertyId = propertyId === 'all' ? visitor.property_id : propertyId;
       const { data: propertyData } = await supabase
         .from("properties")
         .select("name")
-        .eq("id", propertyId)
-        .single();
+        .eq("id", visitorPropertyId)
+        .maybeSingle();
       leadData.LeadSource = propertyData?.name ? `Website Chat - ${propertyData.name}` : 'Website Chat';
 
       try {
         let response = await fetch(
-          `${settings.instance_url}/services/data/v59.0/sobjects/Lead`,
+          `${currentSettings.instance_url}/services/data/v59.0/sobjects/Lead`,
           {
             method: "POST",
             headers: {
@@ -220,12 +257,12 @@ Deno.serve(async (req) => {
         );
 
         // Handle token refresh if needed
-        if (response.status === 401 && settings.refresh_token) {
-          const newToken = await refreshAccessToken(supabase, settings);
+        if (response.status === 401 && currentSettings.refresh_token) {
+          const newToken = await refreshAccessToken(supabase, currentSettings);
           if (newToken) {
             accessToken = newToken;
             response = await fetch(
-              `${settings.instance_url}/services/data/v59.0/sobjects/Lead`,
+              `${currentSettings.instance_url}/services/data/v59.0/sobjects/Lead`,
               {
                 method: "POST",
                 headers: {
@@ -264,7 +301,7 @@ Deno.serve(async (req) => {
             await supabase
               .from("notification_logs")
               .insert({
-                property_id: propertyId,
+                property_id: visitorPropertyId,
                 conversation_id: conversation.id,
                 notification_type: "salesforce_export",
                 channel: "in_app",
@@ -285,7 +322,7 @@ Deno.serve(async (req) => {
           await supabase
             .from("notification_logs")
             .insert({
-              property_id: propertyId,
+              property_id: visitorPropertyId,
               notification_type: "export_failed",
               channel: "in_app",
               recipient: "system",
