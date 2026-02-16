@@ -21,7 +21,26 @@ export default function AgentDashboard() {
   const { conversationId: urlConversationId } = useParams();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(() => {
+    try {
+      const cached = sessionStorage.getItem('agent-selected-conversation');
+      if (cached && urlConversationId) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.id === urlConversationId) {
+          // Restore dates from JSON
+          return {
+            ...parsed,
+            createdAt: new Date(parsed.createdAt),
+            updatedAt: new Date(parsed.updatedAt),
+            visitor: { ...parsed.visitor, createdAt: new Date(parsed.visitor.createdAt) },
+            messages: parsed.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })),
+            lastMessage: parsed.lastMessage ? { ...parsed.lastMessage, timestamp: new Date(parsed.lastMessage.timestamp) } : undefined,
+          };
+        }
+      }
+    } catch {}
+    return null;
+  });
   const [agentStatus, setAgentStatus] = useState<'online' | 'offline' | 'away'>('online');
   const [agentProfile, setAgentProfile] = useState<{ id: string; name: string; email: string; avatar_url?: string } | null>(null);
   const [assignedPropertyIds, setAssignedPropertyIds] = useState<string[]>([]);
@@ -168,15 +187,25 @@ export default function AgentDashboard() {
   const activeCount = useMemo(() => conversations.filter(c => c.status !== 'closed').length, [conversations]);
   const closedCount = useMemo(() => conversations.filter(c => c.status === 'closed').length, [conversations]);
 
-  // Sync selected conversation from URL
+  // Sync selected conversation from URL & update cache when fresh data arrives
   useEffect(() => {
     if (urlConversationId && conversations.length > 0) {
       const conv = conversations.find(c => c.id === urlConversationId);
-      if (conv && conv.id !== selectedConversation?.id) {
+      if (conv) {
         setSelectedConversation(conv);
+        try { sessionStorage.setItem('agent-selected-conversation', JSON.stringify(conv)); } catch {}
       }
     }
   }, [urlConversationId, conversations]);
+
+  // Cache selected conversation on manual selection
+  useEffect(() => {
+    if (selectedConversation) {
+      try { sessionStorage.setItem('agent-selected-conversation', JSON.stringify(selectedConversation)); } catch {}
+    } else {
+      sessionStorage.removeItem('agent-selected-conversation');
+    }
+  }, [selectedConversation]);
 
   // Fetch conversations when assigned properties change
   useEffect(() => {
