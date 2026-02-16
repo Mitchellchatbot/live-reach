@@ -75,7 +75,7 @@ export function useInAppNotifications() {
         } else if (nt === 'property_added') {
           mapped = { type: 'property_added', title: 'Property Added', description: `${propName} was added to your account` };
         } else if (nt === 'export_success' || nt === 'salesforce_export') {
-          mapped = { type: 'export_success', title: 'Export Successful', description: `Lead exported to Salesforce from ${propName}` };
+          mapped = { type: 'export_success', title: 'Lead Exported', description: `${visitor} was exported to Salesforce from ${propName}` };
         } else if (nt === 'export_failed') {
           mapped = { type: 'export_failed', title: 'Export Failed', description: `Salesforce export failed for ${propName}` };
         } else if (ch === 'email' || nt === 'email') {

@@ -178,9 +178,21 @@ export const NotificationLog = ({ propertyId }: NotificationLogProps) => {
   const statusColor = (status: string) => {
     switch (status) {
       case 'sent': return 'default';
+      case 'exported': return 'default';
       case 'failed': return 'destructive';
       default: return 'secondary';
     }
+  };
+
+  const getStatusLabel = (log: LogEntry) => {
+    const nt = log.notification_type;
+    if ((nt === 'salesforce_export' || nt === 'export_success') && log.status === 'sent') {
+      return 'Exported';
+    }
+    if (nt === 'export_failed') {
+      return 'Failed';
+    }
+    return log.status;
   };
 
   if (loading) {
@@ -241,7 +253,7 @@ export const NotificationLog = ({ propertyId }: NotificationLogProps) => {
                       <div className="flex items-center gap-2 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{title}</p>
                         <Badge variant={statusColor(log.status)} className="text-[10px] capitalize shrink-0 h-4 px-1.5">
-                          {log.status}
+                          {getStatusLabel(log)}
                         </Badge>
                       </div>
                       <span className="text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0">
