@@ -1357,10 +1357,21 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   {/* Calendly Integration */}
                   <div className="border-t pt-6 mt-4">
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Link className="h-4 w-4 text-muted-foreground" />
-                        <Label>Calendly Booking Link</Label>
-                        <Badge variant="outline" className="text-xs">Optional</Badge>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Link className="h-4 w-4 text-muted-foreground" />
+                          <Label>Calendly Booking Link</Label>
+                          <Badge variant="outline" className="text-xs">Optional</Badge>
+                        </div>
+                        <Switch
+                          checked={!!settings.calendly_url}
+                          onCheckedChange={(checked) => {
+                            if (!checked) {
+                              setSettings({ ...settings, calendly_url: null });
+                            }
+                          }}
+                          disabled={!settings.calendly_url}
+                        />
                       </div>
                       <p className="text-sm text-muted-foreground">
                         After collecting contact info, the AI will offer visitors a link to book a call via Calendly.
