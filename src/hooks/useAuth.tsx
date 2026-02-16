@@ -26,26 +26,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [allRoles, setAllRoles] = useState<Set<string>>(new Set());
   const [hasAgentAccess, setHasAgentAccess] = useState(false);
 
   const [roleLoading, setRoleLoading] = useState(false);
   const lastRoleUserId = useRef<string | null>(null);
 
   const fetchUserRole = async (userId: string, force = false) => {
-    // Skip if we already have the role for this user (avoids reload on tab switch)
     if (!force && lastRoleUserId.current === userId && role !== null) return;
     
     setRoleLoading(true);
-    const { data } = await supabase
+
+    // Fetch ALL roles for this user (supports multi-role)
+    const { data: roles } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (data) {
-      setRole(data.role as AppRole);
-      lastRoleUserId.current = userId;
-    }
+      .eq('user_id', userId);
+
+    const roleSet = new Set((roles || []).map(r => r.role as string));
+    setAllRoles(roleSet);
+
+    // Pick highest-privilege as primary role
+    const primary: AppRole | null = roleSet.has('admin') ? 'admin'
+      : roleSet.has('client') ? 'client'
+      : roleSet.has('agent') ? 'agent'
+      : null;
+    setRole(primary);
+    lastRoleUserId.current = userId;
     
     // Check if user has accepted agent invitations
     const { data: agentData } = await supabase
@@ -63,18 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Listener for ONGOING auth changes (does NOT control initial loading)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
 
-        // Skip redundant updates on TOKEN_REFRESHED to prevent re-renders on tab switch
         if (event === 'TOKEN_REFRESHED') {
-          // Only update session ref for token freshness; skip state updates if user hasn't changed
           const newUserId = session?.user?.id ?? null;
           const currentUserId = lastRoleUserId.current;
           if (newUserId === currentUserId) {
-            // Silently update session without triggering re-renders
             return;
           }
         }
@@ -83,18 +86,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Defer to avoid deadlock
           setTimeout(() => {
             if (isMounted) fetchUserRole(session.user.id);
           }, 0);
         } else {
           setRole(null);
+          setAllRoles(new Set());
           lastRoleUserId.current = null;
         }
       }
     );
 
-    // INITIAL load - controls loading state
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -103,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Fetch role BEFORE setting loading to false
         if (session?.user) {
           await fetchUserRole(session.user.id, true);
         }
@@ -151,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    setAllRoles(new Set());
   };
 
   const refreshRole = async () => {
@@ -166,9 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         loading: loading || roleLoading,
         role,
-        isAdmin: role === 'admin',
-        isClient: role === 'client',
-        isAgent: role === 'agent',
+        isAdmin: allRoles.has('admin'),
+        isClient: allRoles.has('client'),
+        isAgent: allRoles.has('agent'),
         hasAgentAccess,
         refreshRole,
         signUp,
