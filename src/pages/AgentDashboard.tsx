@@ -11,11 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
-import { LogOut, MessageSquare, RefreshCw, Inbox, Archive } from 'lucide-react';
+import { LogOut, MessageSquare, RefreshCw, Inbox, Archive, ArrowLeft } from 'lucide-react';
 import type { Conversation, Message, Visitor } from '@/types/chat';
 
 export default function AgentDashboard() {
-  const { user, isAgent, loading, signOut, role } = useAuth();
+  const { user, isAgent, loading, signOut, role, isAdmin, isClient, hasAgentAccess } = useAuth();
   const { profile, updateAvatarUrl } = useUserProfile();
   const navigate = useNavigate();
   const { conversationId: urlConversationId } = useParams();
@@ -47,18 +47,18 @@ export default function AgentDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('active');
   
 
-  // Redirect if not agent
+  // Redirect if no agent access at all
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
-    } else if (!loading && !isAgent) {
+    } else if (!loading && !isAgent && !hasAgentAccess) {
       if (role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
       }
     }
-  }, [user, isAgent, loading, navigate, role]);
+  }, [user, isAgent, hasAgentAccess, loading, navigate, role]);
 
   // Fetch agent profile and assigned properties
   useEffect(() => {
@@ -92,10 +92,10 @@ export default function AgentDashboard() {
       }
     };
 
-    if (isAgent) {
+    if (isAgent || hasAgentAccess) {
       fetchAgentProfile();
     }
-  }, [user, isAgent]);
+  }, [user, isAgent, hasAgentAccess]);
 
   // Fetch conversations for assigned properties
   const fetchConversations = useCallback(async () => {
@@ -209,14 +209,14 @@ export default function AgentDashboard() {
 
   // Fetch conversations when assigned properties change
   useEffect(() => {
-    if (isAgent && assignedPropertyIds.length > 0) {
+    if ((isAgent || hasAgentAccess) && assignedPropertyIds.length > 0) {
       fetchConversations();
     }
-  }, [isAgent, assignedPropertyIds, fetchConversations]);
+  }, [isAgent, hasAgentAccess, assignedPropertyIds, fetchConversations]);
 
   // Real-time subscriptions for new conversations and messages
   useEffect(() => {
-    if (!isAgent || assignedPropertyIds.length === 0) return;
+    if ((!isAgent && !hasAgentAccess) || assignedPropertyIds.length === 0) return;
 
     // Subscribe to new conversations
     const conversationChannel = supabase
@@ -439,7 +439,10 @@ export default function AgentDashboard() {
     }
   };
 
-  if (loading || !isAgent) {
+  // Show admin/client portal access
+  const canSwitchToAdmin = isAdmin || isClient;
+
+  if (loading || (!isAgent && !hasAgentAccess)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -541,8 +544,14 @@ export default function AgentDashboard() {
           </div>
         </div>
 
-        {/* Logout Button */}
-        <div className="p-3 border-t border-border">
+        {/* Footer Buttons */}
+        <div className="p-3 border-t border-border space-y-2">
+          {canSwitchToAdmin && (
+            <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Admin Panel
+            </Button>
+          )}
           <Button variant="outline" className="w-full" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out

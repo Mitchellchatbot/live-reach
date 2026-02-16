@@ -12,6 +12,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isClient: boolean;
   isAgent: boolean;
+  hasAgentAccess: boolean; // true if user has accepted agent invitations (regardless of role)
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [hasAgentAccess, setHasAgentAccess] = useState(false);
 
   const [roleLoading, setRoleLoading] = useState(false);
   const lastRoleUserId = useRef<string | null>(null);
@@ -43,6 +45,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRole(data.role as AppRole);
       lastRoleUserId.current = userId;
     }
+    
+    // Check if user has accepted agent invitations
+    const { data: agentData } = await supabase
+      .from('agents')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('invitation_status', 'accepted')
+      .limit(1);
+    
+    setHasAgentAccess((agentData && agentData.length > 0) || false);
+    
     setRoleLoading(false);
   };
 
@@ -149,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: role === 'admin',
         isClient: role === 'client',
         isAgent: role === 'agent',
+        hasAgentAccess,
         signUp,
         signIn,
         signOut,
