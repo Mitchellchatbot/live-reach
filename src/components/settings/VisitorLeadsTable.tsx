@@ -13,7 +13,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Upload, Users, RefreshCw } from 'lucide-react';
+import { Loader2, Upload, Users, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { formatDistanceToNow } from 'date-fns';
 
 interface VisitorLeadsTableProps {
@@ -42,6 +53,7 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
   const [exporting, setExporting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [exportedIds, setExportedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchVisitors();
@@ -172,6 +184,43 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
     setExporting(false);
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    setDeleting(true);
+    try {
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id')
+        .in('visitor_id', Array.from(selectedIds));
+
+      if (convs && convs.length > 0) {
+        const convIds = convs.map(c => c.id);
+        await supabase.from('salesforce_exports').delete().in('conversation_id', convIds);
+        await supabase.from('messages').delete().in('conversation_id', convIds);
+        await supabase.from('conversations').delete().in('id', convIds);
+      }
+
+      const { error } = await supabase
+        .from('visitors')
+        .delete()
+        .in('id', Array.from(selectedIds));
+
+      if (error) {
+        console.error('Delete error:', error);
+        toast.error('Failed to delete selected leads');
+      } else {
+        toast.success(`Deleted ${selectedIds.size} lead(s)`);
+        setSelectedIds(new Set());
+        fetchVisitors();
+        fetchExportedVisitors();
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      toast.error('Failed to delete leads');
+    }
+    setDeleting(false);
+  };
+
   const getUrgencyBadge = (level: string | null) => {
     if (!level) return null;
     const variant = level.toLowerCase().includes('high') || level.toLowerCase().includes('urgent')
@@ -205,10 +254,40 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
               View and export visitor data to Salesforce
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2" data-tour="salesforce-export-actions">
+           <div className="flex items-center gap-2" data-tour="salesforce-export-actions">
             <Button variant="ghost" size="sm" onClick={fetchVisitors}>
               <RefreshCw className="h-4 w-4" />
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  disabled={selectedIds.size === 0 || deleting}
+                >
+                  {deleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Delete ({selectedIds.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete selected leads?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete {selectedIds.size} lead(s) and all their associated conversations and messages. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteSelected}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button 
               onClick={handleExport} 
               disabled={selectedIds.size === 0 || exporting}
