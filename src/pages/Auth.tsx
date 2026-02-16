@@ -249,15 +249,27 @@ export default function Auth() {
     setIsLoading(false);
 
     if (error) {
-      const errorMessage = error.message.includes('already registered')
-        ? 'This email is already registered. Please login instead.'
-        : error.message;
+      const isAlreadyRegistered = error.message.includes('already registered');
       
-      toast({
-        title: 'Signup Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      if (isAlreadyRegistered && inviteToken) {
+        // Auto-switch to login tab for existing users accepting an invitation
+        setLoginEmail(signupEmail);
+        setActiveTab('login');
+        toast({
+          title: 'Account Found',
+          description: 'You already have an account. Please sign in to accept the invitation.',
+        });
+      } else {
+        const errorMessage = isAlreadyRegistered
+          ? 'This email is already registered. Please login instead.'
+          : error.message;
+        
+        toast({
+          title: 'Signup Failed',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     } else {
       // Send welcome email (fire and forget – don't block signup)
       supabase.functions.invoke('send-welcome-email', {
