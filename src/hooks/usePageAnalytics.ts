@@ -11,8 +11,15 @@ interface PageAnalyticsData {
   conversion_rate: number;
 }
 
+interface DailyTrendData {
+  date: string;
+  chat_opens: number;
+  human_escalations: number;
+}
+
 interface UsePageAnalyticsResult {
   data: PageAnalyticsData[];
+  dailyTrends: DailyTrendData[];
   totals: {
     total_chat_opens: number;
     total_human_escalations: number;
@@ -65,7 +72,7 @@ export const usePageAnalytics = (propertyId?: string): UsePageAnalyticsResult =>
   }, [propertyId]);
 
   // Filter and aggregate data based on time range
-  const { data, totals } = useMemo(() => {
+  const { data, totals, dailyTrends } = useMemo(() => {
     const now = new Date();
     let cutoffDate: Date | null = null;
 
@@ -82,22 +89,23 @@ export const usePageAnalytics = (propertyId?: string): UsePageAnalyticsResult =>
 
     // Aggregate by URL
     const urlMap = new Map<string, { page_title: string | null; chat_opens: number; human_escalations: number }>();
+    // Aggregate by day
+    const dayMap = new Map<string, { chat_opens: number; human_escalations: number }>();
 
     for (const event of filteredEvents) {
+      // URL aggregation
       const existing = urlMap.get(event.url) || { page_title: event.page_title, chat_opens: 0, human_escalations: 0 };
-      
-      if (event.event_type === 'chat_open') {
-        existing.chat_opens++;
-      } else if (event.event_type === 'human_escalation') {
-        existing.human_escalations++;
-      }
-      
-      // Update page_title if we have a newer one
-      if (event.page_title && !existing.page_title) {
-        existing.page_title = event.page_title;
-      }
-      
+      if (event.event_type === 'chat_open') existing.chat_opens++;
+      else if (event.event_type === 'human_escalation') existing.human_escalations++;
+      if (event.page_title && !existing.page_title) existing.page_title = event.page_title;
       urlMap.set(event.url, existing);
+
+      // Daily aggregation
+      const day = event.created_at.slice(0, 10); // YYYY-MM-DD
+      const dayEntry = dayMap.get(day) || { chat_opens: 0, human_escalations: 0 };
+      if (event.event_type === 'chat_open') dayEntry.chat_opens++;
+      else if (event.event_type === 'human_escalation') dayEntry.human_escalations++;
+      dayMap.set(day, dayEntry);
     }
 
     // Convert to array and calculate conversion rates
@@ -113,6 +121,11 @@ export const usePageAnalytics = (propertyId?: string): UsePageAnalyticsResult =>
       }))
       .sort((a, b) => b.human_escalations - a.human_escalations);
 
+    // Daily trends sorted by date
+    const dailyTrends: DailyTrendData[] = Array.from(dayMap.entries())
+      .map(([date, stats]) => ({ date, ...stats }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     // Calculate totals
     const total_chat_opens = aggregatedData.reduce((sum, d) => sum + d.chat_opens, 0);
     const total_human_escalations = aggregatedData.reduce((sum, d) => sum + d.human_escalations, 0);
@@ -122,6 +135,7 @@ export const usePageAnalytics = (propertyId?: string): UsePageAnalyticsResult =>
 
     return {
       data: aggregatedData,
+      dailyTrends,
       totals: {
         total_chat_opens,
         total_human_escalations,
@@ -132,6 +146,7 @@ export const usePageAnalytics = (propertyId?: string): UsePageAnalyticsResult =>
 
   return {
     data,
+    dailyTrends,
     totals,
     loading,
     error,
