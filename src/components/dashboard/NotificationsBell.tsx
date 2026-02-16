@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight, Mail, MailX, Send, XCircle, UploadCloud, UserPlus } from 'lucide-react';
+import { Bell, MessageSquare, AlertTriangle, Phone, Building2, ChevronRight, Mail, MailX, Send, XCircle, UploadCloud, UserPlus, UserCheck, Wifi, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useInAppNotifications, InAppNotification, NotificationType } from '@/hooks/useInAppNotifications';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,6 +20,10 @@ const iconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: 
   slack_failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
   export_success: { icon: UploadCloud, color: 'text-green-500', bg: 'bg-green-500/10' },
   export_failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
+  invitation_sent: { icon: UserPlus, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+  invitation_accepted: { icon: UserCheck, color: 'text-green-500', bg: 'bg-green-500/10' },
+  agent_online: { icon: Wifi, color: 'text-green-500', bg: 'bg-green-500/10' },
+  agent_offline: { icon: WifiOff, color: 'text-muted-foreground', bg: 'bg-muted/50' },
 };
 
 interface NotificationsBellProps {

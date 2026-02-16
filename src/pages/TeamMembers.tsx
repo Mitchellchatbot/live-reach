@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { cn } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader, HeaderButton } from '@/components/dashboard/PageHeader';
@@ -95,6 +96,27 @@ const TeamMembers = () => {
   useEffect(() => {
     fetchAgents();
     fetchLinkedAIAgents();
+  }, [user]);
+
+  // Real-time agent status updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('team-agent-status')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'agents' },
+        (payload) => {
+          const updated = payload.new as any;
+          setAgents(prev => prev.map(a => 
+            a.id === updated.id ? { ...a, status: updated.status, invitation_status: updated.invitation_status || a.invitation_status } : a
+          ));
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const fetchLinkedAIAgents = async () => {
@@ -245,6 +267,33 @@ const TeamMembers = () => {
         console.error('Failed to send email:', emailError);
         const message = emailError instanceof Error ? emailError.message : String(emailError);
         toast.error(`Email failed to send: ${message}`);
+      }
+
+      // Log invitation_sent notification
+      if (newAgent && user) {
+        const propId = selectedPropertyIds[0] || null;
+        // We need at least one property_id for the notification log; use first assigned or fetch one
+        let notifPropertyId = propId;
+        if (!notifPropertyId) {
+          const { data: firstProp } = await supabase
+            .from('properties')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle();
+          notifPropertyId = firstProp?.id || null;
+        }
+        if (notifPropertyId) {
+          await supabase.from('notification_logs').insert({
+            property_id: notifPropertyId,
+            notification_type: 'invitation_sent',
+            channel: 'in_app',
+            recipient: 'system',
+            recipient_type: 'system',
+            status: 'sent',
+            visitor_name: name,
+          });
+        }
       }
 
       setIsInviteDialogOpen(false);
@@ -688,7 +737,8 @@ const TeamMembers = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Agent</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Activity</TableHead>
+                          <TableHead>Invitation</TableHead>
                           <TableHead>Assigned Properties</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -726,6 +776,15 @@ const TeamMembers = () => {
                                   <p className="font-medium">{agent.name}</p>
                                   <p className="text-sm text-muted-foreground">{agent.email}</p>
                                 </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className={cn(
+                                  "w-2.5 h-2.5 rounded-full",
+                                  agent.status === 'online' ? "bg-green-500" : agent.status === 'away' ? "bg-yellow-500" : "bg-muted-foreground/40"
+                                )} />
+                                <span className="text-sm capitalize text-muted-foreground">{agent.status}</span>
                               </div>
                             </TableCell>
                             <TableCell>
@@ -861,7 +920,13 @@ const TeamMembers = () => {
                             <p className="font-medium text-sm truncate">{agent.name}</p>
                             <p className="text-xs text-muted-foreground truncate">{agent.email}</p>
                           </div>
-                          {getInvitationBadge(agent.invitation_status)}
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "w-2 h-2 rounded-full",
+                              agent.status === 'online' ? "bg-green-500" : agent.status === 'away' ? "bg-yellow-500" : "bg-muted-foreground/40"
+                            )} />
+                            {getInvitationBadge(agent.invitation_status)}
+                          </div>
                         </div>
 
                         {/* Properties + Actions row */}
