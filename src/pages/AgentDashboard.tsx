@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
+import { triggerSalesforceAutoExport } from '@/hooks/useConversations';
 import { ChatPanel } from '@/components/dashboard/ChatPanel';
 import { ConversationList } from '@/components/dashboard/ConversationList';
 import { Button } from '@/components/ui/button';
@@ -275,6 +276,9 @@ export default function AgentDashboard() {
         : c
     ));
 
+    // Fire-and-forget: auto-export on escalation
+    triggerSalesforceAutoExport(selectedConversation.id, 'auto_export_on_escalation');
+
     // Update conversation status to active if pending
     if (selectedConversation.status === 'pending') {
       await supabase
@@ -339,6 +343,9 @@ export default function AgentDashboard() {
     setConversations(prev => prev.map(c => 
       c.id === selectedConversation.id ? { ...c, status: 'closed' as const } : c
     ));
+
+    // Fire-and-forget: auto-export on conversation end
+    triggerSalesforceAutoExport(selectedConversation.id, 'auto_export_on_conversation_end');
   };
 
   // AI toggle for conversations - use persisted value from database
@@ -369,6 +376,9 @@ export default function AgentDashboard() {
           ? { ...c, ai_enabled: !newValue } as any
           : c
       ));
+    } else if (!newValue) {
+      // AI disabled = escalation to human
+      triggerSalesforceAutoExport(selectedConversation.id, 'auto_export_on_escalation');
     }
   };
 

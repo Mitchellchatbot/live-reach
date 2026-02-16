@@ -77,6 +77,42 @@ const QUERY_KEYS = {
     ['conversations', userId, propertyId || 'all', agentId || 'none'] as const,
 };
 
+// Fire-and-forget Salesforce auto-export for a given trigger type
+export const triggerSalesforceAutoExport = async (
+  conversationId: string,
+  triggerField: 'auto_export_on_escalation' | 'auto_export_on_conversation_end'
+) => {
+  try {
+    // Get conversation to find property and visitor
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('property_id, visitor_id')
+      .eq('id', conversationId)
+      .single();
+    if (!conv) return;
+
+    // Check Salesforce settings for this property
+    const { data: sfSettings } = await supabase
+      .from('salesforce_settings')
+      .select('enabled, instance_url, access_token, auto_export_on_escalation, auto_export_on_conversation_end')
+      .eq('property_id', conv.property_id)
+      .maybeSingle();
+
+    if (!sfSettings?.enabled || !sfSettings?.instance_url || !sfSettings?.access_token) return;
+    if (!sfSettings[triggerField]) return;
+
+    console.log(`Salesforce auto-export triggered (${triggerField}) for conversation`, conversationId);
+    await supabase.functions.invoke('salesforce-export-leads', {
+      body: {
+        propertyId: conv.property_id,
+        visitorIds: [conv.visitor_id],
+      },
+    });
+  } catch (err) {
+    console.error('Salesforce auto-export error:', err);
+  }
+};
+
 export const useConversations = (options: UseConversationsOptions = {}) => {
   const { selectedPropertyId, workspaceOwnerId, agentId } = options;
   const { user } = useAuth();
@@ -288,6 +324,8 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         : c
       )
     );
+    // Fire-and-forget: auto-export on escalation (human took over)
+    triggerSalesforceAutoExport(conversationId, 'auto_export_on_escalation');
 
     return data;
   };
@@ -316,6 +354,9 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       prev.map(c => c.id === conversationId ? { ...c, status: 'closed' as const } : c)
     );
 
+    // Fire-and-forget: auto-export on conversation end
+    triggerSalesforceAutoExport(conversationId, 'auto_export_on_conversation_end');
+
     return true;
   };
 
@@ -336,6 +377,9 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     updateConversationsCache(prev =>
       prev.map(c => conversationIds.includes(c.id) ? { ...c, status: 'closed' as const } : c)
     );
+
+    // Fire-and-forget: auto-export on conversation end for each closed conversation
+    conversationIds.forEach(id => triggerSalesforceAutoExport(id, 'auto_export_on_conversation_end'));
     
     return true;
   };
@@ -503,6 +547,12 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     updateConversationsCache(prev => 
       prev.map(c => c.id === conversationId ? { ...c, ai_enabled: enabled } : c)
     );
+
+    // If AI was just disabled (escalation to human), trigger auto-export
+    if (!enabled) {
+      triggerSalesforceAutoExport(conversationId, 'auto_export_on_escalation');
+    }
+
     return true;
   };
 

@@ -136,6 +136,46 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Fire-and-forget: auto-export closed conversations to Salesforce
+    const closedConvIds = (updated ?? []).map((c: any) => c.id);
+    if (closedConvIds.length > 0) {
+      for (const convId of closedConvIds) {
+        try {
+          // Get conversation details
+          const { data: conv } = await serviceClient
+            .from("conversations")
+            .select("property_id, visitor_id")
+            .eq("id", convId)
+            .single();
+          if (!conv) continue;
+
+          const { data: sfSettings } = await serviceClient
+            .from("salesforce_settings")
+            .select("enabled, instance_url, access_token, auto_export_on_conversation_end")
+            .eq("property_id", conv.property_id)
+            .maybeSingle();
+
+          if (sfSettings?.enabled && sfSettings?.auto_export_on_conversation_end && sfSettings?.instance_url && sfSettings?.access_token) {
+            console.log("Auto-exporting stale-closed conversation", convId, "to Salesforce");
+            fetch(`${supabaseUrl}/functions/v1/salesforce-export-leads`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${serviceKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                propertyId: conv.property_id,
+                visitorIds: [conv.visitor_id],
+                _serviceRoleExport: true,
+              }),
+            }).catch((e: any) => console.error("SF stale-close auto-export error:", e));
+          }
+        } catch (sfErr) {
+          console.error("Error checking SF auto-export for stale conv:", sfErr);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,
