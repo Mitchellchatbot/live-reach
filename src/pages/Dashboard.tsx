@@ -142,6 +142,20 @@ const DashboardContent = () => {
 
   // Persist selected conversation in URL search params so it survives tab switches
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle deep link from Slack (?conversation=<id>) → normalize to ?c=<id>
+  useEffect(() => {
+    const deepLinkId = searchParams.get('conversation');
+    if (deepLinkId) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set('c', deepLinkId);
+        next.delete('conversation');
+        return next;
+      }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const selectedConversationId = searchParams.get('c') || null;
   const setSelectedConversationId = useCallback((id: string | null) => {
     setSearchParams(prev => {
