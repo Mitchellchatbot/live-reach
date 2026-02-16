@@ -264,7 +264,7 @@ export default function AgentDashboard() {
 
   // Update agent status
   const updateAgentStatus = async (status: 'online' | 'offline' | 'away') => {
-    if (!user) return;
+    if (!user || !agentProfile) return;
 
     const { error } = await supabase
       .from('agents')
@@ -273,6 +273,22 @@ export default function AgentDashboard() {
 
     if (!error) {
       setAgentStatus(status);
+      
+      // Log status change notification (only for online/offline, not away)
+      if (status === 'online' || status === 'offline') {
+        const propId = assignedPropertyIds[0];
+        if (propId) {
+          supabase.from('notification_logs').insert({
+            property_id: propId,
+            notification_type: status === 'online' ? 'agent_online' : 'agent_offline',
+            channel: 'in_app',
+            recipient: 'system',
+            recipient_type: 'system',
+            status: 'sent',
+            visitor_name: agentProfile.name,
+          }).then(() => {});
+        }
+      }
     }
   };
 

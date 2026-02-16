@@ -13,7 +13,11 @@ export type NotificationType =
   | 'slack_sent'
   | 'slack_failed'
   | 'export_success'
-  | 'export_failed';
+  | 'export_failed'
+  | 'invitation_sent'
+  | 'invitation_accepted'
+  | 'agent_online'
+  | 'agent_offline';
 
 export interface InAppNotification {
   id: string;
@@ -78,6 +82,14 @@ export function useInAppNotifications() {
           mapped = { type: 'export_success', title: 'Lead Exported', description: `${visitor} was exported to Salesforce from ${propName}` };
         } else if (nt === 'export_failed') {
           mapped = { type: 'export_failed', title: 'Export Failed', description: `Salesforce export failed for ${propName}` };
+        } else if (nt === 'invitation_sent') {
+          mapped = { type: 'invitation_sent', title: 'Invitation Sent', description: `Invitation to ${visitor} was sent` };
+        } else if (nt === 'invitation_accepted') {
+          mapped = { type: 'invitation_accepted', title: 'Invitation Accepted', description: `${visitor} accepted your invitation` };
+        } else if (nt === 'agent_online') {
+          mapped = { type: 'agent_online', title: 'Agent Online', description: `${visitor} is now online` };
+        } else if (nt === 'agent_offline') {
+          mapped = { type: 'agent_offline', title: 'Agent Offline', description: `${visitor} is now offline` };
         } else if (ch === 'email' || nt === 'email') {
           mapped = failed
             ? { type: 'email_failed', title: 'Email Failed', description: `Email notification failed for ${propName}` }
