@@ -30,13 +30,7 @@ export function useSessionTimeout() {
     const timeoutMs = timeoutMinutesRef.current * 60 * 1000;
     const warningMs = timeoutMs - WARNING_BEFORE_SECONDS * 1000;
 
-    if (warningMs > 0) {
-      warningRef.current = setTimeout(() => {
-        toast.warning('Your session will expire in 1 minute due to inactivity.', {
-          duration: 10000,
-        });
-      }, warningMs);
-    }
+    // Warning toast removed – was too intrusive
 
     timeoutRef.current = setTimeout(handleLogout, timeoutMs);
   }, [user, clearTimers, handleLogout]);
