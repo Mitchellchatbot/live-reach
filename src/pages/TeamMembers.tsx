@@ -237,7 +237,7 @@ const TeamMembers = () => {
         .insert({
           name,
           email,
-          user_id: existingProfile?.user_id || user.id,
+          user_id: existingProfile?.user_id || crypto.randomUUID(),
           invited_by: user.id,
           invitation_status: 'pending',
           status: 'offline',
