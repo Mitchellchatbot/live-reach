@@ -178,10 +178,19 @@ Deno.serve(async (req) => {
 
     const { data: visitors, error: visitorsError } = await visitorsQuery;
 
-    if (visitorsError || !visitors || visitors.length === 0) {
+    if (visitorsError) {
+      console.error("Error fetching visitors:", visitorsError);
       return new Response(
-        JSON.stringify({ error: "No visitors found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Failed to fetch visitors", exported: 0, total: 0 }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!visitors || visitors.length === 0) {
+      console.log("No visitors found for IDs:", visitorIds);
+      return new Response(
+        JSON.stringify({ exported: 0, total: 0, errors: ["No matching visitors found. They may have been deleted."] }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

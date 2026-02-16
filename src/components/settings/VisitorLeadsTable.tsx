@@ -172,8 +172,16 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
         } else {
           toast.error(data.error);
         }
+      } else if (data?.exported === 0 && data?.errors?.length > 0) {
+        toast.error(data.errors[0]);
+        fetchVisitors();
       } else {
-        toast.success(`Successfully exported ${data?.exported || selectedIds.size} leads to Salesforce`);
+        const exportedCount = data?.exported || selectedIds.size;
+        if (data?.errors?.length > 0) {
+          toast.warning(`Exported ${exportedCount} leads, but ${data.errors.length} failed`);
+        } else {
+          toast.success(`Successfully exported ${exportedCount} leads to Salesforce`);
+        }
         setSelectedIds(new Set());
         fetchExportedVisitors();
       }
