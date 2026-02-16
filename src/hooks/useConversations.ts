@@ -529,18 +529,20 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
               return prev;
             }
             
-            return prev.map(c => 
-              c.id === newMessage.conversation_id
-                ? { 
-                    ...c, 
-                    messages: [...(c.messages || []), {
-                      ...newMessage,
-                      sender_type: newMessage.sender_type as 'agent' | 'visitor',
-                    }],
-                    updated_at: newMessage.created_at,
-                  }
-                : c
-            );
+            return prev.map(c => {
+              if (c.id !== newMessage.conversation_id) return c;
+              // Deduplicate: skip if message already exists (e.g. from optimistic update)
+              const alreadyExists = (c.messages || []).some(m => m.id === newMessage.id);
+              if (alreadyExists) return { ...c, updated_at: newMessage.created_at };
+              return { 
+                ...c, 
+                messages: [...(c.messages || []), {
+                  ...newMessage,
+                  sender_type: newMessage.sender_type as 'agent' | 'visitor',
+                }],
+                updated_at: newMessage.created_at,
+              };
+            });
           });
         }
       )
