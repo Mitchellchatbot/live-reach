@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Upload, Users, RefreshCw, Trash2 } from 'lucide-react';
+import { Loader2, Upload, Users, RefreshCw, Trash2, Download } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -229,6 +229,42 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
     setDeleting(false);
   };
 
+  const handleExportCsv = () => {
+    const rows = selectedIds.size > 0
+      ? visitors.filter(v => selectedIds.has(v.id))
+      : visitors;
+
+    if (rows.length === 0) {
+      toast.error('No leads to export');
+      return;
+    }
+
+    const escape = (val: string | null | undefined) => {
+      if (!val) return '';
+      const s = val.replace(/"/g, '""');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+    };
+
+    const headers = ['Name','Email','Phone','Location','Treatment Interest','Drug of Choice','Insurance Info','Urgency Level','GCLID','Status','Date'];
+    const csvRows = rows.map(v => [
+      escape(v.name), escape(v.email), escape(v.phone), escape(v.location),
+      escape(v.treatment_interest), escape(v.drug_of_choice), escape(v.insurance_info),
+      escape(v.urgency_level), escape(v.gclid),
+      exportedIds.has(v.id) ? 'Exported' : 'New',
+      new Date(v.created_at).toLocaleDateString(),
+    ].join(','));
+
+    const csv = [headers.join(','), ...csvRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `visitor-leads-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rows.length} lead(s) to CSV`);
+  };
+
   const getUrgencyBadge = (level: string | null) => {
     if (!level) return null;
     const variant = level.toLowerCase().includes('high') || level.toLowerCase().includes('urgent')
@@ -265,6 +301,10 @@ export const VisitorLeadsTable = ({ propertyId, allPropertyIds }: VisitorLeadsTa
            <div className="flex items-center gap-2" data-tour="salesforce-export-actions">
             <Button variant="ghost" size="sm" onClick={fetchVisitors}>
               <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportCsv}>
+              <Download className="mr-2 h-4 w-4" />
+              CSV {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
