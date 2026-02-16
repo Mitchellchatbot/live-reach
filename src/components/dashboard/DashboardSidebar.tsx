@@ -157,7 +157,7 @@ export const DashboardSidebar = ({
   const { collapsed, setCollapsed } = useSidebarState();
   const navigate = useNavigate();
   const { profile, updateAvatarUrl } = useUserProfile();
-  const { signOut, user, isClient, isAgent, isAdmin } = useAuth();
+  const { signOut, user, isClient, isAgent, isAdmin, hasAgentAccess } = useAuth();
   const { isAgentMode, workspaces } = useWorkspace();
   const isMobile = useIsMobile();
 
@@ -329,6 +329,13 @@ export const DashboardSidebar = ({
             <SidebarSection title="Dev" collapsed={!forMobile && collapsed}>
               <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
               <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
+            </SidebarSection>
+          )}
+
+          {/* Agent Portal link for admin/client users who also have agent access */}
+          {showAdminItems && hasAgentAccess && (
+            <SidebarSection title="Agent" collapsed={!forMobile && collapsed}>
+              <SidebarItem to="/conversations" icon={Inbox} label="Agent Portal" collapsed={!forMobile && collapsed} iconColor="#F97316" />
             </SidebarSection>
           )}
         </nav>

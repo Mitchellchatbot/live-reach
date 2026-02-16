@@ -98,9 +98,9 @@ const RequireClient = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Route guard for agents only
+// Route guard for agents (or users with agent access)
 const RequireAgent = ({ children }: { children: React.ReactNode }) => {
-  const { user, isAgent, loading } = useAuth();
+  const { user, isAgent, hasAgentAccess, loading } = useAuth();
   
   if (loading) return <PageLoader />;
   
@@ -108,7 +108,8 @@ const RequireAgent = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  if (!isAgent) {
+  // Allow if role is agent OR user has accepted agent invitations
+  if (!isAgent && !hasAgentAccess) {
     return <Navigate to="/dashboard" replace />;
   }
   
