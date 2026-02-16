@@ -93,17 +93,27 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
 
       if (error) {
         console.error('Error fetching Salesforce fields:', error);
-        // Check if it's a session expiry error
+        // Try to read the response body for session expiry details
+        let bodyError = '';
+        try {
+          if (error.context?.body) {
+            bodyError = typeof error.context.body === 'string' ? error.context.body : JSON.stringify(error.context.body);
+          } else if (typeof (error as any).json === 'function') {
+            const parsed = await (error as any).json();
+            bodyError = parsed?.error || '';
+          }
+        } catch { /* ignore parse errors */ }
+        
         const errorMsg = typeof error === 'object' && error.message ? error.message : String(error);
-        const dataError = data?.error || '';
-        if (errorMsg.includes('Session expired') || errorMsg.includes('INVALID_SESSION_ID') || 
-            dataError.includes('Failed to fetch Lead fields') || dataError.includes('Session expired')) {
+        const combinedError = `${errorMsg} ${bodyError} ${data?.error || ''}`;
+        
+        if (combinedError.includes('Session expired') || combinedError.includes('INVALID_SESSION_ID') || combinedError.includes('non-2xx')) {
           setSessionExpired(true);
         } else {
           toast.error('Failed to fetch Salesforce Lead fields');
         }
       } else if (data?.error) {
-        if (data.error.includes('Failed to fetch Lead fields') || data.error.includes('Session expired')) {
+        if (data.error.includes('Session expired') || data.error.includes('INVALID_SESSION_ID')) {
           setSessionExpired(true);
         } else {
           toast.error(data.error);
