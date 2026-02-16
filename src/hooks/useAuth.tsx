@@ -32,10 +32,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roleLoading, setRoleLoading] = useState(false);
   const lastRoleUserId = useRef<string | null>(null);
 
+  // Auto-accept any pending agent invitations matching the user's email
+  const autoAcceptPendingInvitations = async (userId: string, userEmail: string) => {
+    try {
+      // Find pending invitations for this email that aren't linked to this user yet
+      const { data: pendingAgents } = await supabase
+        .from('agents')
+        .select('id, invitation_expires_at')
+        .eq('email', userEmail)
+        .eq('invitation_status', 'pending');
+
+      if (!pendingAgents || pendingAgents.length === 0) return false;
+
+      let accepted = false;
+      for (const agent of pendingAgents) {
+        // Skip expired invitations
+        if (agent.invitation_expires_at && new Date(agent.invitation_expires_at) < new Date()) {
+          continue;
+        }
+
+        const { error } = await supabase
+          .from('agents')
+          .update({
+            user_id: userId,
+            invitation_status: 'accepted',
+            invitation_token: null,
+            invitation_expires_at: null,
+          })
+          .eq('id', agent.id);
+
+        if (!error) accepted = true;
+      }
+
+      if (accepted) {
+        // Ensure user has the agent role
+        await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'agent' })
+          .select()
+          .maybeSingle();
+      }
+
+      return accepted;
+    } catch (err) {
+      console.error('Error auto-accepting invitations:', err);
+      return false;
+    }
+  };
+
   const fetchUserRole = async (userId: string, force = false) => {
     if (!force && lastRoleUserId.current === userId && role !== null) return;
     
     setRoleLoading(true);
+
+    // Get user email for invitation matching
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const userEmail = currentUser?.email;
+
+    // Auto-accept any pending invitations for this email
+    if (userEmail) {
+      await autoAcceptPendingInvitations(userId, userEmail);
+    }
 
     // Fetch ALL roles for this user (supports multi-role)
     const { data: roles } = await supabase
