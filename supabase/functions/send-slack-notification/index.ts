@@ -157,12 +157,26 @@ Deno.serve(async (req) => {
       } as any);
     }
 
+    // Add a "View Conversation" button
+    const appBaseUrl = "https://live-reach.lovable.app";
+    blocks.push({
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: { type: "plain_text", text: "View Conversation", emoji: true },
+          url: `${appBaseUrl}/dashboard?conversation=${conversationId}`,
+          style: "primary",
+        },
+      ],
+    } as any);
+
     blocks.push({
       type: "context",
       elements: [
         {
           type: "mrkdwn",
-          text: `Care Assist · Conversation ID: \`${conversationId.slice(0, 8)}…\``,
+          text: `ScaledBot · Conversation ID: \`${conversationId.slice(0, 8)}…\``,
         },
       ],
     } as any);
