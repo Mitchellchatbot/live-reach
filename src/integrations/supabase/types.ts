@@ -513,6 +513,7 @@ export type Database = {
           domain: string
           escalation_keywords: string[] | null
           greeting: string | null
+          human_typos_enabled: boolean | null
           id: string
           max_ai_messages_before_escalation: number | null
           name: string
@@ -547,6 +548,7 @@ export type Database = {
           domain: string
           escalation_keywords?: string[] | null
           greeting?: string | null
+          human_typos_enabled?: boolean | null
           id?: string
           max_ai_messages_before_escalation?: number | null
           name: string
@@ -581,6 +583,7 @@ export type Database = {
           domain?: string
           escalation_keywords?: string[] | null
           greeting?: string | null
+          human_typos_enabled?: boolean | null
           id?: string
           max_ai_messages_before_escalation?: number | null
           name?: string
