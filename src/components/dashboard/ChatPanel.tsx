@@ -378,7 +378,7 @@ export const ChatPanel = ({
 
   return <div className="flex h-full bg-gradient-subtle">
       {/* Chat Area */}
-      <div ref={chatAreaRef} className="flex-1 flex flex-col min-w-0">
+      <div ref={chatAreaRef} className="flex-1 flex flex-col min-w-0 relative">
         
         {/* AI Toggle Header */}
         {onToggleAI && (
@@ -424,8 +424,39 @@ export const ChatPanel = ({
           {messages.map(msg => <MessageBubble key={msg.id} message={msg} isAgent={msg.senderType === 'agent'} />)}
         </div>
 
-        {/* Input - Rounder styling */}
-        <div className="p-4 border-t border-border/30 glass-subtle rounded-b-2xl relative">
+        {/* Shortcuts popup - positioned above input area */}
+        {showShortcuts && !(isAIEnabled && status !== 'closed') && filteredShortcuts.length > 0 && (
+          <div
+            ref={shortcutMenuRef}
+            className="absolute bottom-[72px] left-4 right-4 max-h-64 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg z-50"
+          >
+            <div className="px-3 py-2 border-b border-border/50">
+              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Slash className="h-3 w-3" />
+                Shortcuts
+              </p>
+            </div>
+            {filteredShortcuts.map((shortcut, idx) => (
+              <button
+                key={shortcut.id}
+                className={cn(
+                  "w-full text-left px-3 py-2.5 text-sm transition-colors flex items-start gap-2 border-b border-border/20 last:border-0",
+                  idx === selectedShortcutIndex
+                    ? "bg-accent text-accent-foreground"
+                    : "hover:bg-muted/50 text-foreground"
+                )}
+                onMouseEnter={() => setSelectedShortcutIndex(idx)}
+                onClick={() => selectShortcut(shortcut)}
+              >
+                <span className="text-xs font-mono text-muted-foreground mt-0.5 shrink-0 w-5">{shortcut.id}</span>
+                <span className="truncate">{shortcut.text}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="p-4 border-t border-border/30 glass-subtle rounded-b-2xl">
           {/* AI Mode Warning Banner */}
           {isAIEnabled && status !== 'closed' && (
             <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
@@ -436,37 +467,6 @@ export const ChatPanel = ({
                 <p className="text-sm font-medium text-amber-700 dark:text-amber-300">AI is handling this conversation</p>
                 <p className="text-xs text-amber-600/80 dark:text-amber-400/80">Turn off AI mode to respond manually</p>
               </div>
-            </div>
-          )}
-
-          {/* Shortcuts popup */}
-          {showShortcuts && !isAIEnabled && filteredShortcuts.length > 0 && (
-            <div
-              ref={shortcutMenuRef}
-              className="absolute bottom-full left-4 right-4 mb-2 max-h-64 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg z-50"
-            >
-              <div className="px-3 py-2 border-b border-border/50">
-                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Slash className="h-3 w-3" />
-                  Shortcuts
-                </p>
-              </div>
-              {filteredShortcuts.map((shortcut, idx) => (
-                <button
-                  key={shortcut.id}
-                  className={cn(
-                    "w-full text-left px-3 py-2.5 text-sm transition-colors flex items-start gap-2 border-b border-border/20 last:border-0",
-                    idx === selectedShortcutIndex
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-muted/50 text-foreground"
-                  )}
-                  onMouseEnter={() => setSelectedShortcutIndex(idx)}
-                  onClick={() => selectShortcut(shortcut)}
-                >
-                  <span className="text-xs font-mono text-muted-foreground mt-0.5 shrink-0 w-5">{shortcut.id}</span>
-                  <span className="truncate">{shortcut.text}</span>
-                </button>
-              ))}
             </div>
           )}
 
