@@ -46,6 +46,7 @@ interface PropertySettings {
   ai_base_prompt: string | null;
   widget_icon: string | null;
   calendly_url: string | null;
+  human_typos_enabled: boolean;
 }
 
 interface WidgetChatConfig {
@@ -76,6 +77,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   ai_base_prompt: null,
   widget_icon: 'message-circle',
   calendly_url: null,
+  human_typos_enabled: true,
 };
 
 const getOrCreateSessionId = (): string => {
@@ -320,6 +322,7 @@ async function streamAIResponse({
   basePrompt,
   naturalLeadCaptureFields,
   calendlyUrl,
+  humanTyposEnabled,
 }: {
   messages: { role: 'user' | 'assistant'; content: string }[];
   onDelta: (text: string) => void;
@@ -330,6 +333,7 @@ async function streamAIResponse({
   basePrompt?: string | null;
   naturalLeadCaptureFields?: string[];
   calendlyUrl?: string | null;
+  humanTyposEnabled?: boolean;
 }) {
   try {
     const resp = await fetch(CHAT_URL, {
@@ -338,7 +342,7 @@ async function streamAIResponse({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl }),
+      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled }),
     });
 
     if (!resp.ok) {
@@ -1025,6 +1029,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
            naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
            calendlyUrl: settings.calendly_url,
+           humanTyposEnabled: settings.human_typos_enabled ?? true,
           onDelta: (delta) => {
             aiContent += delta;
           },
@@ -1081,6 +1086,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
            naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
            calendlyUrl: settings.calendly_url,
+           humanTyposEnabled: settings.human_typos_enabled ?? true,
           onDelta: (delta) => {
             aiContent += delta;
             setMessages(prev => {
@@ -1327,6 +1333,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         basePrompt: settings.ai_base_prompt,
          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
          calendlyUrl: settings.calendly_url,
+         humanTyposEnabled: settings.human_typos_enabled ?? true,
         onDelta: (delta) => {
           aiContent += delta;
           // Don't update UI yet - just buffer
@@ -1404,6 +1411,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         basePrompt: settings.ai_base_prompt,
          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
          calendlyUrl: settings.calendly_url,
+         humanTyposEnabled: settings.human_typos_enabled ?? true,
         onDelta: (delta) => {
           aiContent += delta;
           setMessages(prev => {

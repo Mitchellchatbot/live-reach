@@ -83,6 +83,7 @@ interface PropertySettings {
   ai_base_prompt: string | null;
   greeting: string | null;
   calendly_url: string | null;
+  human_typos_enabled: boolean;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -277,6 +278,7 @@ const AISupport = () => {
         ai_base_prompt: data.ai_base_prompt ?? null,
         greeting: data.greeting ?? null,
         calendly_url: data.calendly_url ?? null,
+        human_typos_enabled: data.human_typos_enabled ?? true,
       });
     };
 
@@ -608,6 +610,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         ai_base_prompt: settings.ai_base_prompt,
         greeting: settings.greeting,
         calendly_url: settings.calendly_url,
+        human_typos_enabled: settings.human_typos_enabled,
       })
       .eq('id', settings.id);
 
@@ -1156,6 +1159,24 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         </p>
                       </>
                     )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Human Typos</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Occasionally make small spelling mistakes to seem more human
+                        </p>
+                      </div>
+                      <Switch
+                        checked={settings.human_typos_enabled}
+                        onCheckedChange={(checked) => setSettings({
+                          ...settings,
+                          human_typos_enabled: checked,
+                        })}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
