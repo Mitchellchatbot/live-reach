@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash } from 'lucide-react';
+import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { Conversation, Message } from '@/types/chat';
@@ -218,6 +219,10 @@ export const ChatPanel = ({
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [shortcutFilter, setShortcutFilter] = useState('');
+  const [selectedShortcutIndex, setSelectedShortcutIndex] = useState(0);
+  const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const {
     toast
@@ -283,13 +288,66 @@ export const ChatPanel = ({
       inputRef.current?.focus();
     }
   }, [conversation?.id]);
+  const filteredShortcuts = useMemo(() => {
+    if (!shortcutFilter) return defaultShortcuts;
+    const q = shortcutFilter.toLowerCase();
+    return defaultShortcuts.filter(
+      s => s.label.toLowerCase().includes(q) || s.text.toLowerCase().includes(q) || String(s.id).includes(q)
+    );
+  }, [shortcutFilter]);
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setMessage(val);
+    if (val === '/') {
+      setShowShortcuts(true);
+      setShortcutFilter('');
+      setSelectedShortcutIndex(0);
+    } else if (val.startsWith('/')) {
+      setShowShortcuts(true);
+      setShortcutFilter(val.slice(1));
+      setSelectedShortcutIndex(0);
+    } else {
+      setShowShortcuts(false);
+    }
+  };
+
+  const selectShortcut = (shortcut: ChatShortcut) => {
+    setMessage(shortcut.text);
+    setShowShortcuts(false);
+    inputRef.current?.focus();
+  };
+
   const handleSend = () => {
     if (message.trim()) {
       onSendMessage(message.trim());
       setMessage('');
+      setShowShortcuts(false);
     }
   };
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showShortcuts && filteredShortcuts.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedShortcutIndex(i => Math.min(i + 1, filteredShortcuts.length - 1));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedShortcutIndex(i => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        selectShortcut(filteredShortcuts[selectedShortcutIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowShortcuts(false);
+        return;
+      }
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -367,7 +425,7 @@ export const ChatPanel = ({
         </div>
 
         {/* Input - Rounder styling */}
-        <div className="p-4 border-t border-border/30 glass-subtle rounded-b-2xl">
+        <div className="p-4 border-t border-border/30 glass-subtle rounded-b-2xl relative">
           {/* AI Mode Warning Banner */}
           {isAIEnabled && status !== 'closed' && (
             <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
@@ -380,16 +438,48 @@ export const ChatPanel = ({
               </div>
             </div>
           )}
+
+          {/* Shortcuts popup */}
+          {showShortcuts && !isAIEnabled && filteredShortcuts.length > 0 && (
+            <div
+              ref={shortcutMenuRef}
+              className="absolute bottom-full left-4 right-4 mb-2 max-h-64 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg z-50"
+            >
+              <div className="px-3 py-2 border-b border-border/50">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Slash className="h-3 w-3" />
+                  Shortcuts
+                </p>
+              </div>
+              {filteredShortcuts.map((shortcut, idx) => (
+                <button
+                  key={shortcut.id}
+                  className={cn(
+                    "w-full text-left px-3 py-2.5 text-sm transition-colors flex items-start gap-2 border-b border-border/20 last:border-0",
+                    idx === selectedShortcutIndex
+                      ? "bg-accent text-accent-foreground"
+                      : "hover:bg-muted/50 text-foreground"
+                  )}
+                  onMouseEnter={() => setSelectedShortcutIndex(idx)}
+                  onClick={() => selectShortcut(shortcut)}
+                >
+                  <span className="text-xs font-mono text-muted-foreground mt-0.5 shrink-0 w-5">{shortcut.id}</span>
+                  <span className="truncate">{shortcut.text}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Input 
               ref={inputRef} 
               value={message} 
-              onChange={e => setMessage(e.target.value)} 
+              onChange={handleMessageChange} 
               onKeyDown={handleKeyDown} 
               placeholder={
                 isAIEnabled && status !== 'closed'
                   ? 'AI mode is active — disable to reply' 
-                  : 'Type a message...'
+                  : 'Type / for shortcuts...'
               } 
               disabled={isAIEnabled && status !== 'closed'} 
               className={cn(
