@@ -428,7 +428,7 @@ export const ChatPanel = ({
         {showShortcuts && !(isAIEnabled && status !== 'closed') && filteredShortcuts.length > 0 && (
           <div
             ref={shortcutMenuRef}
-            className="absolute bottom-[72px] left-4 right-4 max-h-64 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg z-50"
+            className="absolute bottom-[72px] left-4 right-4 max-h-80 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg z-50"
           >
             <div className="px-3 py-2 border-b border-border/50">
               <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
@@ -449,7 +449,7 @@ export const ChatPanel = ({
                 onClick={() => selectShortcut(shortcut)}
               >
                 <span className="text-xs font-mono text-muted-foreground mt-0.5 shrink-0 w-5">{shortcut.id}</span>
-                <span className="truncate">{shortcut.text}</span>
+                <span className="whitespace-pre-wrap break-words">{shortcut.text}</span>
               </button>
             ))}
           </div>
