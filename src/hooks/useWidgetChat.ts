@@ -1312,7 +1312,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       settings.ai_response_delay_min_ms,
       settings.ai_response_delay_max_ms
     );
+    console.log(`[SmartTyping] Response delay: ${responseDelay}ms, smart_typing: ${settings.smart_typing_enabled}, wpm: ${settings.typing_wpm}`);
+    const sendStartTime = Date.now();
     await sleep(responseDelay);
+    console.log(`[SmartTyping] Response delay complete after ${Date.now() - sendStartTime}ms`);
 
     // Now show typing indicator
     setIsTyping(true);
@@ -1356,6 +1359,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           }
 
           // Calculate how long it would take to type this response
+          const wordCount = aiContent.trim().split(/\s+/).filter(Boolean).length;
           const calculatedTypingTime = calculateTypingTimeMs(aiContent);
           const minTypingTime = randomInRange(
             settings.typing_indicator_min_ms,
@@ -1369,9 +1373,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           const elapsedTime = Date.now() - typingStartTime;
           const remainingTime = targetTypingTime - elapsedTime;
           
+          console.log(`[SmartTyping] onDone: words=${wordCount}, calcTime=${calculatedTypingTime}ms, minTime=${minTypingTime}ms, target=${targetTypingTime}ms, elapsed=${elapsedTime}ms, remaining=${remainingTime}ms`);
+          
           // Wait remaining time if any
           if (remainingTime > 0) {
             await sleep(remainingTime);
+            console.log(`[SmartTyping] Typing delay complete, showing message (total: ${Date.now() - sendStartTime}ms)`);
+          } else {
+            console.log(`[SmartTyping] No remaining time, showing immediately (total: ${Date.now() - sendStartTime}ms)`);
           }
           
           // Now reveal the full response
