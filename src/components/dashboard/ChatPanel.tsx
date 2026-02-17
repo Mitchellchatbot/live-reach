@@ -494,9 +494,11 @@ export const ChatPanel = ({
               disabled={!message.trim() || (isAIEnabled && status !== 'closed')} 
               className={cn(
                 "transition-all rounded-xl",
-                isAIEnabled
+                isAIEnabled && status !== 'closed'
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary hover:bg-primary/90 glow-primary hover:scale-105"
+                  : !message.trim()
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-primary hover:bg-primary/90 glow-primary hover:scale-105"
               )}
             >
               <Send className="h-4 w-4" />
