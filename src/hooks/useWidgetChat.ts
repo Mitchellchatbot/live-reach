@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { maybeInjectTypo } from '@/utils/typoInjector';
+import { maybeInjectTypo, maybeDropCapitalization, maybeDropApostrophes } from '@/utils/typoInjector';
 
 declare global {
   interface Window {
@@ -1039,6 +1039,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             if (settings.human_typos_enabled) {
               aiContent = maybeInjectTypo(aiContent, propertyId);
             }
+            aiContent = maybeDropCapitalization(aiContent);
+            aiContent = maybeDropApostrophes(aiContent);
 
             const calculatedTypingTime = calculateTypingTimeMs(aiContent);
             const minTypingTime = randomInRange(
@@ -1114,8 +1116,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             // Apply programmatic typo if enabled (streaming mode — update final message)
             if (settings.human_typos_enabled) {
               aiContent = maybeInjectTypo(aiContent, propertyId);
-              setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
             }
+            aiContent = maybeDropCapitalization(aiContent);
+            aiContent = maybeDropApostrophes(aiContent);
+            setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
             setIsTyping(false);
 
             aiMessageCountRef.current += 1;
@@ -1357,6 +1361,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           if (settings.human_typos_enabled) {
             aiContent = maybeInjectTypo(aiContent, propertyId);
           }
+          aiContent = maybeDropCapitalization(aiContent);
+          aiContent = maybeDropApostrophes(aiContent);
 
           // Calculate how long it would take to type this response
           const wordCount = aiContent.trim().split(/\s+/).filter(Boolean).length;
@@ -1459,8 +1465,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           // Apply programmatic typo if enabled (streaming mode — update final message)
           if (settings.human_typos_enabled) {
             aiContent = maybeInjectTypo(aiContent, propertyId);
-            setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
           }
+          aiContent = maybeDropCapitalization(aiContent);
+          aiContent = maybeDropApostrophes(aiContent);
+          setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
           setIsTyping(false);
           
           // Increment AI message count
