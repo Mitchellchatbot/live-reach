@@ -185,11 +185,8 @@ Say something like: "I'd also love to help you schedule a call with one of our e
     // Personality is layered on top as additional behavioral guidance.
     let systemPrompt = BASE_PROMPT + leadCaptureInstructions + calendlyInstructions;
 
-    // Add human typos instruction if enabled
-    if (humanTyposEnabled) {
-      systemPrompt += `\n\nHUMAN TYPOS:
-Occasionally (roughly once every 3-4 messages), make a small, natural typo in your response. Examples: "teh" instead of "the", "adn" instead of "and", "recieve" instead of "receive", swapping two adjacent letters, or missing a letter. Keep it subtle and believable, like a real person typing quickly. Never make typos in critical information like phone numbers or names. Don't overdo it.`;
-    }
+    // Human typos are now handled programmatically on the client side
+    // (see src/utils/typoInjector.ts) — no prompt instruction needed.
     
     if (personalityPrompt) {
       // Layer personality ON TOP of the base prompt

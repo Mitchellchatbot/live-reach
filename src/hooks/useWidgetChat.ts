@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { maybeInjectTypo } from '@/utils/typoInjector';
 
 declare global {
   interface Window {
@@ -1034,6 +1035,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             aiContent += delta;
           },
           onDone: async () => {
+            // Apply programmatic typo if enabled
+            if (settings.human_typos_enabled) {
+              aiContent = maybeInjectTypo(aiContent, propertyId);
+            }
+
             const calculatedTypingTime = calculateTypingTimeMs(aiContent);
             const minTypingTime = randomInRange(
               settings.typing_indicator_min_ms,
@@ -1105,6 +1111,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             });
           },
           onDone: async () => {
+            // Apply programmatic typo if enabled (streaming mode — update final message)
+            if (settings.human_typos_enabled) {
+              aiContent = maybeInjectTypo(aiContent, propertyId);
+              setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
+            }
             setIsTyping(false);
 
             aiMessageCountRef.current += 1;
@@ -1339,6 +1350,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           // Don't update UI yet - just buffer
         },
         onDone: async () => {
+          // Apply programmatic typo if enabled
+          if (settings.human_typos_enabled) {
+            aiContent = maybeInjectTypo(aiContent, propertyId);
+          }
+
           // Calculate how long it would take to type this response
           const calculatedTypingTime = calculateTypingTimeMs(aiContent);
           const minTypingTime = randomInRange(
@@ -1431,6 +1447,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           });
         },
         onDone: async () => {
+          // Apply programmatic typo if enabled (streaming mode — update final message)
+          if (settings.human_typos_enabled) {
+            aiContent = maybeInjectTypo(aiContent, propertyId);
+            setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
+          }
           setIsTyping(false);
           
           // Increment AI message count
