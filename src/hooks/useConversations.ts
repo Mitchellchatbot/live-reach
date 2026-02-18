@@ -758,6 +758,34 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     );
   };
 
+  const editAIQueuedMessage = async (conversationId: string, newContent: string, messageId: string) => {
+    // Update the message content in the messages table
+    await supabase
+      .from('messages')
+      .update({ content: newContent })
+      .eq('id', messageId);
+
+    // Update the preview in the conversation as well
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_preview: newContent })
+      .eq('id', conversationId);
+
+    // Update local cache
+    updateConversationsCache(prev =>
+      prev.map(c => {
+        if (c.id !== conversationId) return c;
+        return {
+          ...c,
+          ai_queued_preview: newContent,
+          messages: (c.messages || []).map(m =>
+            m.id === messageId ? { ...m, content: newContent } : m
+          ),
+        };
+      })
+    );
+  };
+
   return {
     conversations,
     properties,
@@ -773,6 +801,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     toggleAI,
     pauseAIQueue,
     cancelAIQueue,
+    editAIQueuedMessage,
     refetch: refetchConversations,
   };
 };
