@@ -1265,19 +1265,23 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       await ensureWidgetIds();
       await ensureConversationExists();
 
-      // ✅ Save visitor message to DB immediately so dashboard sees it right away
+      // ✅ Save visitor message to DB immediately (awaited) so dashboard sees it right away
       const convId = conversationIdRef.current;
       const vId = visitorIdRef.current;
       if (convId && vId) {
         const sessionId = getOrCreateSessionId();
-        void fetch(SAVE_MESSAGE_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
-        }).catch(e => console.error('Failed to save visitor message early:', e));
+        try {
+          await fetch(SAVE_MESSAGE_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
+          });
+        } catch (e) {
+          console.error('Failed to save visitor message:', e);
+        }
       }
     }
 
