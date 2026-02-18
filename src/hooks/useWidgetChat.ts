@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   typing_indicator_min_ms: 1500,
   typing_indicator_max_ms: 3000,
   smart_typing_enabled: true,
-  typing_wpm: 90,
+  typing_wpm: 60,
   max_ai_messages_before_escalation: 5,
   escalation_keywords: ['crisis', 'emergency', 'suicide', 'help me', 'urgent'],
   auto_escalation_enabled: true,
@@ -994,7 +994,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
-        ? randomInRange(3000, 8000)
+        ? randomInRange(15000, 25000)
         : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
       await sleep(responseDelay);
 
@@ -1342,7 +1342,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const isFirstAiReply = aiMessageCountRef.current === 0;
     const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
     const responseDelay = useQuickReply
-      ? randomInRange(3000, 8000)
+      ? randomInRange(15000, 25000)
       : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
