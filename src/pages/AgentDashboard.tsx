@@ -154,7 +154,7 @@ export default function AgentDashboard() {
 
           const unreadCount = messages.filter(m => !m.read && m.senderType === 'visitor').length;
 
-          const conversation: Conversation & { ai_enabled?: boolean } = {
+          const conversation: Conversation & { ai_enabled?: boolean; aiQueuedAt?: Date | null; aiQueuedPreview?: string | null; aiQueuedPaused?: boolean } = {
             id: c.id,
             visitorId: c.visitor_id,
             propertyId: c.property_id,
@@ -168,6 +168,9 @@ export default function AgentDashboard() {
             lastMessage: messages.length > 0 ? messages[messages.length - 1] : undefined,
             unreadCount,
             ai_enabled: c.ai_enabled ?? true,
+            aiQueuedAt: c.ai_queued_at ? new Date(c.ai_queued_at) : null,
+            aiQueuedPreview: c.ai_queued_preview ?? null,
+            aiQueuedPaused: c.ai_queued_paused ?? false,
           };
 
           return conversation;
@@ -441,9 +444,35 @@ export default function AgentDashboard() {
   };
 
   // AI toggle for conversations - use persisted value from database
-  const isAIEnabled = selectedConversation ? 
-    (conversations.find(c => c.id === selectedConversation.id) as any)?.ai_enabled ?? true : true;
-  
+  const selectedDbConv = selectedConversation 
+    ? (conversations.find(c => c.id === selectedConversation.id) as any) 
+    : null;
+  const isAIEnabled = selectedDbConv?.ai_enabled ?? true;
+  const aiQueuedAt = selectedDbConv?.aiQueuedAt ?? null;
+  const aiQueuedPaused = selectedDbConv?.aiQueuedPaused ?? false;
+
+  const handlePauseAIQueue = async (paused: boolean) => {
+    if (!selectedConversation?.id) return;
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_paused: paused })
+      .eq('id', selectedConversation.id);
+    setConversations(prev => prev.map(c =>
+      c.id === selectedConversation.id ? { ...c, aiQueuedPaused: paused } as any : c
+    ));
+  };
+
+  const handleCancelAIQueue = async () => {
+    if (!selectedConversation?.id) return;
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_at: null, ai_queued_preview: null, ai_queued_paused: false })
+      .eq('id', selectedConversation.id);
+    setConversations(prev => prev.map(c =>
+      c.id === selectedConversation.id ? { ...c, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false } as any : c
+    ));
+  };
+
   const handleToggleAI = async () => {
     if (!selectedConversation?.id) return;
     const newValue = !isAIEnabled;
@@ -633,6 +662,10 @@ export default function AgentDashboard() {
           onCloseConversation={handleCloseConversation}
           isAIEnabled={isAIEnabled}
           onToggleAI={handleToggleAI}
+          aiQueuedAt={aiQueuedAt}
+          aiQueuedPaused={aiQueuedPaused}
+          onPauseAIQueue={handlePauseAIQueue}
+          onCancelAIQueue={handleCancelAIQueue}
         />
       </div>
     </div>
