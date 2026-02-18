@@ -473,6 +473,19 @@ export default function AgentDashboard() {
     ));
   };
 
+  const handleEditAIQueue = async (messageId: string, newContent: string) => {
+    if (!selectedConversation?.id) return;
+    await supabase.from('messages').update({ content: newContent }).eq('id', messageId);
+    await supabase.from('conversations').update({ ai_queued_preview: newContent }).eq('id', selectedConversation.id);
+    setConversations(prev => prev.map(c => {
+      if (c.id !== selectedConversation.id) return c;
+      return {
+        ...c,
+        messages: c.messages?.map(m => m.id === messageId ? { ...m, content: newContent } : m),
+      };
+    }));
+  };
+
   const handleToggleAI = async () => {
     if (!selectedConversation?.id) return;
     const newValue = !isAIEnabled;
@@ -666,6 +679,7 @@ export default function AgentDashboard() {
           aiQueuedPaused={aiQueuedPaused}
           onPauseAIQueue={handlePauseAIQueue}
           onCancelAIQueue={handleCancelAIQueue}
+          onEditAIQueue={handleEditAIQueue}
         />
       </div>
     </div>

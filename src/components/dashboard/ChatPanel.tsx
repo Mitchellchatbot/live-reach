@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, Pause, Play, X, Clock } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, Pause, Play, X, Clock, Pencil, Check } from 'lucide-react';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { Conversation, Message } from '@/types/chat';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -31,6 +32,8 @@ interface ChatPanelProps {
   aiQueuedPaused?: boolean;
   onPauseAIQueue?: (paused: boolean) => void;
   onCancelAIQueue?: () => void;
+  /** Edit the content of the queued AI message (messageId, newContent) */
+  onEditAIQueue?: (messageId: string, newContent: string) => void;
 }
 const formatMessageTime = (date: Date) => {
   if (isToday(date)) {
@@ -41,35 +44,123 @@ const formatMessageTime = (date: Date) => {
   }
   return format(date, 'MMM d, h:mm a');
 };
+
 const MessageBubble = ({
   message,
   isAgent,
   isPendingDelivery,
+  aiQueuedPaused,
+  onPause,
+  onResume,
+  onCancel,
+  onSaveEdit,
 }: {
   message: Message;
   isAgent: boolean;
   isPendingDelivery?: boolean;
-}) => <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
-    {!isAgent && <Avatar className="h-8 w-8 flex-shrink-0">
-        <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-          V
-        </AvatarFallback>
-      </Avatar>}
-    <div className="flex flex-col gap-1 max-w-[70%]">
-      <div className={cn("rounded-3xl px-4 py-2.5", isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl")}>
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-        <p className={cn("text-xs mt-1", isAgent ? "text-chat-user-foreground/70" : "text-muted-foreground")}>
-          {formatMessageTime(new Date(message.timestamp))}
-        </p>
-      </div>
-      {isPendingDelivery && (
-        <div className={cn("flex items-center gap-1 text-xs text-muted-foreground", isAgent ? "justify-end" : "justify-start")}>
-          <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-          <span>Sending to visitor…</span>
+  aiQueuedPaused?: boolean;
+  onPause?: () => void;
+  onResume?: () => void;
+  onCancel?: () => void;
+  onSaveEdit?: (newContent: string) => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
+
+  const handleSaveEdit = () => {
+    if (editContent.trim()) {
+      onSaveEdit?.(editContent.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditContent(message.content);
+    setIsEditing(false);
+  };
+
+  return (
+    <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
+      {!isAgent && <Avatar className="h-8 w-8 flex-shrink-0">
+          <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+            V
+          </AvatarFallback>
+        </Avatar>}
+      <div className="flex flex-col gap-1 max-w-[70%]">
+        {/* Message bubble */}
+        <div className={cn(
+          "rounded-3xl px-4 py-2.5",
+          isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl",
+          isPendingDelivery && "opacity-80"
+        )}>
+          {isPendingDelivery && isEditing ? (
+            <Textarea
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              className="text-sm bg-transparent border-none shadow-none resize-none p-0 focus-visible:ring-0 text-chat-user-foreground placeholder:text-chat-user-foreground/50 min-h-[60px]"
+              autoFocus
+            />
+          ) : (
+            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          )}
+          <p className={cn("text-xs mt-1", isAgent ? "text-chat-user-foreground/70" : "text-muted-foreground")}>
+            {formatMessageTime(new Date(message.timestamp))}
+          </p>
         </div>
-      )}
+
+        {/* Inline pending controls — only on the pending AI bubble */}
+        {isPendingDelivery && (
+          <div className={cn("flex items-center gap-1.5", isAgent ? "justify-end" : "justify-start")}>
+            {isEditing ? (
+              <>
+                <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1" onClick={handleSaveEdit}>
+                  <Check className="h-3 w-3" /> Save
+                </Button>
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
+                  <span>{aiQueuedPaused ? 'Paused' : 'Sending to visitor…'}</span>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => { onPause?.(); setIsEditing(true); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Pause & edit this message</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={aiQueuedPaused ? onResume : onPause}>
+                        {aiQueuedPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{aiQueuedPaused ? 'Resume sending' : 'Pause sending'}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10" onClick={onCancel}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Cancel this AI response</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  </div>;
+  );
+};
+
 
 const EmptyState = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -237,6 +328,7 @@ export const ChatPanel = ({
   aiQueuedPaused = false,
   onPauseAIQueue,
   onCancelAIQueue,
+  onEditAIQueue,
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
@@ -419,68 +511,8 @@ export const ChatPanel = ({
       {/* Chat Area */}
       <div ref={chatAreaRef} className="flex-1 flex flex-col min-w-0 relative">
         
-        {/* AI Queue Banner — shows when AI is composing a response */}
-        {isQueued && (
-          <div className={cn(
-            "px-4 py-2.5 border-b border-border/30 flex items-center gap-3",
-            aiQueuedPaused
-              ? "bg-muted/40"
-              : "bg-primary/5 border-primary/10"
-          )}>
-            <div className={cn(
-              "flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center",
-              aiQueuedPaused ? "bg-muted" : "bg-primary/10"
-            )}>
-              {aiQueuedPaused
-                ? <Pause className="h-3.5 w-3.5 text-muted-foreground" />
-                : <Clock className="h-3.5 w-3.5 text-primary animate-pulse" />
-              }
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground">
-                {aiQueuedPaused ? 'AI response paused' : `AI responding in ${queueSecondsLeft}s…`}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {aiQueuedPaused ? 'Resume or cancel before the window closes' : 'Reply now to take over — or pause to buy time'}
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2.5 text-xs gap-1.5"
-                      onClick={() => onPauseAIQueue?.(!aiQueuedPaused)}
-                    >
-                      {aiQueuedPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
-                      {aiQueuedPaused ? 'Resume' : 'Pause'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{aiQueuedPaused ? 'Let AI respond' : 'Hold the AI response'}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => onCancelAIQueue?.()}
-                    >
-                      <X className="h-3 w-3" />
-                      Cancel
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Cancel the queued AI response</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-        )}
-
         {/* AI Toggle Header */}
-        {onToggleAI && !isQueued && (
+        {onToggleAI && (
           <div className="px-4 py-2 border-b border-border/30 flex items-center justify-between bg-background/50">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">AI Assistant</span>
@@ -522,12 +554,24 @@ export const ChatPanel = ({
         <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
           {messages.map((msg, idx) => {
             // Mark the last AI message as "pending delivery" when the AI queue is still active.
-            // This means the response was saved to DB but the visitor is still seeing the typing indicator.
             const isLastAgentMsg = msg.senderType === 'agent' && !messages.slice(idx + 1).some(m => m.senderType === 'agent');
             const isPendingDelivery = isLastAgentMsg && isQueued;
-            return <MessageBubble key={msg.id} message={msg} isAgent={msg.senderType === 'agent'} isPendingDelivery={isPendingDelivery} />;
+            return (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                isAgent={msg.senderType === 'agent'}
+                isPendingDelivery={isPendingDelivery}
+                aiQueuedPaused={aiQueuedPaused}
+                onPause={() => onPauseAIQueue?.(true)}
+                onResume={() => onPauseAIQueue?.(false)}
+                onCancel={onCancelAIQueue}
+                onSaveEdit={(newContent) => onEditAIQueue?.(msg.id, newContent)}
+              />
+            );
           })}
         </div>
+
 
         {/* Shortcuts popup - positioned above input area */}
         {showShortcuts && !(isAIEnabled && status !== 'closed') && filteredShortcuts.length > 0 && (

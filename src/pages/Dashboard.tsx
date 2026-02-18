@@ -108,6 +108,7 @@ const DashboardContent = () => {
     toggleAI,
     pauseAIQueue,
     cancelAIQueue,
+    editAIQueuedMessage,
   } = useConversations({ 
     selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
@@ -371,6 +372,11 @@ const DashboardContent = () => {
     if (!selectedConversationId) return;
     await cancelAIQueue(selectedConversationId);
   };
+
+  const handleEditAIQueue = async (messageId: string, newContent: string) => {
+    if (!selectedConversationId) return;
+    await editAIQueuedMessage(selectedConversationId, newContent, messageId);
+  };
   const getStatusTitle = () => {
     switch (statusFilter) {
       case 'active':
@@ -576,6 +582,7 @@ const DashboardContent = () => {
                 aiQueuedPaused={aiQueuedPaused}
                 onPauseAIQueue={handlePauseAIQueue}
                 onCancelAIQueue={handleCancelAIQueue}
+                onEditAIQueue={handleEditAIQueue}
               />
             </div>
           </div>
