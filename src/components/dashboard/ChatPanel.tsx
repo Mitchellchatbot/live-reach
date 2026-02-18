@@ -43,23 +43,34 @@ const formatMessageTime = (date: Date) => {
 };
 const MessageBubble = ({
   message,
-  isAgent
+  isAgent,
+  isPendingDelivery,
 }: {
   message: Message;
   isAgent: boolean;
+  isPendingDelivery?: boolean;
 }) => <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
     {!isAgent && <Avatar className="h-8 w-8 flex-shrink-0">
         <AvatarFallback className="bg-muted text-muted-foreground text-xs">
           V
         </AvatarFallback>
       </Avatar>}
-    <div className={cn("max-w-[70%] rounded-3xl px-4 py-2.5", isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl")}>
-      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-      <p className={cn("text-xs mt-1", isAgent ? "text-chat-user-foreground/70" : "text-muted-foreground")}>
-        {formatMessageTime(new Date(message.timestamp))}
-      </p>
+    <div className="flex flex-col gap-1 max-w-[70%]">
+      <div className={cn("rounded-3xl px-4 py-2.5", isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl")}>
+        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        <p className={cn("text-xs mt-1", isAgent ? "text-chat-user-foreground/70" : "text-muted-foreground")}>
+          {formatMessageTime(new Date(message.timestamp))}
+        </p>
+      </div>
+      {isPendingDelivery && (
+        <div className={cn("flex items-center gap-1 text-xs text-muted-foreground", isAgent ? "justify-end" : "justify-start")}>
+          <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
+          <span>Sending to visitor…</span>
+        </div>
+      )}
     </div>
   </div>;
+
 const EmptyState = () => {
   const ref = useRef<HTMLDivElement>(null);
   
@@ -509,7 +520,13 @@ export const ChatPanel = ({
 
         {/* Messages */}
         <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
-          {messages.map(msg => <MessageBubble key={msg.id} message={msg} isAgent={msg.senderType === 'agent'} />)}
+          {messages.map((msg, idx) => {
+            // Mark the last AI message as "pending delivery" when the AI queue is still active.
+            // This means the response was saved to DB but the visitor is still seeing the typing indicator.
+            const isLastAgentMsg = msg.senderType === 'agent' && !messages.slice(idx + 1).some(m => m.senderType === 'agent');
+            const isPendingDelivery = isLastAgentMsg && isQueued;
+            return <MessageBubble key={msg.id} message={msg} isAgent={msg.senderType === 'agent'} isPendingDelivery={isPendingDelivery} />;
+          })}
         </div>
 
         {/* Shortcuts popup - positioned above input area */}
