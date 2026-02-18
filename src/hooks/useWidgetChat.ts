@@ -1060,6 +1060,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               aiContent = maybeDropApostrophes(aiContent);
             }
 
+            // ✅ Save to DB immediately so dashboard agents can see it
+            // before the typing delay completes (gives review leeway)
+            if (aiContent) void saveAiToDb(aiContent);
+
             const calculatedTypingTime = calculateTypingTimeMs(aiContent);
             const minTypingTime = randomInRange(
               settings.typing_indicator_min_ms,
@@ -1083,8 +1087,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
             aiMessageCountRef.current += 1;
             cycleToNextAgent();
-
-            if (aiContent) await saveAiToDb(aiContent);
 
             if (
               settings.auto_escalation_enabled &&
@@ -1488,6 +1490,30 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             aiContent = maybeDropApostrophes(aiContent);
           }
 
+          // ✅ Save AI response to DB immediately so dashboard agents can
+          // preview the message while it's still "typing" in the widget
+          if (aiContent && !isPreview && propertyId && propertyId !== 'demo') {
+            const convId = conversationIdRef.current || conversationId;
+            const vId = visitorIdRef.current || visitorId;
+            if (convId && vId) {
+              const sessionId = getOrCreateSessionId();
+              void fetch(SAVE_MESSAGE_URL, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                },
+                body: JSON.stringify({
+                  conversationId: convId,
+                  visitorId: vId,
+                  sessionId,
+                  senderType: 'agent',
+                  content: aiContent,
+                }),
+              }).catch(e => console.error('Failed to pre-save AI message:', e));
+            }
+          }
+
           // Calculate how long it would take to type this response
           const wordCount = aiContent.trim().split(/\s+/).filter(Boolean).length;
           const calculatedTypingTime = calculateTypingTimeMs(aiContent);
@@ -1508,8 +1534,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           // Wait remaining time if any
           if (remainingTime > 0) {
             await sleep(remainingTime);
-          } else {
-            // no remaining time
           }
           
           // Now reveal the full response
@@ -1641,6 +1665,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     if (shouldSaveToDb && currentVisitorIdForDb) {
       // Real embeds: persist via backend function so we don't need SELECT policies.
+      // NOTE: The AI message was already saved immediately when it came back from the AI
+      // (before the typing delay), so dashboard agents can see it right away.
+      // Here we only need to save the visitor message.
       if (!isPreview && propertyId && propertyId !== 'demo') {
         await ensureWidgetIds();
         const convId = conversationIdRef.current || conversationId;
@@ -1650,30 +1677,25 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const sessionId = getOrCreateSessionId();
 
         try {
-          const save = async (senderType: 'visitor' | 'agent', msgContent: string) => {
-            const resp = await fetch(SAVE_MESSAGE_URL, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-              },
-              body: JSON.stringify({
-                conversationId: convId,
-                visitorId: vId,
-                sessionId,
-                senderType,
-                content: msgContent,
-              }),
-            });
-            if (!resp.ok) {
-              console.error('Failed to save message:', senderType, await resp.text());
-            }
-          };
-
-          await save('visitor', content);
-          if (aiContent) await save('agent', aiContent);
+          const resp = await fetch(SAVE_MESSAGE_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              conversationId: convId,
+              visitorId: vId,
+              sessionId,
+              senderType: 'visitor',
+              content,
+            }),
+          });
+          if (!resp.ok) {
+            console.error('Failed to save visitor message:', await resp.text());
+          }
         } catch (e) {
-          console.error('Error saving messages via backend:', e);
+          console.error('Error saving visitor message via backend:', e);
         }
 
         return;
