@@ -30,6 +30,8 @@ type PropertySettings = {
   human_typos_enabled: boolean | null;
   drop_capitalization_enabled: boolean | null;
   drop_apostrophes_enabled: boolean | null;
+  quick_reply_after_first_enabled: boolean | null;
+  calendly_url: string | null;
 };
 
 Deno.serve(async (req) => {
@@ -78,6 +80,8 @@ Deno.serve(async (req) => {
           "human_typos_enabled",
           "drop_capitalization_enabled",
           "drop_apostrophes_enabled",
+          "quick_reply_after_first_enabled",
+          "calendly_url",
         ].join(",")
       )
       .eq("id", propertyId)

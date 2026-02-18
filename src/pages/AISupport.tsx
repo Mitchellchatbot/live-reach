@@ -86,6 +86,7 @@ interface PropertySettings {
   human_typos_enabled: boolean;
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
+  quick_reply_after_first_enabled: boolean;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -260,8 +261,8 @@ const AISupport = () => {
 
       setSettings({
         id: data.id,
-        ai_response_delay_min_ms: data.ai_response_delay_min_ms ?? 1000,
-        ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? 2500,
+        ai_response_delay_min_ms: data.ai_response_delay_min_ms ?? 20000,
+        ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? 28000,
         typing_indicator_min_ms: data.typing_indicator_min_ms ?? 1500,
         typing_indicator_max_ms: data.typing_indicator_max_ms ?? 3000,
         smart_typing_enabled: data.smart_typing_enabled ?? true,
@@ -283,6 +284,7 @@ const AISupport = () => {
         human_typos_enabled: data.human_typos_enabled ?? true,
         drop_capitalization_enabled: data.drop_capitalization_enabled ?? true,
         drop_apostrophes_enabled: data.drop_apostrophes_enabled ?? true,
+        quick_reply_after_first_enabled: (data as any).quick_reply_after_first_enabled ?? false,
       });
     };
 
@@ -617,7 +619,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         human_typos_enabled: settings.human_typos_enabled,
         drop_capitalization_enabled: settings.drop_capitalization_enabled,
         drop_apostrophes_enabled: settings.drop_apostrophes_enabled,
-      })
+        quick_reply_after_first_enabled: settings.quick_reply_after_first_enabled,
+      } as any)
       .eq('id', settings.id);
 
     setIsSaving(false);
@@ -1088,9 +1091,14 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label>AI Response Delay</Label>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {(settings.ai_response_delay_min_ms / 1000).toFixed(1)}s – {(settings.ai_response_delay_max_ms / 1000).toFixed(1)}s
+                      <div className="space-y-0.5">
+                        <Label>First Response Delay</Label>
+                        <p className="text-sm text-muted-foreground">
+                          How long before the first reply — simulates a human reading your message
+                        </p>
+                      </div>
+                      <span className="text-sm font-medium text-muted-foreground shrink-0 ml-4">
+                        {Math.round(settings.ai_response_delay_min_ms / 1000)}s – {Math.round(settings.ai_response_delay_max_ms / 1000)}s
                       </span>
                     </div>
                     <Slider
@@ -1101,9 +1109,28 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         ai_response_delay_max_ms: max,
                       })}
                       min={0}
-                      max={5000}
-                      step={100}
+                      max={60000}
+                      step={1000}
                       minStepsBetweenThumbs={1}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 20–30 seconds for the most human-like pacing
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="space-y-0.5">
+                      <Label>Quick Reply After First Message</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Reply faster (3–8s) after the opener, as if the agent is now fully engaged in the conversation
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.quick_reply_after_first_enabled}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        quick_reply_after_first_enabled: checked,
+                      })}
                     />
                   </div>
 
