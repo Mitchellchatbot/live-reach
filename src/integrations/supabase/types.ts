@@ -511,6 +511,8 @@ export type Database = {
           calendly_url: string | null
           created_at: string
           domain: string
+          drop_apostrophes_enabled: boolean | null
+          drop_capitalization_enabled: boolean | null
           escalation_keywords: string[] | null
           greeting: string | null
           human_typos_enabled: boolean | null
@@ -546,6 +548,8 @@ export type Database = {
           calendly_url?: string | null
           created_at?: string
           domain: string
+          drop_apostrophes_enabled?: boolean | null
+          drop_capitalization_enabled?: boolean | null
           escalation_keywords?: string[] | null
           greeting?: string | null
           human_typos_enabled?: boolean | null
@@ -581,6 +585,8 @@ export type Database = {
           calendly_url?: string | null
           created_at?: string
           domain?: string
+          drop_apostrophes_enabled?: boolean | null
+          drop_capitalization_enabled?: boolean | null
           escalation_keywords?: string[] | null
           greeting?: string | null
           human_typos_enabled?: boolean | null

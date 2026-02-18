@@ -84,6 +84,8 @@ interface PropertySettings {
   greeting: string | null;
   calendly_url: string | null;
   human_typos_enabled: boolean;
+  drop_capitalization_enabled: boolean;
+  drop_apostrophes_enabled: boolean;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -279,6 +281,8 @@ const AISupport = () => {
         greeting: data.greeting ?? null,
         calendly_url: data.calendly_url ?? null,
         human_typos_enabled: data.human_typos_enabled ?? true,
+        drop_capitalization_enabled: data.drop_capitalization_enabled ?? true,
+        drop_apostrophes_enabled: data.drop_apostrophes_enabled ?? true,
       });
     };
 
@@ -611,6 +615,8 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         greeting: settings.greeting,
         calendly_url: settings.calendly_url,
         human_typos_enabled: settings.human_typos_enabled,
+        drop_capitalization_enabled: settings.drop_capitalization_enabled,
+        drop_apostrophes_enabled: settings.drop_apostrophes_enabled,
       })
       .eq('id', settings.id);
 
@@ -1161,22 +1167,67 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     )}
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Human Typos</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Occasionally make small spelling mistakes to seem more human
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.human_typos_enabled}
-                        onCheckedChange={(checked) => setSettings({
-                          ...settings,
-                          human_typos_enabled: checked,
-                        })}
-                      />
+                </CardContent>
+              </Card>
+
+              {/* Humanization Settings */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Humanization</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Make AI responses feel more natural and human-like
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Human Typos</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Occasionally make small spelling mistakes (~every 3–4 messages)
+                      </p>
                     </div>
+                    <Switch
+                      checked={settings.human_typos_enabled}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        human_typos_enabled: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Missed Capitalization</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Occasionally skip capitalizing the start of sentences (~30% of the time)
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.drop_capitalization_enabled}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        drop_capitalization_enabled: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Drop Apostrophes</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Occasionally skip apostrophes in contractions, e.g. "dont" instead of "don't" (~30% of the time)
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.drop_apostrophes_enabled}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        drop_apostrophes_enabled: checked,
+                      })}
+                    />
                   </div>
                 </CardContent>
               </Card>

@@ -27,6 +27,9 @@ type PropertySettings = {
   greeting: string | null;
   ai_base_prompt: string | null;
   widget_icon: string | null;
+  human_typos_enabled: boolean | null;
+  drop_capitalization_enabled: boolean | null;
+  drop_apostrophes_enabled: boolean | null;
 };
 
 Deno.serve(async (req) => {
@@ -72,6 +75,9 @@ Deno.serve(async (req) => {
           "greeting",
           "ai_base_prompt",
           "widget_icon",
+          "human_typos_enabled",
+          "drop_capitalization_enabled",
+          "drop_apostrophes_enabled",
         ].join(",")
       )
       .eq("id", propertyId)
