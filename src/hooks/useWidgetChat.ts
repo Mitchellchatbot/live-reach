@@ -871,7 +871,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               role: m.sender_type === 'visitor' ? 'user' : 'assistant',
               content: m.content,
             }));
-            if (conversationHistory.length >= 2) {
+            if (conversationHistory.length >= 1) {
               extractVisitorInfo(testVisitor.id, conversationHistory);
             }
           }
@@ -1525,7 +1525,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // This allows us to capture details as they're shared naturally in conversation
     // Use ref to get the most current visitor ID (state may be stale in preview mode)
     const currentVisitorId = visitorIdRef.current || visitorId;
-    if (currentVisitorId && conversationHistory.length >= 2) {
+    if (currentVisitorId && conversationHistory.length >= 1) {
       extractVisitorInfo(currentVisitorId, conversationHistory);
     }
 
