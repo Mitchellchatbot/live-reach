@@ -1264,6 +1264,21 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     if (!isPreview && propertyId && propertyId !== 'demo') {
       await ensureWidgetIds();
       await ensureConversationExists();
+
+      // ✅ Save visitor message to DB immediately so dashboard sees it right away
+      const convId = conversationIdRef.current;
+      const vId = visitorIdRef.current;
+      if (convId && vId) {
+        const sessionId = getOrCreateSessionId();
+        void fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
+        }).catch(e => console.error('Failed to save visitor message early:', e));
+      }
     }
 
     // Track chat_open event on first message
@@ -1287,24 +1302,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // Stop AI if either:
     // - dashboard has AI disabled, OR
     // - a human agent has actually responded
+    // Visitor message was already saved to DB immediately above, just return.
     if (!aiEnabledNow || humanHasTakenOverRef.current) {
-      // Just save the message to DB - human agent is handling
-      if (!isPreview && propertyId && propertyId !== 'demo') {
-        const convId = conversationIdRef.current || conversationId;
-        const vId = visitorIdRef.current || visitorId;
-        if (convId && vId) {
-          const sessionId = getOrCreateSessionId();
-          await fetch(SAVE_MESSAGE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
-          });
-        }
-      } else if (conversationId && visitorId) {
-        // Preview/portal context keeps existing behavior
+      if (isPreview && conversationId && visitorId) {
+        // Preview/portal context: save message via supabase directly
         const { data: maxSeqData } = await supabase
           .from('messages')
           .select('sequence_number')
@@ -1428,14 +1429,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
 
       if (humanReplied) {
-        // Human agent handled it — save visitor message to DB, skip AI
-        if (clearConvId && clearVId) {
-          fetch(SAVE_MESSAGE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-            body: JSON.stringify({ conversationId: clearConvId, visitorId: clearVId, sessionId, senderType: 'visitor', content }),
-          }).catch(() => {});
-        }
+        // Visitor message was already saved to DB immediately — skip AI, return
         return;
       }
     } else {
