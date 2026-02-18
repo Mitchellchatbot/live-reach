@@ -275,7 +275,7 @@ const extractVisitorInfo = async (
   visitorId: string,
   conversationHistory: { role: string; content: string }[]
 ) => {
-  if (!visitorId || conversationHistory.length < 2) return;
+  if (!visitorId || conversationHistory.length < 1) return;
   
   try {
     await fetch(EXTRACT_INFO_URL, {
