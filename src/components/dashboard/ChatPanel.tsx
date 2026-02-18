@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, Pause, Play, X, Clock } from 'lucide-react';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,12 @@ interface ChatPanelProps {
   isAIEnabled?: boolean;
   onToggleAI?: () => void;
   propertyName?: string;
+  /** ISO string of when AI response was queued (from DB) */
+  aiQueuedAt?: Date | null;
+  /** Whether the queued AI response is currently paused by the agent */
+  aiQueuedPaused?: boolean;
+  onPauseAIQueue?: (paused: boolean) => void;
+  onCancelAIQueue?: () => void;
 }
 const formatMessageTime = (date: Date) => {
   if (isToday(date)) {
@@ -215,13 +221,35 @@ export const ChatPanel = ({
   onCloseConversation,
   isAIEnabled = true,
   onToggleAI,
-  propertyName
+  propertyName,
+  aiQueuedAt,
+  aiQueuedPaused = false,
+  onPauseAIQueue,
+  onCancelAIQueue,
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [shortcutFilter, setShortcutFilter] = useState('');
   const [selectedShortcutIndex, setSelectedShortcutIndex] = useState(0);
+  // Live countdown for the AI queue
+  const [queueSecondsLeft, setQueueSecondsLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!aiQueuedAt) { setQueueSecondsLeft(null); return; }
+    const WINDOW_MS = 30000;
+    const update = () => {
+      const elapsed = Date.now() - aiQueuedAt.getTime();
+      const remaining = Math.ceil((WINDOW_MS - elapsed) / 1000);
+      setQueueSecondsLeft(remaining > 0 ? remaining : 0);
+    };
+    update();
+    const interval = setInterval(update, 500);
+    return () => clearInterval(interval);
+  }, [aiQueuedAt]);
+
+  const isQueued = !!aiQueuedAt && (queueSecondsLeft === null || queueSecondsLeft > 0);
+
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const {
@@ -380,8 +408,68 @@ export const ChatPanel = ({
       {/* Chat Area */}
       <div ref={chatAreaRef} className="flex-1 flex flex-col min-w-0 relative">
         
+        {/* AI Queue Banner — shows when AI is composing a response */}
+        {isQueued && (
+          <div className={cn(
+            "px-4 py-2.5 border-b border-border/30 flex items-center gap-3",
+            aiQueuedPaused
+              ? "bg-muted/40"
+              : "bg-primary/5 border-primary/10"
+          )}>
+            <div className={cn(
+              "flex-shrink-0 h-7 w-7 rounded-full flex items-center justify-center",
+              aiQueuedPaused ? "bg-muted" : "bg-primary/10"
+            )}>
+              {aiQueuedPaused
+                ? <Pause className="h-3.5 w-3.5 text-muted-foreground" />
+                : <Clock className="h-3.5 w-3.5 text-primary animate-pulse" />
+              }
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground">
+                {aiQueuedPaused ? 'AI response paused' : `AI responding in ${queueSecondsLeft}s…`}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {aiQueuedPaused ? 'Resume or cancel before the window closes' : 'Reply now to take over — or pause to buy time'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2.5 text-xs gap-1.5"
+                      onClick={() => onPauseAIQueue?.(!aiQueuedPaused)}
+                    >
+                      {aiQueuedPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
+                      {aiQueuedPaused ? 'Resume' : 'Pause'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{aiQueuedPaused ? 'Let AI respond' : 'Hold the AI response'}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => onCancelAIQueue?.()}
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Cancel the queued AI response</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        )}
+
         {/* AI Toggle Header */}
-        {onToggleAI && (
+        {onToggleAI && !isQueued && (
           <div className="px-4 py-2 border-b border-border/30 flex items-center justify-between bg-background/50">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">AI Assistant</span>

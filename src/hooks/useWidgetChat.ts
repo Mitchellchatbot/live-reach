@@ -204,6 +204,7 @@ const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
 const GET_MESSAGES_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-get-messages`;
 const PRESENCE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-conversation-presence`;
+const SET_AI_QUEUE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-set-ai-queue`;
 
 // Secure visitor update through edge function
 const updateVisitorSecure = async (
@@ -1343,34 +1344,51 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
+      // Signal to dashboard that AI response is queued
+      const convId = conversationIdRef.current;
+      const vId = visitorIdRef.current;
+      const sessionId = getOrCreateSessionId();
+
+      if (convId && vId) {
+        fetch(SET_AI_QUEUE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue' }),
+        }).catch(() => {});
+      }
+
       // Poll for human agent response during the delay window
       const POLL_INTERVAL = 3000;
       const deadline = Date.now() + responseDelay;
       let humanReplied = false;
+      let pausedExtraMs = 0;
 
-      while (Date.now() < deadline) {
-        const remaining = deadline - Date.now();
+      while (Date.now() < deadline + pausedExtraMs) {
+        const remaining = (deadline + pausedExtraMs) - Date.now();
         await sleep(Math.min(POLL_INTERVAL, remaining));
         if (humanHasTakenOverRef.current) {
           humanReplied = true;
           break;
         }
-        // Check server for a new agent message
-        const convId = conversationIdRef.current;
-        const vId = visitorIdRef.current;
-        if (convId && vId) {
+        const loopConvId = conversationIdRef.current;
+        const loopVId = visitorIdRef.current;
+        if (loopConvId && loopVId) {
           try {
-            const sessionId = getOrCreateSessionId();
+            const loopSessionId = getOrCreateSessionId();
             const pollResp = await fetch(GET_MESSAGES_URL, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
               },
-              body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, afterSequence: lastSeqRef.current }),
+              body: JSON.stringify({ conversationId: loopConvId, visitorId: loopVId, sessionId: loopSessionId, afterSequence: lastSeqRef.current }),
             });
             if (pollResp.ok) {
               const pollData = await pollResp.json();
+              // If dashboard paused the AI, extend the deadline by the poll interval
+              if (pollData?.aiQueuedPaused === true) {
+                pausedExtraMs += POLL_INTERVAL;
+              }
               const newMsgs = (pollData?.messages ?? []) as Array<{ sender_type: string; sender_id: string; content: string; sequence_number: number; id: string; created_at: string }>;
               const agentMsg = newMsgs.find(m => m.sender_type === 'agent' && m.sender_id !== 'ai-bot');
               if (agentMsg) {
@@ -1396,16 +1414,24 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
+      // Clear queue state — either human replied or AI is about to take over
+      const clearConvId = conversationIdRef.current;
+      const clearVId = visitorIdRef.current;
+      if (clearConvId && clearVId) {
+        fetch(SET_AI_QUEUE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ conversationId: clearConvId, visitorId: clearVId, sessionId, action: 'clear' }),
+        }).catch(() => {});
+      }
+
       if (humanReplied) {
         // Human agent handled it — save visitor message to DB, skip AI
-        const convId = conversationIdRef.current;
-        const vId = visitorIdRef.current;
-        if (convId && vId) {
-          const sessionId = getOrCreateSessionId();
+        if (clearConvId && clearVId) {
           fetch(SAVE_MESSAGE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
+            body: JSON.stringify({ conversationId: clearConvId, visitorId: clearVId, sessionId, senderType: 'visitor', content }),
           }).catch(() => {});
         }
         return;

@@ -145,6 +145,9 @@ export type Database = {
       conversations: {
         Row: {
           ai_enabled: boolean
+          ai_queued_at: string | null
+          ai_queued_paused: boolean | null
+          ai_queued_preview: string | null
           assigned_agent_id: string | null
           created_at: string
           id: string
@@ -156,6 +159,9 @@ export type Database = {
         }
         Insert: {
           ai_enabled?: boolean
+          ai_queued_at?: string | null
+          ai_queued_paused?: boolean | null
+          ai_queued_preview?: string | null
           assigned_agent_id?: string | null
           created_at?: string
           id?: string
@@ -167,6 +173,9 @@ export type Database = {
         }
         Update: {
           ai_enabled?: boolean
+          ai_queued_at?: string | null
+          ai_queued_paused?: boolean | null
+          ai_queued_preview?: string | null
           assigned_agent_id?: string | null
           created_at?: string
           id?: string
