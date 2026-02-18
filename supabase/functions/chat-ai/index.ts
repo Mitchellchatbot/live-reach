@@ -162,10 +162,11 @@ Collection order:
 ${fieldInstructions.join('\n')}
 
 IMPORTANT RULES:
+- If the visitor has ALREADY provided a piece of information earlier in the conversation (e.g. they said their name, shared their phone number, mentioned their insurance), do NOT ask for it again. Mark it as collected and move on to the next field.
 - If the visitor declines to provide ANY piece of information, respect that and STOP asking for more details. Move on and just help them.
 - Never pressure or repeat asks. One gentle attempt per field is enough.
 - Be warm and conversational, not robotic.
-- If they share info voluntarily, acknowledge it warmly.`;
+- If they share info voluntarily, acknowledge it warmly and continue — do NOT re-ask for info you already have.`;
     }
 
     // Build Calendly booking prompt if URL is configured
