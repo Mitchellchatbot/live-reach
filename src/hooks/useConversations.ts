@@ -55,6 +55,9 @@ export interface DbConversation {
   status: 'active' | 'closed' | 'pending';
   is_test: boolean;
   ai_enabled: boolean;
+  ai_queued_at: string | null;
+  ai_queued_preview: string | null;
+  ai_queued_paused: boolean;
   created_at: string;
   updated_at: string;
   visitor?: DbVisitor;
@@ -733,6 +736,28 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     };
   }, [user, selectedPropertyId, updateConversationsCache]);
 
+  const pauseAIQueue = async (conversationId: string, paused: boolean) => {
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_paused: paused })
+      .eq('id', conversationId);
+
+    updateConversationsCache(prev =>
+      prev.map(c => c.id === conversationId ? { ...c, ai_queued_paused: paused } : c)
+    );
+  };
+
+  const cancelAIQueue = async (conversationId: string) => {
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_at: null, ai_queued_preview: null, ai_queued_paused: false })
+      .eq('id', conversationId);
+
+    updateConversationsCache(prev =>
+      prev.map(c => c.id === conversationId ? { ...c, ai_queued_at: null, ai_queued_preview: null, ai_queued_paused: false } : c)
+    );
+  };
+
   return {
     conversations,
     properties,
@@ -746,6 +771,8 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     createProperty,
     deleteProperty,
     toggleAI,
+    pauseAIQueue,
+    cancelAIQueue,
     refetch: refetchConversations,
   };
 };

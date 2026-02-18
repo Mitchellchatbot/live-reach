@@ -69,7 +69,10 @@ const toUiConversation = (dbConv: DbConversation): Conversation & {
   unreadCount: (dbConv.messages || []).filter(m => !m.read && m.sender_type === 'visitor').length,
   createdAt: new Date(dbConv.created_at),
   updatedAt: new Date(dbConv.updated_at),
-  isTest: dbConv.is_test || false
+  isTest: dbConv.is_test || false,
+  aiQueuedAt: dbConv.ai_queued_at ? new Date(dbConv.ai_queued_at) : null,
+  aiQueuedPreview: dbConv.ai_queued_preview || null,
+  aiQueuedPaused: dbConv.ai_queued_paused || false,
 });
 const DashboardContent = () => {
   const {
@@ -102,7 +105,9 @@ const DashboardContent = () => {
     deleteConversation,
     deleteConversations,
     deleteProperty,
-    toggleAI
+    toggleAI,
+    pauseAIQueue,
+    cancelAIQueue,
   } = useConversations({ 
     selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
@@ -349,10 +354,22 @@ const DashboardContent = () => {
   // AI toggle for conversations - use persisted value from database
   const selectedDbConversation = dbConversations.find(c => c.id === selectedConversationId);
   const isAIEnabled = selectedDbConversation?.ai_enabled ?? true;
+  const aiQueuedAt = selectedDbConversation?.ai_queued_at ? new Date(selectedDbConversation.ai_queued_at) : null;
+  const aiQueuedPaused = selectedDbConversation?.ai_queued_paused ?? false;
   
   const handleToggleAI = async () => {
     if (!selectedConversationId) return;
     await toggleAI(selectedConversationId, !isAIEnabled);
+  };
+
+  const handlePauseAIQueue = async (paused: boolean) => {
+    if (!selectedConversationId) return;
+    await pauseAIQueue(selectedConversationId, paused);
+  };
+
+  const handleCancelAIQueue = async () => {
+    if (!selectedConversationId) return;
+    await cancelAIQueue(selectedConversationId);
   };
   const getStatusTitle = () => {
     switch (statusFilter) {
@@ -555,6 +572,10 @@ const DashboardContent = () => {
                 isAIEnabled={isAIEnabled}
                 onToggleAI={handleToggleAI}
                 propertyName={selectedConversation ? properties.find(p => p.id === selectedConversation.propertyId)?.name : undefined}
+                aiQueuedAt={aiQueuedAt}
+                aiQueuedPaused={aiQueuedPaused}
+                onPauseAIQueue={handlePauseAIQueue}
+                onCancelAIQueue={handleCancelAIQueue}
               />
             </div>
           </div>

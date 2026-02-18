@@ -70,6 +70,9 @@ export interface Conversation {
   unreadCount: number;
   createdAt: Date;
   updatedAt: Date;
+  aiQueuedAt?: Date | null;
+  aiQueuedPreview?: string | null;
+  aiQueuedPaused?: boolean;
 }
 
 export interface ChatWidgetConfig {
