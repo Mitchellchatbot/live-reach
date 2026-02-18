@@ -48,6 +48,8 @@ interface PropertySettings {
   widget_icon: string | null;
   calendly_url: string | null;
   human_typos_enabled: boolean;
+  drop_capitalization_enabled: boolean;
+  drop_apostrophes_enabled: boolean;
 }
 
 interface WidgetChatConfig {
@@ -79,6 +81,8 @@ const DEFAULT_SETTINGS: PropertySettings = {
   widget_icon: 'message-circle',
   calendly_url: null,
   human_typos_enabled: true,
+  drop_capitalization_enabled: true,
+  drop_apostrophes_enabled: true,
 };
 
 const getOrCreateSessionId = (): string => {
@@ -602,6 +606,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         ai_base_prompt: s.ai_base_prompt ?? null,
         widget_icon: s.widget_icon ?? DEFAULT_SETTINGS.widget_icon,
         calendly_url: s.calendly_url ?? null,
+        human_typos_enabled: s.human_typos_enabled ?? DEFAULT_SETTINGS.human_typos_enabled,
+        drop_capitalization_enabled: s.drop_capitalization_enabled ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
+        drop_apostrophes_enabled: s.drop_apostrophes_enabled ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
       };
 
       setSettings(merged);
@@ -1039,8 +1046,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             if (settings.human_typos_enabled) {
               aiContent = maybeInjectTypo(aiContent, propertyId);
             }
-            aiContent = maybeDropCapitalization(aiContent);
-            aiContent = maybeDropApostrophes(aiContent);
+            if (settings.drop_capitalization_enabled) {
+              aiContent = maybeDropCapitalization(aiContent);
+            }
+            if (settings.drop_apostrophes_enabled) {
+              aiContent = maybeDropApostrophes(aiContent);
+            }
 
             const calculatedTypingTime = calculateTypingTimeMs(aiContent);
             const minTypingTime = randomInRange(
@@ -1117,8 +1128,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             if (settings.human_typos_enabled) {
               aiContent = maybeInjectTypo(aiContent, propertyId);
             }
-            aiContent = maybeDropCapitalization(aiContent);
-            aiContent = maybeDropApostrophes(aiContent);
+            if (settings.drop_capitalization_enabled) {
+              aiContent = maybeDropCapitalization(aiContent);
+            }
+            if (settings.drop_apostrophes_enabled) {
+              aiContent = maybeDropApostrophes(aiContent);
+            }
             setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
             setIsTyping(false);
 
@@ -1361,8 +1376,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           if (settings.human_typos_enabled) {
             aiContent = maybeInjectTypo(aiContent, propertyId);
           }
-          aiContent = maybeDropCapitalization(aiContent);
-          aiContent = maybeDropApostrophes(aiContent);
+          if (settings.drop_capitalization_enabled) {
+            aiContent = maybeDropCapitalization(aiContent);
+          }
+          if (settings.drop_apostrophes_enabled) {
+            aiContent = maybeDropApostrophes(aiContent);
+          }
 
           // Calculate how long it would take to type this response
           const wordCount = aiContent.trim().split(/\s+/).filter(Boolean).length;
@@ -1466,8 +1485,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           if (settings.human_typos_enabled) {
             aiContent = maybeInjectTypo(aiContent, propertyId);
           }
-          aiContent = maybeDropCapitalization(aiContent);
-          aiContent = maybeDropApostrophes(aiContent);
+          if (settings.drop_capitalization_enabled) {
+            aiContent = maybeDropCapitalization(aiContent);
+          }
+          if (settings.drop_apostrophes_enabled) {
+            aiContent = maybeDropApostrophes(aiContent);
+          }
           setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
           setIsTyping(false);
           
