@@ -50,6 +50,7 @@ interface PropertySettings {
   human_typos_enabled: boolean;
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
+  quick_reply_after_first_enabled: boolean;
 }
 
 interface WidgetChatConfig {
@@ -59,8 +60,8 @@ interface WidgetChatConfig {
 }
 
 const DEFAULT_SETTINGS: PropertySettings = {
-  ai_response_delay_min_ms: 1000,
-  ai_response_delay_max_ms: 2500,
+  ai_response_delay_min_ms: 20000,
+  ai_response_delay_max_ms: 28000,
   typing_indicator_min_ms: 1500,
   typing_indicator_max_ms: 3000,
   smart_typing_enabled: true,
@@ -83,6 +84,7 @@ const DEFAULT_SETTINGS: PropertySettings = {
   human_typos_enabled: true,
   drop_capitalization_enabled: true,
   drop_apostrophes_enabled: true,
+  quick_reply_after_first_enabled: false,
 };
 
 const getOrCreateSessionId = (): string => {
@@ -609,6 +611,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         human_typos_enabled: s.human_typos_enabled ?? DEFAULT_SETTINGS.human_typos_enabled,
         drop_capitalization_enabled: s.drop_capitalization_enabled ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
         drop_apostrophes_enabled: s.drop_apostrophes_enabled ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
+        quick_reply_after_first_enabled: s.quick_reply_after_first_enabled ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
       };
 
       setSettings(merged);
@@ -985,10 +988,13 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
       // Simulate reading delay, then respond using the full DB history.
-      const responseDelay = randomInRange(
-        settings.ai_response_delay_min_ms,
-        settings.ai_response_delay_max_ms,
-      );
+      // If "Quick Reply After First" is enabled and this is not the first AI message,
+      // use a short 3–8s delay to simulate attentive follow-up responses.
+      const isFirstAutoReply = aiMessageCountRef.current === 0;
+      const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
+      const responseDelay = useQuickReplyAuto
+        ? randomInRange(3000, 8000)
+        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
       await sleep(responseDelay);
 
       setIsTyping(true);
@@ -1326,15 +1332,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     conversationHistory.push({ role: 'user', content });
 
     // Apply response delay BEFORE showing typing indicator
-    // This simulates the agent "reading" the message before they start typing
-    const responseDelay = randomInRange(
-      settings.ai_response_delay_min_ms,
-      settings.ai_response_delay_max_ms
-    );
-    console.log(`[SmartTyping] Response delay: ${responseDelay}ms, smart_typing: ${settings.smart_typing_enabled}, wpm: ${settings.typing_wpm}`);
-    const sendStartTime = Date.now();
+    // This simulates the agent "reading" the message before they start typing.
+    // If "Quick Reply After First" is enabled and this is NOT the first AI message,
+    // use a short 3–8s window to simulate "you have my full attention now."
+    const isFirstAiReply = aiMessageCountRef.current === 0;
+    const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
+    const responseDelay = useQuickReply
+      ? randomInRange(3000, 8000)
+      : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
     await sleep(responseDelay);
-    console.log(`[SmartTyping] Response delay complete after ${Date.now() - sendStartTime}ms`);
 
     // Now show typing indicator
     setIsTyping(true);
@@ -1403,9 +1409,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           // Wait remaining time if any
           if (remainingTime > 0) {
             await sleep(remainingTime);
-            console.log(`[SmartTyping] Typing delay complete, showing message (total: ${Date.now() - sendStartTime}ms)`);
           } else {
-            console.log(`[SmartTyping] No remaining time, showing immediately (total: ${Date.now() - sendStartTime}ms)`);
+            // no remaining time
           }
           
           // Now reveal the full response
