@@ -990,7 +990,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Simulate reading delay, then respond using the full DB history.
       // If "Quick Reply After First" is enabled and this is not the first AI message,
-      // use a short 3–8s delay to simulate attentive follow-up responses.
+      // use a 15–25s delay to simulate attentive follow-up responses.
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
