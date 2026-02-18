@@ -7,7 +7,42 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Globe, Clock, User, FlaskConical, Trash2, MessageSquare, X, Archive, CheckSquare } from 'lucide-react';
+import { Globe, Clock, User, FlaskConical, Trash2, MessageSquare, X, Archive, CheckSquare, Zap } from 'lucide-react';
+
+const AGENT_FIRST_WINDOW_MS = 30000;
+
+// Countdown badge: shows how many seconds the agent has left before AI takes over
+const AgentCountdownBadge = ({ createdAt }: { createdAt: Date }) => {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = () => {
+      const elapsed = Date.now() - createdAt.getTime();
+      const remaining = Math.ceil((AGENT_FIRST_WINDOW_MS - elapsed) / 1000);
+      if (remaining > 0) {
+        setSecondsLeft(remaining);
+      } else {
+        setSecondsLeft(null);
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [createdAt]);
+
+  if (secondsLeft === null) return null;
+
+  return (
+    <Badge
+      variant="outline"
+      className="text-amber-600 border-amber-500/40 bg-amber-500/10 text-xs py-0 flex-shrink-0 gap-1 font-mono tabular-nums animate-pulse"
+      title={`AI backup activates in ${secondsLeft}s if no agent replies`}
+    >
+      <Zap className="h-2.5 w-2.5" />
+      {secondsLeft}s
+    </Badge>
+  );
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -122,6 +157,10 @@ const ConversationItem = ({
                   <FlaskConical className="h-3 w-3 mr-1" />
                   Test
                 </Badge>
+              )}
+              {/* Hybrid model: countdown badge showing agent has X seconds before AI backup */}
+              {status === 'active' && !isTest && (
+                <AgentCountdownBadge createdAt={conversation.createdAt} />
               )}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

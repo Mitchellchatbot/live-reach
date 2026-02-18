@@ -1331,16 +1331,89 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     conversationHistory.push({ role: 'user', content });
 
-    // Apply response delay BEFORE showing typing indicator
-    // This simulates the agent "reading" the message before they start typing.
-    // If "Quick Reply After First" is enabled and this is NOT the first AI message,
-    // use a short 3–8s window to simulate "you have my full attention now."
+    // --- HYBRID MODEL: Live Agent First, AI Backup ---
+    // For real (non-preview) conversations, hold AI for up to 30 seconds.
+    // Poll every 3 seconds to see if a human agent has replied.
+    // If they do → skip AI entirely (human has taken over).
+    // If the full window passes → AI responds as backup.
     const isFirstAiReply = aiMessageCountRef.current === 0;
     const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
     const responseDelay = useQuickReply
       ? randomInRange(3000, 8000)
       : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
-    await sleep(responseDelay);
+
+    if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
+      // Poll for human agent response during the delay window
+      const POLL_INTERVAL = 3000;
+      const deadline = Date.now() + responseDelay;
+      let humanReplied = false;
+
+      while (Date.now() < deadline) {
+        const remaining = deadline - Date.now();
+        await sleep(Math.min(POLL_INTERVAL, remaining));
+        if (humanHasTakenOverRef.current) {
+          humanReplied = true;
+          break;
+        }
+        // Check server for a new agent message
+        const convId = conversationIdRef.current;
+        const vId = visitorIdRef.current;
+        if (convId && vId) {
+          try {
+            const sessionId = getOrCreateSessionId();
+            const pollResp = await fetch(GET_MESSAGES_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              },
+              body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, afterSequence: lastSeqRef.current }),
+            });
+            if (pollResp.ok) {
+              const pollData = await pollResp.json();
+              const newMsgs = (pollData?.messages ?? []) as Array<{ sender_type: string; sender_id: string; content: string; sequence_number: number; id: string; created_at: string }>;
+              const agentMsg = newMsgs.find(m => m.sender_type === 'agent' && m.sender_id !== 'ai-bot');
+              if (agentMsg) {
+                humanHasTakenOverRef.current = true;
+                setHumanHasTakenOver(true);
+                // Render human message in widget UI
+                setMessages(prev => {
+                  const alreadyExists = prev.some(m => m.id === agentMsg.id);
+                  if (alreadyExists) return prev;
+                  return [...prev, {
+                    id: agentMsg.id,
+                    content: agentMsg.content,
+                    sender_type: 'agent' as const,
+                    created_at: agentMsg.created_at,
+                  }];
+                });
+                lastSeqRef.current = Math.max(lastSeqRef.current, agentMsg.sequence_number);
+                humanReplied = true;
+                break;
+              }
+            }
+          } catch { /* ignore poll errors */ }
+        }
+      }
+
+      if (humanReplied) {
+        // Human agent handled it — save visitor message to DB, skip AI
+        const convId = conversationIdRef.current;
+        const vId = visitorIdRef.current;
+        if (convId && vId) {
+          const sessionId = getOrCreateSessionId();
+          fetch(SAVE_MESSAGE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
+          }).catch(() => {});
+        }
+        return;
+      }
+    } else {
+      // Preview or already human-taken-over: just sleep the normal delay
+      await sleep(responseDelay);
+    }
 
     // Now show typing indicator
     setIsTyping(true);
