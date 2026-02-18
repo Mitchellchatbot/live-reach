@@ -1122,7 +1122,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                     <div className="space-y-0.5">
                       <Label>Quick Reply After First Message</Label>
                       <p className="text-sm text-muted-foreground">
-                        Reply faster (3–8s) after the opener, as if the agent is now fully engaged in the conversation
+                        Reply faster (15–25s) after the opener, as if the agent is now fully engaged in the conversation
                       </p>
                     </div>
                     <Switch
