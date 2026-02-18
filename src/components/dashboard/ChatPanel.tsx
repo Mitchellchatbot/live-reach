@@ -50,6 +50,7 @@ const MessageBubble = ({
   isAgent,
   isPendingDelivery,
   aiQueuedPaused,
+  queueSecondsLeft,
   onPause,
   onResume,
   onCancel,
@@ -59,6 +60,8 @@ const MessageBubble = ({
   isAgent: boolean;
   isPendingDelivery?: boolean;
   aiQueuedPaused?: boolean;
+  /** Seconds left in human-first window, null = window passed (AI is typing/composing) */
+  queueSecondsLeft?: number | null;
   onPause?: () => void;
   onResume?: () => void;
   onCancel?: () => void;
@@ -110,7 +113,7 @@ const MessageBubble = ({
 
         {/* Inline pending controls — only on the pending AI bubble */}
         {isPendingDelivery && (
-          <div className={cn("flex items-center gap-1.5", isAgent ? "justify-end" : "justify-start")}>
+          <div className={cn("flex items-center gap-1.5 flex-wrap", isAgent ? "justify-end" : "justify-start")}>
             {isEditing ? (
               <>
                 <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1" onClick={handleSaveEdit}>
@@ -124,7 +127,12 @@ const MessageBubble = ({
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  <span>{aiQueuedPaused ? 'Paused' : 'Sending to visitor…'}</span>
+                  {aiQueuedPaused
+                    ? <span>Paused</span>
+                    : queueSecondsLeft != null && queueSecondsLeft > 0
+                      ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Agent window: {queueSecondsLeft}s</span>
+                      : <span>Sending to visitor…</span>
+                  }
                 </div>
                 <TooltipProvider>
                   <Tooltip>
@@ -335,11 +343,12 @@ export const ChatPanel = ({
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [shortcutFilter, setShortcutFilter] = useState('');
   const [selectedShortcutIndex, setSelectedShortcutIndex] = useState(0);
-  // Live countdown for the AI queue
+  // Live countdown for the AI queue (how long the human-first window lasts before AI fires)
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(null); return; }
+    // Human-first window: 30s. Show countdown while it's still open.
     const WINDOW_MS = 30000;
     const update = () => {
       const elapsed = Date.now() - aiQueuedAt.getTime();
@@ -351,7 +360,8 @@ export const ChatPanel = ({
     return () => clearInterval(interval);
   }, [aiQueuedAt]);
 
-  const isQueued = !!aiQueuedAt && (queueSecondsLeft === null || queueSecondsLeft > 0);
+  // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
+  const isQueued = !!aiQueuedAt;
 
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -563,6 +573,7 @@ export const ChatPanel = ({
                 isAgent={msg.senderType === 'agent'}
                 isPendingDelivery={isPendingDelivery}
                 aiQueuedPaused={aiQueuedPaused}
+                queueSecondsLeft={queueSecondsLeft}
                 onPause={() => onPauseAIQueue?.(true)}
                 onResume={() => onPauseAIQueue?.(false)}
                 onCancel={onCancelAIQueue}
