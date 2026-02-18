@@ -1,37 +1,70 @@
 
+# Building a Capacitor Mobile App from Live Reach
 
-## Prompt Tuning: Nurture Longer + Remove "Brave/Courage" Language
+This plan sets up Capacitor so the existing Live Reach web app can run as a real native app on iOS and Android phones. No existing functionality is changed — Capacitor wraps the current app and adds native capabilities on top.
 
-Two targeted changes to the immutable base prompt in `supabase/functions/chat-ai/index.ts`:
+## What Lovable Will Do
 
-### 1. Nurture the conversation before asking for contact info
+### 1. Install Capacitor Packages
+Add the required Capacitor libraries to the project:
+- `@capacitor/core` — the core runtime
+- `@capacitor/cli` — development tool (dev dependency only)
+- `@capacitor/ios` — iOS platform support
+- `@capacitor/android` — Android platform support
 
-Update the **ENGAGEMENT STRATEGY** section to explicitly instruct the AI to have at least 3-4 back-and-forth exchanges before attempting to collect name/phone. The AI should focus on listening, understanding what they're going through, and building rapport first.
+### 2. Create the Capacitor Config File
+Create `capacitor.config.ts` in the project root with:
+- **App ID**: `app.lovable.e131b87620e34027a6c4576fd3c85b88`
+- **App Name**: `live-reach`
+- **Live reload server URL**: pointing to the Lovable preview URL so you can test on a real phone with live updates during development
 
-### 2. Ban "brave/courage" language, use simpler empathy
+### 3. Add Mobile Meta Tags to `index.html`
+Update the HTML head to include mobile-specific tags:
+- Viewport settings optimized for native mobile (no pinch zoom, safe area insets)
+- Status bar theme color
+- Apple mobile web app meta tags
 
-Add a rule under **TONE and VOICE** that explicitly forbids phrases like "that's so brave," "it takes courage," "you're brave for reaching out," or any variation. Instead, the AI should use grounded, simple empathy like "I'm sorry you're going through that," "that sounds really tough," "I hear you" -- with natural variance, never repeating the same phrase back-to-back.
+### 4. Update `vite.config.ts`
+Ensure the build output directory is set to `dist` (Capacitor's expected default) and that assets are handled correctly.
 
----
+## What YOU Need to Do After (Step-by-Step)
 
-### Technical Details
+Once Lovable applies the code changes, here is what you do on your local machine:
 
-**File:** `supabase/functions/chat-ai/index.ts`
+```text
+Step 1: Export project to your own GitHub repo
+        (Settings → GitHub → Export to GitHub)
 
-**Change 1 -- TONE and VOICE section (around line 110):** Add a new bullet:
+Step 2: Git clone the repo locally and run:
+        npm install
+
+Step 3: Add the native platforms:
+        npx cap add ios
+        npx cap add android
+
+Step 4: Build the web app:
+        npm run build
+
+Step 5: Sync Capacitor:
+        npx cap sync
+
+Step 6: Run on a device or emulator:
+        npx cap run ios      (requires a Mac with Xcode)
+        npx cap run android  (requires Android Studio)
 ```
-- NEVER use phrases like "that's brave," "it takes courage," "you're so brave," or any variation. Instead, use grounded empathy: "I'm sorry you're dealing with that," "that sounds really tough," "I hear you." Vary your phrasing naturally, never repeat the same empathy line twice in a row.
-```
 
-**Change 2 -- ENGAGEMENT STRATEGY section (around line 126):** Add before the existing bullets:
-```
-- Build Rapport First: Have at least 3-4 natural exchanges before asking for any contact information. Listen to what they're going through, ask follow-up questions, and let them feel heard before transitioning to lead capture.
-```
+## Important Notes
 
-**Change 3 -- LEAD CAPTURE section (around line 154-155):** Update the instruction to reinforce the delay:
-```
-After you have had at least 3-4 meaningful exchanges and the visitor feels heard, begin naturally collecting their contact information.
-```
+- **iOS** requires a Mac with Xcode installed — you cannot build for iPhone on Windows
+- **Android** works on Mac or Windows with Android Studio installed
+- The live reload config means during development your physical phone will connect to the Lovable preview URL — so changes you make here reflect instantly on your device
+- The widget embed route (`/widget-embed/`) is browser-only and not part of the mobile app experience — the dashboard and conversations are the core mobile features
 
-After editing, the edge function will be redeployed automatically.
+## Files to Be Created/Modified
 
+| File | Change |
+|------|--------|
+| `capacitor.config.ts` | Created — core Capacitor configuration |
+| `package.json` | Updated — Capacitor packages added |
+| `index.html` | Updated — mobile meta tags added |
+| `vite.config.ts` | Minor update — ensure build output is `dist` |
