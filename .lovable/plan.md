@@ -1,70 +1,69 @@
 
-# Building a Capacitor Mobile App from Live Reach
+# Fix Capacitor App to Run from Bundled Assets (Not Remote URL)
 
-This plan sets up Capacitor so the existing Live Reach web app can run as a real native app on iOS and Android phones. No existing functionality is changed — Capacitor wraps the current app and adds native capabilities on top.
+## The Problem
 
-## What Lovable Will Do
+The `capacitor.config.ts` currently has a `server.url` pointing to the published website. This tells Capacitor's native WebView to load everything from that URL at runtime — which is indistinguishable from just opening Safari. It is meant only for live-reload development, not for shipping a real app.
 
-### 1. Install Capacitor Packages
-Add the required Capacitor libraries to the project:
-- `@capacitor/core` — the core runtime
-- `@capacitor/cli` — development tool (dev dependency only)
-- `@capacitor/ios` — iOS platform support
-- `@capacitor/android` — Android platform support
+## What Needs to Change
 
-### 2. Create the Capacitor Config File
-Create `capacitor.config.ts` in the project root with:
-- **App ID**: `app.lovable.e131b87620e34027a6c4576fd3c85b88`
-- **App Name**: `live-reach`
-- **Live reload server URL**: pointing to the Lovable preview URL so you can test on a real phone with live updates during development
+### 1. Remove `server.url` from `capacitor.config.ts`
 
-### 3. Add Mobile Meta Tags to `index.html`
-Update the HTML head to include mobile-specific tags:
-- Viewport settings optimized for native mobile (no pinch zoom, safe area insets)
-- Status bar theme color
-- Apple mobile web app meta tags
+The entire `server` block needs to be removed. Without it, Capacitor will serve the app from the bundled `dist/` folder that gets compiled into the native binary via `npx cap sync`.
 
-### 4. Update `vite.config.ts`
-Ensure the build output directory is set to `dist` (Capacitor's expected default) and that assets are handled correctly.
+Before:
+```typescript
+const config: CapacitorConfig = {
+  appId: 'app.lovable.e131b87620e34027a6c4576fd3c85b88',
+  appName: 'live-reach',
+  webDir: 'dist',
+  server: {
+    url: 'https://live-reach.lovable.app',
+    cleartext: true,
+  },
+};
+```
 
-## What YOU Need to Do After (Step-by-Step)
+After:
+```typescript
+const config: CapacitorConfig = {
+  appId: 'app.lovable.e131b87620e34027a6c4576fd3c85b88',
+  appName: 'live-reach',
+  webDir: 'dist',
+};
+```
 
-Once Lovable applies the code changes, here is what you do on your local machine:
+## What YOU Need to Do Locally After This Change
+
+Once the config is updated here, you need to re-sync the native project locally. These steps rebundle the web app into the native binary:
 
 ```text
-Step 1: Export project to your own GitHub repo
-        (Settings → GitHub → Export to GitHub)
+Step 1: Pull the latest changes from GitHub
+        git pull
 
-Step 2: Git clone the repo locally and run:
-        npm install
-
-Step 3: Add the native platforms:
-        npx cap add ios
-        npx cap add android
-
-Step 4: Build the web app:
+Step 2: Rebuild the web app
         npm run build
 
-Step 5: Sync Capacitor:
+Step 3: Sync into the native iOS/Android project
         npx cap sync
 
-Step 6: Run on a device or emulator:
-        npx cap run ios      (requires a Mac with Xcode)
-        npx cap run android  (requires Android Studio)
+Step 4: Re-open in Xcode and rebuild to device
+        npx cap open ios
+        → Product → Run (or Cmd+R)
 ```
+
+## Why This Works
+
+When there is no `server.url`, Capacitor copies everything from the `dist/` folder directly into the native app bundle. The app loads from local files on the device — no internet required to launch, and it behaves like a fully standalone native app.
 
 ## Important Notes
 
-- **iOS** requires a Mac with Xcode installed — you cannot build for iPhone on Windows
-- **Android** works on Mac or Windows with Android Studio installed
-- The live reload config means during development your physical phone will connect to the Lovable preview URL — so changes you make here reflect instantly on your device
-- The widget embed route (`/widget-embed/`) is browser-only and not part of the mobile app experience — the dashboard and conversations are the core mobile features
+- The app still needs internet to communicate with the backend (auth, conversations, etc.) — but the app shell itself loads locally
+- Any time you want to update what the mobile app shows, you pull → `npm run build` → `npx cap sync` → rebuild in Xcode
+- If you ever want live-reload again during development, you can temporarily add `server.url` back — just remember to remove it before building for distribution
 
-## Files to Be Created/Modified
+## File Changed
 
 | File | Change |
 |------|--------|
-| `capacitor.config.ts` | Created — core Capacitor configuration |
-| `package.json` | Updated — Capacitor packages added |
-| `index.html` | Updated — mobile meta tags added |
-| `vite.config.ts` | Minor update — ensure build output is `dist` |
+| `capacitor.config.ts` | Remove the `server` block entirely |
