@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'live-reach',
   webDir: 'dist',
   server: {
-    url: 'https://e131b876-20e3-4027-a6c4-576fd3c85b88.lovableproject.com?forceHideBadge=true',
+    url: 'https://live-reach.lovable.app',
     cleartext: true,
   },
 };
