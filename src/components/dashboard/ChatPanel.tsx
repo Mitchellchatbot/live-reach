@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, Pause, Play, X, Clock, Pencil, Check } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check } from 'lucide-react';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
@@ -30,9 +30,6 @@ interface ChatPanelProps {
   aiQueuedAt?: Date | null;
   /** Draft text of the AI response being composed (shown as a pending bubble) */
   aiQueuedPreview?: string | null;
-  /** Whether the queued AI response is currently paused by the agent */
-  aiQueuedPaused?: boolean;
-  onPauseAIQueue?: (paused: boolean) => void;
   onCancelAIQueue?: () => void;
   /** Edit the content of the queued AI message (newContent only — targets the pending draft) */
   onEditAIQueue?: (messageId: string, newContent: string) => void;
@@ -51,21 +48,15 @@ const MessageBubble = ({
   message,
   isAgent,
   isPendingDelivery,
-  aiQueuedPaused,
   queueSecondsLeft,
-  onPause,
-  onResume,
   onCancel,
   onSaveEdit,
 }: {
   message: Message;
   isAgent: boolean;
   isPendingDelivery?: boolean;
-  aiQueuedPaused?: boolean;
   /** Seconds left in human-first window, null = window passed (AI is typing/composing) */
   queueSecondsLeft?: number | null;
-  onPause?: () => void;
-  onResume?: () => void;
   onCancel?: () => void;
   onSaveEdit?: (newContent: string) => void;
 }) => {
@@ -116,7 +107,7 @@ const MessageBubble = ({
         {/* Inline pending controls — only on the pending AI bubble */}
         {isPendingDelivery && (
           <div className={cn("flex items-center gap-1.5 flex-wrap", isAgent ? "justify-end" : "justify-start")}>
-            {isEditing ? (
+                {isEditing ? (
               <>
                 <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1" onClick={handleSaveEdit}>
                   <Check className="h-3 w-3" /> Save
@@ -129,29 +120,19 @@ const MessageBubble = ({
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  {aiQueuedPaused
-                    ? <span>Paused</span>
-                    : queueSecondsLeft != null && queueSecondsLeft > 0
-                      ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Agent window: {queueSecondsLeft}s</span>
-                      : <span>Sending to visitor…</span>
+                  {queueSecondsLeft != null && queueSecondsLeft > 0
+                    ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Agent window: {queueSecondsLeft}s</span>
+                    : <span>Sending to visitor…</span>
                   }
                 </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => { onPause?.(); setIsEditing(true); }}>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => setIsEditing(true)}>
                         <Pencil className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Pause & edit this message</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={aiQueuedPaused ? onResume : onPause}>
-                        {aiQueuedPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{aiQueuedPaused ? 'Resume sending' : 'Pause sending'}</TooltipContent>
+                    <TooltipContent>Edit this message</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -336,8 +317,6 @@ export const ChatPanel = ({
   propertyName,
   aiQueuedAt,
   aiQueuedPreview,
-  aiQueuedPaused = false,
-  onPauseAIQueue,
   onCancelAIQueue,
   onEditAIQueue,
 }: ChatPanelProps) => {
@@ -599,10 +578,7 @@ export const ChatPanel = ({
               }}
               isAgent={true}
               isPendingDelivery={true}
-              aiQueuedPaused={aiQueuedPaused}
               queueSecondsLeft={queueSecondsLeft}
-              onPause={() => onPauseAIQueue?.(true)}
-              onResume={() => onPauseAIQueue?.(false)}
               onCancel={onCancelAIQueue}
               onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
             />

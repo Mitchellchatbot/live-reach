@@ -453,6 +453,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const prevAiEnabledRef = useRef<boolean | null>(null);
   const autoReplyInFlightRef = useRef(false);
   const lastAutoReplyVisitorSeqRef = useRef<number>(0);
+  // True while sendMessage's hybrid flow (generate→queue→wait→send) is in progress.
+  // Prevents autoReplyIfPending from firing a duplicate AI message for the same visitor turn.
+  const hybridFlowActiveRef = useRef(false);
 
   const calculateTypingTimeMs = useCallback((text: string): number => {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
@@ -941,6 +944,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
   const autoReplyIfPending = useCallback(async () => {
     if (autoReplyInFlightRef.current) return;
+    if (hybridFlowActiveRef.current) return; // sendMessage hybrid flow is handling this turn
     if (isTyping) return;
     if (isPreview || !propertyId || propertyId === 'demo') return;
 
@@ -991,6 +995,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Simulate reading delay, then respond using the full DB history.
       // If "Quick Reply After First" is enabled and this is not the first AI message,
       // use a 15–25s delay to simulate attentive follow-up responses.
+      // Smart typing duration is added ON TOP of the response delay (not within it).
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
@@ -1343,9 +1348,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // New flow for real (non-preview) conversations:
     // 1. Generate the AI response immediately (during the delay window, not after)
     // 2. Set ai_queued_at + ai_queued_preview so dashboard shows an editable bubble
-    // 3. Poll for human agent during the remaining window
+    // 3. Poll for human agent during the human-priority window
     // 4. If human replied → clear queue, skip AI
-    // 5. If window elapsed → fetch current preview (agent may have edited it), save to DB, reveal in widget
+    // 5. If window elapsed → reveal in widget (with smart typing duration added on top)
+    // responseDelay = human-priority window (AI settings for first msg, 15-25s for quick reply)
+    // Smart typing duration is added AFTER the window, not within it.
     const isFirstAiReply = aiMessageCountRef.current === 0;
     const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
     const responseDelay = useQuickReply
@@ -1368,6 +1375,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const convId = conversationIdRef.current;
       const vId = visitorIdRef.current;
       const sessionId = getOrCreateSessionId();
+
+      // Block autoReplyIfPending from firing a duplicate for this same visitor turn
+      hybridFlowActiveRef.current = true;
 
       // Step 1: Generate AI response immediately (fire stream now)
       const generationStart = Date.now();
@@ -1400,7 +1410,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       });
 
       if (generationError || !aiContent) {
-        // Fallback: just bail, visitor sees nothing
+        // Fallback: release hybrid lock and bail
+        hybridFlowActiveRef.current = false;
         return;
       }
 
@@ -1477,6 +1488,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }).catch(() => {});
       }
 
+      // Always release the hybrid flow lock (whether human replied or not)
+      hybridFlowActiveRef.current = false;
+
       if (humanReplied) return;
 
       // Step 5: Window elapsed, AI sends — save final content (which may have been edited by agent)
@@ -1490,16 +1504,23 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }).catch(e => console.error('Failed to save AI message:', e));
       }
 
-      // Show typing indicator then reveal message in widget
+      // Show smart typing indicator (added on top of the response delay window, not within it)
       const aiMessageId = `ai-${Date.now()}`;
-      setIsTyping(true);
-      const typingStartTime = Date.now();
-      const calculatedTypingTime = calculateTypingTimeMs(aiContent);
-      const minTypingTime = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
-      const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
-      const elapsedTyping = Date.now() - typingStartTime;
-      const remainingTyping = targetTypingTime - elapsedTyping;
-      if (remainingTyping > 0) await sleep(remainingTyping);
+      if (settings.smart_typing_enabled) {
+        setIsTyping(true);
+        const typingStartTime = Date.now();
+        const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+        const minTypingTime = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+        const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+        const elapsedTyping = Date.now() - typingStartTime;
+        const remainingTyping = targetTypingTime - elapsedTyping;
+        if (remainingTyping > 0) await sleep(remainingTyping);
+      } else {
+        // No smart typing: just use the slider-based typing indicator duration
+        setIsTyping(true);
+        const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+        await sleep(typingDuration);
+      }
 
       setMessages(prev => [...prev, {
         id: aiMessageId,

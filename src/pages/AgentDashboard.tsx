@@ -676,8 +676,6 @@ export default function AgentDashboard() {
           isAIEnabled={isAIEnabled}
           onToggleAI={handleToggleAI}
           aiQueuedAt={aiQueuedAt}
-          aiQueuedPaused={aiQueuedPaused}
-          onPauseAIQueue={handlePauseAIQueue}
           onCancelAIQueue={handleCancelAIQueue}
           onEditAIQueue={handleEditAIQueue}
         />
