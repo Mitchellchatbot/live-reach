@@ -579,6 +579,7 @@ const DashboardContent = () => {
                 onToggleAI={handleToggleAI}
                 propertyName={selectedConversation ? properties.find(p => p.id === selectedConversation.propertyId)?.name : undefined}
                 aiQueuedAt={aiQueuedAt}
+                aiQueuedPreview={(selectedConversation as any)?.aiQueuedPreview ?? null}
                 aiQueuedPaused={aiQueuedPaused}
                 onPauseAIQueue={handlePauseAIQueue}
                 onCancelAIQueue={handleCancelAIQueue}
