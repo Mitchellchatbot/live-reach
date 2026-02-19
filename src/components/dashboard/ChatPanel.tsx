@@ -48,15 +48,15 @@ const MessageBubble = ({
   message,
   isAgent,
   isPendingDelivery,
-  queueSecondsElapsed,
+  queueSecondsLeft,
   onCancel,
   onSaveEdit,
 }: {
   message: Message;
   isAgent: boolean;
   isPendingDelivery?: boolean;
-  /** Seconds elapsed since this message was queued */
-  queueSecondsElapsed?: number;
+  /** Seconds remaining before AI sends (counts down to 0) */
+  queueSecondsLeft?: number;
   onCancel?: () => void;
   onSaveEdit?: (newContent: string) => void;
 }) => {
@@ -120,9 +120,9 @@ const MessageBubble = ({
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  {queueSecondsElapsed != null
-                    ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Queued {queueSecondsElapsed}s ago</span>
-                    : <span>Pending…</span>
+                  {queueSecondsLeft != null && queueSecondsLeft > 0
+                    ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {queueSecondsLeft}s to respond</span>
+                    : <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Sending…</span>
                   }
                 </div>
                 <TooltipProvider>
@@ -325,14 +325,16 @@ export const ChatPanel = ({
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [shortcutFilter, setShortcutFilter] = useState('');
   const [selectedShortcutIndex, setSelectedShortcutIndex] = useState(0);
-  // Live "queued X seconds ago" ticker for the AI pending bubble
-  const [queueSecondsElapsed, setQueueSecondsElapsed] = useState<number>(0);
+  // Live countdown ticker — how many seconds the agent has left to react before AI sends
+  // Window: 30s for first message (AI settings max), 25s max for quick replies
+  const QUEUE_WINDOW_SECONDS = 30;
+  const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(QUEUE_WINDOW_SECONDS);
 
   useEffect(() => {
-    if (!aiQueuedAt) { setQueueSecondsElapsed(0); return; }
+    if (!aiQueuedAt) { setQueueSecondsLeft(QUEUE_WINDOW_SECONDS); return; }
     const update = () => {
       const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
-      setQueueSecondsElapsed(elapsed);
+      setQueueSecondsLeft(Math.max(0, QUEUE_WINDOW_SECONDS - elapsed));
     };
     update();
     const interval = setInterval(update, 1000);
@@ -575,7 +577,7 @@ export const ChatPanel = ({
               }}
               isAgent={true}
               isPendingDelivery={true}
-              queueSecondsElapsed={queueSecondsElapsed}
+              queueSecondsLeft={queueSecondsLeft}
               onCancel={onCancelAIQueue}
               onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
             />
