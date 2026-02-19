@@ -63,6 +63,7 @@ const Demo = lazy(() => import("./pages/Demo"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Properties = lazy(() => import("./pages/Properties"));
 const HipaaCompliance = lazy(() => import("./pages/HipaaCompliance"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -153,6 +154,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/hipaa" element={<RequireClient><HipaaCompliance /></RequireClient>} />
         <Route path="/dashboard/subscription" element={<RequireClient><Subscription /></RequireClient>} />
         <Route path="/dashboard/support" element={<RequireClient><Support /></RequireClient>} />
+        <Route path="/dashboard/account" element={<RequireClient><AccountSettings /></RequireClient>} />
         
         <Route path="/widget-preview" element={<WidgetPreview />} />
         <Route path="/widget-embed/:propertyId" element={<WidgetEmbed />} />

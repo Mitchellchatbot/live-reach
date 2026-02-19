@@ -17,7 +17,8 @@ import {
   CreditCard,
   Building2,
   Menu,
-  Shield
+  Shield,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -363,8 +364,9 @@ export const DashboardSidebar = ({
           )}
 
           {showAdminItems && (
-            <SidebarSection title="Account" collapsed={!forMobile && collapsed}>
+          <SidebarSection title="Account" collapsed={!forMobile && collapsed}>
               <SidebarItem to="/dashboard/subscription" icon={({ className }: { className?: string }) => <img src={subscriptionCardLogo} alt="Subscription" className={cn("h-[18px] w-[18px]", className)} />} label="Subscription" collapsed={!forMobile && collapsed} iconColor="#F97316" />
+              <SidebarItem to="/dashboard/account" icon={Settings} label="Account Settings" collapsed={!forMobile && collapsed} iconColor="#6B7280" />
             </SidebarSection>
           )}
 
