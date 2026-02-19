@@ -1387,6 +1387,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const POLL_INTERVAL = 3000;
       const deadline = Date.now() + remainingDelay;
       let humanReplied = false;
+      let cancelledByDashboard = false;
 
       while (Date.now() < deadline) {
         const remaining = deadline - Date.now();
@@ -1407,6 +1408,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             });
             if (pollResp.ok) {
               const pollData = await pollResp.json();
+
+              // CRITICAL: If the dashboard agent pressed "Cancel", ai_queued_at will be null.
+              // Abort immediately — do NOT send the AI response.
+              if (pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
+                cancelledByDashboard = true;
+                break;
+              }
+
               // If agent edited the preview, keep local copy in sync
               if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
                 aiContent = pollData.aiQueuedPreview;
@@ -1448,6 +1457,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         return;
       }
 
+      // Dashboard agent pressed Cancel — queue was already cleared by the dashboard.
+      // Just release the lock and abort; do NOT send anything.
+      if (cancelledByDashboard) {
+        hybridFlowActiveRef.current = false;
+        setIsTyping(false);
+        return;
+      }
+
       if (humanReplied) {
         // Clear queue state — human took over
         const clearConvId = conversationIdRef.current;
@@ -1461,6 +1478,30 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
         return;
       }
+
+      // Final guard: do one last DB check right before sending to catch a cancel that
+      // arrived after the deadline but before we started typing.
+      try {
+        const finalCheckSessionId = getOrCreateSessionId();
+        const finalCheckConvId = conversationIdRef.current;
+        const finalCheckVId = visitorIdRef.current;
+        if (finalCheckConvId && finalCheckVId) {
+          const fcResp = await fetch(GET_MESSAGES_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: finalCheckConvId, visitorId: finalCheckVId, sessionId: finalCheckSessionId }),
+          });
+          if (fcResp.ok) {
+            const fcData = await fcResp.json();
+            if (fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
+              // Queue was cancelled between last poll and now — abort.
+              hybridFlowActiveRef.current = false;
+              setIsTyping(false);
+              return;
+            }
+          }
+        }
+      } catch { /* non-fatal: proceed if check fails */ }
 
       // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue so the
       // editable bubble stays visible on the dashboard while the widget types.
