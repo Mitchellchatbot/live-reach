@@ -322,7 +322,10 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
             ...c, 
             ai_enabled: false, 
             status: 'active' as const,
-            messages: [...(c.messages || []), newMessage],
+            // Deduplicate: don't add if realtime already delivered it
+            messages: (c.messages || []).some(m => m.id === newMessage.id)
+              ? c.messages || []
+              : [...(c.messages || []), newMessage],
           } 
         : c
       )

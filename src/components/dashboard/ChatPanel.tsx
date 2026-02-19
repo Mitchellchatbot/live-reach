@@ -505,12 +505,23 @@ export const ChatPanel = ({
     );
   }, [conversation?.id]);
 
+  // Deduplicate messages by id to guard against realtime + optimistic update race conditions
+  // Must be before the early return to satisfy Rules of Hooks
+  const messages = useMemo(() => {
+    const raw = conversation?.messages ?? [];
+    const seen = new Set<string>();
+    return raw.filter(m => {
+      if (seen.has(m.id)) return false;
+      seen.add(m.id);
+      return true;
+    });
+  }, [conversation?.messages]);
+
   if (!conversation) {
     return <EmptyState />;
   }
   const {
     visitor,
-    messages,
     status,
     assignedAgentId
   } = conversation;
