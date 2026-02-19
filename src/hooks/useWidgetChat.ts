@@ -456,6 +456,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // True while sendMessage's hybrid flow (generate→queue→wait→send) is in progress.
   // Prevents autoReplyIfPending from firing a duplicate AI message for the same visitor turn.
   const hybridFlowActiveRef = useRef(false);
+  // Monotonically increasing counter: each sendMessage call increments this.
+  // During the hybrid flow, the flow checks whether its own generation matches the current
+  // value — if not, a newer message has arrived and this flow should abort.
+  const aiGenerationIdRef = useRef(0);
 
   const calculateTypingTimeMs = useCallback((text: string): number => {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
@@ -1046,10 +1050,16 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       if (generationError || !aiContent) return;
 
+      // If a sendMessage hybrid flow started while we were generating, abort
+      if (hybridFlowActiveRef.current) return;
+
       // Step 2: Wait remaining window time (human-priority window minus generation elapsed)
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
       if (remainingDelay > 0) await sleep(remainingDelay);
+
+      // Abort if a sendMessage hybrid flow started during the delay
+      if (hybridFlowActiveRef.current) return;
 
       // Step 3: Smart typing on top of the window
       const aiMessageId = `ai-auto-${Date.now()}`;
@@ -1063,6 +1073,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       } else {
         const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
         await sleep(typingDuration);
+      }
+
+      // Abort if a sendMessage hybrid flow started during typing
+      if (hybridFlowActiveRef.current) {
+        setIsTyping(false);
+        return;
       }
 
       // Step 4: Save to DB and reveal to visitor
@@ -1311,6 +1327,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Block autoReplyIfPending from firing a duplicate for this same visitor turn
       hybridFlowActiveRef.current = true;
+      // Assign a unique generation ID so we can detect if a newer message supersedes this one
+      const myGenerationId = ++aiGenerationIdRef.current;
 
       // Step 1: Generate AI response immediately (fire stream now)
       const generationStart = Date.now();
@@ -1344,6 +1362,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       if (generationError || !aiContent) {
         // Fallback: release hybrid lock and bail
+        hybridFlowActiveRef.current = false;
+        return;
+      }
+
+      // If a newer visitor message arrived while we were generating, abort this flow
+      if (aiGenerationIdRef.current !== myGenerationId) {
         hybridFlowActiveRef.current = false;
         return;
       }
@@ -1409,6 +1433,21 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Always release the hybrid flow lock (whether human replied or not)
       hybridFlowActiveRef.current = false;
 
+      // If a newer visitor message arrived during the delay window, abort
+      if (aiGenerationIdRef.current !== myGenerationId) {
+        // Clear stale queue state
+        const staleConvId = conversationIdRef.current;
+        const staleVId = visitorIdRef.current;
+        if (staleConvId && staleVId) {
+          fetch(SET_AI_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: staleConvId, visitorId: staleVId, sessionId, action: 'clear' }),
+          }).catch(() => {});
+        }
+        return;
+      }
+
       if (humanReplied) {
         // Clear queue state — human took over
         const clearConvId = conversationIdRef.current;
@@ -1440,6 +1479,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         setIsTyping(true);
         const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
         await sleep(typingDuration);
+      }
+
+      // If a newer message arrived during typing, abort before saving
+      if (aiGenerationIdRef.current !== myGenerationId) {
+        setIsTyping(false);
+        return;
       }
 
       // Step 5: Typing done — now save the message to DB, clear the queue, and reveal to visitor
