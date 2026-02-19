@@ -505,8 +505,7 @@ export const ChatPanel = ({
     );
   }, [conversation?.id]);
 
-  // Deduplicate messages by id to guard against realtime + optimistic update race conditions
-  // Must be before the early return to satisfy Rules of Hooks
+  // Deduplicate messages by id as a safety net against any race conditions
   const messages = useMemo(() => {
     const raw = conversation?.messages ?? [];
     const seen = new Set<string>();
@@ -574,9 +573,9 @@ export const ChatPanel = ({
         {/* Messages */}
         <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
           {messages.map((msg, idx) => {
-            // Mark the last AI message as "pending delivery" when the AI queue is still active.
-            const isLastAgentMsg = msg.senderType === 'agent' && !messages.slice(idx + 1).some(m => m.senderType === 'agent');
-            const isPendingDelivery = isLastAgentMsg && isQueued;
+            // Find the index of the last agent message overall, then mark only that one as pending.
+            const lastAgentIdx = messages.reduce((acc, m, i) => m.senderType === 'agent' ? i : acc, -1);
+            const isPendingDelivery = idx === lastAgentIdx && isQueued;
             return (
               <MessageBubble
                 key={msg.id}

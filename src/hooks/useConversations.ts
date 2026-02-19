@@ -314,19 +314,11 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       .update(updatePayload)
       .eq('id', conversationId);
 
-    const newMessage: DbMessage = { ...data, sender_type: 'agent' };
-    
+    // Only update conversation-level fields (ai_enabled, status). 
+    // Do NOT optimistically add the message to avoid duplicates with the realtime INSERT event.
     updateConversationsCache(prev => 
       prev.map(c => c.id === conversationId 
-        ? { 
-            ...c, 
-            ai_enabled: false, 
-            status: 'active' as const,
-            // Deduplicate: don't add if realtime already delivered it
-            messages: (c.messages || []).some(m => m.id === newMessage.id)
-              ? c.messages || []
-              : [...(c.messages || []), newMessage],
-          } 
+        ? { ...c, ai_enabled: false, status: 'active' as const }
         : c
       )
     );
@@ -568,6 +560,40 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     console.log('[useConversations] Setting up realtime subscriptions');
 
+    // Define fetchSingleConversation BEFORE the channels so it's in scope for closures
+    const fetchSingleConversation = async (conversationId: string) => {
+      const { data } = await supabase
+        .from('conversations')
+        .select(`*, visitor:visitors(*), property:properties(*)`)
+        .eq('id', conversationId)
+        .single();
+      
+      if (!data) return;
+      
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('sequence_number', { ascending: true });
+      
+      // Skip if no visitor messages yet
+      if (!messages?.some(m => m.sender_type === 'visitor')) return;
+      
+      const newConversation: DbConversation = {
+        ...data,
+        messages: (messages || []).map(m => ({
+          ...m,
+          sender_type: m.sender_type as 'agent' | 'visitor',
+        })),
+        status: data.status as 'active' | 'closed' | 'pending',
+      };
+      
+      updateConversationsCache(prev => {
+        if (prev.some(c => c.id === data.id)) return prev;
+        return [newConversation, ...prev];
+      });
+    };
+
     const messagesChannel = supabase
       .channel(`messages-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
@@ -580,14 +606,14 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
           updateConversationsCache(prev => {
             const conversationExists = prev.some(c => c.id === newMessage.conversation_id);
             if (!conversationExists) {
-              // Fetch only this new conversation
+              // Fetch this new conversation (including for agent messages from AI)
               fetchSingleConversation(newMessage.conversation_id);
               return prev;
             }
             
             return prev.map(c => {
               if (c.id !== newMessage.conversation_id) return c;
-              // Deduplicate: skip if message already exists (e.g. from optimistic update)
+              // Deduplicate: skip if message already exists
               const alreadyExists = (c.messages || []).some(m => m.id === newMessage.id);
               if (alreadyExists) return { ...c, updated_at: newMessage.created_at };
               return { 
@@ -699,40 +725,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         }
       )
       .subscribe();
-
-    // Fetch a single conversation with its relations
-    const fetchSingleConversation = async (conversationId: string) => {
-      const { data } = await supabase
-        .from('conversations')
-        .select(`*, visitor:visitors(*), property:properties(*)`)
-        .eq('id', conversationId)
-        .single();
-      
-      if (!data) return;
-      
-      const { data: messages } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('sequence_number', { ascending: true });
-      
-      // Skip if no visitor messages yet
-      if (!messages?.some(m => m.sender_type === 'visitor')) return;
-      
-      const newConversation: DbConversation = {
-        ...data,
-        messages: (messages || []).map(m => ({
-          ...m,
-          sender_type: m.sender_type as 'agent' | 'visitor',
-        })),
-        status: data.status as 'active' | 'closed' | 'pending',
-      };
-      
-      updateConversationsCache(prev => {
-        if (prev.some(c => c.id === data.id)) return prev;
-        return [newConversation, ...prev];
-      });
-    };
 
     return () => {
       console.log('[useConversations] Cleaning up realtime subscriptions');
