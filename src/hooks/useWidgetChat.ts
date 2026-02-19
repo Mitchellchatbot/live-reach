@@ -331,6 +331,7 @@ async function streamAIResponse({
   naturalLeadCaptureFields,
   calendlyUrl,
   humanTyposEnabled,
+  signal,
 }: {
   messages: { role: 'user' | 'assistant'; content: string }[];
   onDelta: (text: string) => void;
@@ -342,6 +343,7 @@ async function streamAIResponse({
   naturalLeadCaptureFields?: string[];
   calendlyUrl?: string | null;
   humanTyposEnabled?: boolean;
+  signal?: AbortSignal;
 }) {
   try {
     const resp = await fetch(CHAT_URL, {
@@ -351,6 +353,7 @@ async function streamAIResponse({
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
       body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled }),
+      signal,
     });
 
     if (!resp.ok) {
@@ -370,6 +373,10 @@ async function streamAIResponse({
     let streamDone = false;
 
     while (!streamDone) {
+      if (signal?.aborted) {
+        reader.cancel();
+        return; // Silently abort — caller handles cleanup
+      }
       const { done, value } = await reader.read();
       if (done) break;
       textBuffer += decoder.decode(value, { stream: true });
@@ -400,6 +407,8 @@ async function streamAIResponse({
       }
     }
 
+    if (signal?.aborted) return; // Aborted during final flush — skip
+
     // Final flush
     if (textBuffer.trim()) {
       for (let raw of textBuffer.split('\n')) {
@@ -419,6 +428,8 @@ async function streamAIResponse({
 
     onDone();
   } catch (error) {
+    // AbortError is expected when we cancel — don't log it as an error
+    if (error instanceof Error && error.name === 'AbortError') return;
     console.error('Stream error:', error);
     onError('Connection error. Please try again.');
   }
@@ -456,6 +467,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // True while sendMessage's hybrid flow (generate→queue→wait→send) is in progress.
   // Prevents autoReplyIfPending from firing a duplicate AI message for the same visitor turn.
   const hybridFlowActiveRef = useRef(false);
+  // AbortController for the currently in-flight AI stream. When a new visitor message
+  // arrives mid-generation, we abort the old stream so it never calls onDone, then
+  // wait for the flow lock to release before running ONE fresh generation with the
+  // full updated history.
+  const aiAbortControllerRef = useRef<AbortController | null>(null);
   // Monotonically increasing counter: each sendMessage call increments this.
   // During the hybrid flow, the flow checks whether its own generation matches the current
   // value — if not, a newer message has arrived and this flow should abort.
@@ -1321,19 +1337,42 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
+      // --- RAPID MESSAGE HANDLING ---
+      // If a generation is already in flight, abort it and wait for the lock to release.
+      // Then this call (the newest message) runs ONE fresh generation with the full
+      // updated history instead of running in parallel and producing multiple responses.
+      if (hybridFlowActiveRef.current && aiAbortControllerRef.current) {
+        aiAbortControllerRef.current.abort();
+        // Wait for the previous flow to fully release the lock (it will set hybridFlowActiveRef=false)
+        await new Promise<void>((resolve) => {
+          const check = () => {
+            if (!hybridFlowActiveRef.current) { resolve(); return; }
+            setTimeout(check, 50);
+          };
+          check();
+        });
+      }
+
+      // Increment generation ID — but now primarily used for the poll-loop guard
+      const myGenerationId = ++aiGenerationIdRef.current;
+
       const convId = conversationIdRef.current;
       const vId = visitorIdRef.current;
       const sessionId = getOrCreateSessionId();
 
       // Block autoReplyIfPending from firing a duplicate for this same visitor turn
       hybridFlowActiveRef.current = true;
-      // Assign a unique generation ID so we can detect if a newer message supersedes this one
-      const myGenerationId = ++aiGenerationIdRef.current;
 
-      // Step 1: Generate AI response immediately (fire stream now)
+      // Step 1: Generate AI response immediately using the FULL conversation history
+      // (includes the current message already pushed into `messages` state above)
       const generationStart = Date.now();
       let aiContent = '';
       let generationError = false;
+      let generationAborted = false;
+
+      // Create a fresh AbortController for this generation so it can be cancelled
+      const abortController = new AbortController();
+      aiAbortControllerRef.current = abortController;
 
       await new Promise<void>((resolve) => {
         streamAIResponse({
@@ -1344,6 +1383,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
           humanTyposEnabled: settings.human_typos_enabled ?? true,
+          signal: abortController.signal,
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
             // Apply text transforms
@@ -1353,12 +1393,23 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             resolve();
           },
           onError: (err) => {
-            console.error('AI generation error:', err);
-            generationError = true;
+            if (abortController.signal.aborted) {
+              generationAborted = true;
+            } else {
+              console.error('AI generation error:', err);
+              generationError = true;
+            }
             resolve();
           },
         });
       });
+
+      // If this generation was aborted by a newer sendMessage call, release lock and exit.
+      // The newer call is already waiting and will take over.
+      if (generationAborted || abortController.signal.aborted) {
+        hybridFlowActiveRef.current = false;
+        return;
+      }
 
       if (generationError || !aiContent) {
         // Fallback: release hybrid lock and bail
@@ -1366,7 +1417,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         return;
       }
 
-      // If a newer visitor message arrived while we were generating, abort this flow
+      // Generation ID check: if a newer message somehow bypassed the abort (race edge case),
+      // release lock and exit — the newer flow owns the response.
       if (aiGenerationIdRef.current !== myGenerationId) {
         hybridFlowActiveRef.current = false;
         return;
@@ -1390,8 +1442,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       let cancelledByDashboard = false;
 
       while (Date.now() < deadline) {
+        // If a newer sendMessage aborted this controller during the wait window, break out
+        if (abortController.signal.aborted) break;
+
         const remaining = deadline - Date.now();
         await sleep(Math.min(POLL_INTERVAL, remaining));
+
+        // Re-check abort after sleeping
+        if (abortController.signal.aborted) break;
+
         if (humanHasTakenOverRef.current) {
           humanReplied = true;
           break;
@@ -1442,9 +1501,25 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Always release the hybrid flow lock (whether human replied or not)
       hybridFlowActiveRef.current = false;
 
-      // If a newer visitor message arrived during the delay window, abort
+      // If this flow was aborted by a newer sendMessage during the delay window,
+      // update the queued preview with the new content that the newer flow will regenerate.
+      // The newer sendMessage was waiting for this lock — it will now proceed.
+      if (abortController.signal.aborted) {
+        // Clear the old queue so the newer flow can set a fresh one
+        const staleConvId = conversationIdRef.current;
+        const staleVId = visitorIdRef.current;
+        if (staleConvId && staleVId) {
+          fetch(SET_AI_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: staleConvId, visitorId: staleVId, sessionId, action: 'clear' }),
+          }).catch(() => {});
+        }
+        return;
+      }
+
+      // Safety net: if generation ID somehow mismatched (extreme race), clear and exit
       if (aiGenerationIdRef.current !== myGenerationId) {
-        // Clear stale queue state
         const staleConvId = conversationIdRef.current;
         const staleVId = visitorIdRef.current;
         if (staleConvId && staleVId) {
@@ -1522,8 +1597,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         await sleep(typingDuration);
       }
 
-      // If a newer message arrived during typing, abort before saving
-      if (aiGenerationIdRef.current !== myGenerationId) {
+      // If aborted (newer message took over) during typing, abort before saving
+      if (abortController.signal.aborted || aiGenerationIdRef.current !== myGenerationId) {
         setIsTyping(false);
         return;
       }
