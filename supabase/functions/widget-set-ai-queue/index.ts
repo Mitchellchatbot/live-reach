@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { conversationId, visitorId, sessionId, action, preview } = (await req.json()) as {
+    const { conversationId, visitorId, sessionId, action, preview, windowMs } = (await req.json()) as {
       conversationId?: string;
       visitorId?: string;
       sessionId?: string;
@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
       action?: string;
       /** Short preview text of the AI response being composed (optional) */
       preview?: string;
+      /** Total human-priority window in ms (used by dashboard countdown) */
+      windowMs?: number;
     };
 
     if (!conversationId || !visitorId || !sessionId || !action) {
@@ -84,6 +86,7 @@ Deno.serve(async (req) => {
         ai_queued_at: new Date().toISOString(),
         ai_queued_preview: preview ?? null,
         ai_queued_paused: false,
+        ...(typeof windowMs === "number" ? { ai_queued_window_ms: windowMs } : {}),
       };
     } else if (action === "clear") {
       updatePayload = {
