@@ -77,6 +77,9 @@ const MessageBubble = ({
     setIsEditing(false);
   };
 
+  // Controls are only shown while the countdown is still active
+  const countdownActive = isPendingDelivery && queueSecondsLeft != null && queueSecondsLeft > 0;
+
   return (
     <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
       {!isAgent && <Avatar className="h-8 w-8 flex-shrink-0">
@@ -85,11 +88,11 @@ const MessageBubble = ({
           </AvatarFallback>
         </Avatar>}
       <div className="flex flex-col gap-1 max-w-[70%]">
-        {/* Message bubble */}
+        {/* Message bubble — fades to full opacity once countdown hits 0 */}
         <div className={cn(
-          "rounded-3xl px-4 py-2.5",
+          "rounded-3xl px-4 py-2.5 transition-opacity duration-700",
           isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl",
-          isPendingDelivery && "opacity-80"
+          isPendingDelivery && countdownActive ? "opacity-70" : "opacity-100"
         )}>
           {isPendingDelivery && isEditing ? (
             <Textarea
@@ -106,10 +109,10 @@ const MessageBubble = ({
           </p>
         </div>
 
-        {/* Inline pending controls — only on the pending AI bubble */}
-        {isPendingDelivery && (
-          <div className={cn("flex items-center gap-1.5 flex-wrap", isAgent ? "justify-end" : "justify-start")}>
-                {isEditing ? (
+        {/* Inline pending controls — only while countdown is still ticking */}
+        {countdownActive && (
+          <div className={cn("flex items-center gap-1.5 flex-wrap transition-opacity duration-300", isAgent ? "justify-end" : "justify-start")}>
+            {isEditing ? (
               <>
                 <Button size="sm" variant="outline" className="h-6 px-2 text-xs gap-1" onClick={handleSaveEdit}>
                   <Check className="h-3 w-3" /> Save
@@ -122,10 +125,7 @@ const MessageBubble = ({
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  {queueSecondsLeft != null && queueSecondsLeft > 0
-                    ? <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {queueSecondsLeft}s to respond</span>
-                    : <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Sending…</span>
-                  }
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {queueSecondsLeft}s to respond</span>
                 </div>
                 <TooltipProvider>
                   <Tooltip>
