@@ -1430,10 +1430,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const POLL_INTERVAL = 3000;
       const deadline = Date.now() + remainingDelay;
       let humanReplied = false;
-      let pausedExtraMs = 0;
 
-      while (Date.now() < deadline + pausedExtraMs) {
-        const remaining = (deadline + pausedExtraMs) - Date.now();
+      while (Date.now() < deadline) {
+        const remaining = deadline - Date.now();
         await sleep(Math.min(POLL_INTERVAL, remaining));
         if (humanHasTakenOverRef.current) {
           humanReplied = true;
@@ -1451,9 +1450,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             });
             if (pollResp.ok) {
               const pollData = await pollResp.json();
-              if (pollData?.aiQueuedPaused === true) {
-                pausedExtraMs += POLL_INTERVAL;
-              }
               // If agent edited the preview, keep local copy in sync
               if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
                 aiContent = pollData.aiQueuedPreview;
@@ -1645,93 +1641,31 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       extractVisitorInfo(currentVisitorId, conversationHistory);
     }
 
-    // Save to database if:
-    // - Connected to a real property (not demo)
-    // - Either NOT in preview mode, OR we're in preview mode but escalation has already happened (test conversation created)
-    const shouldSaveToDb = propertyId && propertyId !== 'demo' && (!isPreview || (isPreview && conversationId && visitorId));
-    const currentVisitorIdForDb = visitorIdRef.current || visitorId;
-    
-    if (shouldSaveToDb && currentVisitorIdForDb) {
-      // Real embeds: persist via backend function so we don't need SELECT policies.
-      // NOTE: The AI message was already saved immediately when it came back from the AI
-      // (before the typing delay), so dashboard agents can see it right away.
-      // Here we only need to save the visitor message.
-      if (!isPreview && propertyId && propertyId !== 'demo') {
-        await ensureWidgetIds();
-        const convId = conversationIdRef.current || conversationId;
-        const vId = visitorIdRef.current || visitorId;
-        if (!convId || !vId) return;
+    // NOTE: For real embeds the visitor message was already saved to DB at the top of sendMessage
+    // (awaited, before the hybrid flow). For preview mode with a test conversation, save via
+    // supabase directly.
+    if (isPreview && conversationId && visitorId && propertyId && propertyId !== 'demo') {
+      const { data: maxSeqData } = await supabase
+        .from('messages')
+        .select('sequence_number')
+        .eq('conversation_id', conversationId)
+        .order('sequence_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-        const sessionId = getOrCreateSessionId();
+      const nextSeq = (maxSeqData?.sequence_number || 0) + 1;
 
-        try {
-          const resp = await fetch(SAVE_MESSAGE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              conversationId: convId,
-              visitorId: vId,
-              sessionId,
-              senderType: 'visitor',
-              content,
-            }),
-          });
-          if (!resp.ok) {
-            console.error('Failed to save visitor message:', await resp.text());
-          }
-        } catch (e) {
-          console.error('Error saving visitor message via backend:', e);
-        }
+      const { error: msgErr } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: visitorId,
+        sender_type: 'visitor',
+        content,
+        sequence_number: nextSeq,
+      });
+      if (msgErr) console.error('Error saving visitor message (preview):', msgErr);
 
-        return;
-      }
-
-      // Preview mode: keep existing behavior
-      let currentConversationId = conversationId;
-      if (!currentConversationId && !isPreview) {
-        const { data: newConversation, error } = await supabase
-          .from('conversations')
-          .insert({
-            property_id: propertyId,
-            visitor_id: currentVisitorIdForDb,
-            status: 'pending',
-          })
-          .select()
-          .single();
-
-        if (error) console.error('Error creating conversation:', error);
-        if (!error && newConversation) {
-          currentConversationId = newConversation.id;
-          setConversationId(currentConversationId);
-        }
-      }
-
-      if (currentConversationId) {
-        const { data: maxSeqData } = await supabase
-          .from('messages')
-          .select('sequence_number')
-          .eq('conversation_id', currentConversationId)
-          .order('sequence_number', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const nextSeq = (maxSeqData?.sequence_number || 0) + 1;
-
-        const { error: msgErr } = await supabase.from('messages').insert({
-          conversation_id: currentConversationId,
-          sender_id: currentVisitorIdForDb,
-          sender_type: 'visitor',
-          content,
-          sequence_number: nextSeq,
-        });
-        if (msgErr) console.error('Error saving visitor message:', msgErr);
-
-        if (isPreview && conversationHistory.length >= 1) {
-          extractVisitorInfo(currentVisitorIdForDb, conversationHistory);
-        }
+      if (conversationHistory.length >= 1) {
+        extractVisitorInfo(visitorId, conversationHistory);
       }
     }
   };
