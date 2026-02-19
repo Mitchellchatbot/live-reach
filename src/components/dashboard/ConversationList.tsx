@@ -9,26 +9,32 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Globe, Clock, User, FlaskConical, Trash2, MessageSquare, X, Archive, CheckSquare, Zap } from 'lucide-react';
 
-const AGENT_FIRST_WINDOW_MS = 30000;
-
-// Countdown badge: shows how many seconds the agent has left before AI takes over
-const AgentCountdownBadge = ({ createdAt }: { createdAt: Date }) => {
+// Countdown badge: shows how many seconds the agent has left before AI takes over.
+// Uses the same source of truth as the ChatPanel: aiQueuedAt + aiQueuedWindowMs.
+const AgentCountdownBadge = ({
+  aiQueuedAt,
+  aiQueuedWindowMs,
+}: {
+  aiQueuedAt?: Date | null;
+  aiQueuedWindowMs?: number | null;
+}) => {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
+    if (!aiQueuedAt) {
+      setSecondsLeft(null);
+      return;
+    }
+    const windowMs = aiQueuedWindowMs ?? 30000;
     const update = () => {
-      const elapsed = Date.now() - createdAt.getTime();
-      const remaining = Math.ceil((AGENT_FIRST_WINDOW_MS - elapsed) / 1000);
-      if (remaining > 0) {
-        setSecondsLeft(remaining);
-      } else {
-        setSecondsLeft(null);
-      }
+      const elapsed = Date.now() - aiQueuedAt.getTime();
+      const remaining = Math.ceil((windowMs - elapsed) / 1000);
+      setSecondsLeft(remaining > 0 ? remaining : null);
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [createdAt]);
+  }, [aiQueuedAt, aiQueuedWindowMs]);
 
   if (secondsLeft === null) return null;
 
@@ -36,7 +42,7 @@ const AgentCountdownBadge = ({ createdAt }: { createdAt: Date }) => {
     <Badge
       variant="outline"
       className="text-amber-600 border-amber-500/40 bg-amber-500/10 text-xs py-0 flex-shrink-0 gap-1 font-mono tabular-nums animate-pulse"
-      title={`AI backup activates in ${secondsLeft}s if no agent replies`}
+      title={`AI sends in ${secondsLeft}s — click to intervene`}
     >
       <Zap className="h-2.5 w-2.5" />
       {secondsLeft}s
@@ -158,9 +164,12 @@ const ConversationItem = ({
                   Test
                 </Badge>
               )}
-              {/* Hybrid model: countdown badge showing agent has X seconds before AI backup */}
-              {status === 'active' && !isTest && (
-                <AgentCountdownBadge createdAt={conversation.createdAt} />
+              {/* Countdown badge — same source of truth as ChatPanel */}
+              {status === 'active' && !isTest && conversation.aiQueuedAt && (
+                <AgentCountdownBadge
+                  aiQueuedAt={conversation.aiQueuedAt}
+                  aiQueuedWindowMs={conversation.aiQueuedWindowMs}
+                />
               )}
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
