@@ -28,11 +28,13 @@ interface ChatPanelProps {
   propertyName?: string;
   /** ISO string of when AI response was queued (from DB) */
   aiQueuedAt?: Date | null;
+  /** Draft text of the AI response being composed (shown as a pending bubble) */
+  aiQueuedPreview?: string | null;
   /** Whether the queued AI response is currently paused by the agent */
   aiQueuedPaused?: boolean;
   onPauseAIQueue?: (paused: boolean) => void;
   onCancelAIQueue?: () => void;
-  /** Edit the content of the queued AI message (messageId, newContent) */
+  /** Edit the content of the queued AI message (newContent only — targets the pending draft) */
   onEditAIQueue?: (messageId: string, newContent: string) => void;
 }
 const formatMessageTime = (date: Date) => {
@@ -333,6 +335,7 @@ export const ChatPanel = ({
   onToggleAI,
   propertyName,
   aiQueuedAt,
+  aiQueuedPreview,
   aiQueuedPaused = false,
   onPauseAIQueue,
   onCancelAIQueue,
@@ -423,7 +426,7 @@ export const ChatPanel = ({
     if (isNearBottomRef.current || isNewMessage) {
       scrollToBottom();
     }
-  }, [conversation?.messages]);
+  }, [conversation?.messages, isQueued, aiQueuedPreview]);
   useEffect(() => {
     if (conversation) {
       inputRef.current?.focus();
@@ -572,25 +575,38 @@ export const ChatPanel = ({
 
         {/* Messages */}
         <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
-          {messages.map((msg, idx) => {
-            // Find the index of the last agent message overall, then mark only that one as pending.
-            const lastAgentIdx = messages.reduce((acc, m, i) => m.senderType === 'agent' ? i : acc, -1);
-            const isPendingDelivery = idx === lastAgentIdx && isQueued;
-            return (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                isAgent={msg.senderType === 'agent'}
-                isPendingDelivery={isPendingDelivery}
-                aiQueuedPaused={aiQueuedPaused}
-                queueSecondsLeft={queueSecondsLeft}
-                onPause={() => onPauseAIQueue?.(true)}
-                onResume={() => onPauseAIQueue?.(false)}
-                onCancel={onCancelAIQueue}
-                onSaveEdit={(newContent) => onEditAIQueue?.(msg.id, newContent)}
-              />
-            );
-          })}
+          {messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              isAgent={msg.senderType === 'agent'}
+              isPendingDelivery={false}
+            />
+          ))}
+
+          {/* Synthetic pending bubble — shown immediately when AI has queued a draft */}
+          {isQueued && aiQueuedPreview && (
+            <MessageBubble
+              key="__pending_ai__"
+              message={{
+                id: '__pending_ai__',
+                conversationId: conversation?.id ?? '',
+                senderId: 'ai-bot',
+                senderType: 'agent',
+                content: aiQueuedPreview,
+                timestamp: aiQueuedAt ?? new Date(),
+                read: false,
+              }}
+              isAgent={true}
+              isPendingDelivery={true}
+              aiQueuedPaused={aiQueuedPaused}
+              queueSecondsLeft={queueSecondsLeft}
+              onPause={() => onPauseAIQueue?.(true)}
+              onResume={() => onPauseAIQueue?.(false)}
+              onCancel={onCancelAIQueue}
+              onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
+            />
+          )}
         </div>
 
 
