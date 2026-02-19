@@ -992,24 +992,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Mark handled so we don't auto-reply repeatedly on subsequent polls.
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
-      // Simulate reading delay, then respond using the full DB history.
-      // If "Quick Reply After First" is enabled and this is not the first AI message,
-      // use a 15–25s delay to simulate attentive follow-up responses.
-      // Smart typing duration is added ON TOP of the response delay (not within it).
+      // Generate-first approach (mirrors the hybrid flow):
+      // 1. Pick the human-priority window (responseDelay) based on first/quick-reply settings
+      // 2. Generate the AI response immediately (so generation time eats into the window)
+      // 3. Wait the remaining window time after generation completes
+      // 4. Add smart-typing duration ON TOP of the window
+      // 5. Reveal to visitor
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
         ? randomInRange(15000, 25000)
         : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
-      await sleep(responseDelay);
 
-      setIsTyping(true);
-      const typingStartTime = Date.now();
-
-      const aiMessageId = `ai-auto-${Date.now()}`;
-      let aiContent = '';
       const respondingAgent = currentAiAgent;
-
       const naturalLeadCaptureFields: string[] = [];
       if (settings.natural_lead_capture_enabled) {
         if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
@@ -1020,6 +1015,57 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       const aiHistory = toAiHistoryFromDb(dbMessages);
 
+      // Step 1: Generate AI response immediately (generation time counts against the window)
+      const generationStart = Date.now();
+      let aiContent = '';
+      let generationError = false;
+
+      await new Promise<void>((resolve) => {
+        streamAIResponse({
+          messages: aiHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          calendlyUrl: settings.calendly_url,
+          humanTyposEnabled: settings.human_typos_enabled ?? true,
+          onDelta: (delta) => { aiContent += delta; },
+          onDone: () => {
+            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
+            if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
+            if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
+            resolve();
+          },
+          onError: (err) => {
+            console.error('AI Error (autoReply):', err);
+            generationError = true;
+            resolve();
+          },
+        });
+      });
+
+      if (generationError || !aiContent) return;
+
+      // Step 2: Wait remaining window time (human-priority window minus generation elapsed)
+      const generationElapsed = Date.now() - generationStart;
+      const remainingDelay = Math.max(0, responseDelay - generationElapsed);
+      if (remainingDelay > 0) await sleep(remainingDelay);
+
+      // Step 3: Smart typing on top of the window
+      const aiMessageId = `ai-auto-${Date.now()}`;
+      setIsTyping(true);
+
+      if (settings.smart_typing_enabled) {
+        const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+        const minTypingTime = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+        const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+        await sleep(targetTypingTime);
+      } else {
+        const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+        await sleep(typingDuration);
+      }
+
+      // Step 4: Save to DB and reveal to visitor
       const saveAiToDb = async (finalContent: string) => {
         const saveResp = await fetch(SAVE_MESSAGE_URL, {
           method: 'POST',
@@ -1035,139 +1081,26 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             content: finalContent,
           }),
         });
-
-        if (!saveResp.ok) {
-          console.error('Failed to save auto AI message:', await saveResp.text());
-        }
+        if (!saveResp.ok) console.error('Failed to save auto AI message:', await saveResp.text());
       };
 
-      if (settings.smart_typing_enabled) {
-        await streamAIResponse({
-          messages: aiHistory,
-          personalityPrompt: respondingAgent?.personality_prompt,
-          agentName: respondingAgent?.name,
-          basePrompt: settings.ai_base_prompt,
-           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
-           calendlyUrl: settings.calendly_url,
-           humanTyposEnabled: settings.human_typos_enabled ?? true,
-          onDelta: (delta) => {
-            aiContent += delta;
-          },
-          onDone: async () => {
-            // Apply programmatic typo if enabled
-            if (settings.human_typos_enabled) {
-              aiContent = maybeInjectTypo(aiContent, propertyId);
-            }
-            if (settings.drop_capitalization_enabled) {
-              aiContent = maybeDropCapitalization(aiContent);
-            }
-            if (settings.drop_apostrophes_enabled) {
-              aiContent = maybeDropApostrophes(aiContent);
-            }
+      if (aiContent) await saveAiToDb(aiContent);
 
-            // ✅ Save to DB immediately so dashboard agents can see it
-            // before the typing delay completes (gives review leeway)
-            if (aiContent) void saveAiToDb(aiContent);
+      setMessages(prev => [...prev, {
+        id: aiMessageId,
+        content: aiContent,
+        sender_type: 'agent' as const,
+        created_at: new Date().toISOString(),
+        agent_name: respondingAgent?.name,
+        agent_avatar: respondingAgent?.avatar_url,
+      }]);
+      setIsTyping(false);
 
-            const calculatedTypingTime = calculateTypingTimeMs(aiContent);
-            const minTypingTime = randomInRange(
-              settings.typing_indicator_min_ms,
-              settings.typing_indicator_max_ms,
-            );
-            const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
-            const elapsedTime = Date.now() - typingStartTime;
-            const remainingTime = targetTypingTime - elapsedTime;
-            if (remainingTime > 0) await sleep(remainingTime);
+      aiMessageCountRef.current += 1;
+      cycleToNextAgent();
 
-            setMessages(prev => [...prev, {
-              id: aiMessageId,
-              content: aiContent,
-              sender_type: 'agent' as const,
-              created_at: new Date().toISOString(),
-              agent_name: respondingAgent?.name,
-              agent_avatar: respondingAgent?.avatar_url,
-            }]);
-
-            setIsTyping(false);
-
-            aiMessageCountRef.current += 1;
-            cycleToNextAgent();
-
-            if (
-              settings.auto_escalation_enabled &&
-              aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
-            ) {
-              await triggerEscalation();
-            }
-          },
-          onError: (error) => {
-            setIsTyping(false);
-            console.error('AI Error:', error);
-          },
-        });
-      } else {
-        const typingDuration = randomInRange(
-          settings.typing_indicator_min_ms,
-          settings.typing_indicator_max_ms,
-        );
-        await sleep(typingDuration);
-
-        await streamAIResponse({
-          messages: aiHistory,
-          personalityPrompt: respondingAgent?.personality_prompt,
-          agentName: respondingAgent?.name,
-          basePrompt: settings.ai_base_prompt,
-           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
-           calendlyUrl: settings.calendly_url,
-           humanTyposEnabled: settings.human_typos_enabled ?? true,
-          onDelta: (delta) => {
-            aiContent += delta;
-            setMessages(prev => {
-              const existing = prev.find(m => m.id === aiMessageId);
-              if (existing) {
-                return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
-              }
-              return [...prev, {
-                id: aiMessageId,
-                content: aiContent,
-                sender_type: 'agent' as const,
-                created_at: new Date().toISOString(),
-                agent_name: respondingAgent?.name,
-                agent_avatar: respondingAgent?.avatar_url,
-              }];
-            });
-          },
-          onDone: async () => {
-            // Apply programmatic typo if enabled (streaming mode — update final message)
-            if (settings.human_typos_enabled) {
-              aiContent = maybeInjectTypo(aiContent, propertyId);
-            }
-            if (settings.drop_capitalization_enabled) {
-              aiContent = maybeDropCapitalization(aiContent);
-            }
-            if (settings.drop_apostrophes_enabled) {
-              aiContent = maybeDropApostrophes(aiContent);
-            }
-            setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
-            setIsTyping(false);
-
-            aiMessageCountRef.current += 1;
-            cycleToNextAgent();
-
-            if (aiContent) await saveAiToDb(aiContent);
-
-            if (
-              settings.auto_escalation_enabled &&
-              aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
-            ) {
-              await triggerEscalation();
-            }
-          },
-          onError: (error) => {
-            setIsTyping(false);
-            console.error('AI Error:', error);
-          },
-        });
+      if (settings.auto_escalation_enabled && aiMessageCountRef.current >= settings.max_ai_messages_before_escalation) {
+        await triggerEscalation();
       }
     } catch (e) {
       console.error('autoReplyIfPending error:', e);
