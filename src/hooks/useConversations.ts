@@ -254,7 +254,9 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     queryKey: QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
     queryFn: fetchConversationsData,
     enabled: !!user,
-    staleTime: 30 * 1000, // 30 seconds
+    // Realtime handles all live updates — never auto-refetch over the top of them
+    staleTime: Infinity,
+    gcTime: 5 * 60 * 1000,
   });
 
   const loading = propertiesLoading || conversationsLoading;
@@ -613,15 +615,20 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
             
             return prev.map(c => {
               if (c.id !== newMessage.conversation_id) return c;
-              // Deduplicate: skip if message already exists
-              const alreadyExists = (c.messages || []).some(m => m.id === newMessage.id);
+              // Deduplicate by both id and sequence_number
+              const existing = c.messages || [];
+              const alreadyExists = existing.some(
+                m => m.id === newMessage.id || m.sequence_number === newMessage.sequence_number
+              );
               if (alreadyExists) return { ...c, updated_at: newMessage.created_at };
+              // Keep sorted by sequence_number
+              const merged = [...existing, {
+                ...newMessage,
+                sender_type: newMessage.sender_type as 'agent' | 'visitor',
+              }].sort((a, b) => a.sequence_number - b.sequence_number);
               return { 
                 ...c, 
-                messages: [...(c.messages || []), {
-                  ...newMessage,
-                  sender_type: newMessage.sender_type as 'agent' | 'visitor',
-                }],
+                messages: merged,
                 updated_at: newMessage.created_at,
               };
             });
