@@ -698,6 +698,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
                     ai_queued_at: updated.ai_queued_at ?? null,
                     ai_queued_preview: updated.ai_queued_preview ?? null,
                     ai_queued_paused: updated.ai_queued_paused ?? false,
+                    ai_queued_window_ms: updated.ai_queued_window_ms ?? null,
                   }
                 : c
             )
