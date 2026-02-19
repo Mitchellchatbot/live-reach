@@ -1339,34 +1339,85 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     conversationHistory.push({ role: 'user', content });
 
-    // --- HYBRID MODEL: Live Agent First, AI Backup ---
-    // For real (non-preview) conversations, hold AI for up to 30 seconds.
-    // Poll every 3 seconds to see if a human agent has replied.
-    // If they do → skip AI entirely (human has taken over).
-    // If the full window passes → AI responds as backup.
+    // --- HYBRID MODEL: Generate First, Queue with Preview, Then Wait ---
+    // New flow for real (non-preview) conversations:
+    // 1. Generate the AI response immediately (during the delay window, not after)
+    // 2. Set ai_queued_at + ai_queued_preview so dashboard shows an editable bubble
+    // 3. Poll for human agent during the remaining window
+    // 4. If human replied → clear queue, skip AI
+    // 5. If window elapsed → fetch current preview (agent may have edited it), save to DB, reveal in widget
     const isFirstAiReply = aiMessageCountRef.current === 0;
     const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
     const responseDelay = useQuickReply
       ? randomInRange(15000, 25000)
       : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
+    // Store current agent for this message (before cycling)
+    const respondingAgent = currentAiAgent;
+
+    // Build natural lead capture fields list
+    const naturalLeadCaptureFields: string[] = [];
+    if (settings.natural_lead_capture_enabled) {
+      if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
+      if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
+      if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
+      if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
+    }
+
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
-      // Signal to dashboard that AI response is queued
       const convId = conversationIdRef.current;
       const vId = visitorIdRef.current;
       const sessionId = getOrCreateSessionId();
 
+      // Step 1: Generate AI response immediately (fire stream now)
+      const generationStart = Date.now();
+      let aiContent = '';
+      let generationError = false;
+
+      await new Promise<void>((resolve) => {
+        streamAIResponse({
+          messages: conversationHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          calendlyUrl: settings.calendly_url,
+          humanTyposEnabled: settings.human_typos_enabled ?? true,
+          onDelta: (delta) => { aiContent += delta; },
+          onDone: () => {
+            // Apply text transforms
+            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
+            if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
+            if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
+            resolve();
+          },
+          onError: (err) => {
+            console.error('AI generation error:', err);
+            generationError = true;
+            resolve();
+          },
+        });
+      });
+
+      if (generationError || !aiContent) {
+        // Fallback: just bail, visitor sees nothing
+        return;
+      }
+
+      // Step 2: Set queue state with the generated preview so dashboard shows editable bubble
       if (convId && vId) {
         fetch(SET_AI_QUEUE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue' }),
+          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent }),
         }).catch(() => {});
       }
 
-      // Poll for human agent response during the delay window
+      // Step 3: Poll for human agent during the remaining delay window
+      const generationElapsed = Date.now() - generationStart;
+      const remainingDelay = Math.max(0, responseDelay - generationElapsed);
       const POLL_INTERVAL = 3000;
-      const deadline = Date.now() + responseDelay;
+      const deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let pausedExtraMs = 0;
 
@@ -1384,33 +1435,27 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             const loopSessionId = getOrCreateSessionId();
             const pollResp = await fetch(GET_MESSAGES_URL, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-              },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
               body: JSON.stringify({ conversationId: loopConvId, visitorId: loopVId, sessionId: loopSessionId, afterSequence: lastSeqRef.current }),
             });
             if (pollResp.ok) {
               const pollData = await pollResp.json();
-              // If dashboard paused the AI, extend the deadline by the poll interval
               if (pollData?.aiQueuedPaused === true) {
                 pausedExtraMs += POLL_INTERVAL;
+              }
+              // If agent edited the preview, keep local copy in sync
+              if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
+                aiContent = pollData.aiQueuedPreview;
               }
               const newMsgs = (pollData?.messages ?? []) as Array<{ sender_type: string; sender_id: string; content: string; sequence_number: number; id: string; created_at: string }>;
               const agentMsg = newMsgs.find(m => m.sender_type === 'agent' && m.sender_id !== 'ai-bot');
               if (agentMsg) {
                 humanHasTakenOverRef.current = true;
                 setHumanHasTakenOver(true);
-                // Render human message in widget UI
                 setMessages(prev => {
                   const alreadyExists = prev.some(m => m.id === agentMsg.id);
                   if (alreadyExists) return prev;
-                  return [...prev, {
-                    id: agentMsg.id,
-                    content: agentMsg.content,
-                    sender_type: 'agent' as const,
-                    created_at: agentMsg.created_at,
-                  }];
+                  return [...prev, { id: agentMsg.id, content: agentMsg.content, sender_type: 'agent' as const, created_at: agentMsg.created_at }];
                 });
                 lastSeqRef.current = Math.max(lastSeqRef.current, agentMsg.sequence_number);
                 humanReplied = true;
@@ -1421,7 +1466,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Clear queue state — either human replied or AI is about to take over
+      // Step 4: Clear queue state always
       const clearConvId = conversationIdRef.current;
       const clearVId = visitorIdRef.current;
       if (clearConvId && clearVId) {
@@ -1432,219 +1477,143 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }).catch(() => {});
       }
 
-      if (humanReplied) {
-        // Visitor message was already saved to DB immediately — skip AI, return
-        return;
+      if (humanReplied) return;
+
+      // Step 5: Window elapsed, AI sends — save final content (which may have been edited by agent)
+      const finalConvId = conversationIdRef.current;
+      const finalVId = visitorIdRef.current;
+      if (finalConvId && finalVId) {
+        fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent }),
+        }).catch(e => console.error('Failed to save AI message:', e));
       }
+
+      // Show typing indicator then reveal message in widget
+      const aiMessageId = `ai-${Date.now()}`;
+      setIsTyping(true);
+      const typingStartTime = Date.now();
+      const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+      const minTypingTime = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+      const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+      const elapsedTyping = Date.now() - typingStartTime;
+      const remainingTyping = targetTypingTime - elapsedTyping;
+      if (remainingTyping > 0) await sleep(remainingTyping);
+
+      setMessages(prev => [...prev, {
+        id: aiMessageId,
+        content: aiContent,
+        sender_type: 'agent' as const,
+        created_at: new Date().toISOString(),
+        agent_name: respondingAgent?.name,
+        agent_avatar: respondingAgent?.avatar_url,
+      }]);
+      setIsTyping(false);
+      aiMessageCountRef.current += 1;
+      cycleToNextAgent();
+
+      if (settings.auto_escalation_enabled && aiMessageCountRef.current >= settings.max_ai_messages_before_escalation) {
+        await triggerEscalation();
+      }
+
     } else {
-      // Preview or already human-taken-over: just sleep the normal delay
+      // Preview mode or human already taken over: run original flow (generate + delay + reveal)
       await sleep(responseDelay);
-    }
 
-    // Now show typing indicator
-    setIsTyping(true);
-    const typingStartTime = Date.now();
+      const aiMessageId = `ai-${Date.now()}`;
+      let aiContent = '';
 
-    // Create placeholder for AI response
-    const aiMessageId = `ai-${Date.now()}`;
-    let aiContent = '';
+      if (settings.smart_typing_enabled) {
+        await streamAIResponse({
+          messages: conversationHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          calendlyUrl: settings.calendly_url,
+          humanTyposEnabled: settings.human_typos_enabled ?? true,
+          onDelta: (delta) => { aiContent += delta; },
+          onDone: async () => {
+            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
+            if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
+            if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
 
-    // Store current agent for this message (before cycling)
-    const respondingAgent = currentAiAgent;
+            setIsTyping(true);
+            const typingStartTime = Date.now();
+            const calculatedTypingTime = calculateTypingTimeMs(aiContent);
+            const minTypingTime = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+            const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
+            const elapsedTime = Date.now() - typingStartTime;
+            const remainingTime = targetTypingTime - elapsedTime;
+            if (remainingTime > 0) await sleep(remainingTime);
 
-    // Calculate typing time based on word count using configured WPM
-    // Build natural lead capture fields list
-    const naturalLeadCaptureFields: string[] = [];
-    if (settings.natural_lead_capture_enabled) {
-      if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
-      if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
-      if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
-      if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
-    }
-
-    if (settings.smart_typing_enabled) {
-      // Smart typing: buffer the response, then reveal after calculated time
-      await streamAIResponse({
-        messages: conversationHistory,
-        personalityPrompt: respondingAgent?.personality_prompt,
-        agentName: respondingAgent?.name,
-        basePrompt: settings.ai_base_prompt,
-         naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
-         calendlyUrl: settings.calendly_url,
-         humanTyposEnabled: settings.human_typos_enabled ?? true,
-        onDelta: (delta) => {
-          aiContent += delta;
-          // Don't update UI yet - just buffer
-        },
-        onDone: async () => {
-          // Apply programmatic typo if enabled
-          if (settings.human_typos_enabled) {
-            aiContent = maybeInjectTypo(aiContent, propertyId);
-          }
-          if (settings.drop_capitalization_enabled) {
-            aiContent = maybeDropCapitalization(aiContent);
-          }
-          if (settings.drop_apostrophes_enabled) {
-            aiContent = maybeDropApostrophes(aiContent);
-          }
-
-          // ✅ Save AI response to DB immediately so dashboard agents can
-          // preview the message while it's still "typing" in the widget
-          if (aiContent && !isPreview && propertyId && propertyId !== 'demo') {
-            const convId = conversationIdRef.current || conversationId;
-            const vId = visitorIdRef.current || visitorId;
-            if (convId && vId) {
-              const sessionId = getOrCreateSessionId();
-              void fetch(SAVE_MESSAGE_URL, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-                },
-                body: JSON.stringify({
-                  conversationId: convId,
-                  visitorId: vId,
-                  sessionId,
-                  senderType: 'agent',
-                  content: aiContent,
-                }),
-              }).catch(e => console.error('Failed to pre-save AI message:', e));
+            setMessages(prev => [...prev, {
+              id: aiMessageId,
+              content: aiContent,
+              sender_type: 'agent' as const,
+              created_at: new Date().toISOString(),
+              agent_name: respondingAgent?.name,
+              agent_avatar: respondingAgent?.avatar_url,
+            }]);
+            setIsTyping(false);
+            aiMessageCountRef.current += 1;
+            cycleToNextAgent();
+            if (settings.auto_escalation_enabled && aiMessageCountRef.current >= settings.max_ai_messages_before_escalation) {
+              await triggerEscalation();
             }
-          }
+          },
+          onError: (error) => {
+            setIsTyping(false);
+            console.error('AI Error:', error);
+            setMessages(prev => [...prev, {
+              id: `error-${Date.now()}`,
+              content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
+              sender_type: 'agent',
+              created_at: new Date().toISOString(),
+            }]);
+          },
+        });
+      } else {
+        setIsTyping(true);
+        const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
+        await sleep(typingDuration);
 
-          // Calculate how long it would take to type this response
-          const wordCount = aiContent.trim().split(/\s+/).filter(Boolean).length;
-          const calculatedTypingTime = calculateTypingTimeMs(aiContent);
-          const minTypingTime = randomInRange(
-            settings.typing_indicator_min_ms,
-            settings.typing_indicator_max_ms
-          );
-          
-          // Use the longer of calculated time or minimum time
-          const targetTypingTime = Math.max(calculatedTypingTime, minTypingTime);
-          
-          // Calculate how long we've already been showing the typing indicator
-          const elapsedTime = Date.now() - typingStartTime;
-          const remainingTime = targetTypingTime - elapsedTime;
-          
-          console.log(`[SmartTyping] onDone: words=${wordCount}, calcTime=${calculatedTypingTime}ms, minTime=${minTypingTime}ms, target=${targetTypingTime}ms, elapsed=${elapsedTime}ms, remaining=${remainingTime}ms`);
-          
-          // Wait remaining time if any
-          if (remainingTime > 0) {
-            await sleep(remainingTime);
-          }
-          
-          // Now reveal the full response
-          setMessages(prev => [...prev, {
-            id: aiMessageId,
-            content: aiContent,
-            sender_type: 'agent' as const,
-            created_at: new Date().toISOString(),
-            agent_name: respondingAgent?.name,
-            agent_avatar: respondingAgent?.avatar_url,
-          }]);
-          
-          setIsTyping(false);
-          
-          // Increment AI message count
-          aiMessageCountRef.current += 1;
-
-          // Cycle to next AI agent for next response
-          cycleToNextAgent();
-
-          // Check if should auto-escalate based on message count
-          if (
-            settings.auto_escalation_enabled && 
-            aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
-          ) {
-            await triggerEscalation();
-          }
-        },
-        onError: (error) => {
-          setIsTyping(false);
-          console.error('AI Error:', error);
-          setMessages(prev => [...prev, {
-            id: `error-${Date.now()}`,
-            content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
-            sender_type: 'agent',
-            created_at: new Date().toISOString(),
-          }]);
-        },
-      });
-    } else {
-      // Standard mode: wait fixed duration then stream
-      const typingDuration = randomInRange(
-        settings.typing_indicator_min_ms,
-        settings.typing_indicator_max_ms
-      );
-      await sleep(typingDuration);
-
-      // Stream AI response with current AI agent's personality
-      await streamAIResponse({
-        messages: conversationHistory,
-        personalityPrompt: respondingAgent?.personality_prompt,
-        agentName: respondingAgent?.name,
-        basePrompt: settings.ai_base_prompt,
-         naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
-         calendlyUrl: settings.calendly_url,
-         humanTyposEnabled: settings.human_typos_enabled ?? true,
-        onDelta: (delta) => {
-          aiContent += delta;
-          setMessages(prev => {
-            const existing = prev.find(m => m.id === aiMessageId);
-            if (existing) {
-              return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
-            } else {
-              return [...prev, {
-                id: aiMessageId,
-                content: aiContent,
-                sender_type: 'agent' as const,
-                created_at: new Date().toISOString(),
-                agent_name: respondingAgent?.name,
-                agent_avatar: respondingAgent?.avatar_url,
-              }];
+        await streamAIResponse({
+          messages: conversationHistory,
+          personalityPrompt: respondingAgent?.personality_prompt,
+          agentName: respondingAgent?.name,
+          basePrompt: settings.ai_base_prompt,
+          naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
+          calendlyUrl: settings.calendly_url,
+          humanTyposEnabled: settings.human_typos_enabled ?? true,
+          onDelta: (delta) => {
+            aiContent += delta;
+            setMessages(prev => {
+              const existing = prev.find(m => m.id === aiMessageId);
+              if (existing) return prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m);
+              return [...prev, { id: aiMessageId, content: aiContent, sender_type: 'agent' as const, created_at: new Date().toISOString(), agent_name: respondingAgent?.name, agent_avatar: respondingAgent?.avatar_url }];
+            });
+          },
+          onDone: async () => {
+            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
+            if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
+            if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
+            setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
+            setIsTyping(false);
+            aiMessageCountRef.current += 1;
+            cycleToNextAgent();
+            if (settings.auto_escalation_enabled && aiMessageCountRef.current >= settings.max_ai_messages_before_escalation) {
+              await triggerEscalation();
             }
-          });
-        },
-        onDone: async () => {
-          // Apply programmatic typo if enabled (streaming mode — update final message)
-          if (settings.human_typos_enabled) {
-            aiContent = maybeInjectTypo(aiContent, propertyId);
-          }
-          if (settings.drop_capitalization_enabled) {
-            aiContent = maybeDropCapitalization(aiContent);
-          }
-          if (settings.drop_apostrophes_enabled) {
-            aiContent = maybeDropApostrophes(aiContent);
-          }
-          setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));
-          setIsTyping(false);
-          
-          // Increment AI message count
-          aiMessageCountRef.current += 1;
-
-          // Cycle to next AI agent for next response
-          cycleToNextAgent();
-
-          // Check if should auto-escalate based on message count
-          if (
-            settings.auto_escalation_enabled && 
-            aiMessageCountRef.current >= settings.max_ai_messages_before_escalation
-          ) {
-            await triggerEscalation();
-          }
-        },
-        onError: (error) => {
-          setIsTyping(false);
-          console.error('AI Error:', error);
-          setMessages(prev => [...prev, {
-            id: `error-${Date.now()}`,
-            content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.",
-            sender_type: 'agent',
-            created_at: new Date().toISOString(),
-          }]);
-        },
-      });
+          },
+          onError: (error) => {
+            setIsTyping(false);
+            console.error('AI Error:', error);
+            setMessages(prev => [...prev, { id: `error-${Date.now()}`, content: "I'm having trouble connecting right now. Please try again in a moment, or speak directly with our team.", sender_type: 'agent', created_at: new Date().toISOString() }]);
+          },
+        });
+      }
     }
 
     // Extract visitor info in background after each AI response (works in all modes)
@@ -1739,19 +1708,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         });
         if (msgErr) console.error('Error saving visitor message:', msgErr);
 
-        if (aiContent) {
-          const { error: aiMsgErr } = await supabase.from('messages').insert({
-            conversation_id: currentConversationId,
-            sender_id: 'ai-bot',
-            sender_type: 'agent',
-            content: aiContent,
-            sequence_number: nextSeq + 1,
-          });
-          if (aiMsgErr) console.error('Error saving AI message:', aiMsgErr);
-        }
-
-        if (isPreview && conversationHistory.length >= 2) {
-          extractVisitorInfo(currentVisitorIdForDb, [...conversationHistory, { role: 'assistant', content: aiContent }]);
+        if (isPreview && conversationHistory.length >= 1) {
+          extractVisitorInfo(currentVisitorIdForDb, conversationHistory);
         }
       }
     }
