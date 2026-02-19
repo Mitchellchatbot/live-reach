@@ -73,6 +73,7 @@ const toUiConversation = (dbConv: DbConversation): Conversation & {
   aiQueuedAt: dbConv.ai_queued_at ? new Date(dbConv.ai_queued_at) : null,
   aiQueuedPreview: dbConv.ai_queued_preview || null,
   aiQueuedPaused: dbConv.ai_queued_paused || false,
+  aiQueuedWindowMs: dbConv.ai_queued_window_ms ?? null,
 });
 const DashboardContent = () => {
   const {
@@ -356,7 +357,7 @@ const DashboardContent = () => {
   const selectedDbConversation = dbConversations.find(c => c.id === selectedConversationId);
   const isAIEnabled = selectedDbConversation?.ai_enabled ?? true;
   const aiQueuedAt = selectedDbConversation?.ai_queued_at ? new Date(selectedDbConversation.ai_queued_at) : null;
-  const aiQueuedWindowMs = (selectedDbConversation as any)?.ai_queued_window_ms ?? null;
+  const aiQueuedWindowMs = selectedConversation?.aiQueuedWindowMs ?? null;
   const aiQueuedPaused = selectedDbConversation?.ai_queued_paused ?? false;
   
   const handleToggleAI = async () => {
