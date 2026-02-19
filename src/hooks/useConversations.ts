@@ -58,6 +58,7 @@ export interface DbConversation {
   ai_queued_at: string | null;
   ai_queued_preview: string | null;
   ai_queued_paused: boolean;
+  ai_queued_window_ms: number | null;
   created_at: string;
   updated_at: string;
   visitor?: DbVisitor;

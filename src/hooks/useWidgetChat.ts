@@ -1406,34 +1406,25 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Step 4: Clear queue state always
-      const clearConvId = conversationIdRef.current;
-      const clearVId = visitorIdRef.current;
-      if (clearConvId && clearVId) {
-        fetch(SET_AI_QUEUE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: clearConvId, visitorId: clearVId, sessionId, action: 'clear' }),
-        }).catch(() => {});
-      }
-
       // Always release the hybrid flow lock (whether human replied or not)
       hybridFlowActiveRef.current = false;
 
-      if (humanReplied) return;
-
-      // Step 5: Window elapsed, AI sends — save final content (which may have been edited by agent)
-      const finalConvId = conversationIdRef.current;
-      const finalVId = visitorIdRef.current;
-      if (finalConvId && finalVId) {
-        fetch(SAVE_MESSAGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent }),
-        }).catch(e => console.error('Failed to save AI message:', e));
+      if (humanReplied) {
+        // Clear queue state — human took over
+        const clearConvId = conversationIdRef.current;
+        const clearVId = visitorIdRef.current;
+        if (clearConvId && clearVId) {
+          fetch(SET_AI_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: clearConvId, visitorId: clearVId, sessionId, action: 'clear' }),
+          }).catch(() => {});
+        }
+        return;
       }
 
-      // Show smart typing indicator (added on top of the response delay window, not within it)
+      // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue so the
+      // editable bubble stays visible on the dashboard while the widget types.
       const aiMessageId = `ai-${Date.now()}`;
       if (settings.smart_typing_enabled) {
         setIsTyping(true);
@@ -1449,6 +1440,24 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         setIsTyping(true);
         const typingDuration = randomInRange(settings.typing_indicator_min_ms, settings.typing_indicator_max_ms);
         await sleep(typingDuration);
+      }
+
+      // Step 5: Typing done — now save the message to DB, clear the queue, and reveal to visitor
+      const finalConvId = conversationIdRef.current;
+      const finalVId = visitorIdRef.current;
+      if (finalConvId && finalVId) {
+        fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent }),
+        }).catch(e => console.error('Failed to save AI message:', e));
+
+        // Clear queue AFTER typing finishes so dashboard bubble stays editable throughout
+        fetch(SET_AI_QUEUE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, action: 'clear' }),
+        }).catch(() => {});
       }
 
       setMessages(prev => [...prev, {

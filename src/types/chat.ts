@@ -73,6 +73,7 @@ export interface Conversation {
   aiQueuedAt?: Date | null;
   aiQueuedPreview?: string | null;
   aiQueuedPaused?: boolean;
+  aiQueuedWindowMs?: number | null;
 }
 
 export interface ChatWidgetConfig {
