@@ -92,23 +92,23 @@ const Properties = () => {
               {displayProperties.map((property) => (
                 <Card key={property.id} className="group relative hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div
                           className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
                           style={{ backgroundColor: `${property.widget_color || '#F97316'}18` }}
                         >
                           <Building2 className="h-5 w-5" style={{ color: property.widget_color || '#F97316' }} />
                         </div>
-                        <div className="min-w-0">
-                          <CardTitle className="text-base truncate">{property.name}</CardTitle>
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-base truncate max-w-full">{property.name}</CardTitle>
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                            <Globe className="h-3 w-3" />
+                            <Globe className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{property.domain}</span>
                           </div>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-xs flex-shrink-0">Active</Badge>
+                      <Badge variant="outline" className="text-xs flex-shrink-0 ml-2">Active</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
