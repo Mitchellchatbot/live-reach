@@ -28,6 +28,8 @@ interface ChatPanelProps {
   propertyName?: string;
   /** ISO string of when AI response was queued (from DB) */
   aiQueuedAt?: Date | null;
+  /** Total human-priority window in ms that was chosen when this message was queued */
+  aiQueuedWindowMs?: number | null;
   /** Draft text of the AI response being composed (shown as a pending bubble) */
   aiQueuedPreview?: string | null;
   onCancelAIQueue?: () => void;
@@ -316,6 +318,7 @@ export const ChatPanel = ({
   onToggleAI,
   propertyName,
   aiQueuedAt,
+  aiQueuedWindowMs,
   aiQueuedPreview,
   onCancelAIQueue,
   onEditAIQueue,
@@ -325,21 +328,21 @@ export const ChatPanel = ({
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [shortcutFilter, setShortcutFilter] = useState('');
   const [selectedShortcutIndex, setSelectedShortcutIndex] = useState(0);
-  // Live countdown ticker — how many seconds the agent has left to react before AI sends
-  // Window: 30s for first message (AI settings max), 25s max for quick replies
-  const QUEUE_WINDOW_SECONDS = 30;
-  const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(QUEUE_WINDOW_SECONDS);
+  // Total window in seconds — derived from the actual responseDelay stored when message was queued.
+  // Falls back to 30s if not yet available (e.g. older queued messages).
+  const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
+  const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
 
   useEffect(() => {
-    if (!aiQueuedAt) { setQueueSecondsLeft(QUEUE_WINDOW_SECONDS); return; }
+    if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
     const update = () => {
       const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
-      setQueueSecondsLeft(Math.max(0, QUEUE_WINDOW_SECONDS - elapsed));
+      setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt]);
+  }, [aiQueuedAt, queueWindowSeconds]);
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;

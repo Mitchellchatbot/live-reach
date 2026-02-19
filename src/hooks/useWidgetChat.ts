@@ -1353,7 +1353,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         fetch(SET_AI_QUEUE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent }),
+          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent, windowMs: responseDelay }),
         }).catch(() => {});
       }
 

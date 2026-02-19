@@ -148,6 +148,7 @@ export type Database = {
           ai_queued_at: string | null
           ai_queued_paused: boolean | null
           ai_queued_preview: string | null
+          ai_queued_window_ms: number | null
           assigned_agent_id: string | null
           created_at: string
           id: string
@@ -162,6 +163,7 @@ export type Database = {
           ai_queued_at?: string | null
           ai_queued_paused?: boolean | null
           ai_queued_preview?: string | null
+          ai_queued_window_ms?: number | null
           assigned_agent_id?: string | null
           created_at?: string
           id?: string
@@ -176,6 +178,7 @@ export type Database = {
           ai_queued_at?: string | null
           ai_queued_paused?: boolean | null
           ai_queued_preview?: string | null
+          ai_queued_window_ms?: number | null
           assigned_agent_id?: string | null
           created_at?: string
           id?: string
