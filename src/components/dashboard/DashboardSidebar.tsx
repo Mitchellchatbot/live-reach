@@ -327,7 +327,7 @@ export const DashboardSidebar = ({
                 <SidebarItem to="/dashboard/team" icon={Users} label="Team Members" collapsed={!forMobile && collapsed} iconColor="#8B5CF6" />
               </div>
               <div data-tour="properties-sidebar">
-                <SidebarItem to="/dashboard/properties" icon={Building2} label="Properties" collapsed={!forMobile && collapsed} iconColor="#F97316" />
+                <SidebarItem to="/dashboard/properties" icon={Building2} label="Business Info" collapsed={!forMobile && collapsed} iconColor="#F97316" />
               </div>
               <div data-tour="ai-support">
                 <SidebarItem to="/dashboard/ai-support" icon={Bot} label="AI Support" collapsed={!forMobile && collapsed} iconColor="#06B6D4" />
