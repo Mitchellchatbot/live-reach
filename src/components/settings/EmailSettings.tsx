@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -7,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, Plus, Trash2, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Save, Plus, Trash2, Mail, Users, UserPlus } from 'lucide-react';
 
 interface EmailSettingsProps {
   propertyId: string;
@@ -23,13 +25,17 @@ interface EmailConfig {
 }
 
 export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
+  const { user } = useAuth();
   const [config, setConfig] = useState<EmailConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState('');
+  const [teamEmails, setTeamEmails] = useState<{ email: string; name: string }[]>([]);
+  const [selectedTeamEmails, setSelectedTeamEmails] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchSettings();
+    fetchTeamEmails();
   }, [propertyId]);
 
   const fetchSettings = async () => {
@@ -60,6 +66,31 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
       setConfig(null);
     }
     setLoading(false);
+  };
+
+  const fetchTeamEmails = async () => {
+    if (!user) return;
+    // Fetch agents invited by this user + the user's own profile email
+    const [agentsResult, profileResult] = await Promise.all([
+      supabase.from('agents').select('email, name').eq('invited_by', user.id),
+      supabase.from('profiles').select('email, full_name').eq('user_id', user.id).maybeSingle(),
+    ]);
+
+    const emails: { email: string; name: string }[] = [];
+    
+    if (profileResult.data) {
+      emails.push({ email: profileResult.data.email, name: profileResult.data.full_name || 'You' });
+    }
+    
+    if (agentsResult.data) {
+      for (const agent of agentsResult.data) {
+        if (!emails.some(e => e.email === agent.email)) {
+          emails.push({ email: agent.email, name: agent.name });
+        }
+      }
+    }
+    
+    setTeamEmails(emails);
   };
 
   const handleSave = async () => {
@@ -191,6 +222,81 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
               Add email addresses to receive notifications
             </p>
           </div>
+
+          {/* Quick Add from Team Members */}
+          {teamEmails.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Label>Quick Add from Team</Label>
+                </div>
+                {selectedTeamEmails.size > 0 && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      const currentEmails = config?.notification_emails || [];
+                      const newEmails = Array.from(selectedTeamEmails).filter(
+                        e => !currentEmails.includes(e)
+                      );
+                      if (newEmails.length === 0) {
+                        toast.info('Selected emails are already added');
+                        setSelectedTeamEmails(new Set());
+                        return;
+                      }
+                      setConfig(prev => prev ? {
+                        ...prev,
+                        notification_emails: [...prev.notification_emails, ...newEmails],
+                      } : {
+                        id: '',
+                        enabled: false,
+                        notification_emails: newEmails,
+                        notify_on_new_conversation: true,
+                        notify_on_escalation: true,
+                        notify_on_phone_submission: true,
+                      });
+                      setSelectedTeamEmails(new Set());
+                      toast.success(`Added ${newEmails.length} recipient${newEmails.length === 1 ? '' : 's'}`);
+                    }}
+                  >
+                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    Add {selectedTeamEmails.size} selected
+                  </Button>
+                )}
+              </div>
+              <div className="border rounded-lg divide-y divide-border/50">
+                {teamEmails.map(({ email, name }) => {
+                  const alreadyAdded = config?.notification_emails?.includes(email);
+                  const isSelected = selectedTeamEmails.has(email);
+                  return (
+                    <label
+                      key={email}
+                      className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors hover:bg-accent/50 ${alreadyAdded ? 'opacity-50' : ''}`}
+                    >
+                      <Checkbox
+                        checked={isSelected || alreadyAdded}
+                        disabled={alreadyAdded}
+                        onCheckedChange={(checked) => {
+                          const next = new Set(selectedTeamEmails);
+                          if (checked) next.add(email);
+                          else next.delete(email);
+                          setSelectedTeamEmails(next);
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{email}</p>
+                      </div>
+                      {alreadyAdded && (
+                        <Badge variant="secondary" className="text-[10px] shrink-0">Added</Badge>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Email List */}
           {(config?.notification_emails?.length ?? 0) > 0 && (
