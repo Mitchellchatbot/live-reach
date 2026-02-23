@@ -520,6 +520,12 @@ export type Database = {
           ai_response_delay_max_ms: number | null
           ai_response_delay_min_ms: number | null
           auto_escalation_enabled: boolean | null
+          business_address: string | null
+          business_description: string | null
+          business_email: string | null
+          business_hours: string | null
+          business_logo_url: string | null
+          business_phone: string | null
           calendly_url: string | null
           created_at: string
           domain: string
@@ -558,6 +564,12 @@ export type Database = {
           ai_response_delay_max_ms?: number | null
           ai_response_delay_min_ms?: number | null
           auto_escalation_enabled?: boolean | null
+          business_address?: string | null
+          business_description?: string | null
+          business_email?: string | null
+          business_hours?: string | null
+          business_logo_url?: string | null
+          business_phone?: string | null
           calendly_url?: string | null
           created_at?: string
           domain: string
@@ -596,6 +608,12 @@ export type Database = {
           ai_response_delay_max_ms?: number | null
           ai_response_delay_min_ms?: number | null
           auto_escalation_enabled?: boolean | null
+          business_address?: string | null
+          business_description?: string | null
+          business_email?: string | null
+          business_hours?: string | null
+          business_logo_url?: string | null
+          business_phone?: string | null
           calendly_url?: string | null
           created_at?: string
           domain?: string

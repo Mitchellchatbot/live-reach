@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Building2, Globe, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { Building2, Globe, Plus, Trash2, ExternalLink, Phone, MapPin } from 'lucide-react';
 
 const Properties = () => {
   const navigate = useNavigate();
@@ -112,6 +112,23 @@ const Properties = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
+                    {/* Business info snippets */}
+                    {((property as any).business_phone || (property as any).business_address) && (
+                      <div className="space-y-1 mb-3 text-xs text-muted-foreground">
+                        {(property as any).business_phone && (
+                          <div className="flex items-center gap-1.5">
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{(property as any).business_phone}</span>
+                          </div>
+                        )}
+                        {(property as any).business_address && (
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{(property as any).business_address}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <Button
                         variant="ghost"
