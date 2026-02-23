@@ -51,6 +51,12 @@ interface PropertySettings {
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
   quick_reply_after_first_enabled: boolean;
+  business_phone: string | null;
+  business_email: string | null;
+  business_address: string | null;
+  business_hours: string | null;
+  business_description: string | null;
+  property_name: string | null;
 }
 
 interface WidgetChatConfig {
@@ -85,6 +91,12 @@ const DEFAULT_SETTINGS: PropertySettings = {
   drop_capitalization_enabled: true,
   drop_apostrophes_enabled: true,
   quick_reply_after_first_enabled: false,
+  business_phone: null,
+  business_email: null,
+  business_address: null,
+  business_hours: null,
+  business_description: null,
+  property_name: null,
 };
 
 const getOrCreateSessionId = (): string => {
@@ -320,6 +332,17 @@ const extractVisitorInfo = async (
   }
 };
 
+function buildBusinessContext(s: PropertySettings): string | null {
+  const parts: string[] = [];
+  if (s.property_name) parts.push(`Business name: ${s.property_name}`);
+  if (s.business_description) parts.push(`Description: ${s.business_description}`);
+  if (s.business_phone) parts.push(`Phone: ${s.business_phone}`);
+  if (s.business_email) parts.push(`Email: ${s.business_email}`);
+  if (s.business_address) parts.push(`Address: ${s.business_address}`);
+  if (s.business_hours) parts.push(`Hours: ${s.business_hours}`);
+  return parts.length > 0 ? parts.join('\n') : null;
+}
+
 async function streamAIResponse({
   messages,
   onDelta,
@@ -331,6 +354,7 @@ async function streamAIResponse({
   naturalLeadCaptureFields,
   calendlyUrl,
   humanTyposEnabled,
+  propertyContext,
   signal,
 }: {
   messages: { role: 'user' | 'assistant'; content: string }[];
@@ -343,6 +367,7 @@ async function streamAIResponse({
   naturalLeadCaptureFields?: string[];
   calendlyUrl?: string | null;
   humanTyposEnabled?: boolean;
+  propertyContext?: string | null;
   signal?: AbortSignal;
 }) {
   try {
@@ -352,7 +377,7 @@ async function streamAIResponse({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled }),
+      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled, propertyContext }),
       signal,
     });
 
@@ -636,6 +661,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         drop_capitalization_enabled: s.drop_capitalization_enabled ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
         drop_apostrophes_enabled: s.drop_apostrophes_enabled ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
         quick_reply_after_first_enabled: s.quick_reply_after_first_enabled ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
+        business_phone: s.business_phone ?? null,
+        business_email: s.business_email ?? null,
+        business_address: s.business_address ?? null,
+        business_hours: s.business_hours ?? null,
+        business_description: s.business_description ?? null,
+        property_name: s.name ?? null,
       };
 
       setSettings(merged);
@@ -1049,6 +1080,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
           humanTyposEnabled: settings.human_typos_enabled ?? true,
+          propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
             if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
@@ -1383,6 +1415,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
           humanTyposEnabled: settings.human_typos_enabled ?? true,
+          propertyContext: buildBusinessContext(settings),
           signal: abortController.signal,
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
@@ -1653,6 +1686,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
           humanTyposEnabled: settings.human_typos_enabled ?? true,
+          propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => { aiContent += delta; },
           onDone: async () => {
             if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
@@ -1707,6 +1741,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
           humanTyposEnabled: settings.human_typos_enabled ?? true,
+          propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => {
             aiContent += delta;
             setMessages(prev => {

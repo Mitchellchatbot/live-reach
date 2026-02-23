@@ -201,7 +201,11 @@ Say something like: "I'd also love to help you schedule a call with one of our e
     }
 
     if (propertyContext) {
-      systemPrompt += `\n\nProperty context: ${propertyContext}`;
+      systemPrompt += `\n\nBUSINESS INFORMATION (use this to answer visitor questions about the business):
+${propertyContext}
+- If a visitor asks for the phone number, address, hours, or email, share it naturally from the info above.
+- Do NOT volunteer all info at once. Only share what is asked for.
+- If a piece of info is not listed above, say you'll connect them with someone who can help.`;
     }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {

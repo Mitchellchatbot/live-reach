@@ -32,6 +32,12 @@ type PropertySettings = {
   drop_apostrophes_enabled: boolean | null;
   quick_reply_after_first_enabled: boolean | null;
   calendly_url: string | null;
+  business_phone: string | null;
+  business_email: string | null;
+  business_address: string | null;
+  business_hours: string | null;
+  business_description: string | null;
+  name: string | null;
 };
 
 Deno.serve(async (req) => {
@@ -82,6 +88,12 @@ Deno.serve(async (req) => {
           "drop_apostrophes_enabled",
           "quick_reply_after_first_enabled",
           "calendly_url",
+          "business_phone",
+          "business_email",
+          "business_address",
+          "business_hours",
+          "business_description",
+          "name",
         ].join(",")
       )
       .eq("id", propertyId)
