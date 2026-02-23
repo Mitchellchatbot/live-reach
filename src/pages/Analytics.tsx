@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
@@ -12,12 +11,7 @@ const Analytics = () => {
   const { properties, loading, deleteProperty } = useConversations();
   const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
 
-  // Auto-select first property when properties load
-  useEffect(() => {
-    if (properties.length > 0 && !selectedPropertyId) {
-      setSelectedPropertyId(properties[0].id);
-    }
-  }, [properties, selectedPropertyId]);
+  // Default is "All Properties" (empty string) — no auto-select needed
 
   return (
     <DashboardLayout>
@@ -32,7 +26,7 @@ const Analytics = () => {
               <PropertySelector
                 properties={properties}
                 selectedPropertyId={selectedPropertyId}
-                onPropertyChange={(id) => setSelectedPropertyId(id === 'all' ? undefined : id)}
+                onPropertyChange={(id) => setSelectedPropertyId(id === 'all' ? '' : id)}
                 onDeleteProperty={deleteProperty}
                 variant="header"
                 showAllOption

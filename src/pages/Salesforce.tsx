@@ -65,11 +65,10 @@ const Salesforce = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Set first property as default, or use a demo ID during tour
+  // Default is "All Properties" (empty string) — no auto-select needed
+  // Use a demo ID during tour only
   useEffect(() => {
-    if (properties.length > 0 && !selectedPropertyId) {
-      setSelectedPropertyId(properties[0].id);
-    } else if (isTourActive && properties.length === 0 && !selectedPropertyId) {
+    if (isTourActive && properties.length === 0 && !selectedPropertyId) {
       setSelectedPropertyId('demo-tour-property');
     }
   }, [properties, selectedPropertyId, isTourActive]);
