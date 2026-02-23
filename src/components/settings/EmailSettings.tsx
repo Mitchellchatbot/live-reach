@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Save, Plus, Trash2, Mail, Users, UserPlus } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Save, Plus, Trash2, Mail, Users, UserPlus, Info } from 'lucide-react';
 
 interface EmailSettingsProps {
-  propertyId: string;
+  propertyId?: string;
+  /** When provided, settings are saved to ALL listed properties (bulk mode) */
+  bulkPropertyIds?: string[];
 }
 
 interface EmailConfig {
@@ -24,26 +27,42 @@ interface EmailConfig {
   notify_on_phone_submission: boolean;
 }
 
-export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
+export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProps) => {
+  const isBulk = !!bulkPropertyIds && bulkPropertyIds.length > 0;
+  const effectivePropertyId = isBulk ? bulkPropertyIds[0] : propertyId;
+
   const { user } = useAuth();
   const [config, setConfig] = useState<EmailConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isBulk);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [teamEmails, setTeamEmails] = useState<{ email: string; name: string }[]>([]);
   const [selectedTeamEmails, setSelectedTeamEmails] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetchSettings();
+    if (isBulk) {
+      setConfig({
+        id: '',
+        enabled: true,
+        notification_emails: [],
+        notify_on_new_conversation: true,
+        notify_on_escalation: true,
+        notify_on_phone_submission: true,
+      });
+      setLoading(false);
+    } else if (effectivePropertyId) {
+      fetchSettings();
+    }
     fetchTeamEmails();
-  }, [propertyId]);
+  }, [propertyId, bulkPropertyIds?.join(',')]);
 
   const fetchSettings = async () => {
+    if (!effectivePropertyId) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('email_notification_settings')
       .select('*')
-      .eq('property_id', propertyId)
+      .eq('property_id', effectivePropertyId)
       .maybeSingle();
 
     if (error) {
@@ -70,7 +89,6 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
 
   const fetchTeamEmails = async () => {
     if (!user) return;
-    // Fetch agents invited by this user + the user's own profile email
     const [agentsResult, profileResult] = await Promise.all([
       supabase.from('agents').select('email, name').eq('invited_by', user.id),
       supabase.from('profiles').select('email, full_name').eq('user_id', user.id).maybeSingle(),
@@ -96,8 +114,59 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
   const handleSave = async () => {
     setSaving(true);
 
+    if (isBulk && bulkPropertyIds) {
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const pid of bulkPropertyIds) {
+        const settingsData = {
+          property_id: pid,
+          enabled: config?.enabled ?? false,
+          notification_emails: config?.notification_emails || [],
+          notify_on_new_conversation: config?.notify_on_new_conversation ?? true,
+          notify_on_escalation: config?.notify_on_escalation ?? true,
+          notify_on_phone_submission: config?.notify_on_phone_submission ?? true,
+        };
+
+        const { data: existing } = await supabase
+          .from('email_notification_settings')
+          .select('id')
+          .eq('property_id', pid)
+          .maybeSingle();
+
+        let result;
+        if (existing) {
+          result = await supabase
+            .from('email_notification_settings')
+            .update(settingsData)
+            .eq('id', existing.id);
+        } else {
+          result = await supabase
+            .from('email_notification_settings')
+            .insert(settingsData);
+        }
+
+        if (result.error) {
+          errorCount++;
+          console.error(`Error saving Email settings for property ${pid}:`, result.error);
+        } else {
+          successCount++;
+        }
+      }
+
+      setSaving(false);
+      if (errorCount > 0) {
+        toast.error(`Failed for ${errorCount} propert${errorCount === 1 ? 'y' : 'ies'}`);
+      }
+      if (successCount > 0) {
+        toast.success(`Email settings saved for ${successCount} propert${successCount === 1 ? 'y' : 'ies'}`);
+      }
+      return;
+    }
+
+    // Single property save
     const settingsData = {
-      property_id: propertyId,
+      property_id: effectivePropertyId!,
       enabled: config?.enabled ?? false,
       notification_emails: config?.notification_emails || [],
       notify_on_new_conversation: config?.notify_on_new_conversation ?? true,
@@ -140,7 +209,6 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
   const addEmail = () => {
     if (!newEmail.trim()) return;
     
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail.trim())) {
       toast.error('Please enter a valid email address');
@@ -184,6 +252,15 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
 
   return (
     <div className="space-y-6">
+      {isBulk && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Bulk mode:</strong> Email recipients and triggers will be applied to all {bulkPropertyIds!.length} properties at once.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Email Recipients */}
       <Card data-tour="email-recipients">
         <CardHeader>
@@ -415,7 +492,7 @@ export const EmailSettings = ({ propertyId }: EmailSettingsProps) => {
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          Save Email Settings
+          {isBulk ? `Save to All ${bulkPropertyIds!.length} Properties` : 'Save Email Settings'}
         </Button>
       </div>
     </div>

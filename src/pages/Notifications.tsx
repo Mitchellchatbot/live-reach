@@ -237,11 +237,13 @@ const Notifications = () => {
                   <TabsContent value="slack">
                     {selectedPropertyId ? (
                       <SlackSettings propertyId={selectedPropertyId} />
+                    ) : properties.length > 0 ? (
+                      <SlackSettings bulkPropertyIds={properties.map(p => p.id)} />
                     ) : (
                       <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                           <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                          <p className="text-sm text-muted-foreground">Select a specific property to configure Slack settings</p>
+                          <p className="text-sm text-muted-foreground">Add a property to configure Slack settings</p>
                         </CardContent>
                       </Card>
                     )}
@@ -250,11 +252,13 @@ const Notifications = () => {
                   <TabsContent value="email">
                     {selectedPropertyId ? (
                       <EmailSettings propertyId={selectedPropertyId} />
+                    ) : properties.length > 0 ? (
+                      <EmailSettings bulkPropertyIds={properties.map(p => p.id)} />
                     ) : (
                       <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                           <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                          <p className="text-sm text-muted-foreground">Select a specific property to configure Email settings</p>
+                          <p className="text-sm text-muted-foreground">Add a property to configure Email settings</p>
                         </CardContent>
                       </Card>
                     )}
