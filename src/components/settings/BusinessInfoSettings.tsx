@@ -107,7 +107,16 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
         body: { url: domain },
       });
       if (error) throw error;
-      if (result?.success && result?.data) {
+      if (result?.success === false) {
+        const errMsg = result.error || 'Scan failed';
+        if (errMsg.toLowerCase().includes('insufficient credits')) {
+          toast.error('Website scanner credits exhausted. Please try again later or enter info manually.');
+        } else {
+          toast.error(`Scan failed: ${errMsg}`);
+        }
+        return;
+      }
+      if (result?.data) {
         const d = result.data;
         setInfo(prev => ({
           ...prev,

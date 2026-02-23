@@ -54,10 +54,11 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       console.error('Firecrawl API error:', data);
-      // Return a 200 with fallback data so the frontend doesn't break
+      // Return a 200 with error info so the frontend can show a proper message
       return new Response(
         JSON.stringify({
-          success: true,
+          success: false,
+          error: data.error || `Firecrawl request failed (${response.status})`,
           data: {
             companyName: null,
             description: null,
@@ -66,7 +67,6 @@ Deno.serve(async (req) => {
             primaryColor: null,
             logo: null,
             sourceUrl: formattedUrl,
-            error: data.error || `Firecrawl request failed (${response.status})`,
           }
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
