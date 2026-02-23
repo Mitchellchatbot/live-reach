@@ -23,10 +23,12 @@ import {
   Bell,
   Volume2,
   ClipboardList,
+  Building2,
 } from 'lucide-react';
 import { SlackSettings } from '@/components/settings/SlackSettings';
 import { EmailSettings } from '@/components/settings/EmailSettings';
 import { NotificationLog } from '@/components/settings/NotificationLog';
+import { BusinessInfoSettings } from '@/components/settings/BusinessInfoSettings';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import {
   Dialog,
@@ -219,7 +221,7 @@ const Notifications = () => {
 
               {(
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-                  <TabsList className="grid w-full grid-cols-3" data-tour="notifications-tabs">
+                  <TabsList className="grid w-full grid-cols-4" data-tour="notifications-tabs">
                     <TabsTrigger value="slack" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-slack-tab">
                       <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Slack
@@ -227,6 +229,10 @@ const Notifications = () => {
                     <TabsTrigger value="email" className="gap-1.5 text-xs sm:text-sm" data-tour="notifications-email-tab">
                       <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Email
+                    </TabsTrigger>
+                    <TabsTrigger value="business" className="gap-1.5 text-xs sm:text-sm">
+                      <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Business Info
                     </TabsTrigger>
                     <TabsTrigger value="logs" className="gap-1.5 text-xs sm:text-sm">
                       <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -259,6 +265,21 @@ const Notifications = () => {
                         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                           <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
                           <p className="text-sm text-muted-foreground">Add a property to configure Email settings</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="business">
+                    {selectedPropertyId ? (
+                      <BusinessInfoSettings propertyId={selectedPropertyId} />
+                    ) : properties.length > 0 ? (
+                      <BusinessInfoSettings bulkPropertyIds={properties.map(p => p.id)} />
+                    ) : (
+                      <Card>
+                        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                          <Globe className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                          <p className="text-sm text-muted-foreground">Add a property to configure business info</p>
                         </CardContent>
                       </Card>
                     )}

@@ -102,8 +102,35 @@ Deno.serve(async (req) => {
     const primaryColor = branding.colors?.primary || branding.colors?.accent || null;
     const logo = branding.logo || branding.images?.logo || null;
 
+    // --- Business info extraction from markdown ---
+    const fullContent = markdown + ' ' + description;
+
+    // Extract phone numbers
+    const phoneRegex = /(\+?1?\s*[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/g;
+    const phoneMatches = fullContent.match(phoneRegex);
+    const businessPhone = phoneMatches ? phoneMatches[0].trim() : null;
+
+    // Extract email addresses
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+    const emailMatches = fullContent.match(emailRegex);
+    // Filter out common non-business emails
+    const filteredEmails = (emailMatches || []).filter(e => 
+      !e.includes('example.com') && !e.includes('sentry') && !e.includes('webpack')
+    );
+    const businessEmail = filteredEmails.length > 0 ? filteredEmails[0] : null;
+
+    // Extract address (look for patterns with street numbers, state abbreviations, zip codes)
+    const addressRegex = /\d{1,5}\s+[\w\s.]+(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Lane|Ln|Way|Court|Ct|Place|Pl|Suite|Ste)\.?(?:\s*#?\s*\d+)?\s*,?\s*[\w\s]+,?\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?/gi;
+    const addressMatches = fullContent.match(addressRegex);
+    const businessAddress = addressMatches ? addressMatches[0].trim() : null;
+
+    // Extract business hours (common patterns)
+    const hoursRegex = /(?:hours|open|schedule)\s*:?\s*((?:mon|tue|wed|thu|fri|sat|sun|weekday|weekend|daily|m-f|m\s*-\s*f)[\s\S]{0,80}?(?:\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)\s*[-–to]+\s*\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)))/i;
+    const hoursMatch = fullContent.match(hoursRegex);
+    const businessHours = hoursMatch ? hoursMatch[1].trim() : null;
+
     // Determine business type from content for better greeting suggestions
-    const contentLower = (markdown + ' ' + description).toLowerCase();
+    const contentLower = fullContent.toLowerCase();
     let businessType = 'general';
     
     if (contentLower.includes('recovery') || contentLower.includes('treatment') || contentLower.includes('rehab') || contentLower.includes('addiction')) {
@@ -136,6 +163,10 @@ Deno.serve(async (req) => {
         primaryColor,
         logo,
         sourceUrl: formattedUrl,
+        businessPhone,
+        businessEmail,
+        businessAddress,
+        businessHours,
       }
     };
 

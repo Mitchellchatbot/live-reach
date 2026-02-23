@@ -40,6 +40,10 @@ interface ExtractedInfo {
   primaryColor: string | null;
   logo: string | null;
   sourceUrl: string;
+  businessPhone: string | null;
+  businessEmail: string | null;
+  businessAddress: string | null;
+  businessHours: string | null;
 }
 
 interface OnboardingData {
@@ -351,6 +355,12 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       agentName: data.agentName,
       agentAvatarUrl: finalAvatarUrl,
       widgetIcon: data.widgetIcon,
+      businessPhone: data.extractedInfo?.businessPhone || undefined,
+      businessEmail: data.extractedInfo?.businessEmail || undefined,
+      businessAddress: data.extractedInfo?.businessAddress || undefined,
+      businessHours: data.extractedInfo?.businessHours || undefined,
+      businessDescription: data.extractedInfo?.description || undefined,
+      businessLogoUrl: data.extractedInfo?.logo || undefined,
     });
     
     setIsCreating(false);

@@ -455,6 +455,12 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       agentName?: string;
       agentAvatarUrl?: string;
       widgetIcon?: string;
+      businessPhone?: string;
+      businessEmail?: string;
+      businessAddress?: string;
+      businessHours?: string;
+      businessDescription?: string;
+      businessLogoUrl?: string;
     }
   ) => {
     if (!user) return null;
@@ -471,7 +477,13 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         require_phone_before_chat: options?.collectPhone,
         ai_base_prompt: options?.basePrompt,
         widget_icon: options?.widgetIcon || 'message-circle',
-      })
+        business_phone: options?.businessPhone || null,
+        business_email: options?.businessEmail || null,
+        business_address: options?.businessAddress || null,
+        business_hours: options?.businessHours || null,
+        business_description: options?.businessDescription || null,
+        business_logo_url: options?.businessLogoUrl || null,
+      } as any)
       .select()
       .single();
 
