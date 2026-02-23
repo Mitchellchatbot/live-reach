@@ -100,7 +100,16 @@ const PropertyBusinessCard = ({ property, onDelete }: { property: any; onDelete:
         body: { url: property.domain },
       });
       if (error) throw error;
-      if (result?.success && result?.data) {
+      if (result?.success === false) {
+        const errMsg = result.error || 'Scan failed';
+        if (errMsg.toLowerCase().includes('insufficient credits')) {
+          toast.error('Website scanner credits exhausted. Please try again later or enter info manually.');
+        } else {
+          toast.error(`Scan failed: ${errMsg}`);
+        }
+        return;
+      }
+      if (result?.data) {
         const d = result.data;
         setFields(prev => ({
           ...prev,
@@ -111,7 +120,12 @@ const PropertyBusinessCard = ({ property, onDelete }: { property: any; onDelete:
           business_description: d.description || prev.business_description,
           business_logo_url: d.logo || prev.business_logo_url,
         }));
-        toast.success('Re-scanned! Review fields and save.');
+        const hasNew = d.businessPhone || d.businessEmail || d.businessAddress || d.businessHours || d.description || d.logo;
+        if (hasNew) {
+          toast.success('Re-scanned! Review fields and save.');
+        } else {
+          toast.info('Scan complete — no new info found.');
+        }
       } else {
         toast.info('Scan complete — no new info found.');
       }
