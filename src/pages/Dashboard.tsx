@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { FloatingSupportButton } from '@/components/dashboard/FloatingSupportButton';
 import { NotificationsBell } from '@/components/dashboard/NotificationsBell';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, MoreVertical, Video, UserPlus, Archive, Phone, Mail, User as UserIcon, ArrowLeft, Menu } from 'lucide-react';
+import { Search, MoreVertical, Trash2, Archive, Phone, Mail, User as UserIcon, ArrowLeft, Menu } from 'lucide-react';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
@@ -486,18 +486,13 @@ const DashboardContent = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem disabled={selectedConversation.status === 'closed'}>
-                        <Video className="h-4 w-4 mr-2" />
-                        Start Video Call
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Assign to Agent
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleCloseConversation} disabled={selectedConversation.status === 'closed'} className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem onClick={handleCloseConversation} disabled={selectedConversation.status === 'closed'}>
                         <Archive className="h-4 w-4 mr-2" />
-                        Close Conversation
+                        Close Chat
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteConversation(selectedConversation.id)} className="text-destructive focus:text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Chat
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
