@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -31,10 +32,13 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
   const isBulk = !!bulkPropertyIds && bulkPropertyIds.length > 0;
   const effectivePropertyId = isBulk ? bulkPropertyIds[0] : propertyId;
 
-  const [config, setConfig] = useState<SlackConfig | null>(null);
+  const [serverConfig, setServerConfig] = useState<SlackConfig | null>(null);
   const [loading, setLoading] = useState(!isBulk);
   const [saving, setSaving] = useState(false);
   const [connecting, setConnecting] = useState(false);
+
+  const draftKey = `slack-settings-${effectivePropertyId || 'bulk'}`;
+  const [config, setConfig, clearDraft] = useFormDraft<SlackConfig>(draftKey, serverConfig, loading);
 
   // Listen for OAuth callback messages from popup
   useEffect(() => {
@@ -55,8 +59,7 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
 
   useEffect(() => {
     if (isBulk) {
-      // In bulk mode, start with a fresh config (don't pre-load)
-      setConfig({
+      setServerConfig({
         id: '',
         enabled: true,
         access_token: null,
@@ -91,7 +94,7 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
     }
 
     if (data) {
-      setConfig({
+      setServerConfig({
         id: data.id,
         enabled: data.enabled,
         access_token: data.access_token,
@@ -103,7 +106,7 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
         notify_on_phone_submission: data.notify_on_phone_submission ?? true,
       });
     } else {
-      setConfig(null);
+      setServerConfig(null);
     }
     setLoading(false);
   };
@@ -156,6 +159,7 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
         toast.error(`Failed for ${errorCount} propert${errorCount === 1 ? 'y' : 'ies'}`);
       }
       if (successCount > 0) {
+        clearDraft();
         toast.success(`Slack settings saved for ${successCount} propert${successCount === 1 ? 'y' : 'ies'}`);
       }
       return;
@@ -199,6 +203,7 @@ export const SlackSettings = ({ propertyId, bulkPropertyIds }: SlackSettingsProp
       });
     }
 
+    clearDraft();
     toast.success('Slack settings saved');
   };
 
