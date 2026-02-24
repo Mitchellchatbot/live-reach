@@ -44,6 +44,26 @@ const personaAvatars: Record<string, string> = {
   daniel: danielAvatar,
 };
 
+const US_STATES = [
+  { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' }, { code: 'AZ', name: 'Arizona' },
+  { code: 'AR', name: 'Arkansas' }, { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
+  { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' }, { code: 'FL', name: 'Florida' },
+  { code: 'GA', name: 'Georgia' }, { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
+  { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' }, { code: 'IA', name: 'Iowa' },
+  { code: 'KS', name: 'Kansas' }, { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
+  { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' }, { code: 'MA', name: 'Massachusetts' },
+  { code: 'MI', name: 'Michigan' }, { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
+  { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' }, { code: 'NE', name: 'Nebraska' },
+  { code: 'NV', name: 'Nevada' }, { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
+  { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' }, { code: 'NC', name: 'North Carolina' },
+  { code: 'ND', name: 'North Dakota' }, { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
+  { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' }, { code: 'RI', name: 'Rhode Island' },
+  { code: 'SC', name: 'South Carolina' }, { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
+  { code: 'TX', name: 'Texas' }, { code: 'UT', name: 'Utah' }, { code: 'VT', name: 'Vermont' },
+  { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' }, { code: 'WV', name: 'West Virginia' },
+  { code: 'WI', name: 'Wisconsin' }, { code: 'WY', name: 'Wyoming' }, { code: 'DC', name: 'District of Columbia' },
+];
+
 interface AIAgent {
   id: string;
   name: string;
@@ -87,6 +107,9 @@ interface PropertySettings {
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
   quick_reply_after_first_enabled: boolean;
+  geo_filter_mode: string;
+  geo_allowed_states: string[];
+  geo_blocked_message: string | null;
 }
 
 const DEFAULT_AI_PROMPT = `You are a compassionate and helpful support assistant for an addiction treatment center. Your role is to:
@@ -285,6 +308,9 @@ const AISupport = () => {
         drop_capitalization_enabled: data.drop_capitalization_enabled ?? true,
         drop_apostrophes_enabled: data.drop_apostrophes_enabled ?? true,
         quick_reply_after_first_enabled: (data as any).quick_reply_after_first_enabled ?? false,
+        geo_filter_mode: (data as any).geo_filter_mode ?? 'anywhere',
+        geo_allowed_states: (data as any).geo_allowed_states ?? [],
+        geo_blocked_message: (data as any).geo_blocked_message ?? null,
       });
     };
 
@@ -620,6 +646,9 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
         drop_capitalization_enabled: settings.drop_capitalization_enabled,
         drop_apostrophes_enabled: settings.drop_apostrophes_enabled,
         quick_reply_after_first_enabled: settings.quick_reply_after_first_enabled,
+        geo_filter_mode: settings.geo_filter_mode,
+        geo_allowed_states: settings.geo_allowed_states,
+        geo_blocked_message: settings.geo_blocked_message,
       } as any)
       .eq('id', settings.id);
 
@@ -1073,6 +1102,105 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
               )}
             </CardContent>
           </Card>
+
+          {/* Service Area / Geo-Filtering */}
+          {settings && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle>Service Area</CardTitle>
+                </div>
+                <CardDescription>
+                  Restrict the chatbot to visitors in specific regions. Visitors outside the allowed area will see an unavailable message and no data will be stored.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {[
+                    { value: 'anywhere', label: 'Anywhere', description: 'No geographic restriction' },
+                    { value: 'us_only', label: 'United States only', description: 'Any US state' },
+                    { value: 'specific_states', label: 'Specific states', description: 'Choose which US states' },
+                  ].map((option) => (
+                    <label
+                      key={option.value}
+                      className={cn(
+                        "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                        settings.geo_filter_mode === option.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border/50 hover:border-border"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="geo_filter_mode"
+                        value={option.value}
+                        checked={settings.geo_filter_mode === option.value}
+                        onChange={() => setSettings({ ...settings, geo_filter_mode: option.value })}
+                        className="mt-1 accent-primary"
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{option.label}</p>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {settings.geo_filter_mode === 'specific_states' && (
+                  <div className="space-y-2">
+                    <Label>Allowed States</Label>
+                    <div className="flex flex-wrap gap-1.5 p-3 border border-border/50 rounded-lg max-h-40 overflow-auto">
+                      {US_STATES.map((st) => {
+                        const isSelected = settings.geo_allowed_states.includes(st.code);
+                        return (
+                          <button
+                            key={st.code}
+                            type="button"
+                            onClick={() => {
+                              const next = isSelected
+                                ? settings.geo_allowed_states.filter(s => s !== st.code)
+                                : [...settings.geo_allowed_states, st.code];
+                              setSettings({ ...settings, geo_allowed_states: next });
+                            }}
+                            className={cn(
+                              "px-2 py-1 rounded text-xs font-medium transition-colors",
+                              isSelected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            )}
+                          >
+                            {st.code}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {settings.geo_allowed_states.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {settings.geo_allowed_states.length} state{settings.geo_allowed_states.length !== 1 ? 's' : ''} selected
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {settings.geo_filter_mode !== 'anywhere' && (
+                  <div className="space-y-2">
+                    <Label>Custom Blocked Message</Label>
+                    <Textarea
+                      value={settings.geo_blocked_message || ''}
+                      onChange={(e) => setSettings({ ...settings, geo_blocked_message: e.target.value || null })}
+                      placeholder="We're sorry, our services are currently not available in your area."
+                      rows={2}
+                      className="text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Message shown to visitors outside the allowed area. Leave blank for the default.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* AI Behavior Settings */}
           {settings && (

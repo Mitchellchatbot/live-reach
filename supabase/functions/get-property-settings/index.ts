@@ -38,6 +38,9 @@ type PropertySettings = {
   business_hours: string | null;
   business_description: string | null;
   name: string | null;
+  geo_filter_mode: string | null;
+  geo_allowed_states: string[] | null;
+  geo_blocked_message: string | null;
 };
 
 Deno.serve(async (req) => {
@@ -94,6 +97,9 @@ Deno.serve(async (req) => {
           "business_hours",
           "business_description",
           "name",
+          "geo_filter_mode",
+          "geo_allowed_states",
+          "geo_blocked_message",
         ].join(",")
       )
       .eq("id", propertyId)

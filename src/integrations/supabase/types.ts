@@ -532,6 +532,9 @@ export type Database = {
           drop_apostrophes_enabled: boolean | null
           drop_capitalization_enabled: boolean | null
           escalation_keywords: string[] | null
+          geo_allowed_states: string[]
+          geo_blocked_message: string | null
+          geo_filter_mode: string
           greeting: string | null
           human_typos_enabled: boolean | null
           id: string
@@ -576,6 +579,9 @@ export type Database = {
           drop_apostrophes_enabled?: boolean | null
           drop_capitalization_enabled?: boolean | null
           escalation_keywords?: string[] | null
+          geo_allowed_states?: string[]
+          geo_blocked_message?: string | null
+          geo_filter_mode?: string
           greeting?: string | null
           human_typos_enabled?: boolean | null
           id?: string
@@ -620,6 +626,9 @@ export type Database = {
           drop_apostrophes_enabled?: boolean | null
           drop_capitalization_enabled?: boolean | null
           escalation_keywords?: string[] | null
+          geo_allowed_states?: string[]
+          geo_blocked_message?: string | null
+          geo_filter_mode?: string
           greeting?: string | null
           human_typos_enabled?: boolean | null
           id?: string

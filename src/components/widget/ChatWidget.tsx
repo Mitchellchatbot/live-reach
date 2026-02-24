@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, LucideIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, User, Mail, ImagePlus, MessageSquare, MessagesSquare, Headphones, HelpCircle, Heart, Sparkles, Bot, Globe, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useWidgetChat } from '@/hooks/useWidgetChat';
@@ -65,6 +65,8 @@ export const ChatWidget = ({
     currentAiAgent,
     aiAgents,
     greetingText,
+    geoBlocked,
+    geoBlockedMessage,
   } = useWidgetChat({ propertyId, greeting, isPreview });
 
   // Widget icon mapping
@@ -379,7 +381,20 @@ export const ChatWidget = ({
           </div>
 
           {/* Lead Capture Form */}
-          {showLeadForm ? (
+          {geoBlocked ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/20 text-center">
+              <div 
+                className="h-16 w-16 flex items-center justify-center mb-4 bg-muted/50"
+                style={{ borderRadius: buttonRadius }}
+              >
+                <Globe className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Service Unavailable</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
+                {geoBlockedMessage}
+              </p>
+            </div>
+          ) : showLeadForm ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/20">
               <div 
                 className="h-16 w-16 flex items-center justify-center mb-4"
