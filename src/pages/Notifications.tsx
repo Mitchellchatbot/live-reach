@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { usePersistedProperty } from '@/hooks/usePersistedProperty';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { DashboardTour } from '@/components/dashboard/DashboardTour';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -40,20 +39,46 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+const VALID_TABS = ['slack', 'email', 'business', 'logs'] as const;
+
 const Notifications = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { properties, loading: dataLoading, createProperty, deleteProperty } = useConversations();
   const { enabled: soundEnabled, setEnabled: setSoundEnabled, playSound } = useNotificationSound();
   
-  const [selectedPropertyId, setSelectedPropertyId] = usePersistedProperty();
+  // Read property & tab from URL, fall back to defaults
+  const selectedPropertyId = searchParams.get('property') || '';
+  const activeTab = (VALID_TABS as readonly string[]).includes(searchParams.get('tab') || '') 
+    ? searchParams.get('tab')! 
+    : 'slack';
+  
+  const setSelectedPropertyId = useCallback((id: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (id) {
+        next.set('property', id);
+      } else {
+        next.delete('property');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setActiveTab = useCallback((tab: string) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('tab', tab);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   
   // New property dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newPropertyName, setNewPropertyName] = useState('');
   const [newPropertyDomain, setNewPropertyDomain] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [activeTab, setActiveTab] = useState('slack');
 
   // Listen for tour tab-switch events
   useEffect(() => {
@@ -240,7 +265,7 @@ const Notifications = () => {
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="slack">
+                  <TabsContent value="slack" forceMount className={activeTab !== 'slack' ? 'hidden' : ''}>
                     {selectedPropertyId ? (
                       <SlackSettings propertyId={selectedPropertyId} />
                     ) : properties.length > 0 ? (
@@ -255,7 +280,7 @@ const Notifications = () => {
                     )}
                   </TabsContent>
 
-                  <TabsContent value="email">
+                  <TabsContent value="email" forceMount className={activeTab !== 'email' ? 'hidden' : ''}>
                     {selectedPropertyId ? (
                       <EmailSettings propertyId={selectedPropertyId} />
                     ) : properties.length > 0 ? (
@@ -270,7 +295,7 @@ const Notifications = () => {
                     )}
                   </TabsContent>
 
-                  <TabsContent value="business">
+                  <TabsContent value="business" forceMount className={activeTab !== 'business' ? 'hidden' : ''}>
                     {selectedPropertyId ? (
                       <BusinessInfoSettings propertyId={selectedPropertyId} />
                     ) : properties.length > 0 ? (
@@ -285,7 +310,7 @@ const Notifications = () => {
                     )}
                   </TabsContent>
 
-                  <TabsContent value="logs">
+                  <TabsContent value="logs" forceMount className={activeTab !== 'logs' ? 'hidden' : ''}>
                     <NotificationLog propertyId={selectedPropertyId || undefined} />
                   </TabsContent>
                 </Tabs>
