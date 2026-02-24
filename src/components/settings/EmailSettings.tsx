@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,16 +33,19 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
   const effectivePropertyId = isBulk ? bulkPropertyIds[0] : propertyId;
 
   const { user } = useAuth();
-  const [config, setConfig] = useState<EmailConfig | null>(null);
+  const [serverConfig, setServerConfig] = useState<EmailConfig | null>(null);
   const [loading, setLoading] = useState(!isBulk);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [teamEmails, setTeamEmails] = useState<{ email: string; name: string }[]>([]);
   const [selectedTeamEmails, setSelectedTeamEmails] = useState<Set<string>>(new Set());
 
+  const draftKey = `email-settings-${effectivePropertyId || 'bulk'}`;
+  const [config, setConfig, clearDraft] = useFormDraft<EmailConfig>(draftKey, serverConfig, loading);
+
   useEffect(() => {
     if (isBulk) {
-      setConfig({
+      setServerConfig({
         id: '',
         enabled: true,
         notification_emails: [],
@@ -73,7 +77,7 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
     }
 
     if (data) {
-      setConfig({
+      setServerConfig({
         id: data.id,
         enabled: data.enabled,
         notification_emails: data.notification_emails || [],
@@ -82,7 +86,7 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
         notify_on_phone_submission: data.notify_on_phone_submission ?? true,
       });
     } else {
-      setConfig(null);
+      setServerConfig(null);
     }
     setLoading(false);
   };
@@ -159,6 +163,7 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
         toast.error(`Failed for ${errorCount} propert${errorCount === 1 ? 'y' : 'ies'}`);
       }
       if (successCount > 0) {
+        clearDraft();
         toast.success(`Email settings saved for ${successCount} propert${successCount === 1 ? 'y' : 'ies'}`);
       }
       return;
@@ -203,6 +208,7 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
       });
     }
 
+    clearDraft();
     toast.success('Email settings saved');
   };
 

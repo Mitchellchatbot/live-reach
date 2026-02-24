@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,17 +34,20 @@ const emptyInfo: BusinessInfo = {
 };
 
 export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessInfoSettingsProps) => {
-  const [info, setInfo] = useState<BusinessInfo>(emptyInfo);
+  const [serverInfo, setServerInfo] = useState<BusinessInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rescanning, setRescanning] = useState(false);
   const [propertyDomain, setPropertyDomain] = useState<string | null>(null);
 
   const isBulk = !propertyId && !!bulkPropertyIds?.length;
+  const draftKey = `business-info-${propertyId || 'bulk'}`;
+
+  const [info, setInfo, clearDraft, hasDraft] = useFormDraft<BusinessInfo>(draftKey, serverInfo, loading);
 
   useEffect(() => {
     if (!propertyId) {
-      setInfo(emptyInfo);
+      setServerInfo(emptyInfo);
       return;
     }
     const fetchInfo = async () => {
@@ -54,7 +58,7 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
         .eq('id', propertyId)
         .single();
       if (!error && data) {
-        setInfo({
+        setServerInfo({
           business_phone: data.business_phone || '',
           business_email: data.business_email || '',
           business_address: data.business_address || '',
@@ -92,6 +96,7 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
           throw new Error('Update did not affect any rows');
         }
       }
+      clearDraft();
       toast.success(isBulk ? `Saved to ${ids.length} properties` : 'Business info saved');
     } catch (err) {
       console.error('Failed to save business info:', err);
@@ -144,7 +149,7 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
     }
   };
 
-  if (loading) {
+  if (loading || !info) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
