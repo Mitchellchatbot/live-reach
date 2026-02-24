@@ -1108,55 +1108,92 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle>Service Area</CardTitle>
+                  <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10">
+                    <Globe className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Service Area</CardTitle>
+                    <CardDescription className="mt-0.5">
+                      Restrict the chatbot by visitor location. Blocked visitors see an unavailable message — no data is stored.
+                    </CardDescription>
+                  </div>
                 </div>
-                <CardDescription>
-                  Restrict the chatbot to visitors in specific regions. Visitors outside the allowed area will see an unavailable message and no data will be stored.
-                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
+              <CardContent className="space-y-5">
+                {/* Filter mode selector */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { value: 'anywhere', label: 'Anywhere', description: 'No geographic restriction' },
-                    { value: 'us_only', label: 'United States only', description: 'Any US state' },
-                    { value: 'specific_states', label: 'Specific states', description: 'Choose which US states' },
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={cn(
-                        "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                        settings.geo_filter_mode === option.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border/50 hover:border-border"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="geo_filter_mode"
-                        value={option.value}
-                        checked={settings.geo_filter_mode === option.value}
-                        onChange={() => setSettings({ ...settings, geo_filter_mode: option.value })}
-                        className="mt-1 accent-primary"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{option.label}</p>
-                        <p className="text-xs text-muted-foreground">{option.description}</p>
-                      </div>
-                    </label>
-                  ))}
+                    { value: 'anywhere', label: 'Anywhere', description: 'No restriction', icon: '🌍' },
+                    { value: 'us_only', label: 'US Only', description: 'All 50 states + DC', icon: '🇺🇸' },
+                    { value: 'specific_states', label: 'Specific States', description: 'Choose states', icon: '📍' },
+                  ].map((option) => {
+                    const isActive = settings.geo_filter_mode === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setSettings({ ...settings, geo_filter_mode: option.value })}
+                        className={cn(
+                          "relative flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 cursor-pointer transition-all text-center",
+                          isActive
+                            ? "border-primary bg-primary/5 shadow-sm shadow-primary/10"
+                            : "border-border/40 hover:border-border hover:bg-muted/30"
+                        )}
+                      >
+                        <span className="text-2xl">{option.icon}</span>
+                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span className="text-[11px] text-muted-foreground leading-tight">{option.description}</span>
+                        {isActive && (
+                          <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
+                {/* State picker */}
                 {settings.geo_filter_mode === 'specific_states' && (
-                  <div className="space-y-2">
-                    <Label>Allowed States</Label>
-                    <div className="flex flex-wrap gap-1.5 p-3 border border-border/50 rounded-lg max-h-40 overflow-auto">
+                  <div className="space-y-3 border border-border/30 rounded-xl p-4 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-semibold">Select States</Label>
+                        {settings.geo_allowed_states.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {settings.geo_allowed_states.length} of {US_STATES.length} selected
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 px-2"
+                          onClick={() => setSettings({ ...settings, geo_allowed_states: US_STATES.map(s => s.code) })}
+                        >
+                          Select All
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 px-2"
+                          onClick={() => setSettings({ ...settings, geo_allowed_states: [] })}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-6 sm:grid-cols-9 md:grid-cols-11 gap-1.5">
                       {US_STATES.map((st) => {
                         const isSelected = settings.geo_allowed_states.includes(st.code);
                         return (
                           <button
                             key={st.code}
                             type="button"
+                            title={st.name}
                             onClick={() => {
                               const next = isSelected
                                 ? settings.geo_allowed_states.filter(s => s !== st.code)
@@ -1164,10 +1201,10 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                               setSettings({ ...settings, geo_allowed_states: next });
                             }}
                             className={cn(
-                              "px-2 py-1 rounded text-xs font-medium transition-colors",
+                              "relative h-9 rounded-lg text-xs font-semibold transition-all",
                               isSelected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "bg-background border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
                             )}
                           >
                             {st.code}
@@ -1175,26 +1212,22 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         );
                       })}
                     </div>
-                    {settings.geo_allowed_states.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        {settings.geo_allowed_states.length} state{settings.geo_allowed_states.length !== 1 ? 's' : ''} selected
-                      </p>
-                    )}
                   </div>
                 )}
 
+                {/* Custom blocked message */}
                 {settings.geo_filter_mode !== 'anywhere' && (
-                  <div className="space-y-2">
-                    <Label>Custom Blocked Message</Label>
+                  <div className="space-y-2 pt-1">
+                    <Label className="text-sm">Blocked Visitor Message</Label>
                     <Textarea
                       value={settings.geo_blocked_message || ''}
                       onChange={(e) => setSettings({ ...settings, geo_blocked_message: e.target.value || null })}
                       placeholder="We're sorry, our services are currently not available in your area."
                       rows={2}
-                      className="text-sm"
+                      className="text-sm resize-none"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Message shown to visitors outside the allowed area. Leave blank for the default.
+                      Shown to visitors outside the allowed area. Leave blank for the default message.
                     </p>
                   </div>
                 )}
