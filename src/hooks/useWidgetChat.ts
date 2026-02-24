@@ -477,6 +477,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const [aiAgents, setAiAgents] = useState<AIAgent[]>([]);
   const [currentAiAgent, setCurrentAiAgent] = useState<AIAgent | null>(null);
   const [greetingText, setGreetingText] = useState<string>(''); // Static greeting from property settings
+  const [geoBlocked, setGeoBlocked] = useState(false);
+  const [geoBlockedMessage, setGeoBlockedMessage] = useState<string>('');
   
   const aiMessageCountRef = useRef(0);
   const proactiveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -717,6 +719,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
 
       const data = await response.json();
+
+      // Handle geo-blocking
+      if (data?.geoBlocked) {
+        setGeoBlocked(true);
+        setGeoBlockedMessage(data.geoBlockedMessage || "We're sorry, our services are currently not available in your area.");
+        setLoading(false);
+        return;
+      }
+
       if (data?.visitorId) {
         setVisitorId(data.visitorId);
         visitorIdRef.current = data.visitorId;
@@ -2012,5 +2023,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     currentAiAgent,
     aiAgents,
     greetingText, // Static greeting for UI display
+    geoBlocked,
+    geoBlockedMessage,
   };
 };

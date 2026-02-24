@@ -33,10 +33,10 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Validate property exists and get greeting
+    // Validate property exists and get greeting + geo settings
     const { data: property, error: propErr } = await supabase
       .from("properties")
-      .select("id,greeting")
+      .select("id,greeting,geo_filter_mode,geo_allowed_states,geo_blocked_message")
       .eq("id", propertyId)
       .maybeSingle();
 
@@ -47,7 +47,66 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find or create visitor
+    // ── Geo-filtering check ──
+    const geoMode = property.geo_filter_mode || "anywhere";
+    if (geoMode !== "anywhere") {
+      // Extract visitor IP
+      const forwardedFor = req.headers.get("x-forwarded-for");
+      const realIp = req.headers.get("x-real-ip");
+      const ip = forwardedFor?.split(",")[0]?.trim() || realIp || null;
+
+      const isPrivateIp =
+        !ip ||
+        ip === "127.0.0.1" ||
+        ip.startsWith("192.168.") ||
+        ip.startsWith("10.") ||
+        ip.startsWith("172.");
+
+      // For private/local IPs we allow through (dev/testing)
+      if (!isPrivateIp) {
+        try {
+          const geoResponse = await fetch(
+            `http://ip-api.com/json/${ip}?fields=status,region,countryCode`
+          );
+
+          if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+
+            if (geoData.status === "success") {
+              let blocked = false;
+
+              if (geoMode === "us_only") {
+                blocked = geoData.countryCode !== "US";
+              } else if (geoMode === "specific_states") {
+                const allowedStates: string[] = property.geo_allowed_states || [];
+                blocked =
+                  geoData.countryCode !== "US" ||
+                  !allowedStates.includes(geoData.region);
+              }
+
+              if (blocked) {
+                const defaultMsg =
+                  "We're sorry, our services are currently not available in your area.";
+                return new Response(
+                  JSON.stringify({
+                    geoBlocked: true,
+                    geoBlockedMessage: property.geo_blocked_message || defaultMsg,
+                  }),
+                  {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                  }
+                );
+              }
+            }
+          }
+        } catch (geoErr) {
+          // If geo lookup fails, allow the visitor through
+          console.error("widget-bootstrap: geo lookup error", geoErr);
+        }
+      }
+    }
+
+    // ── Normal flow: find or create visitor ──
     let visitorId: string;
     let visitorInfo: { name?: string; email?: string } = {};
 
