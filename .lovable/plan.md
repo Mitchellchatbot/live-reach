@@ -1,84 +1,83 @@
 
 
-# Business Information Section for Properties
+# Geo-Filtering for Chat Widget
 
 ## Overview
-Add a "Business Information" section to each property where details like phone number, address, hours of operation, and other business info are stored. This data will be **auto-populated during onboarding** using the existing Firecrawl website scraper, and can be **manually edited** afterward from a new settings page.
+Add a per-property setting that lets you restrict which regions the AI chatbot will engage with. Visitors outside the allowed region will see the widget but get a polite "unavailable" message instead of starting a conversation. Their data will not be stored and no conversation will be created.
 
-## What Changes
+## How It Works
 
-### 1. Database: Add columns to `properties` table
-Add new nullable text columns to the existing `properties` table:
-- `business_phone` (text)
-- `business_email` (text)
-- `business_address` (text)
-- `business_hours` (text) -- e.g. "Mon-Fri 9am-5pm"
-- `business_description` (text) -- short company description
-- `business_logo_url` (text) -- extracted logo URL
+1. **Settings UI** -- A new "Service Area" section on the AI Settings page (per-property) with three modes:
+   - **Anywhere** (default) -- no filtering
+   - **United States only** -- any US state
+   - **Specific states** -- multi-select list of US states (e.g., Florida, Texas)
 
-No new tables needed -- these belong on the property since each property represents a single website/business.
+2. **Geo-check at widget bootstrap** -- When a visitor opens the widget, the `widget-bootstrap` edge function already knows the visitor's IP. We'll add geo-lookup logic there (before creating a visitor record) and compare against the property's allowed regions. If the visitor is outside the allowed area:
+   - Return a `geoBlocked: true` flag to the widget
+   - Do NOT create a visitor record or conversation
+   - The widget shows a static message like "We're sorry, our services are currently only available in [region]. Please visit [website] for more information."
 
-### 2. Enhance the Website Scraper
-Update `supabase/functions/extract-website-info/index.ts` to also extract:
-- Phone numbers (regex scan of page content for phone patterns)
-- Email addresses (regex scan for email patterns)
-- Physical address (look for common address patterns or structured data)
-- Business hours (if found in page content)
-
-The function already returns `companyName`, `description`, `primaryColor`, and `logo`. We add the new fields to its response.
-
-### 3. Auto-populate During Onboarding
-Update `src/pages/Onboarding.tsx`:
-- After the `extract-website-info` call succeeds, save the extracted business info fields into onboarding state
-- Pass these fields through to `createProperty()` so they get stored on the property row
-
-### 4. Update `createProperty` in `useConversations.ts`
-Extend the property creation options to accept and insert the new business info columns.
-
-### 5. New "Business Info" Settings Page/Section
-Create a new component `src/components/settings/BusinessInfoSettings.tsx`:
-- Displayed on a new route or as a section in an existing settings area
-- Shows editable fields for phone, email, address, hours, description, and logo
-- Has a "Re-scan Website" button that calls `extract-website-info` again and pre-fills the fields
-- Save button updates the `properties` row
-- Supports the "All Properties" bulk mode (similar to email/slack settings)
-
-### 6. Add Navigation
-Add a sidebar link or integrate into the existing settings/notifications flow so users can access Business Info settings.
-
-### 7. Property Cards Enhancement
-Optionally show a snippet of business info (phone, address) on the property cards in `/dashboard/properties`.
+3. **No data stored** -- Blocked visitors never get a visitor record, conversation, or messages saved to the database. They never appear in the dashboard inbox.
 
 ## Technical Details
 
-### Migration SQL
-```sql
-ALTER TABLE public.properties
-  ADD COLUMN IF NOT EXISTS business_phone text,
-  ADD COLUMN IF NOT EXISTS business_email text,
-  ADD COLUMN IF NOT EXISTS business_address text,
-  ADD COLUMN IF NOT EXISTS business_hours text,
-  ADD COLUMN IF NOT EXISTS business_description text,
-  ADD COLUMN IF NOT EXISTS business_logo_url text;
+### Database Changes
+Add three columns to the `properties` table:
+- `geo_filter_mode` (text, default `'anywhere'`) -- values: `anywhere`, `us_only`, `specific_states`
+- `geo_allowed_states` (text[], default `'{}'`) -- e.g. `{'FL','TX','CA'}`
+- `geo_blocked_message` (text, nullable) -- custom message for blocked visitors
+
+### Edge Function Changes
+
+**`widget-bootstrap/index.ts`**:
+- Fetch geo-filter settings along with the property greeting
+- Before creating/finding a visitor, perform the IP geolocation check (reuse ip-api.com logic from `get-visitor-location`)
+- If blocked: return `{ geoBlocked: true, geoBlockedMessage: "..." }` immediately, skip all visitor/conversation creation
+- If allowed: proceed as normal
+
+**`get-property-settings/index.ts`**:
+- Add `geo_filter_mode`, `geo_allowed_states`, `geo_blocked_message` to the SELECT list
+
+### Frontend Changes
+
+**`src/hooks/useWidgetChat.ts`**:
+- Handle `geoBlocked` response from bootstrap
+- Expose a `geoBlocked` state and `geoBlockedMessage` to the widget UI
+- When blocked: skip all chat initialization, hide input, show the blocked message
+
+**`src/components/widget/ChatWidget.tsx`**:
+- When `geoBlocked` is true, render a static "unavailable in your area" message instead of the chat interface
+
+**`src/pages/AISupport.tsx`**:
+- Add a "Service Area" card in the AI settings section
+- Three radio options: Anywhere, US Only, Specific States
+- When "Specific States" is selected, show a multi-select dropdown with US state abbreviations
+- Optional custom blocked message text field
+- Save to properties table on the existing save flow
+
+### Flow Diagram
+
+```text
+Visitor opens widget
+        |
+        v
+  widget-bootstrap (edge fn)
+        |
+        v
+  Fetch property geo settings
+        |
+        v
+  Lookup visitor IP location
+        |
+    +---+---+
+    |       |
+ Allowed  Blocked
+    |       |
+    v       v
+ Normal   Return geoBlocked=true
+ flow     (no visitor/conversation created)
 ```
 
-No RLS changes needed -- existing property RLS policies already cover these columns.
-
-### Scraper Enhancement (extract-website-info)
-Add regex-based extraction from the scraped markdown content:
-- Phone: `/(\+?1?\s*[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/` 
-- Email: `/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/`
-- Address: Look for patterns with street numbers, state abbreviations, zip codes
-
-These get returned alongside the existing `companyName`, `description`, etc.
-
-### Files Modified
-- `supabase/functions/extract-website-info/index.ts` -- add phone/email/address extraction
-- `src/pages/Onboarding.tsx` -- pass extracted business info to property creation
-- `src/hooks/useConversations.ts` -- accept new fields in `createProperty`
-- `src/pages/Properties.tsx` -- optionally show business info on cards
-
-### Files Created
-- `src/components/settings/BusinessInfoSettings.tsx` -- editable business info form with re-scan button
-- New migration file for the schema changes
+### Privacy Note
+IP geolocation is performed server-side and never stored for blocked visitors. Only the boolean result (allowed/blocked) is sent to the client.
 
