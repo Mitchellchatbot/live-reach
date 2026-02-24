@@ -1153,65 +1153,84 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                   })}
                 </div>
 
-                {/* State picker */}
+                {/* State picker dropdown */}
                 {settings.geo_filter_mode === 'specific_states' && (
-                  <div className="space-y-3 border border-border/30 rounded-xl p-4 bg-muted/20">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="text-sm font-semibold">Select States</Label>
-                        {settings.geo_allowed_states.length > 0 && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {settings.geo_allowed_states.length} of {US_STATES.length} selected
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 px-2"
-                          onClick={() => setSettings({ ...settings, geo_allowed_states: US_STATES.map(s => s.code) })}
-                        >
-                          Select All
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Allowed States</Label>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between h-auto min-h-10 py-2 font-normal">
+                          <span className="text-sm truncate text-left">
+                            {settings.geo_allowed_states.length === 0
+                              ? 'Select states...'
+                              : settings.geo_allowed_states.length === US_STATES.length
+                                ? 'All states selected'
+                                : `${settings.geo_allowed_states.sort().join(', ')} (${settings.geo_allowed_states.length})`}
+                          </span>
+                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
                         </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 px-2"
-                          onClick={() => setSettings({ ...settings, geo_allowed_states: [] })}
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-auto bg-popover z-50" align="start">
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setSettings({ ...settings, geo_allowed_states: US_STATES.map(s => s.code) });
+                          }}
+                          className="text-xs font-medium text-primary"
                         >
-                          Clear
-                        </Button>
+                          <Check className="h-3 w-3 mr-1" /> Select All
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setSettings({ ...settings, geo_allowed_states: [] });
+                          }}
+                          className="text-xs font-medium text-muted-foreground"
+                        >
+                          Clear All
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {US_STATES.map((st) => {
+                          const isSelected = settings.geo_allowed_states.includes(st.code);
+                          return (
+                            <DropdownMenuItem
+                              key={st.code}
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                const next = isSelected
+                                  ? settings.geo_allowed_states.filter(s => s !== st.code)
+                                  : [...settings.geo_allowed_states, st.code];
+                                setSettings({ ...settings, geo_allowed_states: next });
+                              }}
+                              className="flex items-center gap-2"
+                            >
+                              <Checkbox checked={isSelected} className="pointer-events-none" />
+                              <span className="text-sm">{st.name}</span>
+                              <span className="text-xs text-muted-foreground ml-auto">{st.code}</span>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {settings.geo_allowed_states.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {settings.geo_allowed_states.sort().map((code) => (
+                          <Badge key={code} variant="secondary" className="gap-1 pr-1 text-xs">
+                            {code}
+                            <button
+                              type="button"
+                              onClick={() => setSettings({
+                                ...settings,
+                                geo_allowed_states: settings.geo_allowed_states.filter(s => s !== code),
+                              })}
+                              className="ml-0.5 hover:text-destructive"
+                            >
+                              ×
+                            </button>
+                          </Badge>
+                        ))}
                       </div>
-                    </div>
-                    <div className="grid grid-cols-6 sm:grid-cols-9 md:grid-cols-11 gap-1.5">
-                      {US_STATES.map((st) => {
-                        const isSelected = settings.geo_allowed_states.includes(st.code);
-                        return (
-                          <button
-                            key={st.code}
-                            type="button"
-                            title={st.name}
-                            onClick={() => {
-                              const next = isSelected
-                                ? settings.geo_allowed_states.filter(s => s !== st.code)
-                                : [...settings.geo_allowed_states, st.code];
-                              setSettings({ ...settings, geo_allowed_states: next });
-                            }}
-                            className={cn(
-                              "relative h-9 rounded-lg text-xs font-semibold transition-all",
-                              isSelected
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-background border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                            )}
-                          >
-                            {st.code}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    )}
                   </div>
                 )}
 
