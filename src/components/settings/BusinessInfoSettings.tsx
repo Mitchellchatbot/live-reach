@@ -55,12 +55,12 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
         .single();
       if (!error && data) {
         setInfo({
-          business_phone: (data as any).business_phone || '',
-          business_email: (data as any).business_email || '',
-          business_address: (data as any).business_address || '',
-          business_hours: (data as any).business_hours || '',
-          business_description: (data as any).business_description || '',
-          business_logo_url: (data as any).business_logo_url || '',
+          business_phone: data.business_phone || '',
+          business_email: data.business_email || '',
+          business_address: data.business_address || '',
+          business_hours: data.business_hours || '',
+          business_description: data.business_description || '',
+          business_logo_url: data.business_logo_url || '',
         });
         setPropertyDomain(data.domain);
       }
@@ -74,7 +74,7 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
     try {
       const ids = isBulk ? bulkPropertyIds! : [propertyId!];
       for (const id of ids) {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from('properties')
           .update({
             business_phone: info.business_phone || null,
@@ -83,12 +83,18 @@ export const BusinessInfoSettings = ({ propertyId, bulkPropertyIds }: BusinessIn
             business_hours: info.business_hours || null,
             business_description: info.business_description || null,
             business_logo_url: info.business_logo_url || null,
-          } as any)
-          .eq('id', id);
+          })
+          .eq('id', id)
+          .select();
         if (error) throw error;
+        if (!data || data.length === 0) {
+          console.error('Business info update returned no rows for property:', id);
+          throw new Error('Update did not affect any rows');
+        }
       }
       toast.success(isBulk ? `Saved to ${ids.length} properties` : 'Business info saved');
-    } catch {
+    } catch (err) {
+      console.error('Failed to save business info:', err);
       toast.error('Failed to save business info');
     } finally {
       setSaving(false);
