@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { PropertySelector } from '@/components/PropertySelector';
-import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown, Check } from 'lucide-react';
+import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown, Check, Map, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import emilyAvatar from '@/assets/personas/emily.jpg';
 import sarahAvatar from '@/assets/personas/sarah.jpg';
@@ -1140,7 +1140,9 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             : "border-border/40 hover:border-border hover:bg-muted/30"
                         )}
                       >
-                        <Globe className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />
+                        {option.value === 'anywhere' && <Globe className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />}
+                        {option.value === 'us_only' && <Map className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />}
+                        {option.value === 'specific_states' && <MapPin className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />}
                         <span className="text-sm font-semibold">{option.label}</span>
                         <span className="text-[11px] text-muted-foreground leading-tight">{option.description}</span>
                         {isActive && (
