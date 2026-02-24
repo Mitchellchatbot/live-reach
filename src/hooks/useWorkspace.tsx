@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -27,11 +27,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastFetchedUserId = useRef<string | null>(null);
 
   const fetchWorkspaces = useCallback(async () => {
     if (!user) {
       setWorkspaces([]);
       setLoading(false);
+      lastFetchedUserId.current = null;
+      return;
+    }
+
+    // Skip refetch if data is already loaded for this user
+    if (lastFetchedUserId.current === user.id && workspaces.length > 0) {
       return;
     }
 
@@ -98,6 +105,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
 
     setWorkspaces(result);
+    lastFetchedUserId.current = user.id;
 
     // Restore saved workspace or default to first
     const saved = localStorage.getItem(ACTIVE_WORKSPACE_KEY);

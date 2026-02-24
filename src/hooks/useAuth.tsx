@@ -135,12 +135,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const newUserId = session?.user?.id ?? null;
           const currentUserId = lastRoleUserId.current;
           if (newUserId === currentUserId) {
+            // Same user, skip state updates entirely to prevent re-render cascade
             return;
           }
         }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
+
+        // Only update state if values actually changed
+        setSession(prev => {
+          if (prev?.access_token === session?.access_token) return prev;
+          return session;
+        });
+        setUser(prev => {
+          if (prev?.id === session?.user?.id) return prev;
+          return session?.user ?? null;
+        });
 
         if (session?.user) {
           setTimeout(() => {
