@@ -308,7 +308,7 @@ const AISupport = () => {
         drop_capitalization_enabled: data.drop_capitalization_enabled ?? true,
         drop_apostrophes_enabled: data.drop_apostrophes_enabled ?? true,
         quick_reply_after_first_enabled: (data as any).quick_reply_after_first_enabled ?? false,
-        geo_filter_mode: (data as any).geo_filter_mode ?? 'anywhere',
+        geo_filter_mode: (data as any).geo_filter_mode ?? 'us_only',
         geo_allowed_states: (data as any).geo_allowed_states ?? [],
         geo_blocked_message: (data as any).geo_blocked_message ?? null,
       });
@@ -1123,9 +1123,9 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                 {/* Filter mode selector */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { value: 'anywhere', label: 'Anywhere', description: 'No restriction', icon: '🌍' },
-                    { value: 'us_only', label: 'US Only', description: 'All 50 states + DC', icon: '🇺🇸' },
-                    { value: 'specific_states', label: 'Specific States', description: 'Choose states', icon: '📍' },
+                    { value: 'anywhere', label: 'Anywhere', description: 'No restriction' },
+                    { value: 'us_only', label: 'US Only', description: 'All 50 states + DC' },
+                    { value: 'specific_states', label: 'Specific States', description: 'Choose states' },
                   ].map((option) => {
                     const isActive = settings.geo_filter_mode === option.value;
                     return (
@@ -1140,7 +1140,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             : "border-border/40 hover:border-border hover:bg-muted/30"
                         )}
                       >
-                        <span className="text-2xl">{option.icon}</span>
+                        <Globe className={cn("h-5 w-5", isActive ? "text-primary" : "text-muted-foreground")} />
                         <span className="text-sm font-semibold">{option.label}</span>
                         <span className="text-[11px] text-muted-foreground leading-tight">{option.description}</span>
                         {isActive && (
