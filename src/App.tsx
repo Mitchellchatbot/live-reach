@@ -64,6 +64,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Properties = lazy(() => import("./pages/Properties"));
 const HipaaCompliance = lazy(() => import("./pages/HipaaCompliance"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const Funnel = lazy(() => import("./pages/Funnel"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -122,6 +123,7 @@ const AppRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/lp" element={<Funnel />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
