@@ -41,9 +41,9 @@ const benefits = [
 ];
 
 const stats = [
-  { value: '3x', label: 'More leads captured' },
+  { value: '3x', label: 'More leads from ad spend' },
   { value: '24/7', label: 'Always-on coverage' },
-  { value: '<5 min', label: 'Setup time' },
+  { value: '47%', label: 'Lower cost per lead' },
   { value: '93%', label: 'Visitor satisfaction' },
 ];
 
@@ -81,21 +81,21 @@ const Funnel = () => {
 
           {/* Target qualifier */}
           <p className="text-primary font-semibold text-base md:text-lg mb-4">
-            For Treatment Centers & Healthcare Practices:
+            For Treatment Centers & Healthcare Practices Running Website + Paid Media:
           </p>
 
           {/* Headline */}
           <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5">
-            Turn Your Website Into a{' '}
+            Convert More of Your{' '}
             <span className="underline decoration-primary decoration-4 underline-offset-4">
-              24/7 Lead-Generating Machine
+              Website Visitors & Ad Traffic
             </span>{' '}
-            — Without Hiring More Staff
+            Into Booked Patients — On Autopilot
           </h1>
 
           {/* Sub-headline */}
           <p className="text-lg md:text-xl text-background/70 mb-8 max-w-2xl mx-auto">
-            Our AI chat agent captures <strong className="text-background">3x more leads</strong> from your existing traffic by engaging every visitor the moment they land — with conversations that feel genuinely human.
+            Whether they come from Google Ads, Meta, or organic search — our AI chat agent engages every visitor <strong className="text-background">the second they land</strong>, captures their info naturally, and turns clicks into qualified leads 24/7.
           </p>
 
           {/* CTA */}
@@ -153,10 +153,10 @@ const Funnel = () => {
       <section className="px-4 py-14 md:py-20">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-4">
-            Why Practices Are Switching to CareAssist
+            Stop Wasting Ad Spend & Website Traffic
           </h2>
           <p className="text-center text-background/60 mb-12 max-w-2xl mx-auto">
-            Stop losing leads to slow response times and missed chats. Here's what changes when you add an AI agent that never sleeps.
+            You're paying for clicks — but most visitors leave without converting. Here's what changes when an AI agent engages every single one.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => (
@@ -183,9 +183,9 @@ const Funnel = () => {
           </h2>
           <div className="space-y-8 text-left">
             {[
-              { step: '1', title: 'Paste One Line of Code', desc: 'Drop the widget snippet onto your website. Takes less than 2 minutes.' },
-              { step: '2', title: 'AI Engages Every Visitor', desc: 'Your branded AI agent greets visitors, answers questions, and naturally captures their info.' },
-              { step: '3', title: 'Leads Flow to Your Team', desc: 'Get notified via Slack, email, or Salesforce. Full conversation context included.' },
+              { step: '1', title: 'Paste One Line of Code', desc: 'Drop the widget onto your website or landing page. Works with any site builder — takes under 2 minutes.' },
+              { step: '2', title: 'AI Converts Your Traffic', desc: 'Every visitor from Google Ads, Meta, or organic gets an instant, human-sounding conversation that captures their info.' },
+              { step: '3', title: 'Leads Flow to Your Team', desc: 'Get notified via Slack, email, or Salesforce the moment a lead is captured. Full conversation context included.' },
             ].map((s) => (
               <div key={s.step} className="flex gap-5 items-start">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
