@@ -1,60 +1,74 @@
 
+# Beef Up Documentation
 
-## Why the App "Reloads" When You Switch Browser Tabs
+## What's Missing
 
-There are three overlapping causes that make the entire app feel like it reloads whenever you switch away from the browser tab and come back:
+The current documentation (6 sections, ~20 topics) is outdated and doesn't cover many features that have been added. Here's what needs to be added or updated:
 
-### Root Causes
+## New Sections and Topics to Add
 
-**1. Auth token refresh triggers a cascade of re-renders**
-When you leave the tab and return, the authentication system refreshes the session token. This fires a `TOKEN_REFRESHED` event that updates the user/session state in the AuthProvider. Since almost every page depends on the user object, this triggers re-renders throughout the entire component tree. The Workspace provider also re-fetches when auth state changes, adding another layer.
+### 1. Getting Started - New Topics
+- **Onboarding Flow** - The guided setup wizard for new accounts (choosing AI tone, setting up first property)
+- **Dashboard Tour** - The interactive guided tour and deep-dive page tours
+- **Workspaces** - Switching between workspaces, workspace management
 
-**2. Short data staleness window (30 seconds)**
-The data-fetching layer considers cached data "stale" after just 30 seconds. So if you're away from the tab for more than 30 seconds, every data query will re-fetch when you return, causing loading spinners and UI flickers even though nothing changed.
+### 2. Inbox - Updates
+- **Conversation Shortcuts** - Chat shortcuts and quick replies available in the chat panel
+- **Real-time Updates** - How conversations update live with typing indicators and message streaming
+- **Conversation Status** - Active, closed, pending states and how auto-close works for stale conversations
 
-**3. Form state lives in component-local `useState`**
-Most settings forms (Business Info, Slack, Email, etc.) store their field values in plain `useState`. When the re-render cascade from causes 1 and 2 causes these components to unmount and remount, all unsaved form data is wiped. The localStorage draft system we added only covers the Notifications page — other pages have the same vulnerability.
+### 3. AI Support - New Topics
+- **Service Area / Geo-Filtering** - Global, US Only, and Specific States filters; blocked visitor messages
+- **Typo Injection** - The humanization feature that adds natural typos to AI responses
+- **Quick Reply After First** - Fast reply mode after the first message
+- **Drop Apostrophes** - Casual tone setting
+- **AI Tone Presets** - Emily, Michael, Daniel, Sarah personality presets from onboarding
 
----
+### 4. Widget - Updates
+- **Widget Effects** - Visual effects and animation options for the chat widget
+- **Widget Preview** - The live preview page for testing widget appearance
 
-### Proposed Fixes
+### 5. Integrations - New Topics
+- **Slack Integration** - Updated to reflect OAuth flow (connect via Slack button, channel selection)
+- **Salesforce OAuth** - Updated to reflect the proper OAuth connection flow and field mapping
+- **Email Notifications** - Updated to cover notification log and delivery tracking
 
-#### Fix 1: Suppress unnecessary auth re-renders
-**File: `src/hooks/useAuth.tsx`**
-- When a `TOKEN_REFRESHED` event fires and the user ID hasn't changed, skip updating `session` and `user` state entirely (currently it only skips the role fetch, but still sets session/user, which triggers re-renders throughout the app).
+### 6. New Section: Compliance
+- **HIPAA Settings** - Data retention policies, audit logging, session timeouts, BAA requirements
+- **Data Purging** - Automatic purge of expired data based on retention settings
+- **Audit Log** - Tracking admin actions for compliance
 
-#### Fix 2: Increase staleTime to 5 minutes
-**File: `src/App.tsx`**
-- Change `staleTime` from 30 seconds to 5 minutes (`5 * 60 * 1000`). This prevents data queries from automatically re-fetching just because you tabbed away for a minute. Data will still refresh when you explicitly navigate or when mutations invalidate the cache.
+### 7. New Section: Account
+- **Subscription & Billing** - Plans, subscription management
+- **Account Settings** - Profile, email, password, session management
+- **Business Info / Properties** - Managing property details, domains, website info extraction
+- **Visitor Leads** - Viewing and managing captured visitor/lead data
 
-#### Fix 3: Stabilize WorkspaceProvider
-**File: `src/hooks/useWorkspace.tsx`**
-- Add a guard so `fetchWorkspaces` doesn't re-run if data is already loaded and the user ID hasn't changed. Currently it re-runs whenever the `useCallback` dependencies change (which includes `isClient`, `isAdmin`, `isAgent` — values that get briefly set to false during auth refresh).
+### 8. Analytics - Expand
+- **Blog Analytics** - Blog/content performance tracking
+- **Page Analytics** - Per-page visitor tracking and engagement metrics
+- **Conversation Metrics** - AI vs human response rates, resolution times
 
----
+## Technical Changes
 
-### Technical Details
+### File: `src/data/documentation.ts`
+- Add ~20 new topic entries across existing and new sections
+- Add two new sections: "Compliance" and "Account"
+- Update existing topic descriptions to reflect current UI and feature set
+- Add proper `relatedTopics` cross-links between new and existing topics
 
-**Auth fix (useAuth.tsx):**
-```text
-Current behavior on TOKEN_REFRESHED:
-  - Skips role fetch (good)
-  - Still calls setSession() and setUser() (triggers full app re-render)
+### File: `src/pages/Documentation.tsx`
+- Add icons for new sections (Shield for Compliance, CreditCard/Settings for Account)
+- Update the `sectionIcons` map
 
-Fixed behavior on TOKEN_REFRESHED:
-  - If user ID is the same, return early BEFORE setSession/setUser
-  - No re-render propagates through the app
-```
+### File: `src/components/docs/DocsSidebar.tsx`
+- No changes needed (already renders dynamically from data)
 
-**StaleTime fix (App.tsx):**
-```text
-staleTime: 30 * 1000    -->    staleTime: 5 * 60 * 1000
-```
+### File: `src/pages/docs/DocPage.tsx`
+- No changes needed (already renders dynamically from data)
 
-**Workspace fix (useWorkspace.tsx):**
-```text
-Add: if workspaces are already loaded and user.id matches, skip refetch
-This prevents the loading flash when auth roles momentarily reset
-```
-
-These three changes together address the root cause rather than patching individual pages. The app will feel stable when switching browser tabs, and forms won't lose their state.
+## Summary
+- **~20 new documentation topics** added
+- **2 new sections** (Compliance, Account)
+- **Existing topics updated** where features have changed
+- All new topics follow the existing pattern: title, description, whatItDoes, howToUse steps, tips, relatedTopics
