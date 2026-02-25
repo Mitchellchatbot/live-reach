@@ -104,19 +104,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Always update conversation's updated_at to prevent stale-conversation closer
+    // from closing active conversations mid-flow
+    const updatePayload: Record<string, string> = { updated_at: new Date().toISOString() };
+
     // If the conversation was closed and a visitor is sending a message, reopen it
     // but keep AI disabled so the human agent handles the reply
     if (senderType === "visitor" && conv.status === "closed") {
-      const { error: reopenErr } = await supabase
-        .from("conversations")
-        .update({ status: "active", updated_at: new Date().toISOString() })
-        .eq("id", conversationId);
+      updatePayload.status = "active";
+    }
 
-      if (reopenErr) {
-        console.error("widget-save-message: failed to reopen conversation", reopenErr);
-      } else {
-        console.log("widget-save-message: reopened closed conversation", conversationId);
-      }
+    const { error: updateErr } = await supabase
+      .from("conversations")
+      .update(updatePayload)
+      .eq("id", conversationId);
+
+    if (updateErr) {
+      console.error("widget-save-message: failed to update conversation", updateErr);
+    } else if (updatePayload.status === "active") {
+      console.log("widget-save-message: reopened closed conversation", conversationId);
     }
 
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq }), {
