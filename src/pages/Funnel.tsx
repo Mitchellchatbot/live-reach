@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare } from 'lucide-react';
+import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Building2 } from 'lucide-react';
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
@@ -47,13 +47,23 @@ const stats = [
   { value: '93%', label: 'Visitor satisfaction' },
 ];
 
+// Placeholder logo slots — replace with actual uploaded logos
+const trustedLogos = [
+  { name: 'Company 1' },
+  { name: 'Company 2' },
+  { name: 'Company 3' },
+  { name: 'Company 4' },
+  { name: 'Company 5' },
+  { name: 'Company 6' },
+];
+
 const Funnel = () => {
   const navigate = useNavigate();
 
   const handleCTA = () => navigate('/demo');
 
   return (
-    <div className="min-h-screen bg-foreground text-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
       <section className="relative px-4 pt-12 pb-8 md:pt-20 md:pb-14">
         <div className="max-w-3xl mx-auto text-center">
@@ -65,7 +75,7 @@ const Funnel = () => {
                   key={i}
                   src={src}
                   alt="Happy customer"
-                  className="w-9 h-9 rounded-full border-2 border-foreground object-cover"
+                  className="w-9 h-9 rounded-full border-2 border-background object-cover"
                 />
               ))}
             </div>
@@ -75,7 +85,7 @@ const Funnel = () => {
               <Star key={i} className="w-5 h-5 fill-primary text-primary" />
             ))}
           </div>
-          <p className="text-sm text-background/60 mb-6">
+          <p className="text-sm text-muted-foreground mb-6">
             5.0 from 40+ treatment centers
           </p>
 
@@ -85,7 +95,7 @@ const Funnel = () => {
           </p>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5">
+          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5 text-foreground">
             Convert More of Your{' '}
             <span className="underline decoration-primary decoration-4 underline-offset-4">
               Website Visitors & Ad Traffic
@@ -94,8 +104,8 @@ const Funnel = () => {
           </h1>
 
           {/* Sub-headline */}
-          <p className="text-lg md:text-xl text-background/70 mb-8 max-w-2xl mx-auto">
-            Whether they come from Google Ads, Meta, or organic search — our AI chat agent engages every visitor <strong className="text-background">the second they land</strong>, captures their info naturally, and turns clicks into qualified leads 24/7.
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Whether they come from Google Ads, Meta, or organic search — our AI chat agent engages every visitor <strong className="text-foreground">the second they land</strong>, captures their info naturally, and turns clicks into qualified leads 24/7.
           </p>
 
           {/* CTA */}
@@ -106,7 +116,26 @@ const Funnel = () => {
           >
             Get My Free Demo →
           </Button>
-          <p className="text-xs text-background/40 mt-3">No credit card required · Live in 5 minutes</p>
+          <p className="text-xs text-muted-foreground mt-3">No credit card required · Live in 5 minutes</p>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="px-4 py-10 border-y border-border">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+            Trusted by leading treatment centers
+          </p>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-6 items-center justify-items-center">
+            {trustedLogos.map((logo) => (
+              <div
+                key={logo.name}
+                className="h-10 w-24 md:w-28 rounded-lg bg-muted flex items-center justify-center"
+              >
+                <Building2 className="w-5 h-5 text-muted-foreground/50" />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -116,13 +145,13 @@ const Funnel = () => {
           <p className="text-center text-primary font-semibold text-sm uppercase tracking-wide mb-4">
             Step 1: Watch the short video
           </p>
-          <div className="relative aspect-video bg-background/10 rounded-2xl border border-background/20 overflow-hidden flex items-center justify-center">
-            {/* VSL placeholder — replace src with your video embed */}
+          <div className="relative aspect-video bg-muted rounded-2xl border border-border overflow-hidden flex items-center justify-center">
+            {/* VSL placeholder — replace with your video embed */}
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3">
+              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3">
                 <div className="w-0 h-0 border-l-[18px] border-l-primary border-y-[12px] border-y-transparent ml-1" />
               </div>
-              <p className="text-background/50 text-sm">Your VSL video goes here</p>
+              <p className="text-muted-foreground text-sm">Your VSL video goes here</p>
             </div>
           </div>
           <div className="text-center mt-6">
@@ -138,12 +167,12 @@ const Funnel = () => {
       </section>
 
       {/* Stats Bar */}
-      <section className="px-4 py-10 border-y border-background/10">
+      <section className="px-4 py-10 bg-accent">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-3xl md:text-4xl font-extrabold text-primary">{stat.value}</p>
-              <p className="text-sm text-background/60 mt-1">{stat.label}</p>
+              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -155,20 +184,20 @@ const Funnel = () => {
           <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-4">
             Stop Wasting Ad Spend & Website Traffic
           </h2>
-          <p className="text-center text-background/60 mb-12 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
             You're paying for clicks — but most visitors leave without converting. Here's what changes when an AI agent engages every single one.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => (
               <div
                 key={b.title}
-                className="bg-background/5 border border-background/10 rounded-2xl p-6 hover:bg-background/10 transition-colors"
+                className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow"
               >
-                <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center mb-4">
-                  <b.icon className="w-5 h-5 text-primary" />
+                <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
+                  <b.icon className="w-5 h-5 text-accent-foreground" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">{b.title}</h3>
-                <p className="text-background/60 text-sm leading-relaxed">{b.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
               </div>
             ))}
           </div>
@@ -176,7 +205,7 @@ const Funnel = () => {
       </section>
 
       {/* How It Works */}
-      <section className="px-4 py-14 md:py-20 bg-background/5">
+      <section className="px-4 py-14 md:py-20 bg-muted">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-12">
             How It Works
@@ -193,7 +222,7 @@ const Funnel = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg mb-1">{s.title}</h3>
-                  <p className="text-background/60 text-sm">{s.desc}</p>
+                  <p className="text-muted-foreground text-sm">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -222,18 +251,18 @@ const Funnel = () => {
               { name: 'Michael R.', role: 'Practice Owner', img: michaelImg, quote: 'The AI sounds so natural that patients don\'t realize they\'re chatting with a bot. Our intake volume doubled within a month.' },
               { name: 'Jennifer L.', role: 'Marketing Director', img: jenniferImg, quote: 'Setup was incredibly fast. We had it running on our site in under 5 minutes and started getting leads the same day.' },
             ].map((t) => (
-              <div key={t.name} className="bg-background/5 border border-background/10 rounded-2xl p-6">
+              <div key={t.name} className="bg-card border border-border rounded-2xl p-6">
                 <div className="flex items-center gap-1 mb-3">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-sm text-background/70 leading-relaxed mb-4">"{t.quote}"</p>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">"{t.quote}"</p>
                 <div className="flex items-center gap-3">
                   <img src={t.img} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
                   <div>
                     <p className="font-semibold text-sm">{t.name}</p>
-                    <p className="text-xs text-background/50">{t.role}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -243,12 +272,12 @@ const Funnel = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="px-4 py-16 md:py-24 text-center">
+      <section className="px-4 py-16 md:py-24 text-center bg-accent">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
             Ready to Turn Visitors Into Patients?
           </h2>
-          <p className="text-background/60 mb-8">
+          <p className="text-muted-foreground mb-8">
             See how CareAssist works with a free, no-pressure demo tailored to your practice.
           </p>
           <Button
@@ -258,7 +287,7 @@ const Funnel = () => {
           >
             Get My Free Demo →
           </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-xs text-background/40">
+          <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Live in 5 min</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
