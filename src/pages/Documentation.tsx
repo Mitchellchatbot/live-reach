@@ -10,7 +10,9 @@ import {
   Plug, 
   BarChart3,
   ArrowRight,
-  Calendar
+  Calendar,
+  Shield,
+  CreditCard
 } from 'lucide-react';
 import { useFadeIn, useStaggerChildren } from '@/hooks/useGSAP';
 
@@ -21,6 +23,8 @@ const sectionIcons: Record<string, React.ReactNode> = {
   'ai-support': <Bot className="h-6 w-6" />,
   'widget': <Palette className="h-6 w-6" />,
   'integrations': <Plug className="h-6 w-6" />,
+  'compliance': <Shield className="h-6 w-6" />,
+  'account': <CreditCard className="h-6 w-6" />,
   'analytics': <BarChart3 className="h-6 w-6" />,
 };
 

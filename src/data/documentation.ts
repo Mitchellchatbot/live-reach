@@ -40,7 +40,8 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
-          { title: 'Widget Customization', path: '/documentation/widget/customization' }
+          { title: 'Widget Customization', path: '/documentation/widget/customization' },
+          { title: 'Onboarding Flow', path: '/documentation/getting-started/onboarding' }
         ]
       },
       {
@@ -61,7 +62,75 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Widget Customization', path: '/documentation/widget/customization' },
-          { title: 'Team Assignments', path: '/documentation/team/property-assignments' }
+          { title: 'Team Assignments', path: '/documentation/team/property-assignments' },
+          { title: 'Business Info', path: '/documentation/account/business-info' }
+        ]
+      },
+      {
+        id: 'onboarding',
+        title: 'Onboarding Flow',
+        description: 'The guided setup wizard for new accounts.',
+        whatItDoes: 'When you first sign up, the onboarding flow walks you through setting up your account step by step. You\'ll choose an AI personality tone, create your first property, and configure basic settings so you\'re ready to go.',
+        howToUse: [
+          'Sign up for a new account to start onboarding automatically',
+          'Choose an AI tone preset (Emily, Michael, Daniel, or Sarah)',
+          'Enter your business name and website domain',
+          'Review the suggested base prompt and customize it',
+          'Complete the wizard to land on your dashboard'
+        ],
+        tips: [
+          'You can always change your AI tone and settings later in AI Support',
+          'The onboarding wizard extracts info from your website to pre-fill settings',
+          'If you skip onboarding, you can still set everything up manually from settings'
+        ],
+        relatedTopics: [
+          { title: 'Overview', path: '/documentation/getting-started/overview' },
+          { title: 'Dashboard Tour', path: '/documentation/getting-started/dashboard-tour' },
+          { title: 'AI Tone Presets', path: '/documentation/ai-support/tone-presets' }
+        ]
+      },
+      {
+        id: 'dashboard-tour',
+        title: 'Dashboard Tour',
+        description: 'The interactive guided tour of your dashboard.',
+        whatItDoes: 'After onboarding, an interactive guided tour highlights key areas of your dashboard. It walks you through the sidebar, inbox, AI settings, and other features with step-by-step tooltips so you know where everything is.',
+        howToUse: [
+          'The tour starts automatically after completing onboarding',
+          'Follow the highlighted tooltips as they point to each feature',
+          'Click "Next" to advance through tour steps',
+          'Complete the tour to unlock a celebration confetti moment',
+          'You can revisit the tour from the help menu if needed'
+        ],
+        tips: [
+          'Don\'t skip the tour on your first visit — it covers features you might miss',
+          'Each page may have its own deep-dive mini-tour',
+          'The tour remembers your progress so you won\'t see it again once completed'
+        ],
+        relatedTopics: [
+          { title: 'Onboarding Flow', path: '/documentation/getting-started/onboarding' },
+          { title: 'Overview', path: '/documentation/getting-started/overview' }
+        ]
+      },
+      {
+        id: 'workspaces',
+        title: 'Workspaces',
+        description: 'Switch between and manage workspaces.',
+        whatItDoes: 'Workspaces let you organize multiple businesses or client accounts under one login. Each workspace has its own properties, team members, and settings. You can switch between workspaces from the sidebar.',
+        howToUse: [
+          'Click the workspace switcher at the top of the sidebar',
+          'Select an existing workspace to switch to it',
+          'Click "Create Workspace" to set up a new one',
+          'Each workspace has its own properties and team',
+          'Your personal settings (profile, avatar) carry across all workspaces'
+        ],
+        tips: [
+          'Use workspaces to separate different businesses or clients',
+          'Agents can be invited to specific workspaces',
+          'Switching workspaces is instant — no need to log out'
+        ],
+        relatedTopics: [
+          { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
+          { title: 'Account Settings', path: '/documentation/account/account-settings' }
         ]
       }
     ]
@@ -89,7 +158,8 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' },
-          { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' }
+          { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' },
+          { title: 'Conversation Status', path: '/documentation/inbox/conversation-status' }
         ]
       },
       {
@@ -110,14 +180,15 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Managing Conversations', path: '/documentation/inbox/conversations' },
-          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' }
+          { title: 'Conversation Shortcuts', path: '/documentation/inbox/shortcuts' },
+          { title: 'Real-time Updates', path: '/documentation/inbox/realtime' }
         ]
       },
       {
         id: 'visitor-info',
         title: 'Visitor Information',
         description: 'Understanding your visitors.',
-        whatItDoes: 'The visitor info panel shows details about who you\'re chatting with. This includes their name, email, location, current page, and any other information collected during the conversation.',
+        whatItDoes: 'The visitor info panel shows details about who you\'re chatting with. This includes their name, email, phone, location, insurance info, current page, and any other information collected during the conversation.',
         howToUse: [
           'Open a conversation to see visitor details in the sidebar',
           'Click on expandable sections to see more info',
@@ -130,7 +201,73 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Lead Capture', path: '/documentation/ai-support/lead-capture' },
-          { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' }
+          { title: 'Visitor Leads', path: '/documentation/account/visitor-leads' }
+        ]
+      },
+      {
+        id: 'shortcuts',
+        title: 'Conversation Shortcuts',
+        description: 'Quick replies and chat shortcuts.',
+        whatItDoes: 'Chat shortcuts let you quickly insert pre-written responses into conversations. Type a shortcut keyword (like "/hours" or "/thanks") and select from the matching suggestions to instantly send a common reply without typing it out every time.',
+        howToUse: [
+          'Open a conversation in the chat panel',
+          'Type "/" in the message field to see all available shortcuts',
+          'Continue typing to filter shortcuts by keyword',
+          'Click a shortcut or press Enter to insert it',
+          'Edit the inserted text if needed before sending'
+        ],
+        tips: [
+          'Shortcuts save time on frequently asked questions',
+          'You can customize your shortcuts to match your brand voice',
+          'Combine shortcuts with personal touches for the best results'
+        ],
+        relatedTopics: [
+          { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' },
+          { title: 'Managing Conversations', path: '/documentation/inbox/conversations' }
+        ]
+      },
+      {
+        id: 'realtime',
+        title: 'Real-time Updates',
+        description: 'Live conversation updates and indicators.',
+        whatItDoes: 'Conversations update in real-time without needing to refresh. You\'ll see new messages appear instantly, typing indicators when someone is composing a message, and live status changes as conversations open or close.',
+        howToUse: [
+          'Open the inbox — conversations update automatically',
+          'Watch for typing indicators showing a visitor is writing',
+          'New messages appear instantly in the chat panel',
+          'The conversation list re-sorts as new messages arrive',
+          'Notification bells update in real-time for unread counts'
+        ],
+        tips: [
+          'Keep the inbox open during business hours for fastest response',
+          'Typing indicators help you know when to wait vs. respond',
+          'Real-time updates work across all your open tabs'
+        ],
+        relatedTopics: [
+          { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' },
+          { title: 'Conversation Status', path: '/documentation/inbox/conversation-status' }
+        ]
+      },
+      {
+        id: 'conversation-status',
+        title: 'Conversation Status',
+        description: 'Active, closed, and auto-close behavior.',
+        whatItDoes: 'Conversations have three states: active (ongoing chat), closed (resolved), and pending. Stale conversations are automatically closed after a period of inactivity to keep your inbox clean. Closed conversations can be reopened if a visitor sends a new message.',
+        howToUse: [
+          'View active conversations in the "Active" tab of the inbox',
+          'Click "Close" on a conversation to mark it resolved',
+          'Stale conversations auto-close after ~45 seconds of inactivity',
+          'Visitors reopening a closed chat automatically sets it back to active',
+          'Use the "Closed" tab to review past conversations'
+        ],
+        tips: [
+          'Auto-close keeps your inbox tidy without manual cleanup',
+          'Visitors can always restart a closed conversation',
+          'Closed conversations are still searchable in your history'
+        ],
+        relatedTopics: [
+          { title: 'Managing Conversations', path: '/documentation/inbox/conversations' },
+          { title: 'Real-time Updates', path: '/documentation/inbox/realtime' }
         ]
       }
     ]
@@ -252,19 +389,19 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Base Prompt', path: '/documentation/ai-support/base-prompt' },
-          { title: 'Behavior Settings', path: '/documentation/ai-support/behavior-settings' }
+          { title: 'AI Tone Presets', path: '/documentation/ai-support/tone-presets' }
         ]
       },
       {
         id: 'behavior-settings',
         title: 'Behavior Settings',
         description: 'Control how AI responds to visitors.',
-        whatItDoes: 'Behavior settings let you fine-tune how AI interacts with visitors. You can control response timing, typing indicators, and other details to make conversations feel natural.',
+        whatItDoes: 'Behavior settings let you fine-tune how AI interacts with visitors. You can control response delays, typing indicator timing, words-per-minute speed, and other details to make conversations feel natural and human-like.',
         howToUse: [
           'Go to AI Support from the sidebar',
           'Select a property to configure',
           'Scroll to the Behavior Settings section',
-          'Adjust timing and response settings',
+          'Adjust response delay, typing speed, and indicator timing',
           'Click Save to apply changes'
         ],
         tips: [
@@ -273,8 +410,9 @@ export const documentationSections: DocSection[] = [
           'Test different settings to find what works best'
         ],
         relatedTopics: [
-          { title: 'AI Personas', path: '/documentation/ai-support/personas' },
-          { title: 'Escalation', path: '/documentation/ai-support/escalation' }
+          { title: 'Typo Injection', path: '/documentation/ai-support/typo-injection' },
+          { title: 'Quick Reply After First', path: '/documentation/ai-support/quick-reply' },
+          { title: 'Escalation Rules', path: '/documentation/ai-support/escalation' }
         ]
       },
       {
@@ -303,11 +441,11 @@ export const documentationSections: DocSection[] = [
         id: 'lead-capture',
         title: 'Lead Capture',
         description: 'Collect visitor contact information.',
-        whatItDoes: 'Lead capture settings determine what contact information to collect from visitors. You can require info before chatting or use natural lead capture to ask during conversation.',
+        whatItDoes: 'Lead capture settings determine what contact information to collect from visitors. You can require name, email, phone, or insurance card info before chatting, or use natural lead capture to ask during conversation.',
         howToUse: [
           'Go to AI Support from the sidebar',
           'Find the Lead Capture section',
-          'Toggle on the fields you want to require',
+          'Toggle on the fields you want to require (name, email, phone, insurance card)',
           'Choose between upfront forms or natural capture',
           'Click Save to apply changes'
         ],
@@ -318,6 +456,7 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' },
+          { title: 'Visitor Leads', path: '/documentation/account/visitor-leads' },
           { title: 'Proactive Messages', path: '/documentation/ai-support/proactive-messages' }
         ]
       },
@@ -364,7 +503,120 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'AI Personas', path: '/documentation/ai-support/personas' },
+          { title: 'AI Tone Presets', path: '/documentation/ai-support/tone-presets' }
+        ]
+      },
+      {
+        id: 'geo-filtering',
+        title: 'Service Area / Geo-Filtering',
+        description: 'Restrict AI support by geographic location.',
+        whatItDoes: 'Geo-filtering lets you control which visitors can chat based on their location. You can set the mode to Global (everyone), US Only, or Specific States. Visitors outside your service area see a configurable blocked message instead of the chat.',
+        howToUse: [
+          'Go to AI Support from the sidebar',
+          'Find the Service Area / Geo-Filtering section',
+          'Choose a filter mode: Global, US Only, or Specific States',
+          'If using Specific States, select the states you serve',
+          'Customize the blocked visitor message',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'Use "US Only" if you only serve domestic customers',
+          'The blocked message should be helpful — suggest alternatives or a phone number',
+          'Visitor location is detected automatically via IP address'
+        ],
+        relatedTopics: [
+          { title: 'Behavior Settings', path: '/documentation/ai-support/behavior-settings' },
+          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' }
+        ]
+      },
+      {
+        id: 'typo-injection',
+        title: 'Typo Injection',
+        description: 'Humanize AI responses with natural typos.',
+        whatItDoes: 'Typo injection adds occasional, natural-looking typos to AI responses to make them feel more human. This prevents the "too-perfect" robotic feel that can make visitors suspect they\'re talking to a bot.',
+        howToUse: [
+          'Go to AI Support from the sidebar',
+          'Find the Humanization section under Behavior Settings',
+          'Toggle on "Human Typos"',
+          'The AI will automatically introduce subtle, realistic typos',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'Typos are subtle — they won\'t make messages unreadable',
+          'Combine with response delays and smart typing for maximum realism',
+          'Test a few conversations to see the effect before going live'
+        ],
+        relatedTopics: [
+          { title: 'Drop Apostrophes', path: '/documentation/ai-support/drop-apostrophes' },
           { title: 'Behavior Settings', path: '/documentation/ai-support/behavior-settings' }
+        ]
+      },
+      {
+        id: 'quick-reply',
+        title: 'Quick Reply After First',
+        description: 'Fast reply mode after the first AI message.',
+        whatItDoes: 'When enabled, the AI sends its first response with the normal delay to feel natural, but subsequent messages in the same conversation are sent much faster. This mimics how a real person types faster once they\'re engaged in a conversation.',
+        howToUse: [
+          'Go to AI Support from the sidebar',
+          'Find "Quick Reply After First" in Behavior Settings',
+          'Toggle it on',
+          'The first message uses your configured delay; follow-ups are faster',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'This creates a natural conversation rhythm',
+          'Works well with smart typing indicators',
+          'Great for high-volume conversations where speed matters'
+        ],
+        relatedTopics: [
+          { title: 'Behavior Settings', path: '/documentation/ai-support/behavior-settings' },
+          { title: 'Typo Injection', path: '/documentation/ai-support/typo-injection' }
+        ]
+      },
+      {
+        id: 'drop-apostrophes',
+        title: 'Drop Apostrophes',
+        description: 'Casual tone by removing apostrophes.',
+        whatItDoes: 'When enabled, the AI drops apostrophes from contractions (e.g., "don\'t" becomes "dont", "I\'m" becomes "Im"). This creates a more casual, texting-style tone that feels natural for informal conversations.',
+        howToUse: [
+          'Go to AI Support from the sidebar',
+          'Find "Drop Apostrophes" in the Humanization section',
+          'Toggle it on to enable the casual tone',
+          'AI responses will automatically drop apostrophes',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'Best for brands with a casual, friendly voice',
+          'Combine with typo injection for maximum informality',
+          'Not recommended for formal or medical contexts — use your judgment'
+        ],
+        relatedTopics: [
+          { title: 'Typo Injection', path: '/documentation/ai-support/typo-injection' },
+          { title: 'Base Prompt', path: '/documentation/ai-support/base-prompt' }
+        ]
+      },
+      {
+        id: 'tone-presets',
+        title: 'AI Tone Presets',
+        description: 'Pre-built personality styles for your AI.',
+        whatItDoes: 'AI tone presets give you ready-made personalities to choose from during onboarding. Each preset — Emily (warm & empathetic), Michael (professional & direct), Daniel (friendly & casual), Sarah (knowledgeable & supportive) — comes with a tailored base prompt and avatar.',
+        howToUse: [
+          'During onboarding, you\'ll see the four tone presets',
+          'Click a preset to preview its personality and avatar',
+          'Select the one that best matches your brand voice',
+          'The chosen tone sets your initial base prompt and AI persona',
+          'You can change or customize the tone anytime in AI Support settings'
+        ],
+        tips: [
+          'Emily works great for healthcare and counseling businesses',
+          'Michael suits professional services and B2B',
+          'Daniel is ideal for casual consumer brands',
+          'Sarah fits education and consulting contexts'
+        ],
+        relatedTopics: [
+          { title: 'Base Prompt', path: '/documentation/ai-support/base-prompt' },
+          { title: 'AI Personas', path: '/documentation/ai-support/personas' },
+          { title: 'Onboarding Flow', path: '/documentation/getting-started/onboarding' }
         ]
       }
     ]
@@ -378,12 +630,12 @@ export const documentationSections: DocSection[] = [
         id: 'customization',
         title: 'Widget Customization',
         description: 'Make the widget match your brand.',
-        whatItDoes: 'Customize how your chat widget looks on your website. You can change colors, size, style, and greeting messages to match your brand identity.',
+        whatItDoes: 'Customize how your chat widget looks on your website. You can change colors, icon style, greeting message, and offline message to match your brand identity.',
         howToUse: [
           'Go to Widget from the sidebar',
           'Select the property to customize',
-          'Choose a style preset or customize colors',
-          'Adjust size and border radius',
+          'Choose a widget icon style and primary color',
+          'Set your greeting and offline messages',
           'Preview changes in real-time'
         ],
         tips: [
@@ -393,6 +645,7 @@ export const documentationSections: DocSection[] = [
         ],
         relatedTopics: [
           { title: 'Colors & Branding', path: '/documentation/widget/colors-branding' },
+          { title: 'Widget Effects', path: '/documentation/widget/effects' },
           { title: 'Embed Code', path: '/documentation/widget/embed-code' }
         ]
       },
@@ -461,6 +714,51 @@ export const documentationSections: DocSection[] = [
           { title: 'Widget Customization', path: '/documentation/widget/customization' },
           { title: 'Creating Properties', path: '/documentation/getting-started/properties' }
         ]
+      },
+      {
+        id: 'effects',
+        title: 'Widget Effects',
+        description: 'Add visual animations to attract attention.',
+        whatItDoes: 'Widget effects add eye-catching animations to your chat button — like a bounce, pulse, glow, or shake — to draw visitor attention. You can control the effect type, intensity, and how often it triggers.',
+        howToUse: [
+          'Go to Widget from the sidebar',
+          'Find the Widget Effects section',
+          'Choose an effect type (bounce, pulse, glow, shake, etc.)',
+          'Set the intensity (subtle, medium, strong)',
+          'Set the interval (how often the effect plays in seconds)',
+          'Click Save to apply'
+        ],
+        tips: [
+          'Subtle effects are less annoying and still effective',
+          'Use a longer interval so the animation isn\'t constant',
+          'Test effects on your actual website to see how they look in context'
+        ],
+        relatedTopics: [
+          { title: 'Widget Customization', path: '/documentation/widget/customization' },
+          { title: 'Widget Preview', path: '/documentation/widget/preview' }
+        ]
+      },
+      {
+        id: 'preview',
+        title: 'Widget Preview',
+        description: 'Test your widget before going live.',
+        whatItDoes: 'The widget preview page shows you exactly how your chat widget will look and behave on a real page. You can interact with it, test conversations, and see how it renders on different backgrounds — all without deploying to your website.',
+        howToUse: [
+          'Go to Widget from the sidebar',
+          'Click "Preview Widget" or navigate to the preview page',
+          'Interact with the widget to test its behavior',
+          'Check how it looks with your current color and effect settings',
+          'Make adjustments in the widget settings and refresh to see changes'
+        ],
+        tips: [
+          'Use preview to test conversations end-to-end before embedding',
+          'Check both mobile and desktop views',
+          'Preview is great for demoing the widget to stakeholders'
+        ],
+        relatedTopics: [
+          { title: 'Widget Effects', path: '/documentation/widget/effects' },
+          { title: 'Embed Code', path: '/documentation/widget/embed-code' }
+        ]
       }
     ]
   },
@@ -473,40 +771,44 @@ export const documentationSections: DocSection[] = [
         id: 'salesforce',
         title: 'Salesforce',
         description: 'Export leads to Salesforce CRM.',
-        whatItDoes: 'Connect Scaled Bot to your Salesforce account to automatically export visitor information as leads. Map conversation data to Salesforce fields for seamless CRM integration.',
+        whatItDoes: 'Connect Scaled Bot to your Salesforce account via OAuth to automatically export visitor information as leads. Map conversation data to Salesforce fields and configure auto-export triggers for escalations, phone submissions, or conversation endings.',
         howToUse: [
           'Go to Salesforce from the sidebar',
-          'Enter your Salesforce Client ID and Secret',
-          'Click Connect to authorize the integration',
-          'Configure field mappings',
-          'Enable auto-export rules'
+          'Click "Connect to Salesforce" to start the OAuth flow',
+          'Authorize Scaled Bot in the Salesforce login window',
+          'Once connected, configure field mappings (name, email, phone, etc.)',
+          'Enable auto-export triggers: on escalation, phone detected, conversation end',
+          'Test with a manual export before relying on auto-export'
         ],
         tips: [
-          'Create a Connected App in Salesforce first',
-          'Test with manual exports before enabling auto-export',
-          'Map all relevant fields for complete lead data'
+          'You\'ll need a Salesforce Connected App with OAuth enabled',
+          'Map all relevant fields for complete lead data',
+          'Use auto-export on escalation to capture high-intent leads immediately',
+          'Check the Salesforce settings page to see your connection status'
         ],
         relatedTopics: [
           { title: 'Lead Capture', path: '/documentation/ai-support/lead-capture' },
-          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' }
+          { title: 'Visitor Leads', path: '/documentation/account/visitor-leads' }
         ]
       },
       {
         id: 'slack',
         title: 'Slack',
         description: 'Get notifications in Slack.',
-        whatItDoes: 'Connect Slack to receive notifications about new conversations and escalations. Your team can stay informed without constantly checking the dashboard.',
+        whatItDoes: 'Connect Slack via OAuth to receive real-time notifications about new conversations, escalations, and phone submissions. Notifications are posted to your chosen Slack channel with visitor details and conversation context.',
         howToUse: [
           'Go to Notifications from the sidebar',
-          'Click "Connect to Slack"',
-          'Authorize Scaled Bot in Slack',
-          'Choose which channel to post notifications',
-          'Configure notification triggers'
+          'Click "Add to Slack" to start the OAuth flow',
+          'Authorize Scaled Bot in the Slack consent screen',
+          'A default channel is selected automatically',
+          'Toggle which events trigger Slack notifications (new chats, escalations, phone submissions)',
+          'Click Save to apply changes'
         ],
         tips: [
-          'Use a dedicated channel for chat notifications',
-          'Enable escalation alerts for urgent issues',
-          'Test notifications after connecting'
+          'Use a dedicated channel like #customer-chats for notifications',
+          'Enable escalation alerts so urgent issues aren\'t missed',
+          'You can disconnect and reconnect anytime from the settings page',
+          'Test the connection with a test conversation after connecting'
         ],
         relatedTopics: [
           { title: 'Email Notifications', path: '/documentation/integrations/email' },
@@ -516,23 +818,206 @@ export const documentationSections: DocSection[] = [
       {
         id: 'email',
         title: 'Email Notifications',
-        description: 'Get alerts via email.',
-        whatItDoes: 'Configure email notifications to alert team members about new conversations or escalations. Add multiple email addresses to notify different people.',
+        description: 'Get alerts and track delivery.',
+        whatItDoes: 'Configure email notifications to alert team members about new conversations, escalations, or phone submissions. You can add multiple recipient email addresses and view a notification log showing delivery status and any errors.',
         howToUse: [
           'Go to Notifications from the sidebar',
           'Switch to the Email tab',
-          'Add email addresses to notify',
-          'Toggle which events trigger notifications',
+          'Toggle email notifications on',
+          'Add email addresses to the recipient list',
+          'Choose which events trigger notifications',
+          'View the Notification Log to track delivery status',
           'Click Save to apply'
         ],
         tips: [
           'Add backup email addresses for coverage',
-          'Use team distribution lists for group notifications',
-          'Don\'t over-notify - focus on important events'
+          'Check the notification log if emails aren\'t arriving',
+          'Failed deliveries show error messages in the log',
+          'Don\'t over-notify — focus on escalation and phone submissions'
         ],
         relatedTopics: [
           { title: 'Slack Notifications', path: '/documentation/integrations/slack' },
           { title: 'Escalation Rules', path: '/documentation/ai-support/escalation' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'compliance',
+    title: 'Compliance',
+    description: 'HIPAA, data retention, and audit logging',
+    topics: [
+      {
+        id: 'hipaa-settings',
+        title: 'HIPAA Settings',
+        description: 'Configure data protection and compliance.',
+        whatItDoes: 'HIPAA settings let you configure data retention policies, session timeouts, and audit logging to meet healthcare compliance requirements. You can set how long visitor data and conversations are kept before automatic purging, and enforce session timeouts for inactive users.',
+        howToUse: [
+          'Go to HIPAA Compliance from the sidebar',
+          'Select the property to configure',
+          'Set the data retention period (in days)',
+          'Toggle auto-purge on to automatically delete expired data',
+          'Configure session timeout duration in Account Settings',
+          'Review audit logs to track data access'
+        ],
+        tips: [
+          'Consult your compliance officer before setting retention periods',
+          'Shorter retention periods reduce risk but limit historical data',
+          'Session timeouts add an extra layer of security for shared workstations',
+          'A Business Associate Agreement (BAA) may be required for full HIPAA compliance'
+        ],
+        relatedTopics: [
+          { title: 'Data Purging', path: '/documentation/compliance/data-purging' },
+          { title: 'Audit Log', path: '/documentation/compliance/audit-log' },
+          { title: 'Account Settings', path: '/documentation/account/account-settings' }
+        ]
+      },
+      {
+        id: 'data-purging',
+        title: 'Data Purging',
+        description: 'Automatic deletion of expired data.',
+        whatItDoes: 'When auto-purge is enabled, the system automatically deletes conversations, messages, and visitor data that are older than your configured retention period. This runs on a schedule so you don\'t need to manually clean up old data.',
+        howToUse: [
+          'Go to HIPAA Compliance from the sidebar',
+          'Set your desired retention period (e.g., 90 days)',
+          'Toggle "Auto Purge" on',
+          'The system will automatically delete data older than the retention period',
+          'Check "Last Purge" timestamp to verify it\'s running'
+        ],
+        tips: [
+          'Export any important data before enabling auto-purge',
+          'The purge runs automatically — you don\'t need to trigger it',
+          'Deleted data cannot be recovered, so choose retention periods carefully',
+          'You can disable auto-purge at any time without losing current data'
+        ],
+        relatedTopics: [
+          { title: 'HIPAA Settings', path: '/documentation/compliance/hipaa-settings' },
+          { title: 'Visitor Leads', path: '/documentation/account/visitor-leads' }
+        ]
+      },
+      {
+        id: 'audit-log',
+        title: 'Audit Log',
+        description: 'Track who accessed what and when.',
+        whatItDoes: 'The audit log records every time a team member views, updates, exports, or deletes visitor data or conversations. It captures who performed the action, what was accessed, which PHI fields were involved, and when it happened — essential for compliance audits.',
+        howToUse: [
+          'Audit logging happens automatically when users access visitor data',
+          'View, update, export, and delete actions on visitors, conversations, and messages are logged',
+          'Each log entry includes user ID, email, action type, resource, and timestamp',
+          'PHI fields accessed (name, email, phone, insurance) are tracked specifically',
+          'Logs can be reviewed by administrators for compliance reporting'
+        ],
+        tips: [
+          'Audit logs are created automatically — no setup needed',
+          'Review logs periodically to ensure data access follows your policies',
+          'Logs include IP address and user agent for additional context',
+          'Audit data is retained independently from conversation data retention settings'
+        ],
+        relatedTopics: [
+          { title: 'HIPAA Settings', path: '/documentation/compliance/hipaa-settings' },
+          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'account',
+    title: 'Account',
+    description: 'Manage your account and billing',
+    topics: [
+      {
+        id: 'subscription',
+        title: 'Subscription & Billing',
+        description: 'Manage your plan and payments.',
+        whatItDoes: 'The subscription page shows your current plan, usage, and billing details. You can upgrade, downgrade, or manage your subscription from here.',
+        howToUse: [
+          'Go to Subscription from the sidebar',
+          'View your current plan and features',
+          'Click "Upgrade" or "Change Plan" to switch plans',
+          'Review usage metrics to see if you need more capacity',
+          'Manage payment methods and billing history'
+        ],
+        tips: [
+          'Check your usage before upgrading to make sure you need more capacity',
+          'Annual plans offer significant savings over monthly billing',
+          'Downgrading takes effect at the end of your current billing cycle'
+        ],
+        relatedTopics: [
+          { title: 'Account Settings', path: '/documentation/account/account-settings' },
+          { title: 'Business Info', path: '/documentation/account/business-info' }
+        ]
+      },
+      {
+        id: 'account-settings',
+        title: 'Account Settings',
+        description: 'Profile, email, password, and session management.',
+        whatItDoes: 'Account settings let you update your personal profile (name, avatar, email), change your password, and configure session timeout duration. Session timeouts automatically log you out after a period of inactivity for security.',
+        howToUse: [
+          'Go to Account Settings from the sidebar',
+          'Update your name, email, or avatar',
+          'Change your password from the security section',
+          'Set session timeout duration (in minutes)',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'Use a professional avatar — it appears in conversations and team views',
+          'Shorter session timeouts are more secure, especially on shared computers',
+          'Email changes may require verification',
+          'Your profile carries across all workspaces'
+        ],
+        relatedTopics: [
+          { title: 'Subscription & Billing', path: '/documentation/account/subscription' },
+          { title: 'Workspaces', path: '/documentation/getting-started/workspaces' },
+          { title: 'HIPAA Settings', path: '/documentation/compliance/hipaa-settings' }
+        ]
+      },
+      {
+        id: 'business-info',
+        title: 'Business Info / Properties',
+        description: 'Manage property details and website info.',
+        whatItDoes: 'Business info settings let you add and update details about each property — business name, description, address, phone, email, hours, logo, and Calendly link. You can also auto-extract business info from your website domain to pre-fill these fields.',
+        howToUse: [
+          'Go to Settings from the sidebar and select "Business Info"',
+          'Select the property to configure',
+          'Fill in business details (name, phone, email, address, hours)',
+          'Click "Extract from Website" to auto-fill from your domain',
+          'Upload a business logo',
+          'Add a Calendly URL for appointment scheduling',
+          'Click Save to apply changes'
+        ],
+        tips: [
+          'Complete business info helps the AI give more accurate answers',
+          'The website extraction feature pulls info from your homepage automatically',
+          'Keep business hours up to date for accurate offline messages',
+          'Your Calendly link can be shared by the AI during conversations'
+        ],
+        relatedTopics: [
+          { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
+          { title: 'Base Prompt', path: '/documentation/ai-support/base-prompt' }
+        ]
+      },
+      {
+        id: 'visitor-leads',
+        title: 'Visitor Leads',
+        description: 'View and manage captured visitor data.',
+        whatItDoes: 'The visitor leads table shows all visitors who have chatted with your widget, along with their captured contact info (name, email, phone, insurance, location). You can search, filter, and export this data for follow-up or CRM import.',
+        howToUse: [
+          'Go to Settings and select "Visitor Leads"',
+          'Select a property to view its visitors',
+          'Browse the table of captured leads with contact details',
+          'Use search to find specific visitors',
+          'Export leads for use in external tools or CRM'
+        ],
+        tips: [
+          'Leads are captured automatically during conversations',
+          'Enable natural lead capture in AI Support for the best results',
+          'Export to Salesforce directly using the Salesforce integration',
+          'Check leads regularly to follow up on high-intent visitors'
+        ],
+        relatedTopics: [
+          { title: 'Lead Capture', path: '/documentation/ai-support/lead-capture' },
+          { title: 'Salesforce', path: '/documentation/integrations/salesforce' },
+          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' }
         ]
       }
     ]
@@ -546,7 +1031,7 @@ export const documentationSections: DocSection[] = [
         id: 'overview',
         title: 'Analytics Overview',
         description: 'Understanding your chat performance.',
-        whatItDoes: 'Analytics show you how your chat widget is performing. Track page views, conversation counts, and visitor behavior to understand engagement.',
+        whatItDoes: 'Analytics show you how your chat widget is performing. Track conversation counts, visitor engagement, AI vs human response rates, and resolution times to understand how well your support is working.',
         howToUse: [
           'Go to Analytics from the sidebar',
           'Select a property to view its data',
@@ -560,8 +1045,77 @@ export const documentationSections: DocSection[] = [
           'Use insights to improve AI responses'
         ],
         relatedTopics: [
-          { title: 'Managing Conversations', path: '/documentation/inbox/conversations' },
-          { title: 'Creating Properties', path: '/documentation/getting-started/properties' }
+          { title: 'Page Analytics', path: '/documentation/analytics/page-analytics' },
+          { title: 'Blog Analytics', path: '/documentation/analytics/blog-analytics' },
+          { title: 'Conversation Metrics', path: '/documentation/analytics/conversation-metrics' }
+        ]
+      },
+      {
+        id: 'page-analytics',
+        title: 'Page Analytics',
+        description: 'Per-page visitor tracking and engagement.',
+        whatItDoes: 'Page analytics track which pages on your website get the most visitors and engagement. See page views, unique visitors, and which pages drive the most chat conversations — helping you understand where visitors need the most help.',
+        howToUse: [
+          'Go to Analytics from the sidebar',
+          'Select the "Page Analytics" tab or section',
+          'View per-page metrics including views and engagement',
+          'Sort by most visited or most conversations started',
+          'Use this data to optimize widget placement and content'
+        ],
+        tips: [
+          'Pages with high traffic but low engagement may need better content',
+          'Consider adding proactive messages on high-intent pages',
+          'Page analytics require the widget embed code on each page'
+        ],
+        relatedTopics: [
+          { title: 'Analytics Overview', path: '/documentation/analytics/overview' },
+          { title: 'Blog Analytics', path: '/documentation/analytics/blog-analytics' }
+        ]
+      },
+      {
+        id: 'blog-analytics',
+        title: 'Blog Analytics',
+        description: 'Track blog and content performance.',
+        whatItDoes: 'Blog analytics give you insights into how your blog content performs in driving visitor engagement and chat conversations. Track which blog posts get the most views and which ones lead to the most support interactions.',
+        howToUse: [
+          'Go to Analytics from the sidebar',
+          'Select the "Blog Analytics" tab or section',
+          'View performance metrics for your blog content',
+          'Identify top-performing posts by engagement',
+          'Use insights to guide your content strategy'
+        ],
+        tips: [
+          'High-engagement blog posts are great candidates for proactive chat messages',
+          'Track which topics generate the most support questions',
+          'Use blog analytics to improve your FAQ and base prompt content'
+        ],
+        relatedTopics: [
+          { title: 'Page Analytics', path: '/documentation/analytics/page-analytics' },
+          { title: 'Analytics Overview', path: '/documentation/analytics/overview' }
+        ]
+      },
+      {
+        id: 'conversation-metrics',
+        title: 'Conversation Metrics',
+        description: 'AI vs human response rates and resolution.',
+        whatItDoes: 'Conversation metrics break down how your conversations are handled — what percentage are fully resolved by AI vs escalated to humans, average response times, and resolution rates. This helps you measure AI effectiveness and team workload.',
+        howToUse: [
+          'Go to Analytics from the sidebar',
+          'View the conversation metrics section',
+          'Review AI resolution rate vs human escalation rate',
+          'Check average response times for AI and human agents',
+          'Monitor trends over time to measure improvements'
+        ],
+        tips: [
+          'A high AI resolution rate means your base prompt and FAQs are working well',
+          'If escalation rate is high, review and improve your AI base prompt',
+          'Compare response times to set realistic expectations for visitors',
+          'Use these metrics in team reviews and planning'
+        ],
+        relatedTopics: [
+          { title: 'Analytics Overview', path: '/documentation/analytics/overview' },
+          { title: 'Escalation Rules', path: '/documentation/ai-support/escalation' },
+          { title: 'Behavior Settings', path: '/documentation/ai-support/behavior-settings' }
         ]
       }
     ]
