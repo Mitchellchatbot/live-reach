@@ -545,9 +545,6 @@ export const ChatWidget = ({
                       )}
                     </div>
                     <div className="max-w-[75%] flex flex-col">
-                      {displayName && (
-                        <span className="text-xs text-muted-foreground mb-1 ml-1">{displayName}</span>
-                      )}
                       <div
                         className="px-4 py-3 shadow-sm bg-card border border-border/30"
                         style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
@@ -587,9 +584,6 @@ export const ChatWidget = ({
                         </div>
                       )}
                       <div className={cn("max-w-[75%]", msg.sender_type === 'agent' && "flex flex-col")}>
-                        {msg.sender_type === 'agent' && msgAgentName && (
-                          <span className="text-xs text-muted-foreground mb-1 ml-1">{msgAgentName}</span>
-                        )}
                         <div
                           className={cn(
                             "px-4 py-3 shadow-sm",
@@ -623,7 +617,7 @@ export const ChatWidget = ({
                             <p className="text-xs whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
                           )}
                           <p className={cn(
-                            "text-xs mt-1.5",
+                            "text-xs mt-1.5 text-right",
                             msg.sender_type === 'visitor' ? "text-white/70" : "text-muted-foreground"
                           )}>
                             {format(new Date(msg.created_at), 'h:mm a')}
@@ -647,9 +641,6 @@ export const ChatWidget = ({
                       )}
                     </div>
                     <div className="flex flex-col">
-                      {displayName && (
-                        <span className="text-xs text-muted-foreground mb-1 ml-1">{displayName}</span>
-                      )}
                       <div 
                         className="bg-card px-4 py-3 shadow-sm border border-border/30"
                         style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
@@ -699,8 +690,8 @@ export const ChatWidget = ({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Share what's on your mind..."
-                    className="flex-1 min-w-0 px-4 py-2.5 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
+                    placeholder="👋 Jump in — type your message..."
+                    className="flex-1 min-w-0 px-4 py-2.5 border-2 border-primary/40 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/80 placeholder:font-medium animate-pulse-subtle"
                     style={{ borderRadius: `${Math.min(borderRadius, 24)}px` }}
                   />
                   <button
@@ -720,6 +711,12 @@ export const ChatWidget = ({
 
       {/* Effect keyframes */}
       <style>{`
+        @keyframes pulse-subtle {
+          0%, 100% { border-color: hsl(var(--primary) / 0.4); }
+          50% { border-color: hsl(var(--primary) / 0.15); }
+        }
+        .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+        .animate-pulse-subtle:focus { animation: none; }
         @keyframes widget-pulse {
           0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
           50% { transform: scale(${effectIntensity === 'subtle' ? 1.05 : effectIntensity === 'strong' ? 1.15 : 1.1}); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
