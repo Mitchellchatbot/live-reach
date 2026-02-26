@@ -74,7 +74,7 @@ const Demo = () => {
           <div
             className={cn(
               'relative bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden transition-all duration-500',
-              viewMode === 'desktop' ? 'w-full max-w-4xl aspect-[16/10]' : 'w-[390px] aspect-[9/16] max-h-[700px]'
+              viewMode === 'desktop' ? 'w-full max-w-4xl aspect-[16/10]' : 'w-[390px] max-w-full aspect-[9/16] max-h-[700px]'
             )}
           >
             {/* Mock website background */}
@@ -93,11 +93,12 @@ const Demo = () => {
             </div>
 
             {/* Chat Widget */}
-            <div className="absolute bottom-4 right-4">
+            <div className="absolute inset-2 sm:inset-auto sm:bottom-4 sm:right-4 flex items-end justify-end">
               <ChatWidget
                 propertyId="demo"
                 isPreview={true}
                 autoOpen={true}
+                widgetSize="small"
                 greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
                 agentName="Care Assist AI"
               />
