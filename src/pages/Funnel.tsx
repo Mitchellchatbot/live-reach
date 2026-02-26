@@ -42,10 +42,10 @@ const benefits = [
 ];
 
 const stats = [
-  { value: '3x', label: 'More leads from ad spend' },
-  { value: '24/7', label: 'Always-on coverage' },
-  { value: '47%', label: 'Lower cost per lead' },
-  { value: '93%', label: 'Visitor satisfaction' },
+  { value: '3x', label: 'More admissions from the same ad spend' },
+  { value: '<3s', label: 'Average visitor response time' },
+  { value: '47%', label: 'Lower cost per qualified lead' },
+  { value: '24/7', label: 'Coverage — no staffing needed' },
 ];
 
 // Placeholder logo slots — replace with actual uploaded logos
@@ -87,33 +87,33 @@ const Funnel = () => {
             ))}
           </div>
           <p className="text-sm text-muted-foreground mb-6">
-            5.0 from 40+ treatment centers
+            Rated 5.0 by 40+ treatment centers
           </p>
 
           {/* Target qualifier */}
           <p className="text-primary font-semibold text-base md:text-lg mb-4">
-            For Treatment Centers & Healthcare Practices Running Website + Paid Media:
+            For Treatment Centers Spending $5K+ on Ads and Losing 90% of Clicks:
           </p>
 
           {/* Headline */}
           <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5 text-foreground">
-            Convert More of Your{' '}
+            Stop Losing Patients{' '}
             <span className="underline decoration-primary decoration-4 underline-offset-4">
-              Website Visitors & Ad Traffic
+              the Moment They Land
             </span>{' '}
-            Into Booked Patients — On Autopilot
+            on Your Website
           </h1>
 
           {/* Sub-headline */}
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Whether they come from Google Ads, Meta, or organic search — our AI chat agent engages every visitor <strong className="text-foreground">the second they land</strong>, captures their info naturally, and turns clicks into qualified leads 24/7.
+            Your ads are working — but 9 out of 10 visitors leave without ever reaching your team. CareAssist engages them <strong className="text-foreground">in under 3 seconds</strong> with a conversation so natural they think it's a real person. Names, phone numbers, and insurance captured automatically — 24/7.
           </p>
 
           {/* Embedded Demo Widget */}
           <div className="flex justify-center mt-6">
             <LPDemoWidget />
           </div>
-          <p className="text-xs text-muted-foreground mt-4">Watch the demo — then jump in and try it yourself</p>
+          <p className="text-xs text-muted-foreground mt-4">↑ This is what your visitors will experience — try it yourself</p>
         </div>
       </section>
 
@@ -179,10 +179,10 @@ const Funnel = () => {
       <section className="px-4 py-14 md:py-20">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-4">
-            Stop Wasting Ad Spend & Website Traffic
+            Every Click You Pay For Deserves a Conversation
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            You're paying for clicks — but most visitors leave without converting. Here's what changes when an AI agent engages every single one.
+            You're spending thousands on Google Ads and Meta — but your "Contact Us" form converts at 2%. Here's what happens when every visitor gets a real conversation instead.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => (
@@ -209,9 +209,9 @@ const Funnel = () => {
           </h2>
           <div className="space-y-8 text-left">
             {[
-              { step: '1', title: 'Paste One Line of Code', desc: 'Drop the widget onto your website or landing page. Works with any site builder — takes under 2 minutes.' },
-              { step: '2', title: 'AI Converts Your Traffic', desc: 'Every visitor from Google Ads, Meta, or organic gets an instant, human-sounding conversation that captures their info.' },
-              { step: '3', title: 'Leads Flow to Your Team', desc: 'Get notified via Slack, email, or Salesforce the moment a lead is captured. Full conversation context included.' },
+              { step: '1', title: 'Paste One Line of Code', desc: 'Add the widget to your site in under 2 minutes. Works with WordPress, Wix, Squarespace — anything.' },
+              { step: '2', title: 'AI Engages Every Visitor', desc: 'Within 3 seconds of landing, visitors get a warm, human-sounding conversation that naturally captures their name, phone, and insurance.' },
+              { step: '3', title: 'Your Team Gets Warm Leads', desc: 'Slack ping, email alert, or Salesforce record — your admissions team gets notified instantly with full conversation context.' },
             ].map((s) => (
               <div key={s.step} className="flex gap-5 items-start">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
@@ -272,10 +272,10 @@ const Funnel = () => {
       <section className="px-4 py-16 md:py-24 text-center bg-accent">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
-            Ready to Turn Visitors Into Patients?
+            Your Competitors Are Already Using AI Chat.
           </h2>
           <p className="text-muted-foreground mb-8">
-            See how CareAssist works with a free, no-pressure demo tailored to your practice.
+            Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
           </p>
           <Button
             onClick={handleCTA}
