@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Building2 } from 'lucide-react';
+import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Building2, ArrowRight } from 'lucide-react';
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
+import { ChatWidget } from '@/components/widget/ChatWidget';
+import { cn } from '@/lib/utils';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
 
@@ -60,7 +62,7 @@ const trustedLogos = [
 const Funnel = () => {
   const navigate = useNavigate();
 
-  const handleCTA = () => navigate('/demo');
+  const handleCTA = () => navigate('/auth');
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -108,15 +110,40 @@ const Funnel = () => {
             Whether they come from Google Ads, Meta, or organic search — our AI chat agent engages every visitor <strong className="text-foreground">the second they land</strong>, captures their info naturally, and turns clicks into qualified leads 24/7.
           </p>
 
-          {/* CTA */}
-          <Button
-            onClick={handleCTA}
-            size="lg"
-            className="text-lg px-10 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
-          >
-            Get My Free Demo →
-          </Button>
-          <p className="text-xs text-muted-foreground mt-3">No credit card required · Live in 5 minutes</p>
+          {/* Embedded Demo Widget */}
+          <div className="flex justify-center mt-4">
+            <div
+              className={cn(
+                'relative bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden',
+                'w-full max-w-md aspect-[9/14] max-h-[520px]'
+              )}
+            >
+              {/* Mock website background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-muted/30 via-background to-muted/20 p-6">
+                <div className="space-y-3">
+                  <div className="h-3 w-24 bg-muted/50 rounded-full" />
+                  <div className="h-6 w-3/4 bg-muted/40 rounded-lg" />
+                  <div className="h-3 w-1/2 bg-muted/30 rounded-full" />
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="h-16 bg-muted/30 rounded-xl" />
+                    <div className="h-16 bg-muted/30 rounded-xl" />
+                  </div>
+                </div>
+              </div>
+              {/* Chat Widget */}
+              <div className="absolute inset-2 flex items-end justify-end">
+                <ChatWidget
+                  propertyId="demo"
+                  isPreview={true}
+                  autoOpen={true}
+                  widgetSize="small"
+                  greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
+                  agentName="Care Assist AI"
+                />
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">Try it live — no signup needed</p>
         </div>
       </section>
 
@@ -160,7 +187,7 @@ const Funnel = () => {
               size="lg"
               className="text-lg px-10 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
             >
-              Get My Free Demo →
+              Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
           </div>
         </div>
@@ -233,7 +260,7 @@ const Funnel = () => {
               size="lg"
               className="text-lg px-10 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
             >
-              Get My Free Demo →
+              Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
             </Button>
           </div>
         </div>
@@ -285,7 +312,7 @@ const Funnel = () => {
             size="lg"
             className="text-lg px-12 py-7 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
           >
-            Get My Free Demo →
+            Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
           </Button>
           <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
