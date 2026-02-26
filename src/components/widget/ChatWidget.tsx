@@ -552,7 +552,7 @@ export const ChatWidget = ({
                         className="px-4 py-3 shadow-sm bg-card border border-border/30"
                         style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
                       >
-                        <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed">
+                        <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed text-left">
                           {greetingText}
                         </p>
                       </div>
@@ -620,7 +620,7 @@ export const ChatWidget = ({
                               />
                             </div>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
                           )}
                           <p className={cn(
                             "text-xs mt-1.5",
