@@ -1363,9 +1363,13 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // Smart typing duration is added AFTER the window, not within it.
     const isFirstAiReply = aiMessageCountRef.current === 0;
     const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
-    const responseDelay = useQuickReply
-      ? randomInRange(15000, 25000)
-      : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+    // For demo/preview mode, use a near-instant delay so people see the response quickly
+    const isDemoOrPreview = isPreview || !propertyId || propertyId === 'demo';
+    const responseDelay = isDemoOrPreview
+      ? randomInRange(1000, 2000)
+      : useQuickReply
+        ? randomInRange(15000, 25000)
+        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
     // Store current agent for this message (before cycling)
     const respondingAgent = currentAiAgent;
