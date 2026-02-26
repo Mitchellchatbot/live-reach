@@ -300,14 +300,14 @@ export const ChatWidget = ({
 
   // Widget size dimensions — smaller on mobile
   const desktopSizeConfig = {
-    small: { width: 320, height: 440, button: 48 },
-    medium: { width: 380, height: 520, button: 56 },
-    large: { width: 440, height: 600, button: 64 },
+    small: { width: 370, height: 520, button: 48 },
+    medium: { width: 420, height: 580, button: 56 },
+    large: { width: 480, height: 660, button: 64 },
   };
   const mobileSizeConfig = {
-    small: { width: 280, height: 380, button: 44 },
-    medium: { width: 320, height: 440, button: 48 },
-    large: { width: 360, height: 500, button: 52 },
+    small: { width: 320, height: 440, button: 44 },
+    medium: { width: 360, height: 500, button: 48 },
+    large: { width: 400, height: 560, button: 52 },
   };
   const currentSize = isMobileWidget ? mobileSizeConfig[widgetSize] : desktopSizeConfig[widgetSize];
 
@@ -552,7 +552,7 @@ export const ChatWidget = ({
                         className="px-4 py-3 shadow-sm bg-card border border-border/30"
                         style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
                       >
-                        <p className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed text-left">
+                        <p className="text-xs text-foreground whitespace-pre-wrap break-words leading-relaxed text-left">
                           {greetingText}
                         </p>
                       </div>
@@ -620,7 +620,7 @@ export const ChatWidget = ({
                               />
                             </div>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
+                            <p className="text-xs whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
                           )}
                           <p className={cn(
                             "text-xs mt-1.5",
