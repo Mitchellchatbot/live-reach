@@ -4,8 +4,7 @@ import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Buil
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
-import { ChatWidget } from '@/components/widget/ChatWidget';
-import { cn } from '@/lib/utils';
+import { LPDemoWidget } from '@/components/landing/LPDemoWidget';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
 
@@ -111,17 +110,10 @@ const Funnel = () => {
           </p>
 
           {/* Embedded Demo Widget */}
-          <div className="flex justify-center mt-4">
-            <ChatWidget
-              propertyId="demo"
-              isPreview={true}
-              autoOpen={true}
-              widgetSize="small"
-              greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
-              agentName="Care Assist AI"
-            />
+          <div className="flex justify-center mt-6">
+            <LPDemoWidget />
           </div>
-          <p className="text-xs text-muted-foreground mt-4">Try it live — no signup needed</p>
+          <p className="text-xs text-muted-foreground mt-4">Watch the demo — then jump in and try it yourself</p>
         </div>
       </section>
 
