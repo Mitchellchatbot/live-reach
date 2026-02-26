@@ -23,6 +23,10 @@ interface ChatWidgetProps {
   effectIntensity?: string;
   /** Array of visitor messages to auto-type into the input and send sequentially */
   autoPlayScript?: string[];
+  /** When true, hides the input and shows a "Start Your Own Chat" button */
+  demoOverlay?: boolean;
+  /** Callback when user clicks "Start Your Own Chat" */
+  onStartOwnChat?: () => void;
 }
 
 export const ChatWidget = ({
@@ -42,6 +46,8 @@ export const ChatWidget = ({
   effectInterval = 5,
   effectIntensity = 'medium',
   autoPlayScript,
+  demoOverlay = false,
+  onStartOwnChat,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -57,6 +63,8 @@ export const ChatWidget = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isTypingRef = useRef(false);
+  const messagesCountRef = useRef(0);
 
   const { 
     messages, 
@@ -72,6 +80,10 @@ export const ChatWidget = ({
     geoBlocked,
     geoBlockedMessage,
   } = useWidgetChat({ propertyId, greeting, isPreview });
+
+  // Keep refs in sync for autoplay polling
+  useEffect(() => { isTypingRef.current = isTyping; }, [isTyping]);
+  useEffect(() => { messagesCountRef.current = messages.length; }, [messages.length]);
 
   // Widget icon mapping
   const widgetIconMap: Record<string, LucideIcon> = {
@@ -170,6 +182,26 @@ export const ChatWidget = ({
     let cancelled = false;
     const CHAR_MS = 45; // typing speed per character
 
+    const waitForResponse = (): Promise<void> => {
+      return new Promise((resolve) => {
+        const startCount = messagesCountRef.current;
+        let elapsed = 0;
+        const poll = () => {
+          if (cancelled) { resolve(); return; }
+          // Wait until typing stops AND a new message has appeared
+          if (!isTypingRef.current && messagesCountRef.current > startCount) {
+            resolve();
+            return;
+          }
+          elapsed += 200;
+          if (elapsed > 90000) { resolve(); return; } // 90s max safety
+          setTimeout(poll, 200);
+        };
+        // Start polling after a brief delay to let isTyping become true
+        setTimeout(poll, 1000);
+      });
+    };
+
     const runScript = async () => {
       // Wait for greeting to appear
       await sleep(2000);
@@ -203,22 +235,6 @@ export const ChatWidget = ({
         if (cancelled) return;
         await sleep(800);
       }
-    };
-
-    const waitForResponse = (): Promise<void> => {
-      return new Promise((resolve) => {
-        const check = () => {
-          if (cancelled) { resolve(); return; }
-          // Poll until isTyping is false (AI done responding)
-          // We use a timeout-based check since isTyping is a state value
-          setTimeout(() => {
-            if (cancelled) { resolve(); return; }
-            // Re-check by reading from DOM or just wait a reasonable time
-            resolve();
-          }, 8000); // wait up to 8s for AI response
-        };
-        check();
-      });
     };
 
     runScript();
@@ -658,52 +674,65 @@ export const ChatWidget = ({
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="flex-shrink-0 p-3 border-t border-border/30 bg-card/80 backdrop-blur-sm">
-                <div className="flex gap-2 items-center">
-                  {/* Hidden file input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  {/* Image upload button */}
+              {/* Input or Demo CTA */}
+              {demoOverlay ? (
+                <div className="flex-shrink-0 p-4 border-t border-border/30 bg-card/80 backdrop-blur-sm">
                   <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
-                    className="h-10 w-10 flex-shrink-0 flex items-center justify-center border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background transition-all duration-300 disabled:opacity-50"
-                    style={{ borderRadius: buttonRadius }}
-                    title="Upload image"
+                    onClick={onStartOwnChat}
+                    className="w-full py-3 px-4 text-white font-semibold text-sm transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-2 animate-demo-cta"
+                    style={{ background: 'var(--widget-primary)', borderRadius: `${Math.min(borderRadius, 16)}px` }}
                   >
-                    {uploadingImage ? (
-                      <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ImagePlus className="h-4 w-4" />
-                    )}
-                  </button>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="👋 Jump in — type your message..."
-                    className="flex-1 min-w-0 px-4 py-2.5 border-2 border-primary/40 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/80 placeholder:font-medium animate-pulse-subtle"
-                    style={{ borderRadius: `${Math.min(borderRadius, 24)}px` }}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={!inputValue.trim()}
-                    className="h-10 w-10 flex-shrink-0 flex items-center justify-center text-white disabled:opacity-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
-                    style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
-                  >
-                    <Send className="h-4 w-4" />
+                    <MessageCircle className="h-4 w-4" />
+                    Start Your Own Chat
                   </button>
                 </div>
-              </div>
+              ) : (
+                <div className="flex-shrink-0 p-3 border-t border-border/30 bg-card/80 backdrop-blur-sm">
+                  <div className="flex gap-2 items-center">
+                    {/* Hidden file input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {/* Image upload button */}
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="h-10 w-10 flex-shrink-0 flex items-center justify-center border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background transition-all duration-300 disabled:opacity-50"
+                      style={{ borderRadius: buttonRadius }}
+                      title="Upload image"
+                    >
+                      {uploadingImage ? (
+                        <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4" />
+                      )}
+                    </button>
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Share what's on your mind..."
+                      className="flex-1 min-w-0 px-4 py-2.5 border border-border/50 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all duration-300 placeholder:text-muted-foreground/60"
+                      style={{ borderRadius: `${Math.min(borderRadius, 24)}px` }}
+                    />
+                    <button
+                      onClick={handleSend}
+                      disabled={!inputValue.trim()}
+                      className="h-10 w-10 flex-shrink-0 flex items-center justify-center text-white disabled:opacity-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                      style={{ background: 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      <Send className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -711,12 +740,11 @@ export const ChatWidget = ({
 
       {/* Effect keyframes */}
       <style>{`
-        @keyframes pulse-subtle {
-          0%, 100% { border-color: hsl(var(--primary) / 0.4); }
-          50% { border-color: hsl(var(--primary) / 0.15); }
+        @keyframes demo-cta-glow {
+          0%, 100% { box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); }
+          50% { box-shadow: 0 4px 25px rgba(249, 115, 22, 0.5); }
         }
-        .animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
-        .animate-pulse-subtle:focus { animation: none; }
+        .animate-demo-cta { animation: demo-cta-glow 2s ease-in-out infinite; }
         @keyframes widget-pulse {
           0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
           50% { transform: scale(${effectIntensity === 'subtle' ? 1.05 : effectIntensity === 'strong' ? 1.15 : 1.1}); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
