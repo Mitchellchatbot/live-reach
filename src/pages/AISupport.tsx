@@ -284,8 +284,8 @@ const AISupport = () => {
 
       setSettings({
         id: data.id,
-        ai_response_delay_min_ms: data.ai_response_delay_min_ms ?? 20000,
-        ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? 28000,
+        ai_response_delay_min_ms: data.ai_response_delay_min_ms ?? 30000,
+        ai_response_delay_max_ms: data.ai_response_delay_max_ms ?? 60000,
         typing_indicator_min_ms: data.typing_indicator_min_ms ?? 1500,
         typing_indicator_max_ms: data.typing_indicator_max_ms ?? 3000,
         smart_typing_enabled: data.smart_typing_enabled ?? true,
