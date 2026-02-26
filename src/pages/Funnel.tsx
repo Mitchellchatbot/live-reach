@@ -112,36 +112,14 @@ const Funnel = () => {
 
           {/* Embedded Demo Widget */}
           <div className="flex justify-center mt-4">
-            <div
-              className={cn(
-                'relative bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden',
-                'w-full max-w-md aspect-[9/14] max-h-[520px]'
-              )}
-            >
-              {/* Mock website background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-muted/30 via-background to-muted/20 p-6">
-                <div className="space-y-3">
-                  <div className="h-3 w-24 bg-muted/50 rounded-full" />
-                  <div className="h-6 w-3/4 bg-muted/40 rounded-lg" />
-                  <div className="h-3 w-1/2 bg-muted/30 rounded-full" />
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="h-16 bg-muted/30 rounded-xl" />
-                    <div className="h-16 bg-muted/30 rounded-xl" />
-                  </div>
-                </div>
-              </div>
-              {/* Chat Widget */}
-              <div className="absolute inset-2 flex items-end justify-end">
-                <ChatWidget
-                  propertyId="demo"
-                  isPreview={true}
-                  autoOpen={true}
-                  widgetSize="small"
-                  greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
-                  agentName="Care Assist AI"
-                />
-              </div>
-            </div>
+            <ChatWidget
+              propertyId="demo"
+              isPreview={true}
+              autoOpen={true}
+              widgetSize="small"
+              greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
+              agentName="Care Assist AI"
+            />
           </div>
           <p className="text-xs text-muted-foreground mt-4">Try it live — no signup needed</p>
         </div>
