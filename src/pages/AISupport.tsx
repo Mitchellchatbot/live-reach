@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { PropertySelector } from '@/components/PropertySelector';
 import { Bot, Loader2, Trash2, RefreshCw, Upload, Pencil, Clock, MessageSquare, Save, FileText, Users, Link, Globe, ChevronDown, Check, Map, MapPin } from 'lucide-react';
+import { AvatarCropDialog } from '@/components/ui/avatar-crop-dialog';
 import { cn } from '@/lib/utils';
 import emilyAvatar from '@/assets/personas/emily.jpg';
 import sarahAvatar from '@/assets/personas/sarah.jpg';
@@ -230,6 +231,9 @@ const AISupport = () => {
   const [isDeletingAI, setIsDeletingAI] = useState(false);
   const [editingAIAgent, setEditingAIAgent] = useState<AIAgent | null>(null);
   const [uploadingAvatarFor, setUploadingAvatarFor] = useState<string | null>(null);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropAgentId, setCropAgentId] = useState<string | null>(null);
   
   // Human agents for import
   const [humanAgents, setHumanAgents] = useState<HumanAgent[]>([]);
@@ -573,19 +577,28 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
     setIsAIDialogOpen(true);
   };
 
-  const handleAvatarUpload = async (agentId: string, file: File) => {
-    if (!user) return;
+  const handleAvatarFileSelect = (agentId: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result as string);
+      setCropAgentId(agentId);
+      setCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
 
-    setUploadingAvatarFor(agentId);
+  const handleCroppedAvatarUpload = async (blob: Blob) => {
+    if (!user || !cropAgentId) return;
+
+    setUploadingAvatarFor(cropAgentId);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `ai-${agentId}-${Date.now()}.${fileExt}`;
+      const fileName = `ai-${cropAgentId}-${Date.now()}.png`;
       const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('agent-avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, blob, { upsert: true, contentType: 'image/png' });
 
       if (uploadError) {
         if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
@@ -603,7 +616,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       await supabase
         .from('ai_agents')
         .update({ avatar_url: publicUrl })
-        .eq('id', agentId);
+        .eq('id', cropAgentId);
       fetchAIAgents();
 
       toast.success('Avatar uploaded!');
@@ -613,6 +626,9 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
     }
 
     setUploadingAvatarFor(null);
+    setCropDialogOpen(false);
+    setCropImageSrc(null);
+    setCropAgentId(null);
   };
 
   const handleSaveSettings = async () => {
@@ -933,7 +949,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) handleAvatarUpload(agent.id, file);
+                              if (file) handleAvatarFileSelect(agent.id, file);
                             }}
                           />
                         </label>
@@ -1023,7 +1039,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                                   className="hidden"
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
-                                    if (file) handleAvatarUpload(agent.id, file);
+                                    if (file) handleAvatarFileSelect(agent.id, file);
                                   }}
                                 />
                               </label>
@@ -1794,6 +1810,19 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
       
       {/* Dashboard Tour */}
       <DashboardTour />
+
+      {/* Avatar Crop Dialog */}
+      <AvatarCropDialog
+        open={cropDialogOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => {
+          setCropDialogOpen(false);
+          setCropImageSrc(null);
+          setCropAgentId(null);
+        }}
+        onConfirm={handleCroppedAvatarUpload}
+        saving={!!uploadingAvatarFor}
+      />
     </DashboardLayout>
   );
 };
