@@ -21,6 +21,8 @@ interface ChatWidgetProps {
   effectType?: string;
   effectInterval?: number;
   effectIntensity?: string;
+  /** Array of visitor messages to auto-type into the input and send sequentially */
+  autoPlayScript?: string[];
 }
 
 export const ChatWidget = ({
@@ -39,6 +41,7 @@ export const ChatWidget = ({
   effectType = 'none',
   effectInterval = 5,
   effectIntensity = 'medium',
+  autoPlayScript,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -51,6 +54,7 @@ export const ChatWidget = ({
   const [leadEmail, setLeadEmail] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,7 +132,10 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -150,6 +157,77 @@ export const ChatWidget = ({
       handleSend();
     }
   };
+
+  // Autoplay: type scripted messages into the real input and send them
+  const autoPlayIndexRef = useRef(0);
+  const autoPlayActiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!autoPlayScript || autoPlayScript.length === 0 || !isOpen) return;
+    if (autoPlayActiveRef.current) return;
+    autoPlayActiveRef.current = true;
+
+    let cancelled = false;
+    const CHAR_MS = 45; // typing speed per character
+
+    const runScript = async () => {
+      // Wait for greeting to appear
+      await sleep(2000);
+
+      while (autoPlayIndexRef.current < autoPlayScript.length && !cancelled) {
+        const text = autoPlayScript[autoPlayIndexRef.current];
+
+        // Wait a beat before starting to type
+        await sleep(1500);
+        if (cancelled) return;
+
+        // Type character by character into the real input
+        for (let i = 0; i <= text.length; i++) {
+          if (cancelled) return;
+          setInputValue(text.slice(0, i));
+          await sleep(CHAR_MS + Math.random() * 20);
+        }
+
+        if (cancelled) return;
+        // Brief pause then send
+        await sleep(400);
+        if (cancelled) return;
+
+        // Send the message
+        sendMessage(text);
+        setInputValue('');
+        autoPlayIndexRef.current++;
+
+        // Wait for AI response to finish before next message
+        await waitForResponse();
+        if (cancelled) return;
+        await sleep(800);
+      }
+    };
+
+    const waitForResponse = (): Promise<void> => {
+      return new Promise((resolve) => {
+        const check = () => {
+          if (cancelled) { resolve(); return; }
+          // Poll until isTyping is false (AI done responding)
+          // We use a timeout-based check since isTyping is a state value
+          setTimeout(() => {
+            if (cancelled) { resolve(); return; }
+            // Re-check by reading from DOM or just wait a reasonable time
+            resolve();
+          }, 8000); // wait up to 8s for AI response
+        };
+        check();
+      });
+    };
+
+    runScript();
+
+    return () => {
+      cancelled = true;
+      autoPlayActiveRef.current = false;
+    };
+  }, [autoPlayScript, isOpen]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -452,7 +530,7 @@ export const ChatWidget = ({
           ) : (
             <>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
                 {/* Static Greeting - displayed first, not stored as a message */}
                 {greetingText && (
                   <div className="flex gap-3 animate-fade-in">
@@ -715,3 +793,7 @@ export const ChatWidget = ({
     </div>
   );
 };
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
