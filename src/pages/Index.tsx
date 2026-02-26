@@ -563,7 +563,7 @@ const Index = () => {
               </div>
 
               {/* CTA Buttons */}
-              <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.15s' }}>
                 <Link to="/auth" className="w-full sm:w-auto">
                   <Button size="lg" className="bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold rounded-2xl w-full sm:w-auto group transition-all duration-300 hover:shadow-3xl hover:shadow-primary/40 hover:-translate-y-1">
                     Start for Free
@@ -578,7 +578,7 @@ const Index = () => {
                 </Link>
               </div>
               
-              <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-2.5 md:gap-3 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-2.5 md:gap-3 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.25s' }}>
                 {['Free 7-day trial', 'No credit card', '5 min setup'].map((text, i) => (
                   <span
                     key={i}
