@@ -233,10 +233,15 @@ export const ChatWidget = ({
   };
   const currentSize = isMobileWidget ? mobileSizeConfig[widgetSize] : desktopSizeConfig[widgetSize];
 
-  // In preview mode, use viewport-based sizing so it doesn't get squished by parent containers
+  // In preview mode, still respect widgetSize so demo/mobile can render a truly smaller widget.
   // On mobile (non-preview), fill the entire iframe which is already sized to the screen
   const previewPanelStyle: React.CSSProperties = isPreview
-    ? { width: 'min(380px, 90vw)', height: 'min(520px, 75vh)', borderRadius: panelRadius, border: `1px solid ${borderColor}` }
+    ? {
+        width: `min(${currentSize.width}px, 92vw)`,
+        height: `min(${currentSize.height}px, 78vh)`,
+        borderRadius: panelRadius,
+        border: `1px solid ${borderColor}`,
+      }
     : { width: `${currentSize.width}px`, height: `${currentSize.height}px`, borderRadius: panelRadius, border: `1px solid ${borderColor}` };
 
   // Tell the parent page how big the iframe should be.
