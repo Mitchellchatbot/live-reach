@@ -170,9 +170,10 @@ export const ChatWidget = ({
     }
   };
 
-  // Autoplay: type scripted messages into the real input and send them
+  // Autoplay: show visitor typing bubble, then send, then wait for AI
   const autoPlayIndexRef = useRef(0);
   const autoPlayActiveRef = useRef(false);
+  const [visitorTyping, setVisitorTyping] = useState(false);
 
   useEffect(() => {
     if (!autoPlayScript || autoPlayScript.length === 0 || !isOpen) return;
@@ -180,24 +181,21 @@ export const ChatWidget = ({
     autoPlayActiveRef.current = true;
 
     let cancelled = false;
-    const CHAR_MS = 45; // typing speed per character
 
-    const waitForResponse = (): Promise<void> => {
+    const waitForAiDone = (): Promise<void> => {
       return new Promise((resolve) => {
         const startCount = messagesCountRef.current;
         let elapsed = 0;
         const poll = () => {
           if (cancelled) { resolve(); return; }
-          // Wait until typing stops AND a new message has appeared
           if (!isTypingRef.current && messagesCountRef.current > startCount) {
             resolve();
             return;
           }
           elapsed += 200;
-          if (elapsed > 90000) { resolve(); return; } // 90s max safety
+          if (elapsed > 90000) { resolve(); return; }
           setTimeout(poll, 200);
         };
-        // Start polling after a brief delay to let isTyping become true
         setTimeout(poll, 1000);
       });
     };
@@ -209,29 +207,22 @@ export const ChatWidget = ({
       while (autoPlayIndexRef.current < autoPlayScript.length && !cancelled) {
         const text = autoPlayScript[autoPlayIndexRef.current];
 
-        // Wait a beat before starting to type
-        await sleep(1500);
+        // Show visitor typing bubble for a natural duration
+        await sleep(1000);
         if (cancelled) return;
-
-        // Type character by character into the real input
-        for (let i = 0; i <= text.length; i++) {
-          if (cancelled) return;
-          setInputValue(text.slice(0, i));
-          await sleep(CHAR_MS + Math.random() * 20);
-        }
-
+        setVisitorTyping(true);
+        await sleep(1200 + text.length * 30); // longer text = longer typing
         if (cancelled) return;
+        setVisitorTyping(false);
+
         // Brief pause then send
-        await sleep(400);
+        await sleep(300);
         if (cancelled) return;
-
-        // Send the message
         sendMessage(text);
-        setInputValue('');
         autoPlayIndexRef.current++;
 
-        // Wait for AI response to finish before next message
-        await waitForResponse();
+        // Wait for AI to fully finish responding
+        await waitForAiDone();
         if (cancelled) return;
         await sleep(800);
       }
@@ -242,6 +233,7 @@ export const ChatWidget = ({
     return () => {
       cancelled = true;
       autoPlayActiveRef.current = false;
+      setVisitorTyping(false);
     };
   }, [autoPlayScript, isOpen]);
 
@@ -665,6 +657,23 @@ export const ChatWidget = ({
                           <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
                           <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
                           <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {visitorTyping && (
+                  <div className="flex gap-3 items-end justify-end animate-fade-in">
+                    <div className="flex flex-col items-end">
+                      <div 
+                        className="px-4 py-3 shadow-sm text-white"
+                        style={{ background: 'var(--widget-primary)', borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}` }}
+                      >
+                        <div className="flex gap-1.5">
+                          <span className="h-2 w-2 bg-white/50 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-2 w-2 bg-white/50 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-2 w-2 bg-white/50 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
                         </div>
                       </div>
                     </div>
