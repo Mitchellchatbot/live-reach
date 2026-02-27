@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an information extraction assistant. Analyze the conversation and extract any personal information the visitor has shared naturally. Only extract information that was explicitly stated by the visitor (user messages), not inferred. If information is not clearly stated, do not include it.`
+            content: `You are an information extraction assistant. Analyze the conversation and extract any personal information the visitor has shared naturally. Only extract information that was explicitly stated by the visitor (user messages), not inferred. If information is not clearly stated, do NOT include it — leave the field out entirely. Never return placeholder values like "N/A", "none", "unknown", or empty strings.`
           },
           {
             role: 'user',
@@ -160,38 +160,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Only update fields that are newly extracted and not already set
+    // Helper: treat placeholder values like "N/A", "none", "unknown" as empty
+    const isPlaceholder = (val?: string | null): boolean => {
+      if (!val) return true;
+      const normalized = val.trim().toLowerCase();
+      return ['n/a', 'na', 'none', 'unknown', 'not provided', 'not available', ''].includes(normalized);
+    };
+
+    // Clean extracted value: return null if it's a placeholder
+    const cleanValue = (val?: string): string | undefined => {
+      if (!val || isPlaceholder(val)) return undefined;
+      return val;
+    };
+
+    // Only update fields that are newly extracted and not already meaningfully set
     const updates: Partial<ExtractedInfo> = {};
-    
-    if (extractedInfo.name && !visitor?.name) {
-      updates.name = extractedInfo.name;
-    }
-    if (extractedInfo.email && !visitor?.email) {
-      updates.email = extractedInfo.email;
-    }
-    if (extractedInfo.phone && !visitor?.phone) {
-      updates.phone = extractedInfo.phone;
-    }
-    if (extractedInfo.age && !visitor?.age) {
-      updates.age = extractedInfo.age;
-    }
-    if (extractedInfo.occupation && !visitor?.occupation) {
-      updates.occupation = extractedInfo.occupation;
-    }
-    if (extractedInfo.addiction_history && !visitor?.addiction_history) {
-      updates.addiction_history = extractedInfo.addiction_history;
-    }
-    if (extractedInfo.drug_of_choice && !visitor?.drug_of_choice) {
-      updates.drug_of_choice = extractedInfo.drug_of_choice;
-    }
-    if (extractedInfo.treatment_interest && !visitor?.treatment_interest) {
-      updates.treatment_interest = extractedInfo.treatment_interest;
-    }
-    if (extractedInfo.insurance_info && !visitor?.insurance_info) {
-      updates.insurance_info = extractedInfo.insurance_info;
-    }
-    if (extractedInfo.urgency_level && !visitor?.urgency_level) {
-      updates.urgency_level = extractedInfo.urgency_level;
+    const fields: (keyof ExtractedInfo)[] = [
+      'name', 'email', 'phone', 'age', 'occupation',
+      'addiction_history', 'drug_of_choice', 'treatment_interest',
+      'insurance_info', 'urgency_level',
+    ];
+
+    for (const field of fields) {
+      const extracted = cleanValue(extractedInfo[field]);
+      const existing = visitor?.[field];
+      // Update if we have a real extracted value AND existing is empty/placeholder
+      if (extracted && isPlaceholder(existing)) {
+        updates[field] = extracted;
+      }
     }
 
     // Update visitor if we have new info
