@@ -14,13 +14,13 @@ import { Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
 const signupSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
 interface InvitationData {
@@ -44,7 +44,7 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
-  
+
   const { signIn, signUp, user, role, loading, refreshRole } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -57,47 +57,47 @@ export default function Auth() {
     const fetchInvitation = async () => {
       if (!inviteToken) return;
 
-      const { data: agent, error } = await supabase
-        .from('agents')
-        .select('name, email, invitation_expires_at, invited_by')
-        .eq('invitation_token', inviteToken)
-        .eq('invitation_status', 'pending')
-        .maybeSingle();
+      const { data: agent, error } = await supabase.
+      from('agents').
+      select('name, email, invitation_expires_at, invited_by').
+      eq('invitation_token', inviteToken).
+      eq('invitation_status', 'pending').
+      maybeSingle();
 
       if (error || !agent) {
         toast({
           title: 'Invalid Invitation',
           description: 'This invitation link is invalid or has already been used.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         return;
       }
 
       // Check if expired
-      const isExpired = agent.invitation_expires_at 
-        ? new Date(agent.invitation_expires_at) < new Date()
-        : false;
+      const isExpired = agent.invitation_expires_at ?
+      new Date(agent.invitation_expires_at) < new Date() :
+      false;
 
       if (isExpired) {
         toast({
           title: 'Invitation Expired',
           description: 'This invitation has expired. Please ask for a new one.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
       }
 
       // Fetch inviter name
-      const { data: inviterProfile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', agent.invited_by)
-        .maybeSingle();
+      const { data: inviterProfile } = await supabase.
+      from('profiles').
+      select('full_name').
+      eq('user_id', agent.invited_by).
+      maybeSingle();
 
       setInvitationData({
         agentName: agent.name,
         agentEmail: agent.email,
         inviterName: inviterProfile?.full_name || 'A team member',
-        isExpired,
+        isExpired
       });
 
       // Pre-fill signup form
@@ -112,7 +112,7 @@ export default function Auth() {
   // Redirect based on role after login
   useEffect(() => {
     if (loading) return;
-    
+
     if (user && role) {
       if (role === 'agent') {
         navigate('/conversations');
@@ -129,13 +129,13 @@ export default function Auth() {
     if (!inviteToken) return;
 
     // Find pending invitation matching this token and email
-    const { data: agent, error: agentError } = await supabase
-      .from('agents')
-      .select('id, email, invitation_expires_at')
-      .eq('invitation_token', inviteToken)
-      .eq('invitation_status', 'pending')
-      .eq('email', userEmail)
-      .maybeSingle();
+    const { data: agent, error: agentError } = await supabase.
+    from('agents').
+    select('id, email, invitation_expires_at').
+    eq('invitation_token', inviteToken).
+    eq('invitation_status', 'pending').
+    eq('email', userEmail).
+    maybeSingle();
 
     if (agentError || !agent) {
       console.log('No matching pending invitation found');
@@ -147,21 +147,21 @@ export default function Auth() {
       toast({
         title: 'Invitation Expired',
         description: 'This invitation has expired. Please ask for a new one.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
 
     // Update agent record to link user and mark accepted
-    const { error: updateError } = await supabase
-      .from('agents')
-      .update({
-        user_id: userId,
-        invitation_status: 'accepted',
-        invitation_token: null,
-        invitation_expires_at: null,
-      })
-      .eq('id', agent.id);
+    const { error: updateError } = await supabase.
+    from('agents').
+    update({
+      user_id: userId,
+      invitation_status: 'accepted',
+      invitation_token: null,
+      invitation_expires_at: null
+    }).
+    eq('id', agent.id);
 
     if (updateError) {
       console.error('Error accepting invitation:', updateError);
@@ -169,42 +169,42 @@ export default function Auth() {
     }
 
     // Add agent role (keep existing role too)
-    await supabase
-      .from('user_roles')
-      .insert({ user_id: userId, role: 'agent' })
-      .select()
-      .maybeSingle();
+    await supabase.
+    from('user_roles').
+    insert({ user_id: userId, role: 'agent' }).
+    select().
+    maybeSingle();
 
     toast({
       title: 'Welcome to the team!',
-      description: 'You have successfully joined as an agent.',
+      description: 'You have successfully joined as an agent.'
     });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const result = loginSchema.safeParse({ email: loginEmail, password: loginPassword });
     if (!result.success) {
       toast({
         title: 'Validation Error',
         description: result.error.errors[0].message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
 
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
-    
+
     if (error) {
       setIsLoading(false);
       toast({
         title: 'Login Failed',
-        description: error.message === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please try again.'
-          : error.message,
-        variant: 'destructive',
+        description: error.message === 'Invalid login credentials' ?
+        'Invalid email or password. Please try again.' :
+        error.message,
+        variant: 'destructive'
       });
       return;
     }
@@ -224,17 +224,17 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const result = signupSchema.safeParse({ 
-      fullName: signupName, 
-      email: signupEmail, 
-      password: signupPassword 
+
+    const result = signupSchema.safeParse({
+      fullName: signupName,
+      email: signupEmail,
+      password: signupPassword
     });
     if (!result.success) {
       toast({
         title: 'Validation Error',
         description: result.error.errors[0].message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -243,7 +243,7 @@ export default function Auth() {
       toast({
         title: 'Invitation Expired',
         description: 'Please ask for a new invitation.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
@@ -254,30 +254,30 @@ export default function Auth() {
 
     if (error) {
       const isAlreadyRegistered = error.message.includes('already registered');
-      
+
       if (isAlreadyRegistered && inviteToken) {
         // Auto-switch to login tab for existing users accepting an invitation
         setLoginEmail(signupEmail);
         setActiveTab('login');
         toast({
           title: 'Account Found',
-          description: 'You already have an account. Please sign in to accept the invitation.',
+          description: 'You already have an account. Please sign in to accept the invitation.'
         });
       } else {
-        const errorMessage = isAlreadyRegistered
-          ? 'This email is already registered. Please login instead.'
-          : error.message;
-        
+        const errorMessage = isAlreadyRegistered ?
+        'This email is already registered. Please login instead.' :
+        error.message;
+
         toast({
           title: 'Signup Failed',
           description: errorMessage,
-          variant: 'destructive',
+          variant: 'destructive'
         });
       }
     } else {
       // Send welcome email (fire and forget – don't block signup)
       supabase.functions.invoke('send-welcome-email', {
-        body: { email: signupEmail, fullName: signupName },
+        body: { email: signupEmail, fullName: signupName }
       }).then(({ error: emailError }) => {
         if (emailError) {
           console.error('Welcome email failed:', emailError);
@@ -286,30 +286,30 @@ export default function Auth() {
 
       toast({
         title: 'Account Created',
-        description: invitationData 
-          ? 'Welcome to the team! Redirecting to your dashboard...'
-          : 'You can now access your dashboard.',
+        description: invitationData ?
+        'Welcome to the team! Redirecting to your dashboard...' :
+        'You can now access your dashboard.'
       });
     }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!forgotPasswordEmail) {
       toast({
         title: 'Email Required',
         description: 'Please enter your email address.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const { error } = await supabase.functions.invoke('send-password-reset', {
-        body: { email: forgotPasswordEmail },
+        body: { email: forgotPasswordEmail }
       });
 
       if (error) {
@@ -320,14 +320,14 @@ export default function Auth() {
       setForgotPasswordSent(true);
       toast({
         title: 'Check Your Email',
-        description: 'If an account exists with that email, we\'ve sent a password reset link.',
+        description: 'If an account exists with that email, we\'ve sent a password reset link.'
       });
     } catch (err) {
       console.error('Forgot password error:', err);
       toast({
         title: 'Error',
         description: 'Something went wrong. Please try again.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     }
 
@@ -344,8 +344,8 @@ export default function Auth() {
           </div>
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -361,19 +361,19 @@ export default function Auth() {
         {/* Logo + header outside card */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-5">
-            <img src={careAssistLogo} alt="Care Assist" className="h-[5.5rem] w-auto" />
+            <img src={careAssistLogo} alt="Care Assist" className="h-[12rem] w-auto" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             {invitationData ? 'Accept Your Invitation' : 'Welcome to Care Assist'}
           </h1>
           <p className="text-muted-foreground mt-2 text-base">
-            {invitationData ? (
-              <>
+            {invitationData ?
+            <>
                 <span className="font-medium text-foreground">{invitationData.inviterName}</span> invited you to join as an agent
-              </>
-            ) : (
-              'Compassionate support, one conversation at a time'
-            )}
+              </> :
+
+            'Compassionate support, one conversation at a time'
+            }
           </p>
         </div>
 
@@ -403,8 +403,8 @@ export default function Auth() {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         required
-                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all placeholder:text-muted-foreground/50"
-                      />
+                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all placeholder:text-muted-foreground/50" />
+
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="login-password" className="text-sm font-medium text-foreground/80">Password</Label>
@@ -416,20 +416,20 @@ export default function Auth() {
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           required
-                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all pr-11 placeholder:text-muted-foreground/50"
-                        />
+                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all pr-11 placeholder:text-muted-foreground/50" />
+
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted/50 rounded-lg"
-                          onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        >
-                          {showLoginPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}>
+
+                          {showLoginPassword ?
+                          <EyeOff className="h-4 w-4 text-muted-foreground" /> :
+
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                          }
                         </Button>
                       </div>
                       <div className="flex justify-end">
@@ -440,23 +440,23 @@ export default function Auth() {
                           onClick={() => {
                             setShowForgotPassword(true);
                             setForgotPasswordEmail(loginEmail);
-                          }}
-                        >
+                          }}>
+
                           Forgot password?
                         </Button>
                       </div>
                     </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 mt-1" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
+                    <Button
+                      type="submit"
+                      className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 mt-1"
+                      disabled={isLoading}>
+
+                      {isLoading ?
+                      <span className="flex items-center gap-2">
                           <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                           Signing in...
-                        </span>
-                      ) : 'Sign In'}
+                        </span> :
+                      'Sign In'}
                     </Button>
                   </form>
                 </TabsContent>
@@ -473,8 +473,8 @@ export default function Auth() {
                         onChange={(e) => setSignupName(e.target.value)}
                         required
                         disabled={!!invitationData}
-                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all disabled:bg-muted placeholder:text-muted-foreground/50"
-                      />
+                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all disabled:bg-muted placeholder:text-muted-foreground/50" />
+
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="signup-email" className="text-sm font-medium text-foreground/80">Email</Label>
@@ -486,8 +486,8 @@ export default function Auth() {
                         onChange={(e) => setSignupEmail(e.target.value)}
                         required
                         disabled={!!invitationData}
-                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all disabled:bg-muted placeholder:text-muted-foreground/50"
-                      />
+                        className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all disabled:bg-muted placeholder:text-muted-foreground/50" />
+
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="signup-password" className="text-sm font-medium text-foreground/80">Password</Label>
@@ -499,34 +499,34 @@ export default function Auth() {
                           value={signupPassword}
                           onChange={(e) => setSignupPassword(e.target.value)}
                           required
-                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all pr-11 placeholder:text-muted-foreground/50"
-                        />
+                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all pr-11 placeholder:text-muted-foreground/50" />
+
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted/50 rounded-lg"
-                          onClick={() => setShowSignupPassword(!showSignupPassword)}
-                        >
-                          {showSignupPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
+                          onClick={() => setShowSignupPassword(!showSignupPassword)}>
+
+                          {showSignupPassword ?
+                          <EyeOff className="h-4 w-4 text-muted-foreground" /> :
+
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                          }
                         </Button>
                       </div>
                     </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 mt-1" 
-                      disabled={isLoading || invitationData?.isExpired}
-                    >
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
+                    <Button
+                      type="submit"
+                      className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 mt-1"
+                      disabled={isLoading || invitationData?.isExpired}>
+
+                      {isLoading ?
+                      <span className="flex items-center gap-2">
                           <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                           Creating account...
-                        </span>
-                      ) : invitationData ? 'Join Team' : 'Create Account'}
+                        </span> :
+                      invitationData ? 'Join Team' : 'Create Account'}
                     </Button>
                   </form>
                 </TabsContent>
@@ -536,12 +536,12 @@ export default function Auth() {
         </Card>
 
         {/* Forgot Password Overlay */}
-        {showForgotPassword && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+        {showForgotPassword &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
             <Card className="w-full max-w-[420px] border-border/30 shadow-2xl shadow-primary/[0.06] backdrop-blur-sm bg-card rounded-2xl overflow-hidden page-enter">
               <CardContent className="p-6">
-                {forgotPasswordSent ? (
-                  <div className="text-center py-4">
+                {forgotPasswordSent ?
+              <div className="text-center py-4">
                     <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-full mb-4">
                       <Mail className="h-7 w-7 text-primary" />
                     </div>
@@ -550,29 +550,29 @@ export default function Auth() {
                       If an account exists for <span className="font-medium text-foreground">{forgotPasswordEmail}</span>, we've sent a password reset link.
                     </p>
                     <Button
-                      onClick={() => {
-                        setShowForgotPassword(false);
-                        setForgotPasswordSent(false);
-                        setForgotPasswordEmail('');
-                      }}
-                      className="w-full h-11 rounded-xl"
-                    >
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordSent(false);
+                    setForgotPasswordEmail('');
+                  }}
+                  className="w-full h-11 rounded-xl">
+
                       Back to Sign In
                     </Button>
-                  </div>
-                ) : (
-                  <>
+                  </div> :
+
+              <>
                     <div className="flex items-center gap-2 mb-5">
                       <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg"
-                        onClick={() => {
-                          setShowForgotPassword(false);
-                          setForgotPasswordEmail('');
-                        }}
-                      >
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setForgotPasswordEmail('');
+                    }}>
+
                         <ArrowLeft className="h-4 w-4" />
                       </Button>
                       <h2 className="text-lg font-bold text-foreground">Reset Password</h2>
@@ -584,37 +584,37 @@ export default function Auth() {
                       <div className="space-y-1.5">
                         <Label htmlFor="forgot-email" className="text-sm font-medium text-foreground/80">Email</Label>
                         <Input
-                          id="forgot-email"
-                          type="email"
-                          placeholder="you@example.com"
-                          value={forgotPasswordEmail}
-                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                          required
-                          autoFocus
-                          className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all placeholder:text-muted-foreground/50"
-                        />
+                      id="forgot-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                      required
+                      autoFocus
+                      className="h-11 rounded-xl border-border/50 bg-muted/30 focus:bg-card focus:border-primary/40 transition-all placeholder:text-muted-foreground/50" />
+
                       </div>
                       <Button
-                        type="submit"
-                        className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <span className="flex items-center gap-2">
+                    type="submit"
+                    className="w-full h-11 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/25 transition-all duration-300"
+                    disabled={isLoading}>
+
+                        {isLoading ?
+                    <span className="flex items-center gap-2">
                             <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                             Sending...
-                          </span>
-                        ) : 'Send Reset Link'}
+                          </span> :
+                    'Send Reset Link'}
                       </Button>
                     </form>
                   </>
-                )}
+              }
               </CardContent>
             </Card>
           </div>
-        )}
+        }
 
       </div>
-    </div>
-  );
+    </div>);
+
 }
