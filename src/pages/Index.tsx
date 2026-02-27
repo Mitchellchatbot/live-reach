@@ -21,107 +21,107 @@ import emilyAvatar from '@/assets/personas/emily.jpg';
 const testimonialHeadshots = [sarahHeadshot, michaelHeadshot, jenniferHeadshot];
 
 const features = [
-  {
-    icon: Shield,
-    title: 'Medical-Safe Responses',
-    description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
-    backInfo: [
-      'Compliance-aware response filtering',
-      'Avoids diagnoses & medical advice',
-      'Custom safety guardrails per facility',
-      'Liability-reducing language templates',
-    ],
-  },
-  {
-    icon: AlertTriangle,
-    title: 'Crisis Detection',
-    description: 'Detects crisis keywords, alerts your team, and can direct visitors to SAMHSA\'s National Helpline.',
-    backInfo: [
-      'Real-time keyword monitoring',
-      'Instant Slack & email alerts',
-      'Auto-escalation to live agents',
-      'SAMHSA helpline redirect option',
-    ],
-  },
-  {
-    icon: Brain,
-    title: 'Natural Lead Capture',
-    description: 'Collects visitor info through natural conversation—name, phone, insurance, and more.',
-    backInfo: [
-      'No forms — conversational capture',
-      'Name, phone, email & insurance',
-      'Smart follow-up questions',
-      'Auto-populates CRM fields',
-    ],
-  },
-  {
-    icon: UserCheck,
-    title: 'Qualified Handoffs',
-    description: 'Human agents start conversations informed with full context and visitor details.',
-    backInfo: [
-      'Full chat history transferred',
-      'Visitor profile & intent summary',
-      'Warm handoff notifications',
-      'Priority queue for urgent cases',
-    ],
-  },
-  {
-    icon: BarChart3,
-    title: 'Conversion Analytics',
-    description: 'Track chat-to-lead conversion, drop-off points, and peak inquiry times.',
-    backInfo: [
-      'Chat-to-lead conversion rates',
-      'Peak inquiry time heatmaps',
-      'Drop-off point analysis',
-      'ROI tracking dashboard',
-    ],
-  },
-  {
-    icon: Zap,
-    title: 'Salesforce Integration',
-    description: 'Export captured leads directly to Salesforce with one click.',
-    backInfo: [
-      'One-click lead export',
-      'Custom field mapping',
-      'Auto-export on escalation',
-      'Bi-directional sync support',
-    ],
-  },
-];
+{
+  icon: Shield,
+  title: 'Medical-Safe Responses',
+  description: 'Tailored for behavioral health. Avoids unsafe responses that could create liability.',
+  backInfo: [
+  'Compliance-aware response filtering',
+  'Avoids diagnoses & medical advice',
+  'Custom safety guardrails per facility',
+  'Liability-reducing language templates']
+
+},
+{
+  icon: AlertTriangle,
+  title: 'Crisis Detection',
+  description: 'Detects crisis keywords, alerts your team, and can direct visitors to SAMHSA\'s National Helpline.',
+  backInfo: [
+  'Real-time keyword monitoring',
+  'Instant Slack & email alerts',
+  'Auto-escalation to live agents',
+  'SAMHSA helpline redirect option']
+
+},
+{
+  icon: Brain,
+  title: 'Natural Lead Capture',
+  description: 'Collects visitor info through natural conversation—name, phone, insurance, and more.',
+  backInfo: [
+  'No forms — conversational capture',
+  'Name, phone, email & insurance',
+  'Smart follow-up questions',
+  'Auto-populates CRM fields']
+
+},
+{
+  icon: UserCheck,
+  title: 'Qualified Handoffs',
+  description: 'Human agents start conversations informed with full context and visitor details.',
+  backInfo: [
+  'Full chat history transferred',
+  'Visitor profile & intent summary',
+  'Warm handoff notifications',
+  'Priority queue for urgent cases']
+
+},
+{
+  icon: BarChart3,
+  title: 'Conversion Analytics',
+  description: 'Track chat-to-lead conversion, drop-off points, and peak inquiry times.',
+  backInfo: [
+  'Chat-to-lead conversion rates',
+  'Peak inquiry time heatmaps',
+  'Drop-off point analysis',
+  'ROI tracking dashboard']
+
+},
+{
+  icon: Zap,
+  title: 'Salesforce Integration',
+  description: 'Export captured leads directly to Salesforce with one click.',
+  backInfo: [
+  'One-click lead export',
+  'Custom field mapping',
+  'Auto-export on escalation',
+  'Bi-directional sync support']
+
+}];
+
 
 const testimonials = [
-  {
-    quote: "Response time dropped from 4 hours to 4 seconds. We're capturing leads we used to lose.",
-    author: "Sarah M.",
-    role: "Admissions Director",
-    facility: "Recovery First Center",
-    rating: 5,
-    timeAgo: "2 weeks ago",
-  },
-  {
-    quote: "The AI handles after-hours inquiries with real empathy. Families feel heard immediately.",
-    author: "Michael R.",
-    role: "CEO",
-    facility: "Serenity Treatment",
-    rating: 5,
-    timeAgo: "1 month ago",
-  },
-  {
-    quote: "Our admissions increased 47% in the first quarter. Game changer for our center.",
-    author: "Jennifer L.",
-    role: "Marketing Director",
-    facility: "New Horizons Recovery",
-    rating: 5,
-    timeAgo: "3 weeks ago",
-  },
-];
+{
+  quote: "Response time dropped from 4 hours to 4 seconds. We're capturing leads we used to lose.",
+  author: "Sarah M.",
+  role: "Admissions Director",
+  facility: "Recovery First Center",
+  rating: 5,
+  timeAgo: "2 weeks ago"
+},
+{
+  quote: "The AI handles after-hours inquiries with real empathy. Families feel heard immediately.",
+  author: "Michael R.",
+  role: "CEO",
+  facility: "Serenity Treatment",
+  rating: 5,
+  timeAgo: "1 month ago"
+},
+{
+  quote: "Our admissions increased 47% in the first quarter. Game changer for our center.",
+  author: "Jennifer L.",
+  role: "Marketing Director",
+  facility: "New Horizons Recovery",
+  rating: 5,
+  timeAgo: "3 weeks ago"
+}];
+
 
 const stats = [
-  { value: 47, suffix: '%', label: 'More Leads Captured', prefix: '+', icon: BarChart3 },
-  { value: 4, suffix: 's', label: 'Avg Response Time', prefix: '<', icon: Clock },
-  { value: 24, suffix: '/7', label: 'Always Available', prefix: '', icon: Zap },
-  { value: 100, suffix: '+', label: 'Treatment Centers', prefix: '', icon: Heart },
-];
+{ value: 47, suffix: '%', label: 'More Leads Captured', prefix: '+', icon: BarChart3 },
+{ value: 4, suffix: 's', label: 'Avg Response Time', prefix: '<', icon: Clock },
+{ value: 24, suffix: '/7', label: 'Always Available', prefix: '', icon: Zap },
+{ value: 100, suffix: '+', label: 'Treatment Centers', prefix: '', icon: Heart }];
+
 
 // Animated counter hook
 const useCountUp = (end: number, duration: number = 2000, startOnView: boolean = true) => {
@@ -152,7 +152,7 @@ const useCountUp = (end: number, duration: number = 2000, startOnView: boolean =
 
   useEffect(() => {
     if (!hasStarted) return;
-    
+
     let startTime: number;
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime;
@@ -168,7 +168,7 @@ const useCountUp = (end: number, duration: number = 2000, startOnView: boolean =
 };
 
 // Typing indicator component
-const TypingIndicator = ({ visible }: { visible: boolean }) => {
+const TypingIndicator = ({ visible }: {visible: boolean;}) => {
   if (!visible) return null;
   return (
     <div className="flex justify-start animate-fade-in">
@@ -179,15 +179,15 @@ const TypingIndicator = ({ visible }: { visible: boolean }) => {
           <span className="h-2 w-2 rounded-full bg-primary/60 typing-dot" />
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 // Animated chat message component with typing
-const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.ReactNode; delay: number; isBot: boolean }) => {
+const AnimatedChatMessage = ({ children, delay, isBot }: {children: React.ReactNode;delay: number;isBot: boolean;}) => {
   const [showTyping, setShowTyping] = useState(false);
   const [visible, setVisible] = useState(false);
-  
+
   useEffect(() => {
     if (isBot) {
       const typingTimer = setTimeout(() => setShowTyping(true), (delay - 0.8) * 1000);
@@ -204,33 +204,33 @@ const AnimatedChatMessage = ({ children, delay, isBot }: { children: React.React
       return () => clearTimeout(timer);
     }
   }, [delay, isBot]);
-  
+
   if (isBot && showTyping) return <TypingIndicator visible />;
   if (!visible) return null;
-  
+
   return (
     <div className={`flex ${isBot ? 'justify-start' : 'justify-end'} animate-scale-in`}>
-      <div className={`${isBot 
-        ? 'bg-card rounded-2xl rounded-tl-sm shadow-md border border-border/50' 
-        : 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-tr-sm shadow-lg shadow-primary/20'
-      } px-4 py-3 max-w-[85%] transform transition-all duration-300 hover:scale-[1.02]`}>
+      <div className={`${isBot ?
+      'bg-card rounded-2xl rounded-tl-sm shadow-md border border-border/50' :
+      'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-tr-sm shadow-lg shadow-primary/20'} px-4 py-3 max-w-[85%] transform transition-all duration-300 hover:scale-[1.02]`
+      }>
         <p className={`text-sm font-medium ${isBot ? 'text-foreground' : ''}`}>{children}</p>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 // Flip card component for features
-const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
+const FlipCard = ({ feature }: {feature: typeof features[number];}) => {
   const Icon = feature.icon;
 
   return (
     <div
-      className="group cursor-pointer [perspective:1000px] h-[180px] sm:h-[200px]"
-    >
+      className="group cursor-pointer [perspective:1000px] h-[180px] sm:h-[200px]">
+
       <div
-        className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]"
-      >
+        className="relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
+
         {/* Front */}
         <div className="absolute inset-0 [backface-visibility:hidden] bg-card rounded-2xl border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 overflow-hidden">
           <div className="p-5 md:p-6 h-full flex flex-col justify-center">
@@ -259,12 +259,12 @@ const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
               <h3 className="text-base font-bold">{feature.title}</h3>
             </div>
             <ul className="space-y-2">
-              {feature.backInfo.map((info, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-primary-foreground/90">
+              {feature.backInfo.map((info, i) =>
+              <li key={i} className="flex items-start gap-2 text-sm text-primary-foreground/90">
                   <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>{info}</span>
                 </li>
-              ))}
+              )}
             </ul>
             <div className="mt-3 flex justify-end">
               <span className="text-[11px] text-primary-foreground/60 font-medium">← Move away to go back</span>
@@ -272,14 +272,14 @@ const FlipCard = ({ feature }: { feature: typeof features[number] }) => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 
-const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: number; suffix: string; label: string; prefix: string; icon: React.ElementType }) => {
+const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: {value: number;suffix: string;label: string;prefix: string;icon: React.ElementType;}) => {
   const { count, ref } = useCountUp(value, 2000);
-  
+
   return (
     <div ref={ref} className="group relative flex flex-col items-center text-center px-6 py-8 md:py-10">
       <div className="mb-5 h-14 w-14 rounded-2xl bg-primary/8 flex items-center justify-center ring-1 ring-primary/10 shadow-sm group-hover:bg-primary/12 group-hover:ring-primary/20 group-hover:shadow-md group-hover:scale-105 transition-all duration-500 ease-out">
@@ -291,33 +291,33 @@ const StatCounter = ({ value, suffix, label, prefix, icon: Icon }: { value: numb
       <div className="text-sm md:text-[15px] text-muted-foreground mt-3 font-medium tracking-normal">
         {label}
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 // Floating orb component
-const FloatingOrb = ({ className, delay = 0 }: { className: string; delay?: number }) => (
-  <div 
-    className={`absolute rounded-full blur-3xl animate-float pointer-events-none ${className}`}
-    style={{ animationDelay: `${delay}s` }}
-  />
-);
+const FloatingOrb = ({ className, delay = 0 }: {className: string;delay?: number;}) =>
+<div
+  className={`absolute rounded-full blur-3xl animate-float pointer-events-none ${className}`}
+  style={{ animationDelay: `${delay}s` }} />;
+
+
 
 const navSections = [
-  { id: 'features', label: 'Features' },
-  { id: 'integrations', label: 'Integrations' },
-  { id: 'testimonials', label: 'Testimonials' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'resources', label: 'Resources', href: '/documentation' },
-  { id: 'contact', label: 'Contact' },
-];
+{ id: 'features', label: 'Features' },
+{ id: 'integrations', label: 'Integrations' },
+{ id: 'testimonials', label: 'Testimonials' },
+{ id: 'pricing', label: 'Pricing' },
+{ id: 'resources', label: 'Resources', href: '/documentation' },
+{ id: 'contact', label: 'Contact' }];
+
 
 const Index = () => {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -341,13 +341,13 @@ const Index = () => {
       observer.observe(el);
       observers.push(observer);
     });
-    return () => observers.forEach(o => o.disconnect());
+    return () => observers.forEach((o) => o.disconnect());
   }, []);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   const getDashboardRoute = () => {
     if (isAgent) return '/conversations';
     if (isAdmin) return '/admin';
@@ -368,14 +368,14 @@ const Index = () => {
       <div className="fixed inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.15)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.15)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
       
       {/* Mouse follow gradient - desktop only */}
-      <div 
+      <div
         className="fixed w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl pointer-events-none transition-all duration-1000 ease-out hidden md:block"
-        style={{ 
-          left: mousePosition.x - 300, 
+        style={{
+          left: mousePosition.x - 300,
           top: mousePosition.y - 300,
-          opacity: 0.5 
-        }}
-      />
+          opacity: 0.5
+        }} />
+
       
       {/* Navigation */}
       <nav className="relative bg-background/95 backdrop-blur-2xl sticky top-0 z-50 border-b border-border/40 shadow-[0_1px_12px_-2px_hsl(var(--foreground)/0.06)]">
@@ -383,52 +383,52 @@ const Index = () => {
           <div className="flex h-16 md:h-[72px] items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img src={careAssistLogo} alt="Care Assist" className="h-9 w-9 md:h-10 md:w-10 rounded-xl object-contain" />
-              <span className="font-extrabold text-lg md:text-xl tracking-tight text-foreground">Care Assist</span>
+              
             </div>
             
             {/* Center Navigation Links - Desktop */}
             <div className="hidden lg:flex items-center gap-0.5 bg-muted/70 rounded-full px-1.5 py-1 border border-border/40 shadow-[inset_0_1px_2px_hsl(var(--foreground)/0.04)]">
-              {navSections.map((section) => 
-                section.href ? (
-                  <Link key={section.id} to={section.href}>
+              {navSections.map((section) =>
+              section.href ?
+              <Link key={section.id} to={section.href}>
                     <Button
-                      variant="ghost"
-                      className="font-medium rounded-full px-5 h-9 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-background/60"
-                    >
+                  variant="ghost"
+                  className="font-medium rounded-full px-5 h-9 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-background/60">
+
                       {section.label}
                     </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    key={section.id}
-                    variant="ghost"
-                    className={cn(
-                      "font-medium rounded-full px-5 h-9 text-sm transition-all duration-200",
-                      activeSection === section.id
-                        ? "bg-background text-foreground shadow-[0_1px_4px_hsl(var(--foreground)/0.08)] hover:bg-background hover:text-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background/60"
-                    )}
-                    onClick={() => scrollTo(section.id)}
-                  >
+                  </Link> :
+
+              <Button
+                key={section.id}
+                variant="ghost"
+                className={cn(
+                  "font-medium rounded-full px-5 h-9 text-sm transition-all duration-200",
+                  activeSection === section.id ?
+                  "bg-background text-foreground shadow-[0_1px_4px_hsl(var(--foreground)/0.08)] hover:bg-background hover:text-foreground" :
+                  "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                )}
+                onClick={() => scrollTo(section.id)}>
+
                     {section.label}
                   </Button>
-                )
+
               )}
             </div>
 
             {/* Right Auth Actions */}
             <div className="flex items-center gap-2 md:gap-3">
-              {user ? (
-                <>
+              {user ?
+              <>
                   <Link to={getDashboardRoute()} className="hidden sm:block">
                     <Button variant="ghost" className="font-medium text-foreground h-9">Dashboard</Button>
                   </Link>
                   <Button variant="outline" onClick={signOut} className="font-medium rounded-full px-5 text-sm h-9">
                     Sign Out
                   </Button>
-                </>
-              ) : (
-                <>
+                </> :
+
+              <>
                   <Link to="/auth" className="hidden sm:block">
                     <Button variant="ghost" className="font-semibold text-foreground/80 hover:text-foreground h-9">Login</Button>
                   </Link>
@@ -440,71 +440,71 @@ const Index = () => {
                     </Button>
                   </Link>
                 </>
-              )}
+              }
               
               {/* Mobile Menu Toggle */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="lg:hidden h-9 w-9"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
           
           {/* Mobile Navigation Dropdown */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-border/30 py-3 animate-fade-in">
+          {mobileMenuOpen &&
+          <div className="lg:hidden border-t border-border/30 py-3 animate-fade-in">
               <div className="flex flex-col gap-1">
-                {navSections.map((section) => 
-                  section.href ? (
-                    <Link key={section.id} to={section.href}>
+                {navSections.map((section) =>
+              section.href ?
+              <Link key={section.id} to={section.href}>
                       <Button
-                        variant="ghost"
-                        className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
+                  variant="ghost"
+                  className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground"
+                  onClick={() => setMobileMenuOpen(false)}>
+
                         {section.label}
                       </Button>
-                    </Link>
-                  ) : (
-                    <Button
-                      key={section.id}
-                      variant="ghost"
-                      className={cn(
-                        "justify-start font-semibold h-11 rounded-xl transition-all",
-                        activeSection === section.id
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                      onClick={() => {
-                        scrollTo(section.id);
-                        setMobileMenuOpen(false);
-                      }}
-                    >
+                    </Link> :
+
+              <Button
+                key={section.id}
+                variant="ghost"
+                className={cn(
+                  "justify-start font-semibold h-11 rounded-xl transition-all",
+                  activeSection === section.id ?
+                  "bg-primary/10 text-primary" :
+                  "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => {
+                  scrollTo(section.id);
+                  setMobileMenuOpen(false);
+                }}>
+
                       {section.label}
                     </Button>
-                  )
-                )}
-                {user && (
-                  <Link to={getDashboardRoute()} className="sm:hidden">
+
+              )}
+                {user &&
+              <Link to={getDashboardRoute()} className="sm:hidden">
                     <Button variant="ghost" className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground">
                       Dashboard
                     </Button>
                   </Link>
-                )}
-                {!user && (
-                  <Link to="/auth" className="sm:hidden">
+              }
+                {!user &&
+              <Link to="/auth" className="sm:hidden">
                     <Button variant="ghost" className="justify-start font-semibold h-11 rounded-xl w-full text-muted-foreground hover:text-foreground">
                       Login
                     </Button>
                   </Link>
-                )}
+              }
               </div>
             </div>
-          )}
+          }
         </div>
       </nav>
 
@@ -548,18 +548,18 @@ const Index = () => {
               {/* Benefit Pills */}
               <div className="mt-8 flex flex-wrap gap-3 justify-center lg:justify-start">
                 {[
-                  { icon: Clock, text: '< 5 sec response' },
-                  { icon: Shield, text: 'Compliant' },
-                  { icon: Brain, text: 'AI-powered' },
-                ].map((pill, i) => (
-                  <div 
-                    key={i}
-                    className="inline-flex items-center gap-2 bg-card/80 border border-border/50 rounded-full px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-primary/30 transition-all"
-                  >
+                { icon: Clock, text: '< 5 sec response' },
+                { icon: Shield, text: 'Compliant' },
+                { icon: Brain, text: 'AI-powered' }].
+                map((pill, i) =>
+                <div
+                  key={i}
+                  className="inline-flex items-center gap-2 bg-card/80 border border-border/50 rounded-full px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+
                     <pill.icon className="h-4 w-4 text-primary" />
                     {pill.text}
                   </div>
-                ))}
+                )}
               </div>
 
               {/* CTA Buttons */}
@@ -579,15 +579,15 @@ const Index = () => {
               </div>
               
               <div className="mt-5 md:mt-6 flex flex-wrap items-center gap-2.5 md:gap-3 justify-center lg:justify-start animate-fade-in" style={{ animationDelay: '0.25s' }}>
-                {['Free 7-day trial', 'No credit card', '5 min setup'].map((text, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 bg-primary/[0.07] text-primary border border-primary/15 rounded-full px-3.5 py-1.5 text-xs md:text-sm font-semibold shadow-sm"
-                  >
+                {['Free 7-day trial', 'No credit card', '5 min setup'].map((text, i) =>
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 bg-primary/[0.07] text-primary border border-primary/15 rounded-full px-3.5 py-1.5 text-xs md:text-sm font-semibold shadow-sm">
+
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     {text}
                   </span>
-                ))}
+                )}
               </div>
             </div>
 
@@ -695,17 +695,17 @@ const Index = () => {
           </div>
           <div className="max-w-5xl mx-auto bg-gradient-to-br from-card/80 via-card/60 to-primary/[0.03] backdrop-blur-sm rounded-3xl border border-border/30 shadow-[0_2px_40px_-12px_hsl(var(--primary)/0.08)] p-2 md:p-4">
             <div className="grid grid-cols-2 md:grid-cols-4">
-              {stats.map((stat, index) => (
-                <div key={index} className={cn(
-                  "relative",
-                  index < 2 && "border-b border-border/20 md:border-b-0",
-                  index % 2 === 0 && "border-r border-border/20 md:border-r",
-                  index === 1 && "md:border-r md:border-border/20",
-                  index === 2 && "md:border-r md:border-border/20 border-r-0"
-                )}>
+              {stats.map((stat, index) =>
+              <div key={index} className={cn(
+                "relative",
+                index < 2 && "border-b border-border/20 md:border-b-0",
+                index % 2 === 0 && "border-r border-border/20 md:border-r",
+                index === 1 && "md:border-r md:border-border/20",
+                index === 2 && "md:border-r md:border-border/20 border-r-0"
+              )}>
                   <StatCounter {...stat} />
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -731,11 +731,11 @@ const Index = () => {
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
             
             <div className="flex gap-4 md:gap-6 lg:gap-8 animate-slide-testimonials">
-              {[...testimonials, ...testimonials, ...testimonials, ...testimonials].map((testimonial, index) => (
-                <div 
-                  key={index}
-                  className="group relative bg-card p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex-shrink-0 w-[320px] md:w-[380px]"
-                >
+              {[...testimonials, ...testimonials, ...testimonials, ...testimonials].map((testimonial, index) =>
+              <div
+                key={index}
+                className="group relative bg-card p-6 md:p-8 rounded-2xl md:rounded-3xl border border-border/50 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex-shrink-0 w-[320px] md:w-[380px]">
+
                   {/* Glow on hover */}
                   <div className="absolute -inset-px bg-gradient-to-r from-primary/20 to-orange-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
                   
@@ -748,9 +748,9 @@ const Index = () => {
 
                     {/* Stars */}
                     <div className="flex gap-0.5 mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-[#FBBC04] fill-[#FBBC04]" />
-                      ))}
+                      {[...Array(testimonial.rating)].map((_, i) =>
+                    <Star key={i} className="h-4 w-4 text-[#FBBC04] fill-[#FBBC04]" />
+                    )}
                     </div>
 
                     {/* Quote */}
@@ -758,11 +758,11 @@ const Index = () => {
 
                     {/* Author with headshot */}
                     <div className="flex items-center gap-3 pt-5 border-t border-border/50">
-                      <img 
-                        src={testimonialHeadshots[index % testimonials.length]} 
-                        alt={testimonial.author}
-                        className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
-                      />
+                      <img
+                      src={testimonialHeadshots[index % testimonials.length]}
+                      alt={testimonial.author}
+                      className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50" />
+
                       <div>
                         <p className="font-bold text-foreground">{testimonial.author}</p>
                         <p className="text-xs text-muted-foreground">{testimonial.role}, {testimonial.facility}</p>
@@ -770,7 +770,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -796,9 +796,9 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
-            {features.map((feature) => (
-              <FlipCard key={feature.title} feature={feature} />
-            ))}
+            {features.map((feature) =>
+            <FlipCard key={feature.title} feature={feature} />
+            )}
           </div>
         </div>
       </section>
@@ -1031,22 +1031,22 @@ const Index = () => {
                     </button>
                   </div>
                   <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
-                    {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(d => (
-                      <span key={d} className="py-1 font-semibold">{d}</span>
-                    ))}
+                    {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d) =>
+                    <span key={d} className="py-1 font-semibold">{d}</span>
+                    )}
                   </div>
                   <div className="grid grid-cols-7 gap-1 text-sm">
-                    {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
-                      <button 
-                        key={day} 
-                        className={cn(
-                          "h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm transition-colors",
-                          day === 10 ? "bg-primary text-primary-foreground font-bold" : "text-foreground hover:bg-muted"
-                        )}
-                      >
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) =>
+                    <button
+                      key={day}
+                      className={cn(
+                        "h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm transition-colors",
+                        day === 10 ? "bg-primary text-primary-foreground font-bold" : "text-foreground hover:bg-muted"
+                      )}>
+
                         {day}
                       </button>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
@@ -1064,42 +1064,42 @@ const Index = () => {
                     <input
                       type="text"
                       placeholder="Your Name *"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
-                    />
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
+
                   </div>
                   <div>
                     <input
                       type="email"
                       placeholder="Email Address *"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
-                    />
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
+
                   </div>
                   <div>
                     <input
                       type="tel"
                       placeholder="Phone Number"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
-                    />
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
+
                   </div>
                   <div>
                     <input
                       type="text"
                       placeholder="Facility Name"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm"
-                    />
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
+
                   </div>
                   <div>
                     <textarea
                       placeholder="Tell us about your center..."
                       rows={4}
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm resize-none"
-                    />
+                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm resize-none" />
+
                   </div>
-                  <Button 
+                  <Button
                     type="submit"
-                    size="lg" 
-                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 hover:scale-[1.02] shadow-2xl shadow-primary/30 gap-2 h-14 text-lg font-black rounded-xl ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300"
-                  >
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 hover:scale-[1.02] shadow-2xl shadow-primary/30 gap-2 h-14 text-lg font-black rounded-xl ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300">
+
                     <Send className="h-5 w-5" />
                     Get My Free Demo
                   </Button>
@@ -1136,8 +1136,8 @@ const Index = () => {
 
       {/* Sales & Support Chat */}
       <SalesChatBot />
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
