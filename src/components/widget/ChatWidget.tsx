@@ -450,15 +450,6 @@ export const ChatWidget = ({
                 onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <Minimize2 className="h-4 w-4" style={{ color: textColor }} />
-              </button>
-              <button 
-                onClick={() => setIsClosing(true)}
-                className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300"
-                style={{ background: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = `color-mix(in srgb, ${textColor} 20%, transparent)`}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
                 <X className="h-4 w-4" style={{ color: textColor }} />
               </button>
             </div>
