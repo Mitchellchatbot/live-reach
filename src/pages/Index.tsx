@@ -389,7 +389,7 @@ const Index = () => {
             </div>
             
             {/* Center Navigation Links - Desktop */}
-            <div className="hidden lg:flex items-center">
+            <div className="hidden md:flex items-center">
               <div className="flex items-center gap-0.5 bg-muted/60 rounded-full px-1.5 py-1 shadow-[inset_0_1px_4px_-1px_hsl(var(--foreground)/0.08)]">
                 {navSections.map((section) =>
                   section.href ? (
