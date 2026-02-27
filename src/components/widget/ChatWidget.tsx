@@ -308,14 +308,14 @@ export const ChatWidget = ({
 
   // Widget size dimensions — smaller on mobile
   const desktopSizeConfig = {
-    small: { width: 370, height: 520, button: 48 },
-    medium: { width: 420, height: 580, button: 56 },
-    large: { width: 480, height: 660, button: 64 },
+    small: { width: 278, height: 390, button: 44 },
+    medium: { width: 315, height: 435, button: 48 },
+    large: { width: 360, height: 495, button: 52 },
   };
   const mobileSizeConfig = {
-    small: { width: 320, height: 440, button: 44 },
-    medium: { width: 360, height: 500, button: 48 },
-    large: { width: 400, height: 560, button: 52 },
+    small: { width: 240, height: 330, button: 40 },
+    medium: { width: 270, height: 375, button: 44 },
+    large: { width: 300, height: 420, button: 48 },
   };
   const currentSize = isMobileWidget ? mobileSizeConfig[widgetSize] : desktopSizeConfig[widgetSize];
 
