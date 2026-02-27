@@ -388,36 +388,7 @@ const Index = () => {
               
             </div>
             
-            {/* Center Navigation Links - Desktop */}
-            <div className="hidden lg:flex items-center gap-0.5 bg-muted/70 rounded-full px-1.5 py-1 border border-border/40 shadow-[inset_0_1px_2px_hsl(var(--foreground)/0.04)]">
-              {navSections.map((section) =>
-              section.href ?
-              <Link key={section.id} to={section.href}>
-                    <Button
-                  variant="ghost"
-                  className="font-medium rounded-full px-5 h-9 text-sm transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-background/60">
-
-                      {section.label}
-                    </Button>
-                  </Link> :
-
-              <Button
-                key={section.id}
-                variant="ghost"
-                className={cn(
-                  "font-medium rounded-full px-5 h-9 text-sm transition-all duration-200",
-                  activeSection === section.id ?
-                  "bg-background text-foreground shadow-[0_1px_4px_hsl(var(--foreground)/0.08)] hover:bg-background hover:text-foreground" :
-                  "text-muted-foreground hover:text-foreground hover:bg-background/60"
-                )}
-                onClick={() => scrollTo(section.id)}>
-
-                    {section.label}
-                  </Button>
-
-              )}
-            </div>
-
+            {/* Center Navigation Links - Desktop - Hidden */}
             {/* Right Auth Actions */}
             <div className="flex items-center gap-2 md:gap-3">
               {user ?
