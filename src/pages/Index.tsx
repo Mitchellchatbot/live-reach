@@ -6,7 +6,7 @@ import { SalesChatBot } from '@/components/landing/SalesChatBot';
 import { PricingSection } from '@/components/pricing/PricingSection';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import slackLogo from '@/assets/logos/slack.svg';
 import googleCalendarLogo from '@/assets/logos/google-calendar.svg';

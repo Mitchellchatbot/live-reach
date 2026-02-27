@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 const passwordSchema = z.object({
