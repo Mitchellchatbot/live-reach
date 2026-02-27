@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 
 interface Message {
   id: string;

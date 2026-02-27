@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useConversations } from '@/hooks/useConversations';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import emilyAvatar from '@/assets/personas/emily.jpg';
 import sarahAvatar from '@/assets/personas/sarah.jpg';
 import michaelAvatar from '@/assets/personas/michael.jpg';

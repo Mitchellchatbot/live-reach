@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, MessageSquare, Monitor, Smartphone } from 'lucid
 import { Button } from '@/components/ui/button';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { cn } from '@/lib/utils';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 
 const Demo = () => {
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');

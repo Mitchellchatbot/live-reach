@@ -31,7 +31,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import gmailLogo from '@/assets/logos/gmail.svg';
-import careAssistLogo from '@/assets/care-assist-logo.png';
+import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import subscriptionCardLogo from '@/assets/logos/subscription-card.svg';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import { WorkspaceSwitcher } from '@/components/sidebar/WorkspaceSwitcher';
