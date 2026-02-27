@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 export type NotificationType =
   | 'new_chat'
@@ -33,6 +34,7 @@ const SEEN_KEY = 'care-assist-notif-seen-at';
 
 export function useInAppNotifications() {
   const { user } = useAuth();
+  const { playSound } = useNotificationSound();
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastSeenAt, setLastSeenAt] = useState<Date>(() => {
@@ -131,12 +133,13 @@ export function useInAppNotifications() {
     const channel = supabase
       .channel('in-app-notifs')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notification_logs' }, () => {
+        playSound();
         fetchNotifications();
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user, fetchNotifications]);
+  }, [user, fetchNotifications, playSound]);
 
   const markAllSeen = useCallback(() => {
     const now = new Date();
