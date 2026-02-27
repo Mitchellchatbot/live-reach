@@ -59,7 +59,8 @@ const VISITOR_FIELDS = [
   { value: 'treatment_interest', label: 'Treatment Interest' },
   { value: 'insurance_info', label: 'Insurance Info' },
   { value: 'urgency_level', label: 'Urgency Level' },
-  { value: 'conversation_transcript', label: 'Conversation Transcript' },
+  { value: 'conversation_transcript', label: 'Conversation Transcript (Full)' },
+  { value: 'conversation_summary', label: 'Conversation Summary (AI)' },
 ];
 
 export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {

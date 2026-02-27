@@ -227,8 +227,89 @@ Deno.serve(async (req) => {
 
       const leadData: Record<string, string> = {};
 
+      // Find the most recent conversation for this visitor (needed for transcript/summary)
+      const { data: conversation } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("visitor_id", visitor.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       // Map visitor fields to Salesforce Lead fields
       for (const [sfField, visitorField] of Object.entries(currentFieldMappings)) {
+        // Handle special computed fields
+        if (visitorField === 'conversation_transcript' || visitorField === 'conversation_summary') {
+          let fieldValue = 'No conversation recorded';
+
+          if (conversation) {
+            // Fetch all messages for this conversation
+            const { data: messages } = await supabase
+              .from("messages")
+              .select("content,sender_type,created_at")
+              .eq("conversation_id", conversation.id)
+              .order("sequence_number", { ascending: true });
+
+            if (messages && messages.length > 0) {
+              // Build raw transcript
+              const transcript = messages
+                .map((m: any) => {
+                  const sender = m.sender_type === 'visitor' ? 'Visitor' : 'Agent';
+                  return `${sender}: ${m.content}`;
+                })
+                .join('\n');
+
+              if (visitorField === 'conversation_transcript') {
+                fieldValue = transcript.substring(0, 32000);
+              } else {
+                // AI summary
+                try {
+                  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+                  if (!LOVABLE_API_KEY) {
+                    console.error("LOVABLE_API_KEY not configured, falling back to transcript");
+                    fieldValue = transcript.substring(0, 32000);
+                  } else {
+                    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                      method: "POST",
+                      headers: {
+                        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        model: "google/gemini-2.5-flash-lite",
+                        messages: [
+                          {
+                            role: "system",
+                            content: "You are a lead summarization assistant. Given a chat transcript between a visitor and an agent, produce a concise summary (max 500 words) covering: key concerns or needs, contact info mentioned, intent/interest level, urgency, and any next steps discussed. Be factual and professional."
+                          },
+                          {
+                            role: "user",
+                            content: `Summarize this conversation:\n\n${transcript.substring(0, 15000)}`
+                          }
+                        ],
+                      }),
+                    });
+
+                    if (aiResponse.ok) {
+                      const aiData = await aiResponse.json();
+                      fieldValue = (aiData.choices?.[0]?.message?.content || transcript).substring(0, 32000);
+                    } else {
+                      console.error("AI summary failed, status:", aiResponse.status);
+                      fieldValue = transcript.substring(0, 32000);
+                    }
+                  }
+                } catch (aiErr) {
+                  console.error("AI summarization error:", aiErr);
+                  fieldValue = transcript.substring(0, 32000);
+                }
+              }
+            }
+          }
+
+          leadData[sfField] = fieldValue;
+          continue;
+        }
+
         const value = visitor[visitorField as keyof typeof visitor];
         if (value !== null && value !== undefined) {
           leadData[sfField] = String(value);
@@ -287,14 +368,7 @@ Deno.serve(async (req) => {
         if (response.ok) {
           const result = await response.json();
           
-          // Find conversation for this visitor to record the export
-          const { data: conversation } = await supabase
-            .from("conversations")
-            .select("id")
-            .eq("visitor_id", visitor.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+          // Reuse conversation fetched earlier for transcript/summary
 
           if (conversation) {
             await supabase
