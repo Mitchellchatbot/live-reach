@@ -382,7 +382,7 @@ const Index = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex h-16 md:h-[72px] items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <img src={careAssistLogo} alt="Care Assist" className="h-9 w-9 md:h-10 md:w-10 rounded-xl object-contain" />
+              <img src={careAssistLogo} alt="Care Assist" className="h-11 w-11 md:h-12 md:w-12 rounded-xl object-contain" />
               
             </div>
             
