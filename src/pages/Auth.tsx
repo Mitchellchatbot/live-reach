@@ -361,7 +361,7 @@ export default function Auth() {
         {/* Logo + header outside card */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-2">
-            <img src={careAssistLogo} alt="Care Assist" className="h-[5.5rem] w-auto" />
+            <img src={careAssistLogo} alt="Care Assist" className="h-[10rem] w-aut0" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             {invitationData ? 'Accept Your Invitation' : 'Welcome to Care Assist'}
