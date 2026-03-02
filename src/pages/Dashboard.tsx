@@ -53,7 +53,8 @@ const toUiConversation = (dbConv: DbConversation): Conversation & {
     drug_of_choice: dbConv.visitor?.drug_of_choice || undefined,
     treatment_interest: dbConv.visitor?.treatment_interest || undefined,
     insurance_info: dbConv.visitor?.insurance_info || undefined,
-    urgency_level: dbConv.visitor?.urgency_level || undefined
+    urgency_level: dbConv.visitor?.urgency_level || undefined,
+    gclid: dbConv.visitor?.gclid || undefined
   },
   assignedAgentId: dbConv.assigned_agent_id || undefined,
   status: dbConv.status,

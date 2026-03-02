@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check, MousePointerClick } from 'lucide-react';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
 import { cn } from '@/lib/utils';
@@ -288,6 +288,7 @@ const VisitorInfoSidebar = ({
           {visitor.location && <InfoItem icon={MapPin} label="Location" value={visitor.location} />}
           {visitor.currentPage && <InfoItem icon={Globe} label="Page" value={visitor.currentPage} />}
           {visitor.browserInfo && <InfoItem icon={Monitor} label="Browser" value={visitor.browserInfo} />}
+          {visitor.gclid && <InfoItem icon={MousePointerClick} label="GCLID" value={visitor.gclid} />}
         </div>
 
         {assignedAgent && (
