@@ -45,6 +45,7 @@ export interface Visitor {
   treatment_interest?: string;
   insurance_info?: string;
   urgency_level?: string;
+  gclid?: string;
 }
 
 export interface Message {

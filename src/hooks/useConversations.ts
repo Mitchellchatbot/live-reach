@@ -34,6 +34,7 @@ export interface DbVisitor {
   treatment_interest: string | null;
   insurance_info: string | null;
   urgency_level: string | null;
+  gclid: string | null;
 }
 
 export interface DbMessage {
