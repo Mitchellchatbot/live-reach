@@ -1394,10 +1394,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         if (aiAbortControllerRef.current) {
           aiAbortControllerRef.current.abort();
         }
-        // Wait for the previous flow to fully release the lock
-        await new Promise<void>((resolve) => {
+        // Wait for the previous flow to release the lock — with a hard 15s timeout
+        // to prevent permanent freezes if the previous flow hangs.
+        const lockReleased = await new Promise<boolean>((resolve) => {
+          const start = Date.now();
           const check = () => {
-            if (!hybridFlowActiveRef.current) { resolve(); return; }
+            if (!hybridFlowActiveRef.current) { resolve(true); return; }
+            if (Date.now() - start > 15000) {
+              // Force-release the stuck lock after 15s
+              console.warn('[useWidgetChat] Lock wait timed out — force releasing');
+              hybridFlowActiveRef.current = false;
+              resolve(true);
+              return;
+            }
             setTimeout(check, 50);
           };
           check();
@@ -1415,6 +1424,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Block autoReplyIfPending from firing a duplicate for this same visitor turn
       hybridFlowActiveRef.current = true;
+
+      try {
 
       // Rebuild conversation history from DB to include ALL rapid-fire messages
       // (the `messages` state captured at function entry may be stale)
@@ -1714,6 +1725,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       if (settings.auto_escalation_enabled && aiMessageCountRef.current >= settings.max_ai_messages_before_escalation) {
         await triggerEscalation();
       }
+
+      } catch (flowError) {
+        console.error('[useWidgetChat] Hybrid flow error:', flowError);
+        setIsTyping(false);
+      } finally {
+        // GUARANTEED lock release — prevents permanent freezes
+        hybridFlowActiveRef.current = false;
+      }
+      // === END HYBRID FLOW ===
 
     } else {
       // Preview mode or human already taken over: run original flow (generate + delay + reveal)
