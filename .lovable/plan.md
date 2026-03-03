@@ -1,14 +1,24 @@
 
 
-## Plan: Add Real Calendly Link to Homepage
+## Plan: Create "Meet Samantha" Landing Page
 
-Currently the homepage "Book a Strategy Call" section (lines 1004-1053 of `Index.tsx`) is a **static placeholder** — a fake calendar UI that doesn't link anywhere. I'll replace it with an embedded Calendly inline widget pointing to `https://calendly.com/care-assist-support/support-call-clone`, which will let visitors book intro/demo calls directly from the homepage.
+Create a new standalone page at `/meet-samantha` that transforms the LinkedIn post content into a visually compelling landing page with graphics and structured sections.
 
-I'll also update the `FloatingSupportButton` to use the same real Calendly URL instead of the generic `https://calendly.com`.
+### New File: `src/pages/MeetSamantha.tsx`
 
-### Changes
+A full-page layout with these sections:
 
-**`src/pages/Index.tsx`** — Replace the fake calendar placeholder (lines ~1004-1053) with a Calendly inline embed using an `<iframe>`. The card header ("Book a Strategy Call" / "Schedule a free intro or demo call") stays, but the body becomes the live Calendly scheduling widget.
+1. **Hero** — "What if your best admissions coordinator never slept?" headline with a large illustration area (a gradient card with a moon/clock icon representing 24/7 availability)
+2. **Intro** — "Meet Samantha" with the narrative text about her not being a chatbot, built to sound like your best coordinator
+3. **The Shift** — Highlighted callout block: "That single shift — from passive to proactive — changes everything" with the 30-seconds stat
+4. **Checklist** — Five green-check bullet points as styled cards/badges (trained on facility language, medical-safe guardrails, crisis detection, collects info, Slack alerts)
+5. **Testimonial** — Blockquote from Michael R., CEO, Serenity Treatment with his photo
+6. **CTA** — "Your Digital Twin is ready. Is your website?" with a button linking to `care-assist.io` or `/auth`
 
-**`src/components/dashboard/FloatingSupportButton.tsx`** — Update the `href` on line 32 from `https://calendly.com` to `https://calendly.com/care-assist-support/support-call-clone`.
+Graphics will use icon compositions (lucide icons like `Moon`, `ShieldCheck`, `Brain`, `Phone`, `Slack`) inside colored gradient circles, plus accent backgrounds and decorative borders — no external images needed beyond the existing Michael testimonial photo.
+
+### Update: `src/App.tsx`
+
+- Add lazy import for `MeetSamantha`
+- Add route: `<Route path="/meet-samantha" element={<MeetSamantha />} />`
 
