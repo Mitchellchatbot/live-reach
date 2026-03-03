@@ -1,35 +1,32 @@
 
 
-## Plan: Add Chatbot User Manual to Documentation
+## Analysis: Why the Chatbot Freezes on First Rapid Messages
 
-The existing documentation system in `src/data/documentation.ts` already covers most product features but lacks a dedicated section that serves as an end-user manual for the chatbot widget itself — i.e., content aimed at helping **your clients** (treatment centers) understand how to set up, configure, and get the most out of their chatbot.
+After reviewing the code, here are the likely causes specific to the **first messages** of a conversation:
 
-I'll reorganize and expand the documentation by adding a new **"Chatbot User Manual"** section that consolidates and extends the chatbot-specific guidance into a practical, step-by-step manual. This section will cover the full lifecycle: setup, AI configuration, lead capture, humanization, crisis handling, integrations, and going live.
+### Root Cause: Race Condition in `ensureWidgetIds()` and `ensureConversationExists()`
 
-### New Section: `chatbot-manual` (9 topics)
+When a visitor sends 2+ messages rapidly at the **start** of a conversation (before visitor/conversation IDs exist), the concurrency guards fail because they rely on refs that haven't been set yet:
 
-**1. Getting Your Chatbot Live** — End-to-end checklist from property creation to embedding the widget on your site.
+1. **Message 1** calls `ensureWidgetIds()` → starts the bootstrap network request (visitor not yet created)
+2. **Message 2** calls `ensureWidgetIds()` → checks `if (visitorIdRef.current) return;` — but it's still `null` because Message 1's bootstrap hasn't returned yet → starts a **second** bootstrap request
+3. Both bootstrap calls may create separate visitors, or one fails, leaving the conversation in an inconsistent state
+4. Same race exists for `ensureConversationExists()` — both messages pass the `if (conversationIdRef.current) return` guard
 
-**2. Writing Your AI Base Prompt** — How to craft effective instructions: what to include (services, FAQs, tone, boundaries), examples, and iteration tips.
+The hybrid flow lock (`hybridFlowActiveRef`) only kicks in **after** the visitor/conversation setup (line 1386+), so it can't prevent this race.
 
-**3. Configuring Lead Capture** — Upfront forms vs. natural capture, which fields to require, insurance card photo uploads, and balancing conversion vs. friction.
+### Why It Works Fine After the First Exchange
 
-**4. Humanizing AI Responses** — Typo injection, apostrophe dropping, response delays, typing indicators, quick-reply-after-first — making the bot feel like a real person.
+Once `visitorIdRef.current` and `conversationIdRef.current` are set (after the first bootstrap completes), all subsequent `ensureWidgetIds()` calls bail out immediately at the guard check. The hybrid flow lock then properly serializes AI generation.
 
-**5. Escalation & Crisis Detection** — Setting up escalation keywords, message limits, what happens when the bot escalates, and how crisis/suicidal ideation keywords trigger immediate alerts.
+### Fix Plan
 
-**6. Proactive Engagement** — Configuring proactive messages, timing strategies, and geo-filtering to target the right visitors.
+Add a **bootstrap mutex** — a simple ref-based promise lock for `ensureWidgetIds` so concurrent callers share a single bootstrap call instead of racing:
 
-**7. Managing Conversations** — Inbox workflow: active/closed tabs, shortcuts, real-time updates, visitor info panel, and agent handoff.
+1. Add a `bootstrapPromiseRef = useRef<Promise<void> | null>(null)` 
+2. In `ensureWidgetIds`, if the ref already holds a promise, `await` it instead of starting a new bootstrap
+3. Set the ref at the start of bootstrap, clear it when done
+4. Apply the same pattern to `ensureConversationExists` for safety
 
-**8. Connecting Notifications** — Setting up Slack, email, and Salesforce so your team never misses a lead — with auto-export triggers and field mappings.
-
-**9. Measuring Performance** — Using analytics to track AI resolution rate, response times, page engagement, and conversation metrics to continuously improve.
-
-### Implementation
-
-- Add the new `chatbot-manual` section to the `documentationSections` array in `src/data/documentation.ts` (inserted near the top, after "Getting Started")
-- Add a `BookOpenCheck` icon mapping in `src/pages/Documentation.tsx` for the new section
-- All topics will include `relatedTopics` cross-linking to existing docs for deeper dives
-- No new components or routes needed — the existing `DocsLayout`, `DocsSidebar`, and `DocPage` handle everything automatically
+This is a small, surgical change (~15 lines) that ensures the first rapid messages share a single visitor/conversation creation flow, after which the existing hybrid lock handles everything correctly.
 
