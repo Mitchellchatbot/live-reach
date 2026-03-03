@@ -1,0 +1,409 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Save, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+
+interface Property {
+  id: string;
+  name: string;
+  domain: string;
+}
+
+interface SalesforceBulkSettingsProps {
+  properties: Property[];
+}
+
+interface FieldMapping {
+  salesforceField: string;
+  visitorField: string;
+}
+
+const VISITOR_FIELDS = [
+  { value: 'name', label: 'Name' },
+  { value: 'email', label: 'Email' },
+  { value: 'phone', label: 'Phone' },
+  { value: 'age', label: 'Age' },
+  { value: 'occupation', label: 'Occupation' },
+  { value: 'location', label: 'Location' },
+  { value: 'current_page', label: 'Current Page' },
+  { value: 'browser_info', label: 'Browser Info' },
+  { value: 'gclid', label: 'Google Click ID (GCLID)' },
+  { value: 'drug_of_choice', label: 'Drug of Choice' },
+  { value: 'addiction_history', label: 'Addiction History' },
+  { value: 'treatment_interest', label: 'Treatment Interest' },
+  { value: 'insurance_info', label: 'Insurance Info' },
+  { value: 'urgency_level', label: 'Urgency Level' },
+  { value: 'conversation_transcript', label: 'Conversation Transcript (Full)' },
+  { value: 'conversation_summary', label: 'Conversation Summary (AI)' },
+];
+
+// Common Salesforce Lead fields for bulk mode (no live describe available)
+const COMMON_SF_FIELDS = [
+  { name: 'FirstName', label: 'First Name' },
+  { name: 'LastName', label: 'Last Name' },
+  { name: 'Email', label: 'Email' },
+  { name: 'Phone', label: 'Phone' },
+  { name: 'Company', label: 'Company' },
+  { name: 'Title', label: 'Title' },
+  { name: 'Description', label: 'Description' },
+  { name: 'LeadSource', label: 'Lead Source' },
+  { name: 'Street', label: 'Street' },
+  { name: 'City', label: 'City' },
+  { name: 'State', label: 'State' },
+  { name: 'PostalCode', label: 'Postal Code' },
+  { name: 'Country', label: 'Country' },
+  { name: 'Website', label: 'Website' },
+  { name: 'Industry', label: 'Industry' },
+  { name: 'Status', label: 'Status' },
+];
+
+export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsProps) => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [connectionStatuses, setConnectionStatuses] = useState<Record<string, boolean>>({});
+  
+  // Bulk settings state
+  const [autoExportOnEscalation, setAutoExportOnEscalation] = useState(false);
+  const [autoExportOnConversationEnd, setAutoExportOnConversationEnd] = useState(false);
+  const [autoExportOnInsuranceDetected, setAutoExportOnInsuranceDetected] = useState(false);
+  const [autoExportOnPhoneDetected, setAutoExportOnPhoneDetected] = useState(false);
+  const [fieldMappings, setFieldMappings] = useState<FieldMapping[]>([]);
+
+  useEffect(() => {
+    fetchAllSettings();
+  }, [properties]);
+
+  const fetchAllSettings = async () => {
+    setLoading(true);
+    const propertyIds = properties.map(p => p.id);
+    
+    const { data, error } = await supabase
+      .from('salesforce_settings')
+      .select('property_id, instance_url, auto_export_on_escalation, auto_export_on_conversation_end, auto_export_on_insurance_detected, auto_export_on_phone_detected, field_mappings')
+      .in('property_id', propertyIds);
+
+    if (error) {
+      console.error('Error fetching bulk settings:', error);
+      setLoading(false);
+      return;
+    }
+
+    // Build connection status map
+    const statuses: Record<string, boolean> = {};
+    properties.forEach(p => { statuses[p.id] = false; });
+    data?.forEach(s => { statuses[s.property_id] = !!s.instance_url; });
+    setConnectionStatuses(statuses);
+
+    // Use the first connected property's settings as the default values
+    const firstConnected = data?.find(s => s.instance_url);
+    if (firstConnected) {
+      setAutoExportOnEscalation(firstConnected.auto_export_on_escalation);
+      setAutoExportOnConversationEnd(firstConnected.auto_export_on_conversation_end);
+      setAutoExportOnInsuranceDetected((firstConnected as any).auto_export_on_insurance_detected ?? false);
+      setAutoExportOnPhoneDetected((firstConnected as any).auto_export_on_phone_detected ?? false);
+      
+      const mappings = Object.entries(firstConnected.field_mappings as Record<string, string>).map(
+        ([salesforceField, visitorField]) => ({ salesforceField, visitorField })
+      );
+      setFieldMappings(mappings);
+    }
+
+    setLoading(false);
+  };
+
+  const handleBulkSave = async () => {
+    setSaving(true);
+
+    const mappingsObject = fieldMappings.reduce((acc, mapping) => {
+      if (mapping.salesforceField && mapping.visitorField) {
+        acc[mapping.salesforceField] = mapping.visitorField;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    const connectedPropertyIds = Object.entries(connectionStatuses)
+      .filter(([_, connected]) => connected)
+      .map(([id]) => id);
+
+    if (connectedPropertyIds.length === 0) {
+      toast.error('No connected properties to update');
+      setSaving(false);
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const propertyId of connectedPropertyIds) {
+      const { error } = await supabase
+        .from('salesforce_settings')
+        .update({
+          auto_export_on_escalation: autoExportOnEscalation,
+          auto_export_on_conversation_end: autoExportOnConversationEnd,
+          auto_export_on_insurance_detected: autoExportOnInsuranceDetected,
+          auto_export_on_phone_detected: autoExportOnPhoneDetected,
+          field_mappings: mappingsObject,
+        })
+        .eq('property_id', propertyId);
+
+      if (error) {
+        console.error(`Error updating settings for ${propertyId}:`, error);
+        errorCount++;
+      } else {
+        successCount++;
+      }
+    }
+
+    setSaving(false);
+
+    if (errorCount === 0) {
+      toast.success(`Settings updated for ${successCount} propert${successCount === 1 ? 'y' : 'ies'}`);
+    } else {
+      toast.error(`Updated ${successCount}, failed ${errorCount}`);
+    }
+  };
+
+  const addMapping = () => {
+    setFieldMappings([...fieldMappings, { salesforceField: '', visitorField: '' }]);
+  };
+
+  const removeMapping = (index: number) => {
+    setFieldMappings(fieldMappings.filter((_, i) => i !== index));
+  };
+
+  const updateMapping = (index: number, field: 'salesforceField' | 'visitorField', value: string) => {
+    const updated = [...fieldMappings];
+    updated[index] = { ...updated[index], [field]: value };
+    setFieldMappings(updated);
+  };
+
+  const connectedCount = Object.values(connectionStatuses).filter(Boolean).length;
+  const totalCount = properties.length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Connection Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Connection Overview</CardTitle>
+          <CardDescription>
+            Salesforce connections are managed per property. Below shows which properties are connected.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 mb-4">
+            <Badge variant={connectedCount > 0 ? 'default' : 'secondary'}>
+              {connectedCount}/{totalCount} Connected
+            </Badge>
+          </div>
+          <div className="space-y-2">
+            {properties.map(property => (
+              <div key={property.id} className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50">
+                <div>
+                  <p className="text-sm font-medium">{property.name}</p>
+                  <p className="text-xs text-muted-foreground">{property.domain}</p>
+                </div>
+                {connectionStatuses[property.id] ? (
+                  <div className="flex items-center gap-1.5 text-primary">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="text-xs font-medium">Connected</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <XCircle className="h-4 w-4" />
+                    <span className="text-xs">Not connected</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {connectedCount === 0 && (
+            <div className="flex items-start gap-2 mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                No properties are connected to Salesforce. Select a specific property to set up a connection first.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {connectedCount > 0 && (
+        <>
+          {/* Bulk info banner */}
+          <div className="flex items-start gap-2 p-3 rounded-md bg-primary/5 border border-primary/20">
+            <AlertTriangle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Changes below will be applied to all <strong>{connectedCount} connected</strong> propert{connectedCount === 1 ? 'y' : 'ies'}. 
+              Unconnected properties will not be affected.
+            </p>
+          </div>
+
+          {/* Auto Export Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Auto Export</CardTitle>
+              <CardDescription>
+                Bulk update auto-export triggers across all connected properties
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Export on Escalation</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically create a lead when a conversation is escalated to a human
+                  </p>
+                </div>
+                <Switch checked={autoExportOnEscalation} onCheckedChange={setAutoExportOnEscalation} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Export on Conversation End</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically create a lead when a conversation is closed
+                  </p>
+                </div>
+                <Switch checked={autoExportOnConversationEnd} onCheckedChange={setAutoExportOnConversationEnd} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Export on Insurance Detected</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically create a lead when insurance details are extracted
+                  </p>
+                </div>
+                <Switch checked={autoExportOnInsuranceDetected} onCheckedChange={setAutoExportOnInsuranceDetected} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Export on Phone Number Detected</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically create a lead when a phone number is captured
+                  </p>
+                </div>
+                <Switch checked={autoExportOnPhoneDetected} onCheckedChange={setAutoExportOnPhoneDetected} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Field Mappings */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Field Mappings</CardTitle>
+                  <CardDescription>
+                    Bulk update field mappings across all connected properties
+                  </CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={addMapping}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Field
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-[1fr,auto,1fr,auto] gap-4 items-center font-medium text-sm text-muted-foreground">
+                  <span>Salesforce Field</span>
+                  <span></span>
+                  <span>Visitor Data</span>
+                  <span></span>
+                </div>
+
+                {fieldMappings.map((mapping, index) => (
+                  <div key={index} className="grid grid-cols-[1fr,auto,1fr,auto] gap-4 items-center">
+                    <Select
+                      value={mapping.salesforceField}
+                      onValueChange={(value) => updateMapping(index, 'salesforceField', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Salesforce field" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMMON_SF_FIELDS.map((field) => (
+                          <SelectItem key={field.name} value={field.name}>
+                            {field.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <span className="text-muted-foreground">→</span>
+
+                    <Select
+                      value={mapping.visitorField}
+                      onValueChange={(value) => updateMapping(index, 'visitorField', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select data" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VISITOR_FIELDS.map((field) => (
+                          <SelectItem key={field.value} value={field.value}>
+                            {field.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeMapping(index)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                {fieldMappings.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No field mappings configured. Click "Add Field" to create one.
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleBulkSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save to All Connected Properties
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
