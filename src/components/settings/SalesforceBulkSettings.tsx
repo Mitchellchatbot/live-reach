@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle, RefreshCw, LinkIcon } from 'lucide-react';
 
 interface Property {
   id: string;
@@ -66,6 +66,7 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
   const [salesforceFields, setSalesforceFields] = useState<SalesforceField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
   const [firstHealthyPropertyId, setFirstHealthyPropertyId] = useState<string | null>(null);
+  const [reconnectingId, setReconnectingId] = useState<string | null>(null);
   
   // Bulk settings state
   const [autoExportOnEscalation, setAutoExportOnEscalation] = useState(false);
@@ -243,6 +244,61 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
     }
   };
 
+  const handleReconnect = async (propertyId: string) => {
+    setReconnectingId(propertyId);
+    try {
+      const { data, error } = await supabase.functions.invoke('salesforce-oauth-start', {
+        body: { propertyId },
+      });
+
+      if (error || !data?.url) {
+        toast.error(data?.error || 'Failed to start Salesforce connection');
+        setReconnectingId(null);
+        return;
+      }
+
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'salesforce-oauth-success') {
+          toast.success('Successfully reconnected to Salesforce!');
+          setReconnectingId(null);
+          fetchAllSettings();
+          window.removeEventListener('message', handleMessage);
+        } else if (event.data?.type === 'salesforce-oauth-error') {
+          toast.error(`Salesforce connection failed: ${event.data.error || 'Unknown error'}`);
+          setReconnectingId(null);
+          window.removeEventListener('message', handleMessage);
+        }
+      };
+      window.addEventListener('message', handleMessage);
+
+      const width = 600;
+      const height = 700;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+
+      const popup = window.open(
+        data.url,
+        'salesforce-oauth',
+        `width=${width},height=${height},left=${left},top=${top},popup=1`
+      );
+
+      const checkPopup = setInterval(() => {
+        if (!popup || popup.closed) {
+          clearInterval(checkPopup);
+          setTimeout(() => {
+            window.removeEventListener('message', handleMessage);
+            setReconnectingId(null);
+            fetchAllSettings();
+          }, 500);
+        }
+      }, 500);
+    } catch (err) {
+      console.error('Error initiating OAuth:', err);
+      toast.error('Failed to start OAuth flow');
+      setReconnectingId(null);
+    }
+  };
+
   const handleBulkSave = async () => {
     setSaving(true);
 
@@ -368,9 +424,25 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
                       <span className="text-xs">Checking...</span>
                     </div>
                   ) : isExpired ? (
-                    <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-xs font-medium">Session Expired</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-xs font-medium">Expired</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={reconnectingId === property.id}
+                        onClick={() => handleReconnect(property.id)}
+                      >
+                        {reconnectingId === property.id ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : (
+                          <LinkIcon className="mr-1 h-3 w-3" />
+                        )}
+                        Reconnect
+                      </Button>
                     </div>
                   ) : isConnected ? (
                     <div className="flex items-center gap-1.5 text-primary">
