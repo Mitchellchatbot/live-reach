@@ -21,6 +21,7 @@ import {
   Users,
 } from 'lucide-react';
 import { SalesforceSettings } from '@/components/settings/SalesforceSettings';
+import { SalesforceBulkSettings } from '@/components/settings/SalesforceBulkSettings';
 import { VisitorLeadsTable } from '@/components/settings/VisitorLeadsTable';
 import {
   Dialog,
@@ -182,29 +183,29 @@ const Salesforce = () => {
               </Card>
 
               {properties.length > 0 && (
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                   <TabsList data-tour="salesforce-tabs">
                     <TabsTrigger value="leads" className="gap-2" data-tour="salesforce-leads-tab">
                       <Users className="h-4 w-4" />
                       Visitor Leads
                     </TabsTrigger>
-                    {selectedPropertyId && (
-                      <TabsTrigger value="settings" className="gap-2" data-tour="salesforce-settings-tab">
-                        <Settings className="h-4 w-4" />
-                        Settings
-                      </TabsTrigger>
-                    )}
+                    <TabsTrigger value="settings" className="gap-2" data-tour="salesforce-settings-tab">
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="leads" data-tour="salesforce-leads-content">
                     <VisitorLeadsTable propertyId={selectedPropertyId || 'all'} allPropertyIds={!selectedPropertyId ? properties.map(p => p.id) : undefined} />
                   </TabsContent>
                   
-                  {selectedPropertyId && (
-                    <TabsContent value="settings" data-tour="salesforce-settings-content">
+                  <TabsContent value="settings" data-tour="salesforce-settings-content">
+                    {selectedPropertyId ? (
                       <SalesforceSettings propertyId={selectedPropertyId} />
-                    </TabsContent>
-                  )}
+                    ) : (
+                      <SalesforceBulkSettings properties={properties} />
+                    )}
+                  </TabsContent>
                 </Tabs>
               )}
 
