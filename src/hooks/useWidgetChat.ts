@@ -1385,12 +1385,16 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
       // --- RAPID MESSAGE HANDLING ---
-      // If a generation is already in flight, abort it and wait for the lock to release.
-      // Then this call (the newest message) runs ONE fresh generation with the full
-      // updated history instead of running in parallel and producing multiple responses.
-      if (hybridFlowActiveRef.current && aiAbortControllerRef.current) {
-        aiAbortControllerRef.current.abort();
-        // Wait for the previous flow to fully release the lock (it will set hybridFlowActiveRef=false)
+      // Increment generation ID FIRST so each caller gets a unique ID.
+      // When multiple callers wait for the lock, only the newest (highest ID) proceeds.
+      const myGenerationId = ++aiGenerationIdRef.current;
+
+      if (hybridFlowActiveRef.current) {
+        // Abort the in-flight generation so it releases the lock quickly
+        if (aiAbortControllerRef.current) {
+          aiAbortControllerRef.current.abort();
+        }
+        // Wait for the previous flow to fully release the lock
         await new Promise<void>((resolve) => {
           const check = () => {
             if (!hybridFlowActiveRef.current) { resolve(); return; }
@@ -1398,10 +1402,12 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           };
           check();
         });
+        // After waking up, check if a NEWER sendMessage call claimed the slot.
+        // If so, bail — that newer call will handle the response.
+        if (aiGenerationIdRef.current !== myGenerationId) {
+          return;
+        }
       }
-
-      // Increment generation ID — but now primarily used for the poll-loop guard
-      const myGenerationId = ++aiGenerationIdRef.current;
 
       const convId = conversationIdRef.current;
       const vId = visitorIdRef.current;
@@ -1410,8 +1416,32 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Block autoReplyIfPending from firing a duplicate for this same visitor turn
       hybridFlowActiveRef.current = true;
 
+      // Rebuild conversation history from DB to include ALL rapid-fire messages
+      // (the `messages` state captured at function entry may be stale)
+      let freshHistory = conversationHistory;
+      if (convId && vId) {
+        try {
+          const histResp = await fetch(GET_MESSAGES_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId }),
+          });
+          if (histResp.ok) {
+            const histData = await histResp.json();
+            const dbMessages = (histData?.messages ?? []) as Array<{ sender_type: string; content: string }>;
+            if (dbMessages.length > 0) {
+              freshHistory = toAiHistoryFromDb(dbMessages);
+            }
+          }
+        } catch {
+          // Fall back to the locally-built history
+        }
+      }
+
       // Step 1: Generate AI response immediately using the FULL conversation history
-      // (includes the current message already pushed into `messages` state above)
       const generationStart = Date.now();
       let aiContent = '';
       let generationError = false;
@@ -1423,7 +1453,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       await new Promise<void>((resolve) => {
         streamAIResponse({
-          messages: conversationHistory,
+          messages: freshHistory,
           personalityPrompt: respondingAgent?.personality_prompt,
           agentName: respondingAgent?.name,
           basePrompt: settings.ai_base_prompt,
