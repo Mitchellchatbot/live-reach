@@ -37,6 +37,8 @@ interface SalesforceField {
   required?: boolean;
 }
 
+type SessionHealth = 'healthy' | 'expired' | 'checking' | 'not_connected';
+
 const VISITOR_FIELDS = [
   { value: 'name', label: 'Name' },
   { value: 'email', label: 'Email' },
@@ -60,9 +62,10 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectionStatuses, setConnectionStatuses] = useState<Record<string, boolean>>({});
+  const [sessionHealthMap, setSessionHealthMap] = useState<Record<string, SessionHealth>>({});
   const [salesforceFields, setSalesforceFields] = useState<SalesforceField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
-  const [firstConnectedPropertyId, setFirstConnectedPropertyId] = useState<string | null>(null);
+  const [firstHealthyPropertyId, setFirstHealthyPropertyId] = useState<string | null>(null);
   
   // Bulk settings state
   const [autoExportOnEscalation, setAutoExportOnEscalation] = useState(false);
@@ -75,12 +78,12 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
     fetchAllSettings();
   }, [properties]);
 
-  // Fetch live Salesforce fields from the first connected property
+  // Fetch live Salesforce fields from first healthy property
   useEffect(() => {
-    if (firstConnectedPropertyId) {
-      fetchSalesforceFields(firstConnectedPropertyId);
+    if (firstHealthyPropertyId) {
+      fetchSalesforceFields(firstHealthyPropertyId);
     }
-  }, [firstConnectedPropertyId]);
+  }, [firstHealthyPropertyId]);
 
   const fetchSalesforceFields = async (propertyId: string) => {
     setLoadingFields(true);
@@ -97,6 +100,102 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
       console.error('Error:', err);
     }
     setLoadingFields(false);
+  };
+
+  const checkSessionHealth = async (connectedPropertyIds: string[]) => {
+    // Set all connected to "checking"
+    const initialHealth: Record<string, SessionHealth> = {};
+    properties.forEach(p => {
+      initialHealth[p.id] = connectedPropertyIds.includes(p.id) ? 'checking' : 'not_connected';
+    });
+    setSessionHealthMap(initialHealth);
+
+    const expiredPropertyIds: string[] = [];
+    let firstHealthy: string | null = null;
+
+    // Check each connected property in parallel
+    const results = await Promise.allSettled(
+      connectedPropertyIds.map(async (propertyId) => {
+        try {
+          const { data, error } = await supabase.functions.invoke('salesforce-describe-lead', {
+            body: { propertyId },
+          });
+          
+          const errorMsg = `${error?.message || ''} ${data?.error || ''}`;
+          if (
+            errorMsg.includes('Session expired') ||
+            errorMsg.includes('INVALID_SESSION_ID') ||
+            (error && String(error).includes('non-2xx'))
+          ) {
+            return { propertyId, status: 'expired' as const };
+          }
+          if (!error && data?.fields) {
+            return { propertyId, status: 'healthy' as const, fields: data.fields };
+          }
+          // If there's some other error, treat as expired to be safe
+          if (error) {
+            return { propertyId, status: 'expired' as const };
+          }
+          return { propertyId, status: 'healthy' as const };
+        } catch {
+          return { propertyId, status: 'expired' as const };
+        }
+      })
+    );
+
+    const updatedHealth: Record<string, SessionHealth> = { ...initialHealth };
+    
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        const { propertyId, status } = result.value;
+        updatedHealth[propertyId] = status;
+        if (status === 'expired') {
+          expiredPropertyIds.push(propertyId);
+        } else if (status === 'healthy' && !firstHealthy) {
+          firstHealthy = propertyId;
+          // Use the fields from first healthy check
+          if ('fields' in result.value && result.value.fields) {
+            setSalesforceFields(result.value.fields);
+          }
+        }
+      }
+    }
+
+    setSessionHealthMap(updatedHealth);
+    setFirstHealthyPropertyId(firstHealthy);
+
+    // Log notifications for expired sessions
+    if (expiredPropertyIds.length > 0) {
+      logExpiredSessionNotifications(expiredPropertyIds);
+    }
+  };
+
+  const logExpiredSessionNotifications = async (expiredIds: string[]) => {
+    // Insert a notification for each expired property
+    const notifications = expiredIds.map(propertyId => ({
+      property_id: propertyId,
+      notification_type: 'salesforce_session_expired',
+      channel: 'in_app' as const,
+      recipient: 'system',
+      recipient_type: 'system' as const,
+      status: 'sent' as const,
+      visitor_name: properties.find(p => p.id === propertyId)?.name || 'Unknown',
+    }));
+
+    // Only log once per session — check if we already logged recently
+    for (const notif of notifications) {
+      const { data: existing } = await supabase
+        .from('notification_logs')
+        .select('id')
+        .eq('property_id', notif.property_id)
+        .eq('notification_type', 'salesforce_session_expired')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        await supabase.from('notification_logs').insert(notif);
+      }
+    }
   };
 
   const fetchAllSettings = async () => {
@@ -120,9 +219,10 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
     data?.forEach(s => { statuses[s.property_id] = !!s.instance_url; });
     setConnectionStatuses(statuses);
 
-    // Track the first connected property for field fetching
+    const connectedIds = data?.filter(s => s.instance_url).map(s => s.property_id) || [];
+
+    // Use first connected property's settings as defaults
     const firstConnected = data?.find(s => s.instance_url);
-    setFirstConnectedPropertyId(firstConnected?.property_id ?? null);
     if (firstConnected) {
       setAutoExportOnEscalation(firstConnected.auto_export_on_escalation);
       setAutoExportOnConversationEnd(firstConnected.auto_export_on_conversation_end);
@@ -136,6 +236,11 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
     }
 
     setLoading(false);
+
+    // Check session health for connected properties
+    if (connectedIds.length > 0) {
+      checkSessionHealth(connectedIds);
+    }
   };
 
   const handleBulkSave = async () => {
@@ -205,6 +310,7 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
   };
 
   const connectedCount = Object.values(connectionStatuses).filter(Boolean).length;
+  const expiredCount = Object.values(sessionHealthMap).filter(s => s === 'expired').length;
   const totalCount = properties.length;
 
   if (loading) {
@@ -230,28 +336,68 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
             <Badge variant={connectedCount > 0 ? 'default' : 'secondary'}>
               {connectedCount}/{totalCount} Connected
             </Badge>
+            {expiredCount > 0 && (
+              <Badge variant="outline" className="border-amber-500/50 text-amber-600 dark:text-amber-400 bg-amber-500/10">
+                {expiredCount} Expired
+              </Badge>
+            )}
           </div>
           <div className="space-y-2">
-            {properties.map(property => (
-              <div key={property.id} className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/50">
-                <div>
-                  <p className="text-sm font-medium">{property.name}</p>
-                  <p className="text-xs text-muted-foreground">{property.domain}</p>
+            {properties.map(property => {
+              const health = sessionHealthMap[property.id];
+              const isConnected = connectionStatuses[property.id];
+              const isExpired = health === 'expired';
+              const isChecking = health === 'checking';
+
+              return (
+                <div 
+                  key={property.id} 
+                  className={`flex items-center justify-between py-2 px-3 rounded-md ${
+                    isExpired 
+                      ? 'bg-amber-500/10 border border-amber-500/30' 
+                      : 'bg-muted/50'
+                  }`}
+                >
+                  <div>
+                    <p className="text-sm font-medium">{property.name}</p>
+                    <p className="text-xs text-muted-foreground">{property.domain}</p>
+                  </div>
+                  {isChecking ? (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-xs">Checking...</span>
+                    </div>
+                  ) : isExpired ? (
+                    <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-xs font-medium">Session Expired</span>
+                    </div>
+                  ) : isConnected ? (
+                    <div className="flex items-center gap-1.5 text-primary">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span className="text-xs font-medium">Connected</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <XCircle className="h-4 w-4" />
+                      <span className="text-xs">Not connected</span>
+                    </div>
+                  )}
                 </div>
-                {connectionStatuses[property.id] ? (
-                  <div className="flex items-center gap-1.5 text-primary">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-xs font-medium">Connected</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <XCircle className="h-4 w-4" />
-                    <span className="text-xs">Not connected</span>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {expiredCount > 0 && (
+            <div className="flex items-start gap-2 mt-4 p-3 rounded-md bg-amber-500/10 border border-amber-500/30">
+              <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                <strong>{expiredCount}</strong> propert{expiredCount === 1 ? 'y has' : 'ies have'} expired Salesforce sessions. 
+                Select each property individually and click <strong>Reconnect</strong> to re-authorize.
+              </p>
+            </div>
+          )}
+
           {connectedCount === 0 && (
             <div className="flex items-start gap-2 mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
               <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
@@ -336,11 +482,11 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
                   </CardDescription>
                 </div>
               <div className="flex items-center gap-2">
-                {firstConnectedPropertyId && (
+                {firstHealthyPropertyId && (
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    onClick={() => fetchSalesforceFields(firstConnectedPropertyId)}
+                    onClick={() => fetchSalesforceFields(firstHealthyPropertyId)}
                     disabled={loadingFields}
                   >
                     <RefreshCw className={`h-4 w-4 ${loadingFields ? 'animate-spin' : ''}`} />
