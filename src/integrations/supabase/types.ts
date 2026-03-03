@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_complaints: {
+        Row: {
+          agent_id: string
+          category: string
+          created_at: string
+          id: string
+          message: string
+          property_id: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          property_id?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          property_id?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_complaints_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agents: {
         Row: {
           avatar: string | null

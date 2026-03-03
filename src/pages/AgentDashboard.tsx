@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
 import { Input } from '@/components/ui/input';
 import { LogOut, MessageSquare, RefreshCw, Inbox, Archive, ArrowLeft, Pencil, Check, X } from 'lucide-react';
+import { AgentComplaintDialog } from '@/components/agent/AgentComplaintDialog';
 import { toast } from 'sonner';
 import type { Conversation, Message, Visitor } from '@/types/chat';
 
@@ -654,6 +655,12 @@ export default function AgentDashboard() {
 
         {/* Footer Buttons */}
         <div className="p-3 border-t border-border space-y-2">
+          {agentProfile && (
+            <AgentComplaintDialog
+              agentId={agentProfile.id}
+              assignedPropertyIds={assignedPropertyIds}
+            />
+          )}
           {canSwitchToAdmin && (
             <Button variant="outline" className="w-full" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
