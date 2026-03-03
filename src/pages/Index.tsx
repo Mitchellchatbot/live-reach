@@ -1001,54 +1001,21 @@ const Index = () => {
           </div>
 
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-5 md:gap-8 items-stretch">
-            {/* Calendly Placeholder */}
+            {/* Calendly Embed */}
             <div className="relative bg-card rounded-2xl md:rounded-3xl border border-border/50 shadow-lg overflow-hidden">
               <div className="p-6 md:p-8 border-b border-border/40">
                 <h3 className="text-xl md:text-2xl font-black text-foreground">Book a Strategy Call</h3>
-                <p className="text-sm text-muted-foreground mt-1">Schedule a free 30-minute consultation</p>
+                <p className="text-sm text-muted-foreground mt-1">Schedule a free intro or demo call</p>
               </div>
-              <div className="p-6 md:p-8 flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-muted/60 flex items-center justify-center mb-4">
-                  <Calendar className="h-9 w-9 text-muted-foreground" />
-                </div>
-                <p className="text-foreground font-bold text-lg mb-1">Intro Call</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                  <Clock className="h-4 w-4" />
-                  <span>30 min</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-8">
-                  Web conferencing details provided upon confirmation.
-                </p>
-                <div className="w-full border-t border-border/40 pt-6">
-                  <p className="font-bold text-foreground mb-4">Select a Day</p>
-                  <div className="flex items-center justify-center gap-4 mb-4">
-                    <button className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground">
-                      <ChevronRight className="h-4 w-4 rotate-180" />
-                    </button>
-                    <span className="text-sm font-semibold text-foreground">February 2026</span>
-                    <button className="h-8 w-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground">
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
-                    {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d) =>
-                    <span key={d} className="py-1 font-semibold">{d}</span>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-7 gap-1 text-sm">
-                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) =>
-                    <button
-                      key={day}
-                      className={cn(
-                        "h-9 w-9 mx-auto rounded-full flex items-center justify-center text-sm transition-colors",
-                        day === 10 ? "bg-primary text-primary-foreground font-bold" : "text-foreground hover:bg-muted"
-                      )}>
-
-                        {day}
-                      </button>
-                    )}
-                  </div>
-                </div>
+              <div className="w-full" style={{ minHeight: 500 }}>
+                <iframe
+                  src="https://calendly.com/care-assist-support/support-call-clone?hide_gdpr_banner=1"
+                  title="Schedule a call with Care Assist"
+                  width="100%"
+                  height="500"
+                  frameBorder="0"
+                  className="border-0"
+                />
               </div>
             </div>
 
