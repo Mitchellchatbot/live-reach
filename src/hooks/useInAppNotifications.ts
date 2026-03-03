@@ -18,7 +18,8 @@ export type NotificationType =
   | 'invitation_sent'
   | 'invitation_accepted'
   | 'agent_online'
-  | 'agent_offline';
+  | 'agent_offline'
+  | 'salesforce_session_expired';
 
 export interface InAppNotification {
   id: string;
@@ -92,6 +93,8 @@ export function useInAppNotifications() {
           mapped = { type: 'agent_online', title: 'Agent Online', description: `${visitor} is now online` };
         } else if (nt === 'agent_offline') {
           mapped = { type: 'agent_offline', title: 'Agent Offline', description: `${visitor} is now offline` };
+        } else if (nt === 'salesforce_session_expired') {
+          mapped = { type: 'salesforce_session_expired', title: 'Salesforce Session Expired', description: `Salesforce connection expired for ${propName}. Please reconnect.` };
         } else if (ch === 'email' || nt === 'email') {
           mapped = failed
             ? { type: 'email_failed', title: 'Email Failed', description: `Email notification failed for ${propName}` }

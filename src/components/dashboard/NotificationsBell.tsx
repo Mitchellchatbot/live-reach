@@ -24,6 +24,7 @@ const iconMap: Record<NotificationType, { icon: typeof Bell; color: string; bg: 
   invitation_accepted: { icon: UserCheck, color: 'text-green-500', bg: 'bg-green-500/10' },
   agent_online: { icon: Wifi, color: 'text-green-500', bg: 'bg-green-500/10' },
   agent_offline: { icon: WifiOff, color: 'text-muted-foreground', bg: 'bg-muted/50' },
+  salesforce_session_expired: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
 };
 
 interface NotificationsBellProps {

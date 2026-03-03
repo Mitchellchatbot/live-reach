@@ -37,6 +37,7 @@ const iconMap: Record<string, { icon: typeof MessageSquare; color: string; bg: s
   salesforce_export: { icon: UploadCloud, color: 'text-green-500', bg: 'bg-green-500/10' },
   export_failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
   agent_invitation: { icon: UserPlus, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+  salesforce_session_expired: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10' },
 };
 
 const defaultIcon = { icon: MessageSquare, color: 'text-primary', bg: 'bg-primary/10' };
@@ -86,6 +87,12 @@ function getReadableDescription(log: LogEntry, propName: string): { title: strin
     return {
       title: 'Agent Invited',
       description: `${log.recipient} was invited to join your workspace`,
+    };
+  }
+  if (nt === 'salesforce_session_expired') {
+    return {
+      title: 'Salesforce Session Expired',
+      description: `Salesforce connection expired for ${propName}. Please reconnect.`,
     };
   }
 
