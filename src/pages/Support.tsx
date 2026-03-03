@@ -185,12 +185,34 @@ const Support = () => {
             </TabsList>
 
             {/* Contact Form Tab */}
-            <TabsContent value="contact" className="mt-6">
+            <TabsContent value="contact" className="mt-6 space-y-6">
+              {/* Calendly Embed */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact Our Team</CardTitle>
+                  <CardTitle>Book a Support Call</CardTitle>
                   <CardDescription>
-                    Have a question or need assistance? Send us a message and we'll respond within 24 hours.
+                    Schedule a 30-minute call with our team to get help with any questions or issues.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-xl overflow-hidden border border-border/30">
+                    <iframe
+                      src="https://calendly.com/care-assist-support/30min?hide_gdpr_banner=1"
+                      width="100%"
+                      height="500"
+                      className="border-0"
+                      title="Schedule a support call"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Contact Form */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Send Us a Message</CardTitle>
+                  <CardDescription>
+                    Prefer to write? Send us a message and we'll respond within 24 hours.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
