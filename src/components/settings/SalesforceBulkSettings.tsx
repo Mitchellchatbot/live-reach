@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 
 interface Property {
   id: string;
@@ -28,6 +28,13 @@ interface SalesforceBulkSettingsProps {
 interface FieldMapping {
   salesforceField: string;
   visitorField: string;
+}
+
+interface SalesforceField {
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
 }
 
 const VISITOR_FIELDS = [
@@ -49,30 +56,13 @@ const VISITOR_FIELDS = [
   { value: 'conversation_summary', label: 'Conversation Summary (AI)' },
 ];
 
-// Common Salesforce Lead fields for bulk mode (no live describe available)
-const COMMON_SF_FIELDS = [
-  { name: 'FirstName', label: 'First Name' },
-  { name: 'LastName', label: 'Last Name' },
-  { name: 'Email', label: 'Email' },
-  { name: 'Phone', label: 'Phone' },
-  { name: 'Company', label: 'Company' },
-  { name: 'Title', label: 'Title' },
-  { name: 'Description', label: 'Description' },
-  { name: 'LeadSource', label: 'Lead Source' },
-  { name: 'Street', label: 'Street' },
-  { name: 'City', label: 'City' },
-  { name: 'State', label: 'State' },
-  { name: 'PostalCode', label: 'Postal Code' },
-  { name: 'Country', label: 'Country' },
-  { name: 'Website', label: 'Website' },
-  { name: 'Industry', label: 'Industry' },
-  { name: 'Status', label: 'Status' },
-];
-
 export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectionStatuses, setConnectionStatuses] = useState<Record<string, boolean>>({});
+  const [salesforceFields, setSalesforceFields] = useState<SalesforceField[]>([]);
+  const [loadingFields, setLoadingFields] = useState(false);
+  const [firstConnectedPropertyId, setFirstConnectedPropertyId] = useState<string | null>(null);
   
   // Bulk settings state
   const [autoExportOnEscalation, setAutoExportOnEscalation] = useState(false);
@@ -84,6 +74,30 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
   useEffect(() => {
     fetchAllSettings();
   }, [properties]);
+
+  // Fetch live Salesforce fields from the first connected property
+  useEffect(() => {
+    if (firstConnectedPropertyId) {
+      fetchSalesforceFields(firstConnectedPropertyId);
+    }
+  }, [firstConnectedPropertyId]);
+
+  const fetchSalesforceFields = async (propertyId: string) => {
+    setLoadingFields(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('salesforce-describe-lead', {
+        body: { propertyId },
+      });
+      if (!error && data?.fields) {
+        setSalesforceFields(data.fields);
+      } else {
+        console.error('Error fetching Salesforce fields for bulk:', error || data?.error);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+    setLoadingFields(false);
+  };
 
   const fetchAllSettings = async () => {
     setLoading(true);
@@ -106,8 +120,9 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
     data?.forEach(s => { statuses[s.property_id] = !!s.instance_url; });
     setConnectionStatuses(statuses);
 
-    // Use the first connected property's settings as the default values
+    // Track the first connected property for field fetching
     const firstConnected = data?.find(s => s.instance_url);
+    setFirstConnectedPropertyId(firstConnected?.property_id ?? null);
     if (firstConnected) {
       setAutoExportOnEscalation(firstConnected.auto_export_on_escalation);
       setAutoExportOnConversationEnd(firstConnected.auto_export_on_conversation_end);
@@ -320,10 +335,22 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
                     Bulk update field mappings across all connected properties
                   </CardDescription>
                 </div>
+              <div className="flex items-center gap-2">
+                {firstConnectedPropertyId && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => fetchSalesforceFields(firstConnectedPropertyId)}
+                    disabled={loadingFields}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loadingFields ? 'animate-spin' : ''}`} />
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={addMapping}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Field
                 </Button>
+              </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -345,11 +372,17 @@ export const SalesforceBulkSettings = ({ properties }: SalesforceBulkSettingsPro
                         <SelectValue placeholder="Select Salesforce field" />
                       </SelectTrigger>
                       <SelectContent>
-                        {COMMON_SF_FIELDS.map((field) => (
-                          <SelectItem key={field.name} value={field.name}>
-                            {field.label}
+                        {salesforceFields.length > 0 ? (
+                          salesforceFields.map((field) => (
+                            <SelectItem key={field.name} value={field.name}>
+                              {field.label} {field.required && <span className="text-destructive">*</span>}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value={mapping.salesforceField || '_loading'} disabled>
+                            {loadingFields ? 'Loading fields...' : 'No fields available'}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
 
