@@ -1528,12 +1528,13 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // If this generation was aborted by a newer sendMessage call, release lock and exit.
       // The newer call is already waiting and will take over.
       if (generationAborted || abortController.signal.aborted) {
+        console.warn('[useWidgetChat] Generation aborted by newer message');
         hybridFlowActiveRef.current = false;
         return;
       }
 
       if (generationError || !aiContent) {
-        // Fallback: release hybrid lock and bail
+        console.warn('[useWidgetChat] Generation failed or empty:', { generationError, hasContent: !!aiContent });
         hybridFlowActiveRef.current = false;
         return;
       }
@@ -1546,12 +1547,23 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
 
       // Step 2: Set queue state with the generated preview so dashboard shows editable bubble
+      // IMPORTANT: await this so we know the queue is set before polling starts.
+      // If fire-and-forget, the first poll may see aiQueuedAt===null and falsely cancel.
+      let queueWasSet = false;
       if (convId && vId) {
-        fetch(SET_AI_QUEUE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent, windowMs: responseDelay }),
-        }).catch(() => {});
+        try {
+          const queueResp = await fetch(SET_AI_QUEUE_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent, windowMs: responseDelay }),
+          });
+          queueWasSet = queueResp.ok;
+          if (!queueResp.ok) {
+            console.warn('[useWidgetChat] Queue set failed:', queueResp.status);
+          }
+        } catch (queueErr) {
+          console.warn('[useWidgetChat] Queue set error:', queueErr);
+        }
       }
 
       // Step 3: Poll for human agent during the remaining delay window
@@ -1591,7 +1603,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
               // CRITICAL: If the dashboard agent pressed "Cancel", ai_queued_at will be null.
               // Abort immediately — do NOT send the AI response.
-              if (pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
+              // Only check this if we confirmed the queue was set (prevents false positives
+              // when the queue-set call failed or was slow).
+              if (queueWasSet && pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
+                console.warn('[useWidgetChat] Dashboard cancelled AI response');
                 cancelledByDashboard = true;
                 break;
               }
@@ -1689,7 +1704,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           });
           if (fcResp.ok) {
             const fcData = await fcResp.json();
-            if (fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
+            if (queueWasSet && fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
               // Queue was cancelled between last poll and now — abort.
               hybridFlowActiveRef.current = false;
               setIsTyping(false);
