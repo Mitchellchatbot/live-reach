@@ -3,6 +3,7 @@ import { documentationSections } from '@/data/documentation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   BookOpen, 
+  BookOpenCheck,
   MessageSquare, 
   Users, 
   Bot, 
@@ -18,6 +19,7 @@ import { useFadeIn, useStaggerChildren } from '@/hooks/useGSAP';
 
 const sectionIcons: Record<string, React.ReactNode> = {
   'getting-started': <BookOpen className="h-6 w-6" />,
+  'chatbot-manual': <BookOpenCheck className="h-6 w-6" />,
   'inbox': <MessageSquare className="h-6 w-6" />,
   'team': <Users className="h-6 w-6" />,
   'ai-support': <Bot className="h-6 w-6" />,

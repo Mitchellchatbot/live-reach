@@ -136,6 +136,251 @@ export const documentationSections: DocSection[] = [
     ]
   },
   {
+    id: 'chatbot-manual',
+    title: 'Chatbot User Manual',
+    description: 'Step-by-step guide to setting up and optimizing your chatbot',
+    topics: [
+      {
+        id: 'going-live',
+        title: 'Getting Your Chatbot Live',
+        description: 'End-to-end checklist from property creation to embedding the widget on your website.',
+        whatItDoes: 'This guide walks you through every step needed to launch your chatbot — from creating a property in Scaled Bot, configuring basic settings, generating your embed code, and pasting it into your website. By the end, your visitors will see a fully functional chat widget on your site.',
+        howToUse: [
+          'Create a new property from the dashboard — enter your business name and website domain',
+          'Configure your greeting message and offline message in AI Support settings',
+          'Set your widget color and icon to match your brand under Widget Customization',
+          'Write or review your AI base prompt so the bot knows how to respond',
+          'Go to Widget Embed in the sidebar and copy the embed code snippet',
+          'Paste the snippet into your website\'s HTML, just before the closing </body> tag',
+          'Visit your website and test the widget — send a message to confirm it works',
+          'Invite team members so someone is available for live handoff when needed'
+        ],
+        tips: [
+          'Test the widget on both desktop and mobile before announcing it to visitors',
+          'Start with a simple base prompt and refine it after reviewing real conversations',
+          'Use the Widget Preview page to see exactly how the chat bubble and window look before going live',
+          'Make sure you have notifications (Slack or email) set up so you never miss a lead'
+        ],
+        relatedTopics: [
+          { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
+          { title: 'Widget Customization', path: '/documentation/widget/customization' },
+          { title: 'Widget Embed Code', path: '/documentation/widget/embed-code' },
+          { title: 'Writing Your AI Base Prompt', path: '/documentation/chatbot-manual/base-prompt' }
+        ]
+      },
+      {
+        id: 'base-prompt',
+        title: 'Writing Your AI Base Prompt',
+        description: 'How to craft effective AI instructions for accurate, on-brand responses.',
+        whatItDoes: 'The base prompt is a set of instructions you give to the AI that shapes every response it generates. It tells the bot what your business does, how to answer common questions, what tone to use, and what boundaries to respect. A well-written prompt means the AI can handle most conversations without human intervention.',
+        howToUse: [
+          'Go to AI Support from the sidebar and select your property',
+          'Find the "Base Prompt" text area — this is where you write your instructions',
+          'Start with who you are: "You are a helpful admissions coordinator for [Center Name], a substance abuse treatment facility in [City, State]."',
+          'List your services: inpatient, outpatient, detox, MAT, PHP, IOP, etc.',
+          'Include accepted insurances: "We accept BlueCross BlueShield, Aetna, Cigna, and most major PPOs."',
+          'Add FAQs: visiting hours, program length, what to bring, family involvement',
+          'Set tone guidance: "Be warm, empathetic, and non-judgmental. Use simple language."',
+          'Define boundaries: "Never diagnose conditions. Never guarantee outcomes. Always encourage calling for urgent needs."',
+          'Save and test by chatting with the widget in preview mode'
+        ],
+        tips: [
+          'The more specific your prompt, the fewer escalations you\'ll need — include actual answers, not just topics',
+          'Review real conversations weekly and add answers for questions the AI struggled with',
+          'Use the onboarding wizard\'s auto-generated prompt as a starting point, then customize',
+          'Keep your prompt under 2,000 words — overly long prompts can dilute focus'
+        ],
+        relatedTopics: [
+          { title: 'AI Personas', path: '/documentation/ai-support/personas' },
+          { title: 'Tone Presets', path: '/documentation/ai-support/tone-presets' },
+          { title: 'Escalation & Crisis Detection', path: '/documentation/chatbot-manual/escalation' }
+        ]
+      },
+      {
+        id: 'lead-capture',
+        title: 'Configuring Lead Capture',
+        description: 'Collect visitor contact details through forms or natural conversation.',
+        whatItDoes: 'Lead capture collects visitor information — name, phone, email, and optionally insurance card photos — so your team can follow up. You can require these fields upfront before the chat begins, or enable natural lead capture where the AI asks for details conversationally during the chat.',
+        howToUse: [
+          'Go to AI Support settings for your property',
+          'Under "Lead Capture," toggle which fields to require: Name, Phone, Email',
+          'Optionally enable "Require Insurance Card Photo" for insurance verification',
+          'Choose between upfront forms (fields appear before chat starts) or natural capture (AI asks during conversation)',
+          'If using natural capture, the AI will ask for contact info at natural points in the conversation',
+          'Collected data appears in the Visitor Info panel when viewing conversations',
+          'Export leads to Salesforce or view them in the Visitor Leads table'
+        ],
+        tips: [
+          'Requiring too many fields upfront creates friction — phone + name is often enough to start',
+          'Natural lead capture feels less intrusive and typically results in higher engagement',
+          'Insurance card uploads are especially valuable for treatment centers to verify coverage quickly',
+          'Review your Visitor Leads table regularly to ensure no leads are falling through the cracks'
+        ],
+        relatedTopics: [
+          { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' },
+          { title: 'Visitor Leads', path: '/documentation/account/visitor-leads' },
+          { title: 'Salesforce Integration', path: '/documentation/integrations/salesforce' }
+        ]
+      },
+      {
+        id: 'humanization',
+        title: 'Humanizing AI Responses',
+        description: 'Make your chatbot feel like a real person with typos, delays, and natural cadence.',
+        whatItDoes: 'Humanization features make the AI\'s responses feel more natural and less robotic. This includes injecting occasional typos, dropping apostrophes, adding realistic response delays, showing typing indicators, and enabling quick-reply behavior after the first message. Together, these features make visitors believe they\'re chatting with a real human.',
+        howToUse: [
+          'Go to AI Support settings for your property',
+          'Toggle "Human Typos" to occasionally insert realistic typos in AI responses',
+          'Toggle "Drop Apostrophes" to mimic casual texting style (e.g., "dont" instead of "don\'t")',
+          'Toggle "Drop Capitalization" for all-lowercase responses that feel like texting',
+          'Enable "Smart Typing Indicator" to show realistic typing dots based on message length',
+          'Set response delay ranges (min/max milliseconds) to simulate human reading and typing time',
+          'Enable "Quick Reply After First" so the AI responds faster after the initial message, mimicking someone already at their keyboard'
+        ],
+        tips: [
+          'Typos are injected at a realistic rate — roughly one every 2-3 messages — so it feels natural, not sloppy',
+          'Combining apostrophe dropping with lowercase creates a very casual, text-message feel — great for younger audiences',
+          'Response delays of 2-5 seconds feel most realistic for short messages; longer messages should take proportionally longer',
+          'The typing indicator adjusts its duration based on the response length, making it look like the agent is actually composing'
+        ],
+        relatedTopics: [
+          { title: 'Tone Presets', path: '/documentation/ai-support/tone-presets' },
+          { title: 'Writing Your AI Base Prompt', path: '/documentation/chatbot-manual/base-prompt' },
+          { title: 'Proactive Engagement', path: '/documentation/chatbot-manual/proactive' }
+        ]
+      },
+      {
+        id: 'escalation',
+        title: 'Escalation & Crisis Detection',
+        description: 'Automatic handoff triggers and crisis keyword alerts.',
+        whatItDoes: 'Escalation settings control when the AI stops responding and hands the conversation to a human agent. This can happen based on keyword triggers (e.g., "speak to someone"), after a set number of AI messages, or automatically when crisis-related language is detected (suicidal ideation, self-harm). Crisis keywords trigger immediate notifications to your team.',
+        howToUse: [
+          'Go to AI Support settings for your property',
+          'Under "Escalation," toggle "Auto Escalation" on',
+          'Set the maximum number of AI messages before automatic escalation (e.g., 10)',
+          'Add custom escalation keywords like "talk to a person," "real human," "manager"',
+          'Crisis keywords (suicidal, overdose, self-harm) are built in and always active',
+          'When escalation triggers, the AI pauses and your team is notified via Slack and/or email',
+          'Agents can take over the conversation from the inbox immediately'
+        ],
+        tips: [
+          'Keep escalation message limits reasonable — too low and you waste agent time, too high and visitors feel unheard',
+          'Crisis detection is always enabled regardless of other settings — this is a safety feature that cannot be turned off',
+          'Make sure you have notification channels (Slack, email) configured so escalations aren\'t missed',
+          'Review escalated conversations to find gaps in your base prompt — if the AI keeps escalating on the same topic, add that answer to your prompt'
+        ],
+        relatedTopics: [
+          { title: 'Connecting Notifications', path: '/documentation/chatbot-manual/notifications' },
+          { title: 'Writing Your AI Base Prompt', path: '/documentation/chatbot-manual/base-prompt' },
+          { title: 'Managing Conversations', path: '/documentation/chatbot-manual/conversations' }
+        ]
+      },
+      {
+        id: 'proactive',
+        title: 'Proactive Engagement',
+        description: 'Automatically reach out to visitors before they start chatting.',
+        whatItDoes: 'Proactive messages let your chatbot initiate the conversation by sending a message after a visitor has been on your site for a set amount of time. Combined with geo-filtering, you can target only visitors from specific states or regions, ensuring your proactive outreach is relevant and compliant with your service area.',
+        howToUse: [
+          'Go to AI Support settings for your property',
+          'Toggle "Proactive Message" on',
+          'Write your proactive message (e.g., "Hi there! Have questions about our treatment programs? I\'m here to help.")',
+          'Set the delay in seconds — how long to wait before showing the message (15-30 seconds works well)',
+          'Optionally configure geo-filtering to only show proactive messages to visitors from states you serve',
+          'Choose your filter mode: allow-list (only these states) or block-list (everywhere except these states)',
+          'The message appears as a chat bubble above the widget icon, drawing attention without being intrusive'
+        ],
+        tips: [
+          'Keep proactive messages short and inviting — one sentence is ideal',
+          'A 15-20 second delay works best: long enough that visitors have settled in, short enough they haven\'t left',
+          'Geo-filtering is especially important for treatment centers with state-specific licensing',
+          'Test your proactive message on a private/incognito browser to see the visitor experience'
+        ],
+        relatedTopics: [
+          { title: 'Geo-Filtering', path: '/documentation/ai-support/geo-filtering' },
+          { title: 'Widget Customization', path: '/documentation/widget/customization' },
+          { title: 'Getting Your Chatbot Live', path: '/documentation/chatbot-manual/going-live' }
+        ]
+      },
+      {
+        id: 'conversations',
+        title: 'Managing Conversations',
+        description: 'Inbox workflow, agent handoff, and conversation lifecycle.',
+        whatItDoes: 'Once your chatbot is live, conversations flow into your inbox in real time. This guide covers the daily workflow: monitoring active chats, using shortcuts for quick replies, viewing visitor details, taking over from the AI, closing resolved conversations, and using the Closed tab for reference.',
+        howToUse: [
+          'Open the Inbox from the sidebar — active conversations appear on the left',
+          'Click a conversation to open the chat panel and see the full message history',
+          'Review the Visitor Info panel on the right for context (name, phone, location, insurance)',
+          'Type "/" in the message field to use shortcuts for common replies',
+          'To take over from AI, simply start typing — the AI will pause automatically',
+          'Click "Close" when a conversation is resolved; it moves to the Closed tab',
+          'Stale conversations auto-close after inactivity to keep your inbox clean'
+        ],
+        tips: [
+          'Check the inbox at least every few minutes during business hours for the fastest response times',
+          'Use the property selector at the top to filter conversations by website',
+          'Closed conversations remain searchable — use them to review what the AI handled well or poorly',
+          'Set up Slack notifications so you get pinged immediately when a new conversation starts'
+        ],
+        relatedTopics: [
+          { title: 'Conversation Shortcuts', path: '/documentation/inbox/shortcuts' },
+          { title: 'Real-time Updates', path: '/documentation/inbox/realtime' },
+          { title: 'Escalation & Crisis Detection', path: '/documentation/chatbot-manual/escalation' }
+        ]
+      },
+      {
+        id: 'notifications',
+        title: 'Connecting Notifications',
+        description: 'Set up Slack, email, and Salesforce so your team never misses a lead.',
+        whatItDoes: 'Notifications ensure your team is alerted the moment something important happens — a new conversation starts, a visitor shares their phone number, or the AI escalates. You can receive alerts via Slack, email, or both. Salesforce integration can also auto-export leads based on triggers like escalation or insurance detection.',
+        howToUse: [
+          'Go to Settings from the sidebar and select your property',
+          'Under "Slack," click "Connect to Slack" and authorize the integration',
+          'Choose which events trigger Slack notifications: new conversations, phone submissions, escalations',
+          'Under "Email Notifications," add email addresses and select which events to be notified about',
+          'Under "Salesforce," connect your Salesforce account via OAuth',
+          'Configure auto-export triggers: on escalation, on phone detected, on insurance detected, on conversation end',
+          'Set up field mappings to control how visitor data maps to Salesforce Lead fields'
+        ],
+        tips: [
+          'Enable all three notification types (new conversation, phone, escalation) to start — you can always dial back later',
+          'Use a shared Slack channel like #leads or #admissions so the whole team sees alerts',
+          'Salesforce auto-export on escalation is especially useful — it creates a lead the moment the AI can\'t handle something',
+          'Check the Notification Log in Settings to verify notifications are being delivered successfully'
+        ],
+        relatedTopics: [
+          { title: 'Slack Integration', path: '/documentation/integrations/slack' },
+          { title: 'Email Notifications', path: '/documentation/integrations/email-notifications' },
+          { title: 'Salesforce Integration', path: '/documentation/integrations/salesforce' }
+        ]
+      },
+      {
+        id: 'performance',
+        title: 'Measuring Performance',
+        description: 'Use analytics to track chatbot effectiveness and continuously improve.',
+        whatItDoes: 'The Analytics dashboard gives you insight into how your chatbot is performing. Track total conversations, AI resolution rates (conversations handled without human intervention), average response times, page-level engagement, and visitor trends. Use this data to refine your base prompt, adjust escalation thresholds, and optimize your proactive messaging.',
+        howToUse: [
+          'Go to Analytics from the sidebar',
+          'Review the overview cards: total conversations, AI-resolved %, average response time',
+          'Check the conversations chart to see volume trends over time',
+          'Look at page analytics to see which pages generate the most chats',
+          'Compare performance across properties if you manage multiple sites',
+          'Use date filters to analyze specific time periods',
+          'Cross-reference high-escalation periods with your base prompt to find improvement areas'
+        ],
+        tips: [
+          'A healthy AI resolution rate is 60-80% — if it\'s below 50%, your base prompt likely needs more answers',
+          'Track which pages generate the most chats to optimize your proactive message placement',
+          'Review analytics weekly and update your base prompt monthly based on what you learn',
+          'If response times are high, consider adding more team members or adjusting AI escalation limits'
+        ],
+        relatedTopics: [
+          { title: 'Writing Your AI Base Prompt', path: '/documentation/chatbot-manual/base-prompt' },
+          { title: 'Proactive Engagement', path: '/documentation/chatbot-manual/proactive' },
+          { title: 'Escalation & Crisis Detection', path: '/documentation/chatbot-manual/escalation' }
+        ]
+      }
+    ]
+  },
+  {
     id: 'inbox',
     title: 'Inbox',
     description: 'Manage customer conversations',
