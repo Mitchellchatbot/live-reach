@@ -29,7 +29,7 @@ export const FloatingSupportButton = () => {
             Need Help?
           </button>
           <a
-            href="https://calendly.com"
+            href="https://calendly.com/care-assist-support/support-call-clone"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setIsOpen(false)}

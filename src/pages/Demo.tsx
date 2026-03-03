@@ -100,7 +100,7 @@ const Demo = () => {
                 autoOpen={true}
                 widgetSize="small"
                 greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
-                agentName="Care Assist AI"
+                agentName="Care Assist"
               />
             </div>
           </div>
