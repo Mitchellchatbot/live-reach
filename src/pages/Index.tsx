@@ -996,11 +996,11 @@ const Index = () => {
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Started</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Book a strategy call or send us your details. We'll get back to you within 24 hours.
+              Book a strategy call — we'll get back to you within 24 hours.
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-5 md:gap-8 items-stretch">
+          <div className="max-w-3xl mx-auto">
             {/* Calendly Embed */}
             <div className="relative bg-card rounded-2xl md:rounded-3xl border border-border/50 shadow-lg overflow-hidden">
               <div className="p-6 md:p-8 border-b border-border/40">
@@ -1016,64 +1016,6 @@ const Index = () => {
                   frameBorder="0"
                   className="border-0"
                 />
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="relative bg-card rounded-2xl md:rounded-3xl border border-border/50 shadow-lg overflow-hidden">
-              <div className="p-6 md:p-8 border-b border-border/40">
-                <h3 className="text-xl md:text-2xl font-black text-foreground">Get Started Today</h3>
-                <p className="text-sm text-muted-foreground mt-1">No credit card required</p>
-              </div>
-              <div className="p-6 md:p-8">
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Your Name *"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
-
-                  </div>
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Email Address *"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
-
-                  </div>
-                  <div>
-                    <input
-                      type="tel"
-                      placeholder="Phone Number"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
-
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Facility Name"
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm" />
-
-                  </div>
-                  <div>
-                    <textarea
-                      placeholder="Tell us about your center..."
-                      rows={4}
-                      className="w-full px-4 py-3.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all text-sm resize-none" />
-
-                  </div>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-primary via-primary to-orange-500 text-primary-foreground hover:opacity-90 hover:scale-[1.02] shadow-2xl shadow-primary/30 gap-2 h-14 text-lg font-black rounded-xl ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300">
-
-                    <Send className="h-5 w-5" />
-                    Get My Free Demo
-                  </Button>
-                </form>
-                <p className="text-xs text-muted-foreground mt-4 text-center">
-                  No credit card required • Setup in 5 minutes • Cancel anytime
-                </p>
               </div>
             </div>
           </div>
