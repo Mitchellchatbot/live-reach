@@ -485,6 +485,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const aiAgentIndexRef = useRef(0);
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
+  const bootstrapPromiseRef = useRef<Promise<void> | null>(null); // Mutex for ensureWidgetIds
+  const conversationPromiseRef = useRef<Promise<string | null> | null>(null); // Mutex for ensureConversationExists
   const lastSeqRef = useRef<number>(0); // Track last sequence number for message polling
   const humanHasTakenOverRef = useRef(false); // True only when a human agent has actually responded
   const aiEnabledRef = useRef<boolean>(true); // Tracks dashboard AI toggle (do not conflate with human takeover)
@@ -694,6 +696,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     if (!propertyId || propertyId === 'demo' || isPreview) return;
     if (visitorIdRef.current) return; // Already have visitor
 
+    // Mutex: if another call is already bootstrapping, piggyback on it
+    if (bootstrapPromiseRef.current) {
+      await bootstrapPromiseRef.current;
+      return;
+    }
+
+    const doBootstrap = async () => {
+
     const sessionId = getOrCreateSessionId();
     const trackingParams = getTrackingParams();
 
@@ -815,6 +825,13 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     } catch (e) {
       console.error('Widget bootstrap error:', e);
     }
+    };
+
+    // Set the mutex promise so concurrent callers wait on this one
+    bootstrapPromiseRef.current = doBootstrap().finally(() => {
+      bootstrapPromiseRef.current = null;
+    });
+    await bootstrapPromiseRef.current;
   }, [propertyId, isPreview]);
 
   // Create conversation on-demand (lazy creation when visitor sends first message)
@@ -823,38 +840,53 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     if (conversationIdRef.current) return conversationIdRef.current;
     if (!visitorIdRef.current) return null;
 
-    const sessionId = getOrCreateSessionId();
+    // Mutex: if another call is already creating, piggyback on it
+    if (conversationPromiseRef.current) {
+      return conversationPromiseRef.current;
+    }
 
-    try {
-      const response = await fetch(CREATE_CONVERSATION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          propertyId,
-          visitorId: visitorIdRef.current,
-          sessionId,
-        }),
-      });
+    const doCreate = async (): Promise<string | null> => {
+      // Re-check after acquiring the slot (another caller may have finished)
+      if (conversationIdRef.current) return conversationIdRef.current;
 
-      if (!response.ok) {
-        console.error('Widget create conversation failed:', response.status, await response.text());
+      const sessionId = getOrCreateSessionId();
+
+      try {
+        const response = await fetch(CREATE_CONVERSATION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            propertyId,
+            visitorId: visitorIdRef.current,
+            sessionId,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Widget create conversation failed:', response.status, await response.text());
+          return null;
+        }
+
+        const data = await response.json();
+        if (data?.conversationId) {
+          setConversationId(data.conversationId);
+          conversationIdRef.current = data.conversationId;
+          return data.conversationId;
+        }
+        return null;
+      } catch (e) {
+        console.error('Widget create conversation error:', e);
         return null;
       }
+    };
 
-      const data = await response.json();
-      if (data?.conversationId) {
-        setConversationId(data.conversationId);
-        conversationIdRef.current = data.conversationId;
-        return data.conversationId;
-      }
-      return null;
-    } catch (e) {
-      console.error('Widget create conversation error:', e);
-      return null;
-    }
+    conversationPromiseRef.current = doCreate().finally(() => {
+      conversationPromiseRef.current = null;
+    });
+    return conversationPromiseRef.current;
   }, [propertyId, isPreview]);
 
   // Check for escalation keywords in message
