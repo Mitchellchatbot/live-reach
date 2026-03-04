@@ -585,7 +585,7 @@ const DashboardContent = () => {
                 propertyName={selectedConversation ? properties.find(p => p.id === selectedConversation.propertyId)?.name : undefined}
                 aiQueuedAt={aiQueuedAt}
                 aiQueuedWindowMs={aiQueuedWindowMs}
-                aiQueuedPreview={(selectedConversation as any)?.aiQueuedPreview ?? null}
+                aiQueuedPreview={aiQueuedPreview}
                 onCancelAIQueue={handleCancelAIQueue}
                 onEditAIQueue={handleEditAIQueue}
                 onPauseAIQueue={handlePauseAIQueue}
