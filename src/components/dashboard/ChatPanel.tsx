@@ -612,8 +612,11 @@ export const ChatPanel = ({
               isAgent={true}
               isPendingDelivery={true}
               queueSecondsLeft={queueSecondsLeft}
+              isPaused={isPaused}
               onCancel={onCancelAIQueue}
               onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
+              onPauseAIQueue={onPauseAIQueue}
+              onSendNow={onSendNow}
             />
           )}
         </div>
