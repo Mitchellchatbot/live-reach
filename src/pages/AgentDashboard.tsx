@@ -155,7 +155,7 @@ export default function AgentDashboard() {
 
           const unreadCount = messages.filter(m => !m.read && m.senderType === 'visitor').length;
 
-          const conversation: Conversation & { ai_enabled?: boolean; aiQueuedAt?: Date | null; aiQueuedPreview?: string | null; aiQueuedPaused?: boolean } = {
+          const conversation: Conversation & { ai_enabled?: boolean; aiQueuedAt?: Date | null; aiQueuedPreview?: string | null; aiQueuedPaused?: boolean; aiQueuedWindowMs?: number | null } = {
             id: c.id,
             visitorId: c.visitor_id,
             propertyId: c.property_id,
@@ -172,6 +172,7 @@ export default function AgentDashboard() {
             aiQueuedAt: c.ai_queued_at ? new Date(c.ai_queued_at) : null,
             aiQueuedPreview: c.ai_queued_preview ?? null,
             aiQueuedPaused: c.ai_queued_paused ?? false,
+            aiQueuedWindowMs: c.ai_queued_window_ms ?? null,
           };
 
           return conversation;
