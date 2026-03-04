@@ -367,13 +367,15 @@ export const ChatPanel = ({
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
     const update = () => {
+      // Don't count down while paused
+      if (isPaused) return;
       const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt, queueWindowSeconds]);
+  }, [aiQueuedAt, queueWindowSeconds, isPaused]);
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
