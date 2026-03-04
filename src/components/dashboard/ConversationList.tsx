@@ -14,9 +14,11 @@ import { Globe, Clock, User, FlaskConical, Trash2, MessageSquare, X, Archive, Ch
 const AgentCountdownBadge = ({
   aiQueuedAt,
   aiQueuedWindowMs,
+  aiQueuedPaused,
 }: {
   aiQueuedAt?: Date | null;
   aiQueuedWindowMs?: number | null;
+  aiQueuedPaused?: boolean;
 }) => {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
@@ -25,6 +27,9 @@ const AgentCountdownBadge = ({
       setSecondsLeft(null);
       return;
     }
+    // When paused, freeze the display — don't count down
+    if (aiQueuedPaused) return;
+
     const windowMs = aiQueuedWindowMs ?? 30000;
     const update = () => {
       const elapsed = Date.now() - aiQueuedAt.getTime();
@@ -34,9 +39,21 @@ const AgentCountdownBadge = ({
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt, aiQueuedWindowMs]);
+  }, [aiQueuedAt, aiQueuedWindowMs, aiQueuedPaused]);
 
   if (secondsLeft === null) return null;
+
+  if (aiQueuedPaused) {
+    return (
+      <Badge
+        variant="outline"
+        className="text-blue-600 border-blue-500/40 bg-blue-500/10 text-xs py-0 flex-shrink-0 gap-1 font-mono"
+        title="Timer paused — agent is editing"
+      >
+        ⏸ {secondsLeft}s
+      </Badge>
+    );
+  }
 
   return (
     <Badge
@@ -169,6 +186,7 @@ const ConversationItem = ({
                 <AgentCountdownBadge
                   aiQueuedAt={conversation.aiQueuedAt}
                   aiQueuedWindowMs={conversation.aiQueuedWindowMs}
+                  aiQueuedPaused={conversation.aiQueuedPaused}
                 />
               )}
             </div>
