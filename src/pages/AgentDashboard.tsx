@@ -450,6 +450,8 @@ export default function AgentDashboard() {
     : null;
   const isAIEnabled = selectedDbConv?.ai_enabled ?? true;
   const aiQueuedAt = selectedDbConv?.aiQueuedAt ?? null;
+  const aiQueuedPreview = selectedDbConv?.aiQueuedPreview ?? null;
+  const aiQueuedWindowMs = selectedDbConv?.aiQueuedWindowMs ?? null;
   const aiQueuedPaused = selectedDbConv?.aiQueuedPaused ?? false;
 
   const handlePauseAIQueue = async (paused: boolean) => {
