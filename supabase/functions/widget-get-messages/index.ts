@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ messages: messages || [], aiEnabled, aiQueuedAt, aiQueuedPreview, aiQueuedPaused }), {
+    return new Response(JSON.stringify({ messages: messages || [], aiEnabled, aiQueuedAt, aiQueuedPreview, aiQueuedPaused, aiQueuedWindowMs }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
