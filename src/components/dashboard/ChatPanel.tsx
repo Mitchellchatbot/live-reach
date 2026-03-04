@@ -94,8 +94,8 @@ const MessageBubble = ({
     onPauseAIQueue?.(false);
   };
 
-  // Controls are only shown while the countdown is still active
-  const countdownActive = isPendingDelivery && queueSecondsLeft != null && queueSecondsLeft > 0;
+  // Controls are shown while countdown is active OR timer is paused
+  const countdownActive = isPendingDelivery && queueSecondsLeft != null && (queueSecondsLeft > 0 || isPaused);
 
   return (
     <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
