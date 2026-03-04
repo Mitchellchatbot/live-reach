@@ -78,6 +78,7 @@ const MessageBubble = ({
 
   const handleStartEdit = () => {
     setIsEditing(true);
+    onPauseAIQueue?.(true);
   };
 
   const handleSaveEdit = () => {
