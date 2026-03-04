@@ -465,12 +465,32 @@ export const ChatPanel = ({
   const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
   const [isPaused, setIsPaused] = useState(false);
+  const pausedAtRef = useRef<number | null>(null);
+  const pauseOffsetRef = useRef<number>(0);
+
+  // Track pause duration so countdown freezes properly
+  useEffect(() => {
+    if (isPaused) {
+      pausedAtRef.current = Date.now();
+    } else if (pausedAtRef.current) {
+      pauseOffsetRef.current += Date.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+    }
+  }, [isPaused]);
+
+  // Reset pause offset when queue resets
+  useEffect(() => {
+    if (!aiQueuedAt) {
+      pauseOffsetRef.current = 0;
+      pausedAtRef.current = null;
+    }
+  }, [aiQueuedAt]);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
     if (isPaused) return; // Don't count down while paused
     const update = () => {
-      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
+      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime() - pauseOffsetRef.current) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
     update();
