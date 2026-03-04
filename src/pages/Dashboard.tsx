@@ -587,6 +587,8 @@ const DashboardContent = () => {
                 aiQueuedPreview={(selectedConversation as any)?.aiQueuedPreview ?? null}
                 onCancelAIQueue={handleCancelAIQueue}
                 onEditAIQueue={handleEditAIQueue}
+                onPauseAIQueue={handlePauseAIQueue}
+                onSendNow={handleSendNow}
               />
             </div>
           </div>
