@@ -86,11 +86,13 @@ const MessageBubble = ({
       onSaveEdit?.(editContent.trim());
     }
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
   const handleCancelEdit = () => {
     setEditContent(message.content);
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
   // Controls are shown while countdown is active OR timer is paused
