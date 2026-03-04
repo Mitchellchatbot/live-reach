@@ -111,6 +111,7 @@ const DashboardContent = () => {
     pauseAIQueue,
     cancelAIQueue,
     editAIQueuedMessage,
+    sendNowAIQueue,
   } = useConversations({ 
     selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
