@@ -1611,9 +1611,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
                 break;
               }
 
-              // If dashboard paused the timer (e.g. agent is editing), extend our deadline
+              // If dashboard paused the timer (e.g. agent is editing), push the deadline
+              // far into the future so the message is NEVER sent while the agent is editing.
+              // Each poll cycle re-extends if still paused; once resumed, normal deadline logic resumes.
               if (pollData?.aiQueuedPaused === true) {
-                deadline = Math.max(deadline, Date.now() + POLL_INTERVAL + 2000);
+                deadline = Math.max(deadline, Date.now() + 60000);
               }
 
               // If "Send Now" was triggered (window set to 0), break immediately to deliver
