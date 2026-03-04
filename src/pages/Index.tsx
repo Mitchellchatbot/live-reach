@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Zap, Shield, ArrowRight, Users, BarChart3, MessageSquare, CheckCircle2, Star, Heart, Clock, Bot, Phone, Brain, Sparkles, AlertTriangle, UserCheck, Smartphone, Settings, Lock, Send, Play, ChevronRight, Menu, X, Mail, Calendar, Hash, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -301,6 +301,43 @@ const FloatingOrb = ({ className, delay = 0 }: {className: string;delay?: number
   className={`absolute rounded-full blur-3xl animate-float pointer-events-none ${className}`}
   style={{ animationDelay: `${delay}s` }} />;
 
+// Float-in on scroll component
+const FloatIn = ({ children, direction = 'left', delay = 0, className = '' }: {
+  children: ReactNode;
+  direction?: 'left' | 'right' | 'up';
+  delay?: number;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const animClass = direction === 'left' ? 'animate-float-in-left' : direction === 'right' ? 'animate-float-in-right' : 'animate-float-in-up';
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        visible ? animClass : 'opacity-0',
+        className
+      )}
+      style={visible ? { animationDelay: `${delay}s`, animationFillMode: 'both' } : undefined}
+    >
+      {children}
+    </div>
+  );
+};
+
 
 
 const navSections = [
@@ -525,7 +562,7 @@ const Index = () => {
           </div>
           
           <div className="grid lg:grid-cols-2 gap-10 md:gap-16 lg:gap-24 items-center">
-            {/* Left Content */}
+            <FloatIn direction="left">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl md:text-6xl lg:text-8xl font-black leading-[1.05] tracking-tighter">
                 <span className="text-foreground">
@@ -590,8 +627,8 @@ const Index = () => {
                 )}
               </div>
             </div>
-
-            {/* Right - Animated Chat Mockup */}
+            </FloatIn>
+            <FloatIn direction="right" delay={0.15}>
             <div className="relative hidden lg:block">
               {/* Floating badges */}
               <div className="absolute -top-6 left-4 lg:-left-8 bg-card/95 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl border border-green-500/30 z-20 animate-bounce-slow">
@@ -681,6 +718,7 @@ const Index = () => {
               <div className="absolute -z-10 -top-20 -left-20 w-72 h-72 bg-primary/25 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
               <div className="absolute -z-10 -bottom-20 -right-20 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
             </div>
+            </FloatIn>
           </div>
         </div>
       </section>
@@ -688,11 +726,13 @@ const Index = () => {
       {/* Animated Stats Section */}
       <section className="relative py-12 md:py-20 overflow-hidden">
         <div className="container mx-auto px-4 relative">
+          <FloatIn direction="up">
           <div className="text-center mb-10 md:mb-14">
             <h2 className="text-2xl md:text-4xl font-extrabold text-foreground tracking-tight">
               Trusted by treatment centers <span className="text-primary">nationwide</span>
             </h2>
           </div>
+          </FloatIn>
           <div className="max-w-5xl mx-auto bg-gradient-to-br from-card/80 via-card/60 to-primary/[0.03] backdrop-blur-sm rounded-3xl border border-border/30 shadow-[0_2px_40px_-12px_hsl(var(--primary)/0.08)] p-2 md:p-4">
             <div className="grid grid-cols-2 md:grid-cols-4">
               {stats.map((stat, index) =>
@@ -714,6 +754,7 @@ const Index = () => {
       {/* Social Proof / Testimonials */}
       <section id="testimonials" className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
+          <FloatIn direction="up">
           <div className="text-center mb-10 md:mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
               <Star className="h-3.5 w-3.5 md:h-4 md:w-4 fill-primary" />
@@ -724,6 +765,7 @@ const Index = () => {
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Real Centers</span>
             </h2>
           </div>
+          </FloatIn>
           
           <div className="relative max-w-6xl mx-auto overflow-hidden">
             {/* Fade edges */}
@@ -781,6 +823,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
         
         <div className="container mx-auto px-4 relative">
+          <FloatIn direction="left">
           <div className="text-center mb-10 md:mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
               <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -794,6 +837,7 @@ const Index = () => {
               Every feature designed with treatment centers in mind.
             </p>
           </div>
+          </FloatIn>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
             {features.map((feature) =>
@@ -806,6 +850,7 @@ const Index = () => {
       {/* Integrations Section */}
       <section id="integrations" className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4 relative">
+          <FloatIn direction="right">
           <div className="text-center mb-10 md:mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
               <Settings className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -819,6 +864,7 @@ const Index = () => {
               Every lead is instantly pushed to the tools your team already uses—so no opportunity slips through the cracks.
             </p>
           </div>
+          </FloatIn>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 max-w-6xl mx-auto">
             {/* Salesforce */}
@@ -903,6 +949,7 @@ const Index = () => {
 
       <section className="relative py-16 md:py-24 overflow-hidden">
         <div className="container mx-auto px-4">
+          <FloatIn direction="up">
           <div className="text-center mb-10 md:mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold mb-4 md:mb-6 border border-primary/20">
               <Zap className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -913,8 +960,10 @@ const Index = () => {
               <span className="bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent"> Instant Care</span>
             </h2>
           </div>
+          </FloatIn>
           <div className="max-w-5xl mx-auto">
             <div className="grid md:grid-cols-2 gap-5 md:gap-8 lg:gap-12 items-stretch">
+              <FloatIn direction="left">
               <div className="relative group">
                 <div className="absolute -inset-3 bg-gradient-to-br from-red-500/8 to-red-500/3 rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
                 <div className="relative h-full bg-card rounded-2xl md:rounded-3xl p-7 md:p-10 border border-red-200/60 shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -939,7 +988,9 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+              </FloatIn>
               
+              <FloatIn direction="right" delay={0.15}>
               <div className="relative group">
                 <div className="absolute -inset-3 bg-gradient-to-br from-green-500/8 to-green-500/3 rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
                 <div className="relative h-full bg-card rounded-2xl md:rounded-3xl p-7 md:p-10 border border-green-200/60 shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -964,6 +1015,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+              </FloatIn>
             </div>
           </div>
         </div>
@@ -972,6 +1024,7 @@ const Index = () => {
       {/* Pricing Section */}
       <section id="pricing" className="relative py-16 md:py-32 overflow-hidden">
         <div className="container mx-auto px-4 relative">
+          <FloatIn direction="up">
           <div className="text-center mb-10 md:mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-foreground mb-4 tracking-tight">
               Simple,
@@ -981,6 +1034,7 @@ const Index = () => {
               Start with a 7-day free trial. No credit card required.
             </p>
           </div>
+          </FloatIn>
           <PricingSection showComparison={true} ctaPath="/auth" />
         </div>
       </section>
