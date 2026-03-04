@@ -377,6 +377,18 @@ export const ChatPanel = ({
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Sync local isPaused with external pause handler
+  const wrappedPauseAIQueue = (paused: boolean) => {
+    setIsPaused(paused);
+    onPauseAIQueue?.(paused);
+  };
+
+  // Reset pause state when queue clears
+  useEffect(() => {
+    if (!isQueued) setIsPaused(false);
+  }, [isQueued]);
 
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
