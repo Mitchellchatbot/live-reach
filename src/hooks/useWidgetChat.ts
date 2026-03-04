@@ -1569,7 +1569,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Step 3: Poll for human agent during the remaining delay window
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
-      const POLL_INTERVAL = 3000;
+      const BASE_POLL_INTERVAL = 3000;
+      const FAST_POLL_INTERVAL = 1500;
       let deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let cancelledByDashboard = false;
@@ -1579,7 +1580,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         if (abortController.signal.aborted) break;
 
         const remaining = deadline - Date.now();
-        await sleep(Math.min(POLL_INTERVAL, remaining));
+        // Use faster polling when < 10s remain to reduce race window
+        const pollInterval = remaining < 10000 ? FAST_POLL_INTERVAL : BASE_POLL_INTERVAL;
+        await sleep(Math.min(pollInterval, remaining));
 
         // Re-check abort after sleeping
         if (abortController.signal.aborted) break;

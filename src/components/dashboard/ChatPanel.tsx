@@ -465,18 +465,22 @@ export const ChatPanel = ({
   const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
   const [isPaused, setIsPaused] = useState(false);
-  const isPausedRef = useRef(false);
-  const pausedAtRef = useRef<number | null>(null);
-  const pauseOffsetRef = useRef<number>(0);
+  const frozenSecondsRef = useRef<number | null>(null);
 
-  // Keep ref in sync so interval callback sees latest value
+  // When paused, freeze the current value; when unpaused, adjust aiQueuedAt offset
+  const pauseOffsetRef = useRef<number>(0);
+  const pausedAtRef = useRef<number | null>(null);
+
   useEffect(() => {
-    isPausedRef.current = isPaused;
     if (isPaused) {
+      // Freeze current display value and record pause start
+      frozenSecondsRef.current = queueSecondsLeft;
       pausedAtRef.current = Date.now();
     } else if (pausedAtRef.current) {
+      // Accumulate pause duration so timer resumes from where it froze
       pauseOffsetRef.current += Date.now() - pausedAtRef.current;
       pausedAtRef.current = null;
+      frozenSecondsRef.current = null;
     }
   }, [isPaused]);
 
@@ -485,25 +489,23 @@ export const ChatPanel = ({
     if (!aiQueuedAt) {
       pauseOffsetRef.current = 0;
       pausedAtRef.current = null;
-      isPausedRef.current = false;
+      frozenSecondsRef.current = null;
     }
   }, [aiQueuedAt]);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
+    // Don't run the interval while paused — display is frozen
+    if (isPaused) return;
     const update = () => {
-      // Check ref on every tick — don't rely on closure
-      if (isPausedRef.current) return;
-      const currentPauseOffset = pausedAtRef.current
-        ? pauseOffsetRef.current + (Date.now() - pausedAtRef.current)
-        : pauseOffsetRef.current;
-      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime() - currentPauseOffset) / 1000);
+      const totalPauseMs = pauseOffsetRef.current;
+      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime() - totalPauseMs) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt, queueWindowSeconds]);
+  }, [aiQueuedAt, queueWindowSeconds, isPaused]);
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
