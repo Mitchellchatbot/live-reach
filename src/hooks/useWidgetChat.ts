@@ -1615,6 +1615,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               // far into the future so the message is NEVER sent while the agent is editing.
               // Each poll cycle re-extends if still paused; once resumed, normal deadline logic resumes.
               if (pollData?.aiQueuedPaused === true) {
+                console.log('[useWidgetChat] Poll detected PAUSED — extending deadline by 60s');
                 deadline = Math.max(deadline, Date.now() + 60000);
               }
 
@@ -1708,6 +1709,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // If paused, enter a secondary wait loop until unpaused or cancelled.
       const PAUSE_POLL_MS = 2000;
       let finalGuardDone = false;
+      console.log('[useWidgetChat] Entering final guard check loop');
       while (!finalGuardDone) {
         finalGuardDone = true; // assume done unless we find a pause
         try {
@@ -1722,6 +1724,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             });
             if (fcResp.ok) {
               const fcData = await fcResp.json();
+              console.log('[useWidgetChat] Final guard poll result:', { aiQueuedAt: fcData.aiQueuedAt, aiQueuedPaused: fcData.aiQueuedPaused, aiQueuedPreview: !!fcData.aiQueuedPreview });
               if (queueWasSet && fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
                 // Queue was cancelled — abort.
                 hybridFlowActiveRef.current = false;
