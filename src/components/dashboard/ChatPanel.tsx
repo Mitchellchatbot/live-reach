@@ -629,7 +629,7 @@ export const ChatPanel = ({
               isPaused={isPaused}
               onCancel={onCancelAIQueue}
               onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
-              onPauseAIQueue={onPauseAIQueue}
+              onPauseAIQueue={wrappedPauseAIQueue}
               onSendNow={onSendNow}
             />
           )}
