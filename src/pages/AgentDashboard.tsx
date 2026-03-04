@@ -685,6 +685,8 @@ export default function AgentDashboard() {
           aiQueuedAt={aiQueuedAt}
           onCancelAIQueue={handleCancelAIQueue}
           onEditAIQueue={handleEditAIQueue}
+          onPauseAIQueue={handlePauseAIQueue}
+          onSendNow={handleSendNow}
         />
       </div>
     </div>
