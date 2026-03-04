@@ -125,6 +125,35 @@ Deno.serve(async (req) => {
       console.log("widget-save-message: reopened closed conversation", conversationId);
     }
 
+    // Fire-and-forget: trigger server-side visitor info extraction after every message
+    // This ensures extraction happens in near-real-time regardless of who sent the message
+    try {
+      const { data: allMsgs } = await supabase
+        .from("messages")
+        .select("sender_type, content")
+        .eq("conversation_id", conversationId)
+        .order("sequence_number", { ascending: true })
+        .limit(50);
+
+      if (allMsgs && allMsgs.length > 0) {
+        const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
+          role: m.sender_type === "visitor" ? "user" : "assistant",
+          content: m.content,
+        }));
+
+        fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${serviceKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ visitorId, conversationHistory }),
+        }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
+      }
+    } catch (extractErr) {
+      console.error("Failed to trigger extraction:", extractErr);
+    }
+
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
