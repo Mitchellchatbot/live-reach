@@ -1786,24 +1786,26 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
                   return false;
                 }
                 // Paused — wait in a sub-loop until unpaused or cancelled
-                while (tpData && tpData.aiQueuedPaused === true) {
+                if (tpData.aiQueuedPaused === true) {
                   if (tpData.aiQueuedPreview) aiContent = tpData.aiQueuedPreview;
                   setIsTyping(false); // hide typing dots while paused
-                  await sleep(TYPING_POLL_CHUNK_MS);
-                  const reResp = await fetch(GET_MESSAGES_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                    body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
-                  });
-                  if (!reResp.ok) break;
-                  const reData = await reResp.json();
-                  if (reData && 'aiQueuedAt' in reData && reData.aiQueuedAt === null) {
-                    return false; // cancelled during pause
-                  }
-                  if (reData && reData.aiQueuedPreview) aiContent = reData.aiQueuedPreview;
-                  if (!reData || reData.aiQueuedPaused !== true) {
-                    setIsTyping(true); // resume typing indicator
-                    break;
+                  while (true) {
+                    await sleep(TYPING_POLL_CHUNK_MS);
+                    const reResp = await fetch(GET_MESSAGES_URL, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+                      body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
+                    });
+                    if (!reResp.ok) break;
+                    const reData = await reResp.json();
+                    if (reData && 'aiQueuedAt' in reData && reData.aiQueuedAt === null) {
+                      return false; // cancelled during pause
+                    }
+                    if (reData && reData.aiQueuedPreview) aiContent = reData.aiQueuedPreview;
+                    if (!reData || reData.aiQueuedPaused !== true) {
+                      setIsTyping(true); // resume typing indicator
+                      break;
+                    }
                   }
                 }
               }
