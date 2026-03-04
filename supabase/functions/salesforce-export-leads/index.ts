@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
                         messages: [
                           {
                             role: "system",
-                            content: "You are a lead summarization assistant. Given a chat transcript between a visitor and an agent, produce a concise summary (max 500 words) covering: key concerns or needs, contact info mentioned, intent/interest level, urgency, and any next steps discussed. Be factual and professional."
+                            content: "You are a lead summarization assistant. Given a chat transcript between a visitor and an agent, produce a concise summary in 40 words or fewer covering: key concerns, intent/interest level, and next steps. Be factual and professional."
                           },
                           {
                             role: "user",
