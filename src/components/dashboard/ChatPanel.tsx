@@ -351,6 +351,8 @@ export const ChatPanel = ({
   aiQueuedPreview,
   onCancelAIQueue,
   onEditAIQueue,
+  onPauseAIQueue,
+  onSendNow,
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
