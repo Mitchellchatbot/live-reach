@@ -228,12 +228,13 @@ const EditableInfoItem = ({
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [saving, setSaving] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (editing) {
       setEditValue(value);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => editInputRef.current?.focus(), 50);
     }
   }, [editing]);
 
@@ -268,7 +269,7 @@ const EditableInfoItem = ({
       <div className="flex items-center gap-1 py-1">
         <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
         <input
-          ref={inputRef}
+          ref={editInputRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }}
@@ -286,7 +287,6 @@ const EditableInfoItem = ({
   }
 
   const isTruncated = value.length > 20;
-  const [expanded, setExpanded] = useState(false);
   return (
     <div className="group flex items-start gap-2 py-1.5 hover:bg-muted/30 rounded px-1 -mx-1">
       <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
@@ -320,9 +320,19 @@ const VisitorInfoSidebar = ({
   propertyName?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [localVisitor, setLocalVisitor] = useState(visitor);
+
+  // Sync when visitor prop changes (e.g. switching conversations)
+  useEffect(() => {
+    setLocalVisitor(visitor);
+  }, [visitor.id]);
+
+  const handleFieldUpdated = useCallback((field: string, newValue: string | null) => {
+    setLocalVisitor((prev: any) => ({ ...prev, [field]: newValue }));
+  }, []);
 
   // Check if we have any treatment-specific info
-  const hasTreatmentInfo = visitor.addiction_history || visitor.drug_of_choice || visitor.treatment_interest || visitor.insurance_info || visitor.urgency_level;
+  const hasTreatmentInfo = localVisitor.addiction_history || localVisitor.drug_of_choice || localVisitor.treatment_interest || localVisitor.insurance_info || localVisitor.urgency_level;
 
   // Determine urgency badge color
   const getUrgencyBadge = (urgency: string) => {
@@ -346,6 +356,9 @@ const VisitorInfoSidebar = ({
     );
   }, []);
 
+  const v = localVisitor;
+  const vId = visitor.id;
+
   return (
     <div ref={sidebarRef} className={cn("border-l border-border/30 hidden lg:flex flex-col transition-all duration-200 bg-card w-64")}>
       <div className="flex-1 overflow-y-auto">
@@ -361,42 +374,50 @@ const VisitorInfoSidebar = ({
         )}
 
         {/* Personal Info Section */}
-        <div className="p-3 space-y-1">
-          {visitor.name && <InfoItem icon={User} label="Name" value={visitor.name} />}
-          {visitor.email && <InfoItem icon={Mail} label="Email" value={visitor.email} />}
-          {visitor.phone && <InfoItem icon={Phone} label="Phone" value={visitor.phone} />}
-          {visitor.age && <InfoItem icon={Calendar} label="Age" value={visitor.age} />}
-          {visitor.occupation && <InfoItem icon={Briefcase} label="Work" value={visitor.occupation} />}
+        <div className="p-3 space-y-0.5">
+          {v.name && <EditableInfoItem icon={User} label="Name" value={v.name} fieldKey="name" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.email && <EditableInfoItem icon={Mail} label="Email" value={v.email} fieldKey="email" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.phone && <EditableInfoItem icon={Phone} label="Phone" value={v.phone} fieldKey="phone" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.age && <EditableInfoItem icon={Calendar} label="Age" value={v.age} fieldKey="age" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.occupation && <EditableInfoItem icon={Briefcase} label="Work" value={v.occupation} fieldKey="occupation" visitorId={vId} onUpdated={handleFieldUpdated} />}
         </div>
 
         {/* Treatment Details Section */}
         {hasTreatmentInfo && (
-          <div className="p-3 border-t border-border/30 space-y-1">
+          <div className="p-3 border-t border-border/30 space-y-0.5">
             <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
               <Heart className="h-3 w-3" />
               Treatment Details
             </p>
-            {visitor.drug_of_choice && <InfoItem icon={Pill} label="Substance" value={visitor.drug_of_choice} />}
-            {visitor.addiction_history && <InfoItem icon={Calendar} label="History" value={visitor.addiction_history} />}
-            {visitor.treatment_interest && <InfoItem icon={Building} label="Seeking" value={visitor.treatment_interest} />}
-            {visitor.insurance_info && <InfoItem icon={Shield} label="Insurance" value={visitor.insurance_info} />}
-            {visitor.urgency_level && (
-              <div className="flex items-center gap-2 py-1.5">
+            {v.drug_of_choice && <EditableInfoItem icon={Pill} label="Substance" value={v.drug_of_choice} fieldKey="drug_of_choice" visitorId={vId} onUpdated={handleFieldUpdated} />}
+            {v.addiction_history && <EditableInfoItem icon={Calendar} label="History" value={v.addiction_history} fieldKey="addiction_history" visitorId={vId} onUpdated={handleFieldUpdated} />}
+            {v.treatment_interest && <EditableInfoItem icon={Building} label="Seeking" value={v.treatment_interest} fieldKey="treatment_interest" visitorId={vId} onUpdated={handleFieldUpdated} />}
+            {v.insurance_info && <EditableInfoItem icon={Shield} label="Insurance" value={v.insurance_info} fieldKey="insurance_info" visitorId={vId} onUpdated={handleFieldUpdated} />}
+            {v.urgency_level && (
+              <div className="group flex items-center gap-2 py-1.5 hover:bg-muted/30 rounded px-1 -mx-1">
                 <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                 <span className="text-xs text-muted-foreground min-w-[50px]">Urgency:</span>
-                {getUrgencyBadge(visitor.urgency_level)}
+                {getUrgencyBadge(v.urgency_level)}
+                <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0 ml-auto">
+                  <button onClick={async () => {
+                    await supabase.from('visitors').update({ urgency_level: null }).eq('id', vId);
+                    handleFieldUpdated('urgency_level', null);
+                  }} className="p-0.5 rounded hover:bg-destructive/10" title="Clear field">
+                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
 
         {/* Session Info Section */}
-        <div className="p-3 border-t border-border/30 space-y-1">
+        <div className="p-3 border-t border-border/30 space-y-0.5">
           <p className="text-xs font-medium text-muted-foreground mb-2">Session Info</p>
-          {visitor.location && <InfoItem icon={MapPin} label="Location" value={visitor.location} />}
-          {visitor.currentPage && <InfoItem icon={Globe} label="Page" value={visitor.currentPage} />}
-          {visitor.browserInfo && <InfoItem icon={Monitor} label="Browser" value={visitor.browserInfo} />}
-          {visitor.gclid && <InfoItem icon={MousePointerClick} label="GCLID" value={visitor.gclid} />}
+          {v.location && <EditableInfoItem icon={MapPin} label="Location" value={v.location} fieldKey="location" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.currentPage && <EditableInfoItem icon={Globe} label="Page" value={v.currentPage} fieldKey="current_page" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.browserInfo && <EditableInfoItem icon={Monitor} label="Browser" value={v.browserInfo} fieldKey="browser_info" visitorId={vId} onUpdated={handleFieldUpdated} />}
+          {v.gclid && <EditableInfoItem icon={MousePointerClick} label="GCLID" value={v.gclid} fieldKey="gclid" visitorId={vId} onUpdated={handleFieldUpdated} />}
         </div>
 
         {assignedAgent && (
