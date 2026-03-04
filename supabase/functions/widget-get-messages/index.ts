@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
     const aiQueuedAt = conv.ai_queued_at ?? null;
     const aiQueuedPreview = conv.ai_queued_preview ?? null;
     const aiQueuedPaused = conv.ai_queued_paused ?? false;
+    const aiQueuedWindowMs = conv.ai_queued_window_ms ?? null;
 
     // Validate session matches visitor
     const { data: visitor, error: visitorErr } = await supabase
