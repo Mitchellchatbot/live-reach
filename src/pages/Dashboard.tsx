@@ -111,6 +111,7 @@ const DashboardContent = () => {
     pauseAIQueue,
     cancelAIQueue,
     editAIQueuedMessage,
+    sendNowAIQueue,
   } = useConversations({ 
     selectedPropertyId: propertyFilter === 'all' ? undefined : propertyFilter,
     workspaceOwnerId: isAgentMode ? activeWorkspace?.id : undefined,
@@ -376,6 +377,11 @@ const DashboardContent = () => {
     await cancelAIQueue(selectedConversationId);
   };
 
+  const handleSendNow = async () => {
+    if (!selectedConversationId) return;
+    await sendNowAIQueue(selectedConversationId);
+  };
+
   const handleEditAIQueue = async (messageId: string, newContent: string) => {
     if (!selectedConversationId) return;
     await editAIQueuedMessage(selectedConversationId, newContent, messageId);
@@ -581,6 +587,8 @@ const DashboardContent = () => {
                 aiQueuedPreview={(selectedConversation as any)?.aiQueuedPreview ?? null}
                 onCancelAIQueue={handleCancelAIQueue}
                 onEditAIQueue={handleEditAIQueue}
+                onPauseAIQueue={handlePauseAIQueue}
+                onSendNow={handleSendNow}
               />
             </div>
           </div>

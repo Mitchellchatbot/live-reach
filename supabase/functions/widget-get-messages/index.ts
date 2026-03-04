@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     // Validate conversation belongs to visitor and get ai_enabled status
     const { data: conv, error: convErr } = await supabase
       .from("conversations")
-      .select("id,visitor_id,ai_enabled,ai_queued_at,ai_queued_preview,ai_queued_paused")
+      .select("id,visitor_id,ai_enabled,ai_queued_at,ai_queued_preview,ai_queued_paused,ai_queued_window_ms")
       .eq("id", conversationId)
       .maybeSingle();
 
@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
     const aiQueuedAt = conv.ai_queued_at ?? null;
     const aiQueuedPreview = conv.ai_queued_preview ?? null;
     const aiQueuedPaused = conv.ai_queued_paused ?? false;
+    const aiQueuedWindowMs = conv.ai_queued_window_ms ?? null;
 
     // Validate session matches visitor
     const { data: visitor, error: visitorErr } = await supabase
@@ -94,7 +95,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ messages: messages || [], aiEnabled, aiQueuedAt, aiQueuedPreview, aiQueuedPaused }), {
+    return new Response(JSON.stringify({ messages: messages || [], aiEnabled, aiQueuedAt, aiQueuedPreview, aiQueuedPaused, aiQueuedWindowMs }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

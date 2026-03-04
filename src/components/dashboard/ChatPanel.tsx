@@ -35,6 +35,10 @@ interface ChatPanelProps {
   onCancelAIQueue?: () => void;
   /** Edit the content of the queued AI message (newContent only — targets the pending draft) */
   onEditAIQueue?: (messageId: string, newContent: string) => void;
+  /** Pause / resume the AI queue timer (e.g. while editing) */
+  onPauseAIQueue?: (paused: boolean) => void;
+  /** Immediately deliver the queued AI message, bypassing the timer */
+  onSendNow?: () => void;
 }
 const formatMessageTime = (date: Date) => {
   if (isToday(date)) {
@@ -51,34 +55,47 @@ const MessageBubble = ({
   isAgent,
   isPendingDelivery,
   queueSecondsLeft,
+  isPaused,
   onCancel,
   onSaveEdit,
+  onPauseAIQueue,
+  onSendNow,
 }: {
   message: Message;
   isAgent: boolean;
   isPendingDelivery?: boolean;
   /** Seconds remaining before AI sends (counts down to 0) */
   queueSecondsLeft?: number;
+  isPaused?: boolean;
   onCancel?: () => void;
   onSaveEdit?: (newContent: string) => void;
+  onPauseAIQueue?: (paused: boolean) => void;
+  onSendNow?: () => void;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+
+  const handleStartEdit = () => {
+    setIsEditing(true);
+    onPauseAIQueue?.(true);
+  };
 
   const handleSaveEdit = () => {
     if (editContent.trim()) {
       onSaveEdit?.(editContent.trim());
     }
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
   const handleCancelEdit = () => {
     setEditContent(message.content);
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
-  // Controls are only shown while the countdown is still active
-  const countdownActive = isPendingDelivery && queueSecondsLeft != null && queueSecondsLeft > 0;
+  // Controls are shown while countdown is active OR timer is paused
+  const countdownActive = isPendingDelivery && queueSecondsLeft != null && (queueSecondsLeft > 0 || isPaused);
 
   return (
     <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
@@ -124,17 +141,28 @@ const MessageBubble = ({
             ) : (
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {queueSecondsLeft}s to respond</span>
+                  <div className={cn("h-1.5 w-1.5 rounded-full", isPaused ? "bg-amber-500" : "bg-primary/60 animate-pulse")} />
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {isPaused ? 'Paused' : `${queueSecondsLeft}s to respond`}
+                  </span>
                 </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => setIsEditing(true)}>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={handleStartEdit}>
                         <Pencil className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Edit this message</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="default" className="h-6 px-2 text-xs gap-1" onClick={onSendNow}>
+                        <Send className="h-3 w-3" /> Send Now
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Send this message immediately</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -323,6 +351,8 @@ export const ChatPanel = ({
   aiQueuedPreview,
   onCancelAIQueue,
   onEditAIQueue,
+  onPauseAIQueue,
+  onSendNow,
 }: ChatPanelProps) => {
   const [message, setMessage] = useState('');
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
@@ -333,9 +363,11 @@ export const ChatPanel = ({
   // Falls back to 30s if not yet available (e.g. older queued messages).
   const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
+    if (isPaused) return; // Don't count down while paused
     const update = () => {
       const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
@@ -343,10 +375,21 @@ export const ChatPanel = ({
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt, queueWindowSeconds]);
+  }, [aiQueuedAt, queueWindowSeconds, isPaused]);
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
+
+  // Sync local isPaused with external pause handler
+  const wrappedPauseAIQueue = (paused: boolean) => {
+    setIsPaused(paused);
+    onPauseAIQueue?.(paused);
+  };
+
+  // Reset pause state when queue clears
+  useEffect(() => {
+    if (!isQueued) setIsPaused(false);
+  }, [isQueued]);
 
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -582,8 +625,11 @@ export const ChatPanel = ({
               isAgent={true}
               isPendingDelivery={true}
               queueSecondsLeft={queueSecondsLeft}
+              isPaused={isPaused}
               onCancel={onCancelAIQueue}
               onSaveEdit={(newContent) => onEditAIQueue?.('__pending_ai__', newContent)}
+              onPauseAIQueue={wrappedPauseAIQueue}
+              onSendNow={onSendNow}
             />
           )}
         </div>

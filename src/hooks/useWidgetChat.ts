@@ -1570,7 +1570,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
       const POLL_INTERVAL = 3000;
-      const deadline = Date.now() + remainingDelay;
+      let deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let cancelledByDashboard = false;
 
@@ -1608,6 +1608,17 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
               if (queueWasSet && pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
                 console.warn('[useWidgetChat] Dashboard cancelled AI response');
                 cancelledByDashboard = true;
+                break;
+              }
+
+              // If dashboard paused the timer (e.g. agent is editing), extend our deadline
+              if (pollData?.aiQueuedPaused === true) {
+                deadline = Math.max(deadline, Date.now() + POLL_INTERVAL + 2000);
+              }
+
+              // If "Send Now" was triggered (window set to 0), break immediately to deliver
+              if (typeof pollData?.aiQueuedWindowMs === 'number' && pollData.aiQueuedWindowMs === 0 && queueWasSet) {
+                console.log('[useWidgetChat] Send Now triggered — delivering immediately');
                 break;
               }
 

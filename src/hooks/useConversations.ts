@@ -809,6 +809,20 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     );
   };
 
+  /** Immediately deliver the queued AI message by clearing the queue timer (widget sees null ai_queued_at and delivers) */
+  const sendNowAIQueue = async (conversationId: string) => {
+    // Set ai_queued_at to a past timestamp so the widget's deadline expires instantly
+    // and also clear paused state
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_paused: false, ai_queued_window_ms: 0 })
+      .eq('id', conversationId);
+
+    updateConversationsCache(prev =>
+      prev.map(c => c.id === conversationId ? { ...c, ai_queued_paused: false, ai_queued_window_ms: 0 } : c)
+    );
+  };
+
   return {
     conversations,
     properties,
@@ -825,6 +839,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     pauseAIQueue,
     cancelAIQueue,
     editAIQueuedMessage,
+    sendNowAIQueue,
     refetch: refetchConversations,
   };
 };

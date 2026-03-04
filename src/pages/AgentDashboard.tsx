@@ -487,6 +487,17 @@ export default function AgentDashboard() {
     }));
   };
 
+  const handleSendNow = async () => {
+    if (!selectedConversation?.id) return;
+    await supabase
+      .from('conversations')
+      .update({ ai_queued_paused: false, ai_queued_window_ms: 0 })
+      .eq('id', selectedConversation.id);
+    setConversations(prev => prev.map(c =>
+      c.id === selectedConversation.id ? { ...c, aiQueuedPaused: false } as any : c
+    ));
+  };
+
   const handleToggleAI = async () => {
     if (!selectedConversation?.id) return;
     const newValue = !isAIEnabled;
@@ -685,6 +696,8 @@ export default function AgentDashboard() {
           aiQueuedAt={aiQueuedAt}
           onCancelAIQueue={handleCancelAIQueue}
           onEditAIQueue={handleEditAIQueue}
+          onPauseAIQueue={handlePauseAIQueue}
+          onSendNow={handleSendNow}
         />
       </div>
     </div>
