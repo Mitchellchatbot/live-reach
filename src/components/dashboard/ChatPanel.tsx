@@ -363,12 +363,12 @@ export const ChatPanel = ({
   // Falls back to 30s if not yet available (e.g. older queued messages).
   const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
+    if (isPaused) return; // Don't count down while paused
     const update = () => {
-      // Don't count down while paused
-      if (isPaused) return;
       const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime()) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
@@ -379,7 +379,6 @@ export const ChatPanel = ({
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
-  const [isPaused, setIsPaused] = useState(false);
 
   // Sync local isPaused with external pause handler
   const wrappedPauseAIQueue = (paused: boolean) => {
