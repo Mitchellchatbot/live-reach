@@ -141,17 +141,28 @@ const MessageBubble = ({
             ) : (
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse" />
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {queueSecondsLeft}s to respond</span>
+                  <div className={cn("h-1.5 w-1.5 rounded-full", isPaused ? "bg-amber-500" : "bg-primary/60 animate-pulse")} />
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {isPaused ? 'Paused' : `${queueSecondsLeft}s to respond`}
+                  </span>
                 </div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={() => setIsEditing(true)}>
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={handleStartEdit}>
                         <Pencil className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Edit this message</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="default" className="h-6 px-2 text-xs gap-1" onClick={onSendNow}>
+                        <Send className="h-3 w-3" /> Send Now
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Send this message immediately</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
