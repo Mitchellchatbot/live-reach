@@ -209,25 +209,104 @@ const EmptyState = () => {
   );
 };
 
-// Compact visitor info item with expandable tooltip
-const InfoItem = ({
+// Editable visitor info item with edit/delete
+const EditableInfoItem = ({
   icon: Icon,
   label,
-  value
+  value,
+  fieldKey,
+  visitorId,
+  onUpdated,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
+  fieldKey: string;
+  visitorId: string;
+  onUpdated: (field: string, newValue: string | null) => void;
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      setEditValue(value);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [editing]);
+
+  const handleSave = async () => {
+    if (editValue.trim() === value) { setEditing(false); return; }
+    setSaving(true);
+    const { error } = await supabase
+      .from('visitors')
+      .update({ [fieldKey]: editValue.trim() || null })
+      .eq('id', visitorId);
+    setSaving(false);
+    if (!error) {
+      onUpdated(fieldKey, editValue.trim() || null);
+      setEditing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from('visitors')
+      .update({ [fieldKey]: null })
+      .eq('id', visitorId);
+    setSaving(false);
+    if (!error) {
+      onUpdated(fieldKey, null);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 py-1">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+        <input
+          ref={inputRef}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }}
+          className="flex-1 text-xs bg-muted/50 border border-border rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-ring min-w-0"
+          disabled={saving}
+        />
+        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleSave} disabled={saving}>
+          <Check className="h-3 w-3 text-green-600" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setEditing(false)}>
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  }
+
   const isTruncated = value.length > 20;
-  return <div className="flex items-start gap-2 py-1.5">
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="group flex items-start gap-2 py-1.5 hover:bg-muted/30 rounded px-1 -mx-1">
       <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
       <span className="text-xs text-muted-foreground min-w-[50px]">{label}:</span>
-      <span className={cn("text-xs text-foreground", isTruncated && "cursor-pointer hover:text-primary", expanded ? "whitespace-pre-wrap break-words" : "truncate")} onClick={() => isTruncated && setExpanded(!expanded)} title={isTruncated ? expanded ? "Click to collapse" : "Click to expand" : undefined}>
+      <span
+        className={cn("text-xs text-foreground flex-1", isTruncated && "cursor-pointer hover:text-primary", expanded ? "whitespace-pre-wrap break-words" : "truncate")}
+        onClick={() => isTruncated && setExpanded(!expanded)}
+      >
         {value}
       </span>
-    </div>;
+      <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
+        <button onClick={() => setEditing(true)} className="p-0.5 rounded hover:bg-muted" title="Edit">
+          <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+        </button>
+        <button onClick={handleDelete} className="p-0.5 rounded hover:bg-destructive/10" title="Clear field">
+          <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 // Collapsible visitor info sidebar
