@@ -1611,6 +1611,17 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
                 break;
               }
 
+              // If dashboard paused the timer (e.g. agent is editing), extend our deadline
+              if (pollData?.aiQueuedPaused === true) {
+                deadline = Math.max(deadline, Date.now() + POLL_INTERVAL + 2000);
+              }
+
+              // If "Send Now" was triggered (window set to 0), break immediately to deliver
+              if (typeof pollData?.aiQueuedWindowMs === 'number' && pollData.aiQueuedWindowMs === 0 && queueWasSet) {
+                console.log('[useWidgetChat] Send Now triggered — delivering immediately');
+                break;
+              }
+
               // If agent edited the preview, keep local copy in sync
               if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
                 aiContent = pollData.aiQueuedPreview;
