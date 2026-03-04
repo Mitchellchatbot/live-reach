@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check, MousePointerClick, Trash2, Pause, Play } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check, MousePointerClick, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
@@ -149,19 +149,6 @@ const MessageBubble = ({
                   </span>
                 </div>
                 <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant={isPaused ? "default" : "outline"}
-                        className="h-6 px-2 text-xs gap-1"
-                        onClick={() => onPauseAIQueue?.(!isPaused)}
-                      >
-                        {isPaused ? <><Play className="h-3 w-3" /> Resume</> : <><Pause className="h-3 w-3" /> Pause</>}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{isPaused ? 'Resume the countdown timer' : 'Pause the countdown timer'}</TooltipContent>
-                  </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button size="sm" variant="ghost" className="h-6 px-1.5 text-xs" onClick={handleStartEdit}>
