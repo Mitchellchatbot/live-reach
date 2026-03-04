@@ -35,6 +35,10 @@ interface ChatPanelProps {
   onCancelAIQueue?: () => void;
   /** Edit the content of the queued AI message (newContent only — targets the pending draft) */
   onEditAIQueue?: (messageId: string, newContent: string) => void;
+  /** Pause / resume the AI queue timer (e.g. while editing) */
+  onPauseAIQueue?: (paused: boolean) => void;
+  /** Immediately deliver the queued AI message, bypassing the timer */
+  onSendNow?: () => void;
 }
 const formatMessageTime = (date: Date) => {
   if (isToday(date)) {
