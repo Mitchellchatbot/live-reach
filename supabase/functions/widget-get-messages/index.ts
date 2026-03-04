@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     // Validate conversation belongs to visitor and get ai_enabled status
     const { data: conv, error: convErr } = await supabase
       .from("conversations")
-      .select("id,visitor_id,ai_enabled,ai_queued_at,ai_queued_preview,ai_queued_paused")
+      .select("id,visitor_id,ai_enabled,ai_queued_at,ai_queued_preview,ai_queued_paused,ai_queued_window_ms")
       .eq("id", conversationId)
       .maybeSingle();
 
