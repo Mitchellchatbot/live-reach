@@ -335,8 +335,7 @@ const WidgetPreview = () => {
     effectInterval: String(effectInterval),
     effectIntensity,
   });
-  const widgetScript = selectedPropertyId ? `<!-- Scaled Bot Widget -->
-<script>
+  const widgetScript = selectedPropertyId ? `<script>
   (function () {
     if (window.location.search.indexOf('scaledbot_preview=true') !== -1) return;
     var params = ${JSON.stringify(embedParams.toString())};
