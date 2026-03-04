@@ -55,30 +55,43 @@ const MessageBubble = ({
   isAgent,
   isPendingDelivery,
   queueSecondsLeft,
+  isPaused,
   onCancel,
   onSaveEdit,
+  onPauseAIQueue,
+  onSendNow,
 }: {
   message: Message;
   isAgent: boolean;
   isPendingDelivery?: boolean;
   /** Seconds remaining before AI sends (counts down to 0) */
   queueSecondsLeft?: number;
+  isPaused?: boolean;
   onCancel?: () => void;
   onSaveEdit?: (newContent: string) => void;
+  onPauseAIQueue?: (paused: boolean) => void;
+  onSendNow?: () => void;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+
+  const handleStartEdit = () => {
+    setIsEditing(true);
+    onPauseAIQueue?.(true);
+  };
 
   const handleSaveEdit = () => {
     if (editContent.trim()) {
       onSaveEdit?.(editContent.trim());
     }
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
   const handleCancelEdit = () => {
     setEditContent(message.content);
     setIsEditing(false);
+    onPauseAIQueue?.(false);
   };
 
   // Controls are only shown while the countdown is still active
