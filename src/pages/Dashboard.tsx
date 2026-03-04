@@ -359,7 +359,8 @@ const DashboardContent = () => {
   const selectedDbConversation = dbConversations.find(c => c.id === selectedConversationId);
   const isAIEnabled = selectedDbConversation?.ai_enabled ?? true;
   const aiQueuedAt = selectedDbConversation?.ai_queued_at ? new Date(selectedDbConversation.ai_queued_at) : null;
-  const aiQueuedWindowMs = selectedConversation?.aiQueuedWindowMs ?? null;
+  const aiQueuedWindowMs = selectedDbConversation?.ai_queued_window_ms ?? null;
+  const aiQueuedPreview = selectedDbConversation?.ai_queued_preview ?? null;
   const aiQueuedPaused = selectedDbConversation?.ai_queued_paused ?? false;
   
   const handleToggleAI = async () => {
@@ -584,7 +585,7 @@ const DashboardContent = () => {
                 propertyName={selectedConversation ? properties.find(p => p.id === selectedConversation.propertyId)?.name : undefined}
                 aiQueuedAt={aiQueuedAt}
                 aiQueuedWindowMs={aiQueuedWindowMs}
-                aiQueuedPreview={(selectedConversation as any)?.aiQueuedPreview ?? null}
+                aiQueuedPreview={aiQueuedPreview}
                 onCancelAIQueue={handleCancelAIQueue}
                 onEditAIQueue={handleEditAIQueue}
                 onPauseAIQueue={handlePauseAIQueue}

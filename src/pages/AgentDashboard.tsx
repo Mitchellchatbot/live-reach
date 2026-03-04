@@ -155,7 +155,7 @@ export default function AgentDashboard() {
 
           const unreadCount = messages.filter(m => !m.read && m.senderType === 'visitor').length;
 
-          const conversation: Conversation & { ai_enabled?: boolean; aiQueuedAt?: Date | null; aiQueuedPreview?: string | null; aiQueuedPaused?: boolean } = {
+          const conversation: Conversation & { ai_enabled?: boolean; aiQueuedAt?: Date | null; aiQueuedPreview?: string | null; aiQueuedPaused?: boolean; aiQueuedWindowMs?: number | null } = {
             id: c.id,
             visitorId: c.visitor_id,
             propertyId: c.property_id,
@@ -172,6 +172,7 @@ export default function AgentDashboard() {
             aiQueuedAt: c.ai_queued_at ? new Date(c.ai_queued_at) : null,
             aiQueuedPreview: c.ai_queued_preview ?? null,
             aiQueuedPaused: c.ai_queued_paused ?? false,
+            aiQueuedWindowMs: c.ai_queued_window_ms ?? null,
           };
 
           return conversation;
@@ -450,6 +451,8 @@ export default function AgentDashboard() {
     : null;
   const isAIEnabled = selectedDbConv?.ai_enabled ?? true;
   const aiQueuedAt = selectedDbConv?.aiQueuedAt ?? null;
+  const aiQueuedPreview = selectedDbConv?.aiQueuedPreview ?? null;
+  const aiQueuedWindowMs = selectedDbConv?.aiQueuedWindowMs ?? null;
   const aiQueuedPaused = selectedDbConv?.aiQueuedPaused ?? false;
 
   const handlePauseAIQueue = async (paused: boolean) => {
@@ -694,6 +697,8 @@ export default function AgentDashboard() {
           isAIEnabled={isAIEnabled}
           onToggleAI={handleToggleAI}
           aiQueuedAt={aiQueuedAt}
+          aiQueuedWindowMs={aiQueuedWindowMs}
+          aiQueuedPreview={aiQueuedPreview}
           onCancelAIQueue={handleCancelAIQueue}
           onEditAIQueue={handleEditAIQueue}
           onPauseAIQueue={handlePauseAIQueue}
