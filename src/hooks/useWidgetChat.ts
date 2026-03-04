@@ -1815,6 +1815,51 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         return true; // completed successfully
       };
 
+      // Immediate pre-typing pause check (no blind spot)
+      {
+        const ptConvId = conversationIdRef.current;
+        const ptVId = visitorIdRef.current;
+        if (ptConvId && ptVId) {
+          try {
+            const ptResp = await fetch(GET_MESSAGES_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+              body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
+            });
+            if (ptResp.ok) {
+              const ptData = await ptResp.json();
+              if (ptData && 'aiQueuedAt' in ptData && ptData.aiQueuedAt === null) {
+                hybridFlowActiveRef.current = false;
+                setIsTyping(false);
+                return;
+              }
+              if (ptData?.aiQueuedPaused === true) {
+                if (ptData.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
+                // Wait in pause loop before starting typing
+                while (true) {
+                  await sleep(2000);
+                  const prResp = await fetch(GET_MESSAGES_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+                    body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
+                  });
+                  if (!prResp.ok) break;
+                  const prData = await prResp.json();
+                  if (prData && 'aiQueuedAt' in prData && prData.aiQueuedAt === null) {
+                    hybridFlowActiveRef.current = false;
+                    setIsTyping(false);
+                    return;
+                  }
+                  if (prData?.aiQueuedPreview) aiContent = prData.aiQueuedPreview;
+                  if (!prData || prData.aiQueuedPaused !== true) break;
+                }
+              }
+              if (ptData?.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
+            }
+          } catch { /* non-fatal */ }
+        }
+      }
+
       if (settings.smart_typing_enabled) {
         setIsTyping(true);
         const typingStartTime = Date.now();
