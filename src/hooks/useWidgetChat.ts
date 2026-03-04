@@ -1570,7 +1570,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
       const POLL_INTERVAL = 3000;
-      const deadline = Date.now() + remainingDelay;
+      let deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let cancelledByDashboard = false;
 
