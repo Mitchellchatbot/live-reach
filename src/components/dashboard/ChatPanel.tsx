@@ -465,11 +465,13 @@ export const ChatPanel = ({
   const queueWindowSeconds = aiQueuedWindowMs != null ? Math.round(aiQueuedWindowMs / 1000) : 30;
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number>(queueWindowSeconds);
   const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
   const pausedAtRef = useRef<number | null>(null);
   const pauseOffsetRef = useRef<number>(0);
 
-  // Track pause duration so countdown freezes properly
+  // Keep ref in sync so interval callback sees latest value
   useEffect(() => {
+    isPausedRef.current = isPaused;
     if (isPaused) {
       pausedAtRef.current = Date.now();
     } else if (pausedAtRef.current) {
@@ -483,20 +485,25 @@ export const ChatPanel = ({
     if (!aiQueuedAt) {
       pauseOffsetRef.current = 0;
       pausedAtRef.current = null;
+      isPausedRef.current = false;
     }
   }, [aiQueuedAt]);
 
   useEffect(() => {
     if (!aiQueuedAt) { setQueueSecondsLeft(queueWindowSeconds); return; }
-    if (isPaused) return; // Don't count down while paused
     const update = () => {
-      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime() - pauseOffsetRef.current) / 1000);
+      // Check ref on every tick — don't rely on closure
+      if (isPausedRef.current) return;
+      const currentPauseOffset = pausedAtRef.current
+        ? pauseOffsetRef.current + (Date.now() - pausedAtRef.current)
+        : pauseOffsetRef.current;
+      const elapsed = Math.floor((Date.now() - aiQueuedAt.getTime() - currentPauseOffset) / 1000);
       setQueueSecondsLeft(Math.max(0, queueWindowSeconds - elapsed));
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [aiQueuedAt, queueWindowSeconds, isPaused]);
+  }, [aiQueuedAt, queueWindowSeconds]);
 
   // A message is in queue as long as the DB has ai_queued_at set (regardless of countdown)
   const isQueued = !!aiQueuedAt;
