@@ -979,36 +979,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const vId = visitorIdRef.current;
     if (!convId || !vId) return;
 
-    const sessionId = getOrCreateSessionId();
+    // Optimization #5: Use local messages state instead of re-fetching from DB
+    const serverAiEnabled = aiEnabledRef.current;
+    if (!serverAiEnabled) return;
+    if (humanHasTakenOverRef.current) return;
+
     autoReplyInFlightRef.current = true;
 
     try {
-      const response = await fetch(GET_MESSAGES_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          conversationId: convId,
-          visitorId: vId,
-          sessionId,
-        }),
-      });
-
-      if (!response.ok) return;
-      const data = await response.json();
-      const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
-      aiEnabledRef.current = serverAiEnabled;
-      prevAiEnabledRef.current = serverAiEnabled;
-      if (!serverAiEnabled) return;
-      if (humanHasTakenOverRef.current) return; // human override still wins
-
-      const dbMessages = (data?.messages ?? []) as Array<{
-        sender_type: 'agent' | 'visitor';
-        content: string;
-        sequence_number?: number;
-      }>;
+      // Use current messages from state (set via setMessages) — no DB round-trip needed
+      const currentMessages = messagesRef.current;
+      const dbMessages = currentMessages
+        .filter(m => m.id !== 'proactive' && m.id !== 'greeting')
+        .map(m => ({ sender_type: m.sender_type, content: m.content, sequence_number: m.sequence_number }));
 
       if (dbMessages.length === 0) return;
       const last = dbMessages[dbMessages.length - 1];
@@ -1019,12 +1002,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Mark handled so we don't auto-reply repeatedly on subsequent polls.
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
-      // Generate-first approach (mirrors the hybrid flow):
-      // 1. Pick the human-priority window (responseDelay) based on first/quick-reply settings
-      // 2. Generate the AI response immediately (so generation time eats into the window)
-      // 3. Wait the remaining window time after generation completes
-      // 4. Add smart-typing duration ON TOP of the window
-      // 5. Reveal to visitor
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
