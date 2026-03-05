@@ -180,9 +180,10 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
   const fetchConversationsData = useCallback(async (): Promise<DbConversation[]> => {
     if (!user) return [];
 
+    // Fetch conversations with embedded messages — single query
     let query = supabase
       .from('conversations')
-      .select(`*, visitor:visitors(*), property:properties(*)`)
+      .select(`*, visitor:visitors(*), property:properties(*), messages(*)`)
       .order('updated_at', { ascending: false });
 
     if (selectedPropertyId && selectedPropertyId !== 'all') {
@@ -203,47 +204,17 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     if (!convData || convData.length === 0) return [];
 
-    // Batch fetch messages
-    const conversationIds = convData.map(c => c.id);
-    const chunkSize = 25;
-    const idChunks: string[][] = [];
-    for (let i = 0; i < conversationIds.length; i += chunkSize) {
-      idChunks.push(conversationIds.slice(i, i + chunkSize));
-    }
-
-    const messageChunkResults = await Promise.all(
-      idChunks.map((ids) =>
-        supabase
-          .from('messages')
-          .select('*')
-          .in('conversation_id', ids)
-          .order('sequence_number', { ascending: true })
-      )
-    );
-
-    const allMessages = messageChunkResults.flatMap((r) => r.data || []);
-    const messagesError = messageChunkResults.find((r) => r.error)?.error;
-    if (messagesError) {
-      console.error('Error fetching messages:', messagesError);
-    }
-
-    const messagesByConversation: Record<string, DbMessage[]> = {};
-    (allMessages || []).forEach((msg) => {
-      const convId = msg.conversation_id;
-      if (!messagesByConversation[convId]) {
-        messagesByConversation[convId] = [];
-      }
-      messagesByConversation[convId].push({
-        ...msg,
-        sender_type: msg.sender_type as 'agent' | 'visitor',
-      });
+    const conversationsWithMessages = convData.map((conv) => {
+      const msgs = ((conv as any).messages || []) as any[];
+      const sortedMessages: DbMessage[] = msgs
+        .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
+        .sort((a, b) => a.sequence_number - b.sequence_number);
+      return {
+        ...conv,
+        status: conv.status as 'active' | 'closed' | 'pending',
+        messages: sortedMessages,
+      };
     });
-
-    const conversationsWithMessages = convData.map((conv) => ({
-      ...conv,
-      status: conv.status as 'active' | 'closed' | 'pending',
-      messages: messagesByConversation[conv.id] || [],
-    }));
 
     // Filter out conversations without visitor messages
     return conversationsWithMessages.filter(
