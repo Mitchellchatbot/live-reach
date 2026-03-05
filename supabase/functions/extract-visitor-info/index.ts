@@ -18,6 +18,101 @@ interface ExtractedInfo {
   urgency_level?: string;
 }
 
+const EXTRACT_FIELDS: (keyof ExtractedInfo)[] = [
+  'name', 'email', 'phone', 'age', 'occupation',
+  'addiction_history', 'drug_of_choice', 'treatment_interest',
+  'insurance_info', 'urgency_level',
+];
+
+const isPlaceholder = (val?: string | null): boolean => {
+  if (!val) return true;
+  const normalized = val.trim().toLowerCase();
+  return ['n/a', 'na', 'none', 'unknown', 'not provided', 'not available', ''].includes(normalized);
+};
+
+const cleanValue = (val?: string): string | undefined => {
+  if (!val || isPlaceholder(val)) return undefined;
+  return val;
+};
+
+// ── Side-effect dispatchers ──────────────────────────────────────────────
+
+/** Fire-and-forget: send phone/email notifications for newly captured phone */
+function dispatchPhoneNotifications(
+  supabase: ReturnType<typeof createClient>,
+  propertyId: string,
+  conversationId: string,
+  visitorName: string | null,
+  phone: string,
+) {
+  const payload = {
+    propertyId,
+    eventType: 'phone_submission',
+    visitorName,
+    visitorPhone: phone,
+    conversationId,
+  };
+  supabase.functions.invoke('send-email-notification', { body: payload }).catch((e: any) =>
+    console.error('Phone email notification error:', e)
+  );
+  supabase.functions.invoke('send-slack-notification', { body: payload }).catch((e: any) =>
+    console.error('Phone slack notification error:', e)
+  );
+}
+
+/** Fire-and-forget: auto-export to Salesforce when a trigger field is detected */
+function dispatchSalesforceExport(
+  supabaseUrl: string,
+  serviceKey: string,
+  propertyId: string,
+  visitorId: string,
+  triggerField: string,
+) {
+  console.log(`${triggerField} detected – triggering Salesforce auto-export for visitor`, visitorId);
+  fetch(`${supabaseUrl}/functions/v1/salesforce-export-leads`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      propertyId,
+      visitorIds: [visitorId],
+      _serviceRoleExport: true,
+    }),
+  }).catch((e: any) => console.error(`SF ${triggerField} auto-export error:`, e));
+}
+
+/** Check Salesforce settings and trigger export if enabled for the given trigger */
+async function maybeSalesforceExport(
+  supabase: ReturnType<typeof createClient>,
+  supabaseUrl: string,
+  serviceKey: string,
+  propertyId: string,
+  visitorId: string,
+  triggerField: 'phone' | 'insurance',
+) {
+  try {
+    const settingKey = triggerField === 'phone'
+      ? 'auto_export_on_phone_detected'
+      : 'auto_export_on_insurance_detected';
+
+    const { data: sf } = await supabase
+      .from('salesforce_settings')
+      .select(`enabled, instance_url, access_token, ${settingKey}`)
+      .eq('property_id', propertyId)
+      .single();
+
+    if (sf?.enabled && (sf as any)[settingKey] && sf?.instance_url && sf?.access_token) {
+      dispatchSalesforceExport(supabaseUrl, serviceKey, propertyId, visitorId, triggerField);
+    }
+  } catch (err) {
+    console.error(`Error checking SF ${triggerField} auto-export:`, err);
+  }
+}
+
+// ── Main handler ─────────────────────────────────────────────────────────
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -26,16 +121,10 @@ Deno.serve(async (req) => {
   try {
     const { visitorId, conversationHistory } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Supabase configuration missing');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
     if (!visitorId || !conversationHistory || conversationHistory.length === 0) {
       return new Response(JSON.stringify({ extracted: false }), {
@@ -52,14 +141,14 @@ Deno.serve(async (req) => {
       .eq('id', visitorId)
       .single();
 
-    // Build conversation text
     const conversationText = conversationHistory
       .map((msg: { role: string; content: string }) => `${msg.role}: ${msg.content}`)
       .join('\n');
 
-    // Use tool calling to extract structured info (with 20s timeout)
+    // ── AI extraction with 20s timeout ───────────────────────────────────
     const aiController = new AbortController();
     const aiTimeout = setTimeout(() => aiController.abort(), 20000);
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -87,53 +176,23 @@ Deno.serve(async (req) => {
               parameters: {
                 type: 'object',
                 properties: {
-                  name: {
-                    type: 'string',
-                    description: 'The visitor\'s name if they mentioned it'
-                  },
-                  email: {
-                    type: 'string',
-                    description: 'The visitor\'s email address if they shared it'
-                  },
-                  phone: {
-                    type: 'string',
-                    description: 'The visitor\'s phone number if they shared it'
-                  },
-                  age: {
-                    type: 'string',
-                    description: 'The visitor\'s age or age range if mentioned'
-                  },
-                  occupation: {
-                    type: 'string',
-                    description: 'The visitor\'s job, profession, or occupation if mentioned'
-                  },
-                  addiction_history: {
-                    type: 'string',
-                    description: 'Any mention of past or current substance use, addiction history, how long they have been struggling, or relapse history'
-                  },
-                  drug_of_choice: {
-                    type: 'string',
-                    description: 'Specific substances mentioned like alcohol, opioids, heroin, fentanyl, meth, cocaine, prescription pills, benzodiazepines, marijuana, etc.'
-                  },
-                  treatment_interest: {
-                    type: 'string',
-                    description: 'What type of treatment they are seeking: inpatient, outpatient, detox, residential, PHP, IOP, therapy, counseling, rehab'
-                  },
-                  insurance_info: {
-                    type: 'string',
-                    description: 'Insurance provider mentioned (Blue Cross, Aetna, Cigna, etc.), Medicaid, Medicare, self-pay, or concerns about payment/cost'
-                  },
-                  urgency_level: {
-                    type: 'string',
-                    description: 'How urgent their situation is: crisis/immediate need, ready to start treatment, planning for near future, or just researching options'
-                  }
+                  name: { type: 'string', description: "The visitor's name if they mentioned it" },
+                  email: { type: 'string', description: "The visitor's email address if they shared it" },
+                  phone: { type: 'string', description: "The visitor's phone number if they shared it" },
+                  age: { type: 'string', description: "The visitor's age or age range if mentioned" },
+                  occupation: { type: 'string', description: "The visitor's job, profession, or occupation if mentioned" },
+                  addiction_history: { type: 'string', description: 'Any mention of past or current substance use, addiction history, how long they have been struggling, or relapse history' },
+                  drug_of_choice: { type: 'string', description: 'Specific substances mentioned like alcohol, opioids, heroin, fentanyl, meth, cocaine, prescription pills, benzodiazepines, marijuana, etc.' },
+                  treatment_interest: { type: 'string', description: 'What type of treatment they are seeking: inpatient, outpatient, detox, residential, PHP, IOP, therapy, counseling, rehab' },
+                  insurance_info: { type: 'string', description: 'Insurance provider mentioned (Blue Cross, Aetna, Cigna, etc.), Medicaid, Medicare, self-pay, or concerns about payment/cost' },
+                  urgency_level: { type: 'string', description: 'How urgent their situation is: crisis/immediate need, ready to start treatment, planning for near future, or just researching options' },
                 },
-                additionalProperties: false
-              }
-            }
-          }
+                additionalProperties: false,
+              },
+            },
+          },
         ],
-        tool_choice: { type: 'function', function: { name: 'extract_visitor_info' } }
+        tool_choice: { type: 'function', function: { name: 'extract_visitor_info' } },
       }),
       signal: aiController.signal,
     });
@@ -164,172 +223,81 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Helper: treat placeholder values like "N/A", "none", "unknown" as empty
-    const isPlaceholder = (val?: string | null): boolean => {
-      if (!val) return true;
-      const normalized = val.trim().toLowerCase();
-      return ['n/a', 'na', 'none', 'unknown', 'not provided', 'not available', ''].includes(normalized);
-    };
-
-    // Clean extracted value: return null if it's a placeholder
-    const cleanValue = (val?: string): string | undefined => {
-      if (!val || isPlaceholder(val)) return undefined;
-      return val;
-    };
-
-    // Only update fields that are newly extracted and not already meaningfully set
+    // ── Diff: only update fields that are newly extracted ────────────────
     const updates: Partial<ExtractedInfo> = {};
-    const fields: (keyof ExtractedInfo)[] = [
-      'name', 'email', 'phone', 'age', 'occupation',
-      'addiction_history', 'drug_of_choice', 'treatment_interest',
-      'insurance_info', 'urgency_level',
-    ];
-
-    for (const field of fields) {
+    for (const field of EXTRACT_FIELDS) {
       const extracted = cleanValue(extractedInfo[field]);
       const existing = visitor?.[field];
-      // Update if we have a real extracted value AND existing is empty/placeholder
       if (extracted && isPlaceholder(existing)) {
         updates[field] = extracted;
       }
     }
 
-    // Update visitor if we have new info
-    if (Object.keys(updates).length > 0) {
-      console.log('Updating visitor with extracted info:', updates);
-      
-      const { error } = await supabase
-        .from('visitors')
-        .update(updates)
-        .eq('id', visitorId);
-
-      if (error) {
-        console.error('Error updating visitor:', error);
-      }
-
-      // Fire phone submission notifications if a new phone was captured
-      if (updates.phone) {
-        try {
-          // Look up active conversation for this visitor to get conversationId and propertyId
-          const { data: conversation } = await supabase
-            .from('conversations')
-            .select('id, property_id')
-            .eq('visitor_id', visitorId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (conversation) {
-            const notificationPayload = {
-              propertyId: conversation.property_id,
-              eventType: 'phone_submission',
-              visitorName: updates.name || visitor?.name || null,
-              visitorPhone: updates.phone,
-              conversationId: conversation.id,
-            };
-
-            // Fire-and-forget notifications
-            supabase.functions.invoke('send-email-notification', { body: notificationPayload }).catch((e: any) =>
-              console.error('Phone email notification error:', e)
-            );
-            supabase.functions.invoke('send-slack-notification', { body: notificationPayload }).catch((e: any) =>
-              console.error('Phone slack notification error:', e)
-            );
-          }
-        } catch (notifErr) {
-          console.error('Error sending phone notifications:', notifErr);
-        }
-      }
-
-      // Auto-export to Salesforce if phone was newly captured
-      if (updates.phone) {
-        try {
-          const { data: phoneConv } = await supabase
-            .from('conversations')
-            .select('id, property_id')
-            .eq('visitor_id', visitorId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (phoneConv) {
-            const { data: sfPhoneSettings } = await supabase
-              .from('salesforce_settings')
-              .select('auto_export_on_phone_detected, enabled, instance_url, access_token')
-              .eq('property_id', phoneConv.property_id)
-              .single();
-
-            if (sfPhoneSettings?.enabled && sfPhoneSettings?.auto_export_on_phone_detected && sfPhoneSettings?.instance_url && sfPhoneSettings?.access_token) {
-              console.log('Phone detected – triggering Salesforce auto-export for visitor', visitorId);
-              fetch(`${SUPABASE_URL}/functions/v1/salesforce-export-leads`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  propertyId: phoneConv.property_id,
-                  visitorIds: [visitorId],
-                  _serviceRoleExport: true,
-                }),
-              }).catch((e: any) => console.error('SF phone auto-export error:', e));
-            }
-          }
-        } catch (sfPhoneErr) {
-          console.error('Error checking SF phone auto-export:', sfPhoneErr);
-        }
-      }
-
-      // Auto-export to Salesforce if insurance info was newly captured
-      if (updates.insurance_info) {
-        try {
-          const { data: conv } = await supabase
-            .from('conversations')
-            .select('id, property_id')
-            .eq('visitor_id', visitorId)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (conv) {
-            const { data: sfSettings } = await supabase
-              .from('salesforce_settings')
-              .select('auto_export_on_insurance_detected, enabled, instance_url, access_token')
-              .eq('property_id', conv.property_id)
-              .single();
-
-            if (sfSettings?.enabled && sfSettings?.auto_export_on_insurance_detected && sfSettings?.instance_url && sfSettings?.access_token) {
-              console.log('Insurance detected – triggering Salesforce auto-export for visitor', visitorId);
-              // Use direct fetch with service role key since this runs without user JWT
-              fetch(`${SUPABASE_URL}/functions/v1/salesforce-export-leads`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  propertyId: conv.property_id,
-                  visitorIds: [visitorId],
-                  _serviceRoleExport: true,
-                }),
-              }).catch((e: any) => console.error('SF insurance auto-export error:', e));
-            }
-          }
-        } catch (sfErr) {
-          console.error('Error checking SF insurance auto-export:', sfErr);
-        }
-      }
-
-      return new Response(JSON.stringify({ extracted: true, info: updates }), {
+    if (Object.keys(updates).length === 0) {
+      return new Response(JSON.stringify({ extracted: false }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ extracted: false }), {
+    console.log('Updating visitor with extracted info:', updates);
+
+    const { error } = await supabase
+      .from('visitors')
+      .update(updates)
+      .eq('id', visitorId);
+
+    if (error) {
+      console.error('Error updating visitor:', error);
+    }
+
+    // ── Side-effects: notifications & Salesforce (single conversation lookup) ──
+    const needsNotifications = updates.phone;
+    const needsSalesforce = updates.phone || updates.insurance_info;
+
+    if (needsNotifications || needsSalesforce) {
+      try {
+        const { data: conv } = await supabase
+          .from('conversations')
+          .select('id, property_id')
+          .eq('visitor_id', visitorId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (conv) {
+          // Phone notifications
+          if (updates.phone) {
+            dispatchPhoneNotifications(supabase, conv.property_id, conv.id, updates.name || visitor?.name || null, updates.phone);
+          }
+
+          // Salesforce auto-exports (parallel)
+          const sfPromises: Promise<void>[] = [];
+          if (updates.phone) {
+            sfPromises.push(maybeSalesforceExport(supabase, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, conv.property_id, visitorId, 'phone'));
+          }
+          if (updates.insurance_info) {
+            sfPromises.push(maybeSalesforceExport(supabase, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, conv.property_id, visitorId, 'insurance'));
+          }
+          await Promise.allSettled(sfPromises);
+        }
+      } catch (sideEffectErr) {
+        console.error('Error in side-effects:', sideEffectErr);
+      }
+    }
+
+    return new Response(JSON.stringify({ extracted: true, info: updates }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
+    const isAbort = error instanceof DOMException && error.name === 'AbortError';
+    if (isAbort) {
+      console.error('AI extraction timed out after 20s');
+      return new Response(JSON.stringify({ extracted: false, error: 'AI extraction timed out' }), {
+        status: 504,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.error('Extract visitor info error:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
