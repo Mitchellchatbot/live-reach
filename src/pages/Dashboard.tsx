@@ -222,9 +222,9 @@ const DashboardContent = () => {
       }
       return true;
     }).sort((a, b) => {
-      const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : new Date(a.updatedAt).getTime();
-      const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : new Date(b.updatedAt).getTime();
-      return bTime - aTime;
+      const aLast = a.messages.length > 0 ? a.messages[a.messages.length - 1].timestamp.getTime() : a.updatedAt.getTime();
+      const bLast = b.messages.length > 0 ? b.messages[b.messages.length - 1].timestamp.getTime() : b.updatedAt.getTime();
+      return bLast - aLast;
     });
   }, [conversations, statusFilter, searchQuery, leadFilters]);
 
