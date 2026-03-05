@@ -1939,7 +1939,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     markActive();
 
     // Heartbeat so the dashboard can close stale conversations even if unload doesn't fire.
-    const heartbeatId = window.setInterval(markActive, 15000);
+    const heartbeatId = window.setInterval(markActive, 30000);
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
