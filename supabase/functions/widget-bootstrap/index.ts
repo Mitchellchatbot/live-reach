@@ -1,4 +1,4 @@
-// Widget bootstrap edge function
+// Widget bootstrap edge function — consolidated init (visitor + settings + AI agents)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -19,7 +19,6 @@ Deno.serve(async (req) => {
       currentPage,
       browserInfo,
       gclid,
-      greeting,
     } = await req.json();
 
     if (!propertyId || !sessionId) {
@@ -33,10 +32,10 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Validate property exists and get greeting + geo settings
+    // ── Fetch property (all settings + geo) in ONE query ──
     const { data: property, error: propErr } = await supabase
       .from("properties")
-      .select("id,greeting,geo_filter_mode,geo_allowed_states,geo_blocked_message")
+      .select("*")
       .eq("id", propertyId)
       .maybeSingle();
 
@@ -50,7 +49,6 @@ Deno.serve(async (req) => {
     // ── Geo-filtering check ──
     const geoMode = property.geo_filter_mode || "anywhere";
     if (geoMode !== "anywhere") {
-      // Extract visitor IP
       const forwardedFor = req.headers.get("x-forwarded-for");
       const realIp = req.headers.get("x-real-ip");
       const ip = forwardedFor?.split(",")[0]?.trim() || realIp || null;
@@ -62,7 +60,6 @@ Deno.serve(async (req) => {
         ip.startsWith("10.") ||
         ip.startsWith("172.");
 
-      // For private/local IPs we allow through (dev/testing)
       if (!isPrivateIp) {
         try {
           const geoResponse = await fetch(
@@ -100,13 +97,32 @@ Deno.serve(async (req) => {
             }
           }
         } catch (geoErr) {
-          // If geo lookup fails, allow the visitor through
           console.error("widget-bootstrap: geo lookup error", geoErr);
         }
       }
     }
 
-    // ── Normal flow: find or create visitor ──
+    // ── Find or create visitor + find conversation + fetch AI agents in parallel ──
+    // Start AI agents fetch in parallel with visitor lookup
+    const aiAgentsPromise = (async () => {
+      const { data: assignments } = await supabase
+        .from("ai_agent_properties")
+        .select("ai_agent_id")
+        .eq("property_id", propertyId);
+
+      if (!assignments || assignments.length === 0) return [];
+
+      const agentIds = assignments.map((a: { ai_agent_id: string }) => a.ai_agent_id);
+      const { data: agents } = await supabase
+        .from("ai_agents")
+        .select("id, name, avatar_url, personality_prompt")
+        .in("id", agentIds)
+        .eq("status", "active");
+
+      return agents || [];
+    })();
+
+    // Visitor lookup/creation
     let visitorId: string;
     let visitorInfo: { name?: string; email?: string } = {};
 
@@ -127,13 +143,14 @@ Deno.serve(async (req) => {
       if (existingVisitor.email) visitorInfo.email = existingVisitor.email;
 
       // Best-effort update of the latest page
-      await supabase
+      supabase
         .from("visitors")
         .update({
           current_page: currentPage ?? null,
           browser_info: browserInfo ?? null,
         })
-        .eq("id", visitorId);
+        .eq("id", visitorId)
+        .then(() => {});
     } else {
       const { data: newVisitor, error: createErr } = await supabase
         .from("visitors")
@@ -158,7 +175,7 @@ Deno.serve(async (req) => {
       visitorId = newVisitor.id;
     }
 
-    // Find most recent conversation (can be closed; we may reopen it on widget return)
+    // Find most recent conversation
     let conversationId: string | null = null;
     const { data: existingConv, error: convFindErr } = await supabase
       .from("conversations")
@@ -177,12 +194,51 @@ Deno.serve(async (req) => {
       conversationId = existingConv.id;
     }
 
-    // Return visitor info and greeting (greeting is for static UI display only)
-    return new Response(JSON.stringify({ 
-      visitorId, 
-      conversationId, 
+    // Await AI agents (was running in parallel)
+    const aiAgents = await aiAgentsPromise;
+
+    // ── Build settings response from the already-fetched property row ──
+    const settings = {
+      ai_response_delay_min_ms: property.ai_response_delay_min_ms,
+      ai_response_delay_max_ms: property.ai_response_delay_max_ms,
+      typing_indicator_min_ms: property.typing_indicator_min_ms,
+      typing_indicator_max_ms: property.typing_indicator_max_ms,
+      smart_typing_enabled: property.smart_typing_enabled,
+      typing_wpm: property.typing_wpm,
+      max_ai_messages_before_escalation: property.max_ai_messages_before_escalation,
+      escalation_keywords: property.escalation_keywords,
+      auto_escalation_enabled: property.auto_escalation_enabled,
+      require_email_before_chat: property.require_email_before_chat,
+      require_name_before_chat: property.require_name_before_chat,
+      require_phone_before_chat: property.require_phone_before_chat,
+      require_insurance_card_before_chat: property.require_insurance_card_before_chat,
+      natural_lead_capture_enabled: property.natural_lead_capture_enabled,
+      proactive_message_enabled: property.proactive_message_enabled,
+      proactive_message: property.proactive_message,
+      proactive_message_delay_seconds: property.proactive_message_delay_seconds,
+      greeting: property.greeting,
+      ai_base_prompt: property.ai_base_prompt,
+      widget_icon: property.widget_icon,
+      human_typos_enabled: property.human_typos_enabled,
+      drop_capitalization_enabled: property.drop_capitalization_enabled,
+      drop_apostrophes_enabled: property.drop_apostrophes_enabled,
+      quick_reply_after_first_enabled: property.quick_reply_after_first_enabled,
+      calendly_url: property.calendly_url,
+      business_phone: property.business_phone,
+      business_email: property.business_email,
+      business_address: property.business_address,
+      business_hours: property.business_hours,
+      business_description: property.business_description,
+      name: property.name,
+    };
+
+    return new Response(JSON.stringify({
+      visitorId,
+      conversationId,
       visitorInfo,
-      greeting: property.greeting || null 
+      greeting: property.greeting || null,
+      settings,
+      aiAgents,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

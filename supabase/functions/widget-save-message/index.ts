@@ -1,4 +1,4 @@
-// Widget save message edge function
+// Widget save message edge function — also handles AI queue state changes
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { conversationId, visitorId, sessionId, senderType, content } = await req.json();
+    const { conversationId, visitorId, sessionId, senderType, content, aiQueueAction, aiQueuePreview, aiQueueWindowMs } = await req.json();
 
     if (!conversationId || !visitorId || !sessionId || !senderType || !content) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -33,47 +33,25 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Validate conversation belongs to visitor
-    const { data: conv, error: convErr } = await supabase
+    // Single validation: use the security definer function to verify ownership
+    const { data: ownsConv } = await supabase.rpc("visitor_owns_conversation", {
+      conv_id: conversationId,
+      visitor_session: sessionId,
+    });
+
+    if (!ownsConv) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Get conversation status (needed for reopen logic)
+    const { data: conv } = await supabase
       .from("conversations")
-      .select("id,visitor_id,status,ai_enabled")
+      .select("status")
       .eq("id", conversationId)
-      .maybeSingle();
-
-    if (convErr || !conv) {
-      return new Response(JSON.stringify({ error: "Invalid conversationId" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (conv.visitor_id !== visitorId) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Validate session matches visitor
-    const { data: visitor, error: visitorErr } = await supabase
-      .from("visitors")
-      .select("id,session_id")
-      .eq("id", visitorId)
-      .maybeSingle();
-
-    if (visitorErr || !visitor) {
-      return new Response(JSON.stringify({ error: "Invalid visitorId" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (visitor.session_id !== sessionId) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      .single();
 
     // Compute next sequence_number
     const { data: maxSeq } = await supabase
@@ -104,14 +82,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Always update conversation's updated_at to prevent stale-conversation closer
-    // from closing active conversations mid-flow
-    const updatePayload: Record<string, string> = { updated_at: new Date().toISOString() };
+    // Build conversation update payload
+    const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-    // If the conversation was closed and a visitor is sending a message, reopen it
-    // but keep AI disabled so the human agent handles the reply
-    if (senderType === "visitor" && conv.status === "closed") {
+    // Reopen closed conversations on visitor message
+    if (senderType === "visitor" && conv?.status === "closed") {
       updatePayload.status = "active";
+    }
+
+    // Handle AI queue action if provided (eliminates separate widget-set-ai-queue call)
+    if (aiQueueAction === "queue") {
+      updatePayload.ai_queued_at = new Date().toISOString();
+      updatePayload.ai_queued_preview = aiQueuePreview ?? null;
+      updatePayload.ai_queued_paused = false;
+      if (typeof aiQueueWindowMs === "number") {
+        updatePayload.ai_queued_window_ms = aiQueueWindowMs;
+      }
+    } else if (aiQueueAction === "clear") {
+      updatePayload.ai_queued_at = null;
+      updatePayload.ai_queued_preview = null;
+      updatePayload.ai_queued_paused = false;
     }
 
     const { error: updateErr } = await supabase
@@ -121,37 +111,48 @@ Deno.serve(async (req) => {
 
     if (updateErr) {
       console.error("widget-save-message: failed to update conversation", updateErr);
-    } else if (updatePayload.status === "active") {
-      console.log("widget-save-message: reopened closed conversation", conversationId);
     }
 
-    // Fire-and-forget: trigger server-side visitor info extraction after every message
-    // This ensures extraction happens in near-real-time regardless of who sent the message
-    try {
-      const { data: allMsgs } = await supabase
+    // Fire-and-forget: trigger server-side visitor info extraction
+    // ONLY for visitor messages, and debounce by checking message count
+    if (senderType === "visitor") {
+      // Only extract every 3rd visitor message to reduce AI gateway load
+      const { count: visitorMsgCount } = await supabase
         .from("messages")
-        .select("sender_type, content")
+        .select("id", { count: "exact", head: true })
         .eq("conversation_id", conversationId)
-        .order("sequence_number", { ascending: true })
-        .limit(50);
+        .eq("sender_type", "visitor");
 
-      if (allMsgs && allMsgs.length > 0) {
-        const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
-          role: m.sender_type === "visitor" ? "user" : "assistant",
-          content: m.content,
-        }));
+      const shouldExtract = (visitorMsgCount ?? 0) <= 1 || (visitorMsgCount ?? 0) % 3 === 0;
 
-        fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${serviceKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ visitorId, conversationHistory }),
-        }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
+      if (shouldExtract) {
+        try {
+          const { data: allMsgs } = await supabase
+            .from("messages")
+            .select("sender_type, content")
+            .eq("conversation_id", conversationId)
+            .order("sequence_number", { ascending: true })
+            .limit(50);
+
+          if (allMsgs && allMsgs.length > 0) {
+            const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
+              role: m.sender_type === "visitor" ? "user" : "assistant",
+              content: m.content,
+            }));
+
+            fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${serviceKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ visitorId, conversationHistory }),
+            }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
+          }
+        } catch (extractErr) {
+          console.error("Failed to trigger extraction:", extractErr);
+        }
       }
-    } catch (extractErr) {
-      console.error("Failed to trigger extraction:", extractErr);
     }
 
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq }), {
