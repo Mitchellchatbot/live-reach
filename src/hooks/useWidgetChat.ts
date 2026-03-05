@@ -783,14 +783,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             setVisitorId(testVisitor.id);
             visitorIdRef.current = testVisitor.id; // Update ref immediately for extraction
 
-            // Trigger extraction for test conversations too
-            const conversationHistory = allMessages.map(m => ({
-              role: m.sender_type === 'visitor' ? 'user' : 'assistant',
-              content: m.content,
-            }));
-            if (conversationHistory.length >= 1) {
-              extractVisitorInfo(testVisitor.id, conversationHistory);
-            }
+            // Visitor info extraction is handled server-side
           }
         }
       } catch (error) {
