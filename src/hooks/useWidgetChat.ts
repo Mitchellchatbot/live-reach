@@ -898,20 +898,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Mark handled so we don't auto-reply repeatedly on subsequent polls.
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
-      const isFirstAutoReply = aiMessageCountRef.current === 0;
-      const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
-      const responseDelay = useQuickReplyAuto
-        ? randomInRange(5000, 5000)
-        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+      const responseDelay = computeResponseDelay();
 
       const respondingAgent = currentAiAgent;
-      const naturalLeadCaptureFields: string[] = [];
-      if (settings.natural_lead_capture_enabled) {
-        if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
-        if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
-        if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
-        if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
-      }
+      const naturalLeadCaptureFields = buildNaturalLeadCaptureFields();
 
       const aiHistory = toAiHistoryFromDb(dbMessages);
 
