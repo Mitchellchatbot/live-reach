@@ -501,40 +501,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }));
   }, []);
 
-  const refreshAiEnabledFromServer = useCallback(async (): Promise<boolean> => {
-    // Only meaningful for real embeds.
-    if (isPreview || !propertyId || propertyId === 'demo') return true;
-    const convId = conversationIdRef.current;
-    const vId = visitorIdRef.current;
-    if (!convId || !vId) return aiEnabledRef.current;
-
-    const sessionId = getOrCreateSessionId();
-    try {
-      const resp = await fetch(GET_MESSAGES_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          conversationId: convId,
-          visitorId: vId,
-          sessionId,
-          // Keep it small; we only need aiEnabled.
-          afterSequence: lastSeqRef.current,
-        }),
-      });
-
-      if (!resp.ok) return aiEnabledRef.current;
-      const data = await resp.json();
-      const next = (data?.aiEnabled ?? true) as boolean;
-      aiEnabledRef.current = next;
-      prevAiEnabledRef.current = next;
-      return next;
-    } catch {
-      return aiEnabledRef.current;
-    }
-  }, [isPreview, propertyId]);
 
   // These are now handled by the consolidated widget-bootstrap call.
   // fetchAiAgents and fetchSettings are no longer separate functions.
