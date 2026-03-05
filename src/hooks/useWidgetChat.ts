@@ -572,7 +572,64 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // These are now handled by the consolidated widget-bootstrap call.
   // fetchAiAgents and fetchSettings are no longer separate functions.
 
-  const ensureWidgetIds = useCallback(async (fetchedAgents?: AIAgent[]) => {
+  // Cycle to next AI agent
+  const cycleToNextAgent = useCallback(() => {
+    if (aiAgents.length <= 1) return;
+    
+    aiAgentIndexRef.current = (aiAgentIndexRef.current + 1) % aiAgents.length;
+    setCurrentAiAgent(aiAgents[aiAgentIndexRef.current]);
+  }, [aiAgents]);
+
+  // Apply settings from bootstrap response
+  const applySettings = useCallback((s: Record<string, unknown>): PropertySettings => {
+    const merged: PropertySettings = {
+      ...DEFAULT_SETTINGS,
+      ai_response_delay_min_ms: (s.ai_response_delay_min_ms as number) ?? DEFAULT_SETTINGS.ai_response_delay_min_ms,
+      ai_response_delay_max_ms: (s.ai_response_delay_max_ms as number) ?? DEFAULT_SETTINGS.ai_response_delay_max_ms,
+      typing_indicator_min_ms: (s.typing_indicator_min_ms as number) ?? DEFAULT_SETTINGS.typing_indicator_min_ms,
+      typing_indicator_max_ms: (s.typing_indicator_max_ms as number) ?? DEFAULT_SETTINGS.typing_indicator_max_ms,
+      smart_typing_enabled: (s.smart_typing_enabled as boolean) ?? DEFAULT_SETTINGS.smart_typing_enabled,
+      typing_wpm: (s.typing_wpm as number) ?? DEFAULT_SETTINGS.typing_wpm,
+      max_ai_messages_before_escalation: (s.max_ai_messages_before_escalation as number) ?? DEFAULT_SETTINGS.max_ai_messages_before_escalation,
+      escalation_keywords: (s.escalation_keywords as string[]) ?? DEFAULT_SETTINGS.escalation_keywords,
+      auto_escalation_enabled: (s.auto_escalation_enabled as boolean) ?? DEFAULT_SETTINGS.auto_escalation_enabled,
+      require_email_before_chat: (s.require_email_before_chat as boolean) ?? DEFAULT_SETTINGS.require_email_before_chat,
+      require_name_before_chat: (s.require_name_before_chat as boolean) ?? DEFAULT_SETTINGS.require_name_before_chat,
+      require_phone_before_chat: (s.require_phone_before_chat as boolean) ?? DEFAULT_SETTINGS.require_phone_before_chat,
+      require_insurance_card_before_chat: (s.require_insurance_card_before_chat as boolean) ?? DEFAULT_SETTINGS.require_insurance_card_before_chat,
+      natural_lead_capture_enabled: (s.natural_lead_capture_enabled as boolean) ?? DEFAULT_SETTINGS.natural_lead_capture_enabled,
+      proactive_message_enabled: (s.proactive_message_enabled as boolean) ?? DEFAULT_SETTINGS.proactive_message_enabled,
+      proactive_message: (s.proactive_message as string) ?? null,
+      proactive_message_delay_seconds: (s.proactive_message_delay_seconds as number) ?? DEFAULT_SETTINGS.proactive_message_delay_seconds,
+      greeting: (s.greeting as string) ?? null,
+      ai_base_prompt: (s.ai_base_prompt as string) ?? null,
+      widget_icon: (s.widget_icon as string) ?? DEFAULT_SETTINGS.widget_icon,
+      calendly_url: (s.calendly_url as string) ?? null,
+      human_typos_enabled: (s.human_typos_enabled as boolean) ?? DEFAULT_SETTINGS.human_typos_enabled,
+      drop_capitalization_enabled: (s.drop_capitalization_enabled as boolean) ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
+      drop_apostrophes_enabled: (s.drop_apostrophes_enabled as boolean) ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
+      quick_reply_after_first_enabled: (s.quick_reply_after_first_enabled as boolean) ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
+      business_phone: (s.business_phone as string) ?? null,
+      business_email: (s.business_email as string) ?? null,
+      business_address: (s.business_address as string) ?? null,
+      business_hours: (s.business_hours as string) ?? null,
+      business_description: (s.business_description as string) ?? null,
+      property_name: (s.name as string) ?? null,
+    };
+
+    setSettings(merged);
+
+    const naturalEnabled = merged.natural_lead_capture_enabled ?? true;
+    if (!naturalEnabled && (merged.require_email_before_chat || merged.require_name_before_chat)) {
+      setRequiresLeadCapture(true);
+    } else {
+      setRequiresLeadCapture(false);
+    }
+
+    return merged;
+  }, []);
+
+  const ensureWidgetIds = useCallback(async () => {
     if (!propertyId || propertyId === 'demo' || isPreview) return;
     if (visitorIdRef.current) return; // Already have visitor
 
