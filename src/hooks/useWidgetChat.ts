@@ -1020,7 +1020,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
 
     proactiveTimerRef.current = setTimeout(() => {
-      if (messages.length === 0) {
+      // Use messagesRef to avoid stale closure over messages array
+      if (messagesRef.current.length === 0) {
         setShowProactiveMessage(true);
         setMessages(prev => [...prev, {
           id: 'proactive',
@@ -1030,7 +1031,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }]);
       }
     }, settings.proactive_message_delay_seconds * 1000);
-  }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds, messages]);
+  }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds]);
 
   const initializeChat = useCallback(async () => {
     // For preview/demo mode, use greeting prop directly
