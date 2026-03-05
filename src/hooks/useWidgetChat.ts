@@ -1458,7 +1458,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Final guard: check Realtime-driven state for cancel/pause (no network calls)
       let finalGuardDone = false;
-      console.log('[useWidgetChat] Entering final guard check (Realtime-based)');
+      
       while (!finalGuardDone) {
         finalGuardDone = true;
         const cs = convStateRef.current;
