@@ -86,7 +86,6 @@ const DEFAULT_SETTINGS: PropertySettings = {
   ai_base_prompt: null,
   widget_icon: 'message-circle',
   calendly_url: null,
-  human_typos_enabled: true,
   drop_capitalization_enabled: true,
   drop_apostrophes_enabled: true,
   quick_reply_after_first_enabled: false,
