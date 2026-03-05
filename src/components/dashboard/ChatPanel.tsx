@@ -466,7 +466,23 @@ const VisitorInfoSidebar = ({
           {v.gclid && <EditableInfoItem icon={MousePointerClick} label="GCLID" value={v.gclid} fieldKey="gclid" visitorId={vId} onUpdated={handleFieldUpdated} />}
         </div>
 
-        {assignedAgent && (
+        {/* Re-extract Visitor Info */}
+        {conversationId && (
+          <div className="px-3 py-2 border-t border-border/30">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReExtract}
+              disabled={isExtracting}
+              className="w-full gap-1.5 text-xs"
+            >
+              {isExtracting ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              Re-extract Info
+            </Button>
+          </div>
+        )}
+
+
           <div className="p-3 border-t border-border/30">
             <p className="text-xs text-muted-foreground mb-2">Assigned Agent</p>
             <div className="flex items-center gap-2">
