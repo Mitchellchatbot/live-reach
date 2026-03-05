@@ -221,7 +221,11 @@ const DashboardContent = () => {
         }
       }
       return true;
-    }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    }).sort((a, b) => {
+      const aLast = a.messages.length > 0 ? a.messages[a.messages.length - 1].timestamp.getTime() : a.updatedAt.getTime();
+      const bLast = b.messages.length > 0 ? b.messages[b.messages.length - 1].timestamp.getTime() : b.updatedAt.getTime();
+      return bLast - aLast;
+    });
   }, [conversations, statusFilter, searchQuery, leadFilters]);
 
   // Add lastMessage to conversations
