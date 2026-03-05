@@ -1095,7 +1095,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
-        ? randomInRange(15000, 25000)
+        ? randomInRange(5000, 5000)
         : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
       const respondingAgent = currentAiAgent;
