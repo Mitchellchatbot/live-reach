@@ -321,6 +321,7 @@ const VisitorInfoSidebar = ({
   propertyName?: string;
   conversationId?: string;
 }) => {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(true);
   const [localVisitor, setLocalVisitor] = useState(visitor);
   const [isExtracting, setIsExtracting] = useState(false);
