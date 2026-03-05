@@ -273,28 +273,6 @@ const fetchVisitorLocation = async (visitorId: string) => {
   }
 };
 
-const extractVisitorInfo = async (
-  visitorId: string,
-  conversationHistory: { role: string; content: string }[]
-) => {
-  if (!visitorId || conversationHistory.length < 1) return;
-  
-  try {
-    await fetch(EXTRACT_INFO_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({
-        visitorId,
-        conversationHistory,
-      }),
-    });
-  } catch (error) {
-    console.error('Failed to extract visitor info:', error);
-  }
-};
   const trackAnalyticsEvent = async (
   propertyId: string,
   eventType: 'chat_open' | 'human_escalation'
