@@ -482,7 +482,7 @@ const VisitorInfoSidebar = ({
           </div>
         )}
 
-
+        {assignedAgent && (
           <div className="p-3 border-t border-border/30">
             <p className="text-xs text-muted-foreground mb-2">Assigned Agent</p>
             <div className="flex items-center gap-2">
