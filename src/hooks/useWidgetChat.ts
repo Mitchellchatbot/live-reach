@@ -1806,6 +1806,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }).catch(e => console.error('Failed to save AI message:', e));
 
         // Clear queue AFTER typing finishes so dashboard bubble stays editable throughout
+        convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
         fetch(SET_AI_QUEUE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
