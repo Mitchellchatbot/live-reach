@@ -321,6 +321,7 @@ const VisitorInfoSidebar = ({
   propertyName?: string;
   conversationId?: string;
 }) => {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(true);
   const [localVisitor, setLocalVisitor] = useState(visitor);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -335,7 +336,10 @@ const VisitorInfoSidebar = ({
   }, []);
 
   const handleReExtract = useCallback(async () => {
-    if (!conversationId || !visitor.id) return;
+    if (!conversationId || !visitor.id) {
+      toast({ title: 'No conversation selected', variant: 'destructive' });
+      return;
+    }
     setIsExtracting(true);
     try {
       // Fetch conversation messages
@@ -346,18 +350,39 @@ const VisitorInfoSidebar = ({
         .order('created_at', { ascending: true })
         .limit(50);
 
-      if (!msgs || msgs.length === 0) return;
+      if (!msgs || msgs.length === 0) {
+        toast({ title: 'No messages to extract from' });
+        return;
+      }
 
       const conversationHistory = msgs.map(m => ({
         role: m.sender_type === 'visitor' ? 'user' : 'assistant',
         content: m.content,
       }));
 
-      const { data, error } = await supabase.functions.invoke('extract-visitor-info', {
-        body: { visitorId: visitor.id, conversationHistory },
-      });
+      // Use fetch with timeout instead of supabase.functions.invoke
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      if (error) throw error;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/extract-visitor-info`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ visitorId: visitor.id, conversationHistory }),
+          signal: controller.signal,
+        }
+      );
+      clearTimeout(timeoutId);
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || 'Extraction failed');
 
       if (data?.extracted && data.info) {
         // Re-fetch the full visitor to get updated fields
@@ -369,9 +394,14 @@ const VisitorInfoSidebar = ({
         if (updated) {
           setLocalVisitor(updated);
         }
+        toast({ title: 'Visitor info updated', description: `Updated: ${Object.keys(data.info).join(', ')}` });
+      } else {
+        toast({ title: 'No new info found', description: 'All fields are already up to date.' });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Re-extraction failed:', err);
+      const msg = err?.name === 'AbortError' ? 'Request timed out' : (err?.message || 'Unknown error');
+      toast({ title: 'Extraction failed', description: msg, variant: 'destructive' });
     } finally {
       setIsExtracting(false);
     }
