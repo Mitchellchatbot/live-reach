@@ -222,9 +222,12 @@ const DashboardContent = () => {
       }
       return true;
     }).sort((a, b) => {
-      const aLast = a.messages.length > 0 ? a.messages[a.messages.length - 1].timestamp.getTime() : a.updatedAt.getTime();
-      const bLast = b.messages.length > 0 ? b.messages[b.messages.length - 1].timestamp.getTime() : b.updatedAt.getTime();
-      return bLast - aLast;
+      // Sort by the most recent message timestamp, falling back to updatedAt
+      const getLatestTime = (conv: typeof a) => {
+        if (conv.messages.length === 0) return conv.updatedAt.getTime();
+        return Math.max(...conv.messages.map(m => m.timestamp.getTime()));
+      };
+      return getLatestTime(b) - getLatestTime(a);
     });
   }, [conversations, statusFilter, searchQuery, leadFilters]);
 
