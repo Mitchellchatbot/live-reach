@@ -1882,6 +1882,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     initializeChat();
   }, [initializeChat]);
 
+  // Keep messagesRef in sync with messages state for use in callbacks
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Presence: keep conversations "active" while the widget is visible, and attempt
   // to mark them "closed" when the tab hides/unloads.
   useEffect(() => {
