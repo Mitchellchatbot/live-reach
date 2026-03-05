@@ -261,6 +261,13 @@ Deno.serve(async (req) => {
       greeting: property.greeting || null,
       settings,
       aiAgents,
+      // Optimization #4: include messages + conversation state in bootstrap response
+      messages: existingMessages,
+      aiEnabled,
+      aiQueuedAt,
+      aiQueuedPaused,
+      aiQueuedPreview,
+      aiQueuedWindowMs,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
