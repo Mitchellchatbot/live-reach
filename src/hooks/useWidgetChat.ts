@@ -1136,11 +1136,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Don't return - let AI continue responding until human takes over
     }
 
-    // If AI was previously off, refresh aiEnabled right now (avoids race where user toggles on + immediately sends).
-    let aiEnabledNow = aiEnabledRef.current;
-    if (!aiEnabledNow) {
-      aiEnabledNow = await refreshAiEnabledFromServer();
-    }
+    // aiEnabledRef is kept in sync via Realtime subscription — no server refresh needed
+    const aiEnabledNow = aiEnabledRef.current;
 
     // Stop AI if either:
     // - dashboard has AI disabled, OR
