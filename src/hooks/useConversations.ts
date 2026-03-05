@@ -154,28 +154,31 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     ? allProperties.filter(p => p.user_id === workspaceOwnerId)
     : allProperties;
 
+  // Background stale cleanup — runs every 60s instead of blocking every fetch
+  const staleCleanupRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    const runCleanup = async () => {
+      try {
+        const { data: { user: validUser } } = await supabase.auth.getUser();
+        if (validUser) {
+          await supabase.functions.invoke('close-stale-conversations', {
+            body: { propertyId: selectedPropertyId ?? null, staleSeconds: 45 },
+          });
+        }
+      } catch {
+        // Best-effort — silently ignore
+      }
+    };
+    // Run once on mount, then every 60s
+    runCleanup();
+    staleCleanupRef.current = setInterval(runCleanup, 60000);
+    return () => { if (staleCleanupRef.current) clearInterval(staleCleanupRef.current); };
+  }, [user, selectedPropertyId]);
+
   // Fetch conversations with React Query
   const fetchConversationsData = useCallback(async (): Promise<DbConversation[]> => {
     if (!user) return [];
-
-    // Best-effort: close stale "active" conversations (visitor tab closed, unload not fired, etc.)
-    try {
-      // Use getUser() to validate the token is actually valid (getSession can return stale tokens)
-      const { data: { user: validUser } } = await supabase.auth.getUser();
-      if (validUser) {
-        const { error } = await supabase.functions.invoke('close-stale-conversations', {
-          body: {
-            propertyId: selectedPropertyId ?? null,
-            staleSeconds: 45,
-          },
-        });
-        if (error) {
-          console.warn('[useConversations] close-stale-conversations failed:', error.message);
-        }
-      }
-    } catch (e) {
-      // Silently ignore – this is best-effort cleanup
-    }
 
     let query = supabase
       .from('conversations')
