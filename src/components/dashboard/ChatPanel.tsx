@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
-import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check, MousePointerClick, Trash2 } from 'lucide-react';
+import { Send, MoreVertical, User, Globe, Monitor, MapPin, Archive, UserPlus, Video, Phone, Briefcase, Calendar, Mail, ChevronRight, ChevronLeft, MessageSquare, Heart, Pill, Building, Shield, AlertTriangle, Bot, BotOff, Slash, X, Clock, Pencil, Check, MousePointerClick, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { defaultShortcuts, ChatShortcut } from '@/data/chatShortcuts';
 import gsap from 'gsap';
@@ -313,14 +313,17 @@ const EditableInfoItem = ({
 const VisitorInfoSidebar = ({
   visitor,
   assignedAgent,
-  propertyName
+  propertyName,
+  conversationId
 }: {
   visitor: any;
   assignedAgent: any;
   propertyName?: string;
+  conversationId?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [localVisitor, setLocalVisitor] = useState(visitor);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   // Sync when visitor prop changes (e.g. switching conversations)
   useEffect(() => {
@@ -330,6 +333,49 @@ const VisitorInfoSidebar = ({
   const handleFieldUpdated = useCallback((field: string, newValue: string | null) => {
     setLocalVisitor((prev: any) => ({ ...prev, [field]: newValue }));
   }, []);
+
+  const handleReExtract = useCallback(async () => {
+    if (!conversationId || !visitor.id) return;
+    setIsExtracting(true);
+    try {
+      // Fetch conversation messages
+      const { data: msgs } = await supabase
+        .from('messages')
+        .select('sender_type, content')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (!msgs || msgs.length === 0) return;
+
+      const conversationHistory = msgs.map(m => ({
+        role: m.sender_type === 'visitor' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('extract-visitor-info', {
+        body: { visitorId: visitor.id, conversationHistory },
+      });
+
+      if (error) throw error;
+
+      if (data?.extracted && data.info) {
+        // Re-fetch the full visitor to get updated fields
+        const { data: updated } = await supabase
+          .from('visitors')
+          .select('*')
+          .eq('id', visitor.id)
+          .single();
+        if (updated) {
+          setLocalVisitor(updated);
+        }
+      }
+    } catch (err) {
+      console.error('Re-extraction failed:', err);
+    } finally {
+      setIsExtracting(false);
+    }
+  }, [conversationId, visitor.id]);
 
   // Check if we have any treatment-specific info
   const hasTreatmentInfo = localVisitor.addiction_history || localVisitor.drug_of_choice || localVisitor.treatment_interest || localVisitor.insurance_info || localVisitor.urgency_level;
@@ -419,6 +465,22 @@ const VisitorInfoSidebar = ({
           {v.browserInfo && <EditableInfoItem icon={Monitor} label="Browser" value={v.browserInfo} fieldKey="browser_info" visitorId={vId} onUpdated={handleFieldUpdated} />}
           {v.gclid && <EditableInfoItem icon={MousePointerClick} label="GCLID" value={v.gclid} fieldKey="gclid" visitorId={vId} onUpdated={handleFieldUpdated} />}
         </div>
+
+        {/* Re-extract Visitor Info */}
+        {conversationId && (
+          <div className="px-3 py-2 border-t border-border/30">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReExtract}
+              disabled={isExtracting}
+              className="w-full gap-1.5 text-xs"
+            >
+              {isExtracting ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+              Re-extract Info
+            </Button>
+          </div>
+        )}
 
         {assignedAgent && (
           <div className="p-3 border-t border-border/30">
@@ -849,7 +911,7 @@ export const ChatPanel = ({
       </div>
 
       {/* Visitor Info Sidebar - Collapsible on large screens */}
-      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} propertyName={propertyName} />
+      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} propertyName={propertyName} conversationId={conversation?.id} />
 
       {/* Video Call Modal */}
       <VideoCallModal isOpen={isVideoCallOpen} onClose={() => setIsVideoCallOpen(false)} status={videoChat.status} isMuted={videoChat.isMuted} isVideoOff={videoChat.isVideoOff} error={videoChat.error} localVideoRef={videoChat.localVideoRef} remoteVideoRef={videoChat.remoteVideoRef} onEndCall={handleEndVideoCall} onToggleMute={videoChat.toggleMute} onToggleVideo={videoChat.toggleVideo} participantName={visitorName} isInitiator={true} />
