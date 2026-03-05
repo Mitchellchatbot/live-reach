@@ -1580,7 +1580,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent, windowMs: responseDelay }),
           });
           queueWasSet = queueResp.ok;
-          if (!queueResp.ok) {
+          if (queueResp.ok) {
+            convStateRef.current = {
+              ...convStateRef.current,
+              aiQueuedAt: new Date().toISOString(),
+              aiQueuedPaused: false,
+              aiQueuedPreview: aiContent,
+              aiQueuedWindowMs: responseDelay,
+            };
+          } else {
             console.warn('[useWidgetChat] Queue set failed:', queueResp.status);
           }
         } catch (queueErr) {
