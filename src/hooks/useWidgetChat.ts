@@ -1725,9 +1725,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       });
       if (msgErr) console.error('Error saving visitor message (preview):', msgErr);
 
-      if (conversationHistory.length >= 1) {
-        extractVisitorInfo(visitorId, conversationHistory);
-      }
+      // Visitor info extraction is handled server-side in widget-save-message
     }
   };
 
