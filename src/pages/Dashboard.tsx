@@ -221,7 +221,11 @@ const DashboardContent = () => {
         }
       }
       return true;
-    }).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    }).sort((a, b) => {
+      const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : new Date(a.updatedAt).getTime();
+      const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : new Date(b.updatedAt).getTime();
+      return bTime - aTime;
+    });
   }, [conversations, statusFilter, searchQuery, leadFilters]);
 
   // Add lastMessage to conversations
