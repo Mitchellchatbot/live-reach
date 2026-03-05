@@ -47,7 +47,6 @@ interface PropertySettings {
   ai_base_prompt: string | null;
   widget_icon: string | null;
   calendly_url: string | null;
-  human_typos_enabled: boolean;
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
   quick_reply_after_first_enabled: boolean;
