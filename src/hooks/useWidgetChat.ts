@@ -704,60 +704,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     await bootstrapPromiseRef.current;
   }, [propertyId, isPreview]);
 
-  // Create conversation on-demand (lazy creation when visitor sends first message)
-  const ensureConversationExists = useCallback(async (): Promise<string | null> => {
-    if (!propertyId || propertyId === 'demo' || isPreview) return null;
-    if (conversationIdRef.current) return conversationIdRef.current;
-    if (!visitorIdRef.current) return null;
-
-    // Mutex: if another call is already creating, piggyback on it
-    if (conversationPromiseRef.current) {
-      return conversationPromiseRef.current;
-    }
-
-    const doCreate = async (): Promise<string | null> => {
-      // Re-check after acquiring the slot (another caller may have finished)
-      if (conversationIdRef.current) return conversationIdRef.current;
-
-      const sessionId = getOrCreateSessionId();
-
-      try {
-        const response = await fetch(CREATE_CONVERSATION_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            propertyId,
-            visitorId: visitorIdRef.current,
-            sessionId,
-          }),
-        });
-
-        if (!response.ok) {
-          console.error('Widget create conversation failed:', response.status, await response.text());
-          return null;
-        }
-
-        const data = await response.json();
-        if (data?.conversationId) {
-          setConversationId(data.conversationId);
-          conversationIdRef.current = data.conversationId;
-          return data.conversationId;
-        }
-        return null;
-      } catch (e) {
-        console.error('Widget create conversation error:', e);
-        return null;
-      }
-    };
-
-    conversationPromiseRef.current = doCreate().finally(() => {
-      conversationPromiseRef.current = null;
-    });
-    return conversationPromiseRef.current;
-  }, [propertyId, isPreview]);
 
   // Check for escalation keywords in message
   const checkForEscalationKeywords = useCallback((content: string): boolean => {
