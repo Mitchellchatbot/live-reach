@@ -1722,52 +1722,63 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
         if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
       }
-        return true; // completed successfully
+
+      // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue
+      const aiMessageId = `ai-${Date.now()}`;
+
+      const doTypingSleep = async (totalMs: number): Promise<boolean> => {
+        let remaining = totalMs;
+        while (remaining > 0) {
+          const chunk = Math.min(remaining, 500);
+          await sleep(chunk);
+          remaining -= chunk;
+
+          if (abortController.signal.aborted || aiGenerationIdRef.current !== myGenerationId) {
+            setIsTyping(false);
+            return false;
+          }
+
+          // Check Realtime-driven state (no network calls)
+          const cs = convStateRef.current;
+          if (cs.aiQueuedAt === null) {
+            setIsTyping(false);
+            return false;
+          }
+          if (cs.aiQueuedPaused) {
+            if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+            setIsTyping(false);
+            while (convStateRef.current.aiQueuedPaused) {
+              await sleep(500);
+              if (convStateRef.current.aiQueuedAt === null) return false;
+              if (convStateRef.current.aiQueuedPreview) aiContent = convStateRef.current.aiQueuedPreview;
+            }
+            setIsTyping(true);
+          }
+        }
+        return true;
       };
 
-      // Immediate pre-typing pause check (no blind spot)
+      // Immediate pre-typing pause check (Realtime-based, no network calls)
       {
-        const ptConvId = conversationIdRef.current;
-        const ptVId = visitorIdRef.current;
-        if (ptConvId && ptVId) {
-          try {
-            const ptResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
-            });
-            if (ptResp.ok) {
-              const ptData = await ptResp.json();
-              if (ptData && 'aiQueuedAt' in ptData && ptData.aiQueuedAt === null) {
-                hybridFlowActiveRef.current = false;
-                setIsTyping(false);
-                return;
-              }
-              if (ptData?.aiQueuedPaused === true) {
-                if (ptData.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
-                // Wait in pause loop before starting typing
-                while (true) {
-                  await sleep(2000);
-                  const prResp = await fetch(GET_MESSAGES_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                    body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
-                  });
-                  if (!prResp.ok) break;
-                  const prData = await prResp.json();
-                  if (prData && 'aiQueuedAt' in prData && prData.aiQueuedAt === null) {
-                    hybridFlowActiveRef.current = false;
-                    setIsTyping(false);
-                    return;
-                  }
-                  if (prData?.aiQueuedPreview) aiContent = prData.aiQueuedPreview;
-                  if (!prData || prData.aiQueuedPaused !== true) break;
-                }
-              }
-              if (ptData?.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
-            }
-          } catch { /* non-fatal */ }
+        const cs = convStateRef.current;
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          hybridFlowActiveRef.current = false;
+          setIsTyping(false);
+          return;
         }
+        if (cs.aiQueuedPaused) {
+          if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+          while (convStateRef.current.aiQueuedPaused) {
+            await sleep(500);
+            if (convStateRef.current.aiQueuedAt === null) {
+              hybridFlowActiveRef.current = false;
+              setIsTyping(false);
+              return;
+            }
+            if (convStateRef.current.aiQueuedPreview) aiContent = convStateRef.current.aiQueuedPreview;
+          }
+        }
+        if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
       }
 
       if (settings.smart_typing_enabled) {
