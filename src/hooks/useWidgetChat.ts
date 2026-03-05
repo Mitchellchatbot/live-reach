@@ -2057,113 +2057,93 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, [startProactiveTimer]);
 
 
-  // Poll for new messages (human agent responses) - realtime requires auth which widget doesn't have
+  // Realtime subscriptions for messages and conversation state (replaces polling)
   useEffect(() => {
-    // Only poll for live embeds (not preview mode)
     if (isPreview || !propertyId || propertyId === 'demo') return;
-    
+
     const convId = conversationIdRef.current;
-    const vId = visitorIdRef.current;
-    if (!convId || !vId) return;
+    if (!convId) return;
 
-    const sessionId = getOrCreateSessionId();
-    let isMounted = true;
+    let disposed = false;
 
-    const pollMessages = async () => {
-      if (!isMounted) return;
-      
-      try {
-        const response = await fetch(GET_MESSAGES_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            conversationId: convId,
-            visitorId: vId,
-            sessionId,
-            afterSequence: lastSeqRef.current,
-          }),
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        const fetchedMessages = data.messages || [];
-        const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
-
-        // Track dashboard AI enable/disable separately from human takeover.
-        const prev = prevAiEnabledRef.current;
-        aiEnabledRef.current = serverAiEnabled;
-        prevAiEnabledRef.current = serverAiEnabled;
-
-        // If AI was turned back on, reset humanHasTakenOver so AI can respond again.
-        // The humanHasTakenOver flag is only meaningful while AI is disabled;
-        // re-enabling AI signals the operator wants AI to resume.
-        if (prev === false && serverAiEnabled === true) {
-          if (humanHasTakenOverRef.current) {
-            setHumanHasTakenOver(false);
-            humanHasTakenOverRef.current = false;
-          }
-          void autoReplyIfPending();
-        }
-
-        if (fetchedMessages.length === 0) return;
-
-        // Update lastSeqRef
-        const maxSeq = Math.max(...fetchedMessages.map((m: { sequence_number: number }) => m.sequence_number));
-        if (maxSeq > lastSeqRef.current) {
-          lastSeqRef.current = maxSeq;
-        }
-
-        // Process new messages
-        for (const rawMsg of fetchedMessages) {
-          // Only add agent messages that aren't from AI (human agent override)
-          if (rawMsg.sender_type === 'agent' && rawMsg.sender_id !== 'ai-bot') {
-            // Mark human has taken over - AI should stop responding
+    const channel = supabase
+      .channel(`widget-rt-${convId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${convId}`,
+        },
+        (payload) => {
+          if (disposed) return;
+          const msg = payload.new as Record<string, unknown>;
+          // Only process human agent messages (AI messages are added locally by the hybrid flow)
+          if (msg.sender_type === 'agent' && msg.sender_id !== 'ai-bot') {
             if (!humanHasTakenOverRef.current) {
               setHumanHasTakenOver(true);
               humanHasTakenOverRef.current = true;
             }
-            if (!isEscalated) {
-              setIsEscalated(true);
-            }
-
-            // Track human escalation event (only once per conversation)
-            if (!humanEscalationTracked && propertyId && propertyId !== 'demo') {
-              setHumanEscalationTracked(true);
-              trackAnalyticsEvent(propertyId, 'human_escalation');
-            }
+            setIsEscalated(true);
 
             const newMsg: Message = {
-              id: rawMsg.id,
-              content: rawMsg.content,
+              id: msg.id as string,
+              content: msg.content as string,
               sender_type: 'agent',
-              created_at: rawMsg.created_at,
+              created_at: msg.created_at as string,
             };
             setMessages(prev => {
-              const exists = prev.some(m => m.id === newMsg.id);
-              if (exists) return prev;
+              if (prev.some(m => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
             });
+            if (typeof msg.sequence_number === 'number') {
+              lastSeqRef.current = Math.max(lastSeqRef.current, msg.sequence_number);
+            }
           }
         }
-      } catch (e) {
-        console.error('Error polling messages:', e);
-      }
-    };
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${convId}`,
+        },
+        (payload) => {
+          if (disposed) return;
+          const conv = payload.new as Record<string, unknown>;
+          convStateRef.current = {
+            aiQueuedAt: (conv.ai_queued_at as string | null) ?? null,
+            aiQueuedPaused: (conv.ai_queued_paused as boolean) ?? false,
+            aiQueuedPreview: (conv.ai_queued_preview as string | null) ?? null,
+            aiQueuedWindowMs: (conv.ai_queued_window_ms as number | null) ?? null,
+            aiEnabled: (conv.ai_enabled as boolean) ?? true,
+          };
 
-    // Poll every 2 seconds
-    const intervalId = setInterval(pollMessages, 2000);
-    // Also poll immediately
-    pollMessages();
+          // Handle AI enabled toggle
+          const serverAiEnabled = (conv.ai_enabled as boolean) ?? true;
+          const prev = prevAiEnabledRef.current;
+          aiEnabledRef.current = serverAiEnabled;
+          prevAiEnabledRef.current = serverAiEnabled;
+
+          if (prev === false && serverAiEnabled === true) {
+            if (humanHasTakenOverRef.current) {
+              setHumanHasTakenOver(false);
+              humanHasTakenOverRef.current = false;
+            }
+            void autoReplyIfPending();
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      isMounted = false;
-      clearInterval(intervalId);
+      disposed = true;
+      supabase.removeChannel(channel);
     };
-  }, [conversationId, humanEscalationTracked, propertyId, isEscalated, isPreview, autoReplyIfPending]);
+  }, [conversationId, propertyId, isPreview, autoReplyIfPending]);
 
   return {
     messages,
