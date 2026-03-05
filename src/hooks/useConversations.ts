@@ -548,7 +548,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
   useEffect(() => {
     if (!user) return;
 
-    console.log('[useConversations] Setting up realtime subscriptions');
+    
 
     // Optimization #6: Single-query conversation fetch with embedded messages
     const fetchSingleConversation = async (conversationId: string) => {
