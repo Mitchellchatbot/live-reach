@@ -1874,13 +1874,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
     }
 
-    // Extract visitor info in background after each AI response (works in all modes)
-    // This allows us to capture details as they're shared naturally in conversation
-    // Use ref to get the most current visitor ID (state may be stale in preview mode)
-    const currentVisitorId = visitorIdRef.current || visitorId;
-    if (currentVisitorId && conversationHistory.length >= 1) {
-      extractVisitorInfo(currentVisitorId, conversationHistory);
-    }
+    // Visitor info extraction is now handled server-side in widget-save-message
+    // (only for visitor messages, with debouncing). No client-side call needed.
 
     // NOTE: For real embeds the visitor message was already saved to DB at the top of sendMessage
     // (awaited, before the hybrid flow). For preview mode with a test conversation, save via
