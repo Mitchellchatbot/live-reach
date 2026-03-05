@@ -1738,19 +1738,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const finalConvId = conversationIdRef.current;
       const finalVId = visitorIdRef.current;
       if (finalConvId && finalVId) {
+        // Save AI message AND clear queue in a single call
         fetch(SAVE_MESSAGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent }),
+          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent, aiQueueAction: 'clear' }),
         }).catch(e => console.error('Failed to save AI message:', e));
 
-        // Clear queue AFTER typing finishes so dashboard bubble stays editable throughout
         convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
-        fetch(SET_AI_QUEUE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, action: 'clear' }),
-        }).catch(() => {});
       }
 
       setMessages(prev => [...prev, {
