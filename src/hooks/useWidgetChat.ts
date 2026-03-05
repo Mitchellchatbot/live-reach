@@ -598,7 +598,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       ai_base_prompt: (s.ai_base_prompt as string) ?? null,
       widget_icon: (s.widget_icon as string) ?? DEFAULT_SETTINGS.widget_icon,
       calendly_url: (s.calendly_url as string) ?? null,
-      human_typos_enabled: (s.human_typos_enabled as boolean) ?? DEFAULT_SETTINGS.human_typos_enabled,
       drop_capitalization_enabled: (s.drop_capitalization_enabled as boolean) ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
       drop_apostrophes_enabled: (s.drop_apostrophes_enabled as boolean) ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
       quick_reply_after_first_enabled: (s.quick_reply_after_first_enabled as boolean) ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
