@@ -1991,6 +1991,20 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, [startProactiveTimer]);
 
 
+      // Apply settings from consolidated bootstrap response
+      if (data?.settings) {
+        applySettings(data.settings);
+      }
+
+      // Apply AI agents from consolidated bootstrap response
+      if (data?.aiAgents && Array.isArray(data.aiAgents) && data.aiAgents.length > 0) {
+        setAiAgents(data.aiAgents);
+        setCurrentAiAgent(data.aiAgents[0]);
+      } else {
+        setAiAgents([]);
+        setCurrentAiAgent(null);
+      }
+
   // Realtime subscriptions for messages and conversation state (replaces polling)
   useEffect(() => {
     if (isPreview || !propertyId || propertyId === 'demo') return;
