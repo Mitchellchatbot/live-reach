@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { maybeInjectTypo, maybeDropCapitalization, maybeDropApostrophes } from '@/utils/typoInjector';
+import { maybeDropCapitalization, maybeDropApostrophes } from '@/utils/typoInjector';
 
 declare global {
   interface Window {
@@ -47,7 +47,6 @@ interface PropertySettings {
   ai_base_prompt: string | null;
   widget_icon: string | null;
   calendly_url: string | null;
-  human_typos_enabled: boolean;
   drop_capitalization_enabled: boolean;
   drop_apostrophes_enabled: boolean;
   quick_reply_after_first_enabled: boolean;
@@ -87,7 +86,6 @@ const DEFAULT_SETTINGS: PropertySettings = {
   ai_base_prompt: null,
   widget_icon: 'message-circle',
   calendly_url: null,
-  human_typos_enabled: true,
   drop_capitalization_enabled: true,
   drop_apostrophes_enabled: true,
   quick_reply_after_first_enabled: false,
@@ -346,7 +344,6 @@ async function streamAIResponse({
   basePrompt,
   naturalLeadCaptureFields,
   calendlyUrl,
-  humanTyposEnabled,
   propertyContext,
   signal,
 }: {
@@ -359,7 +356,6 @@ async function streamAIResponse({
   basePrompt?: string | null;
   naturalLeadCaptureFields?: string[];
   calendlyUrl?: string | null;
-  humanTyposEnabled?: boolean;
   propertyContext?: string | null;
   signal?: AbortSignal;
 }) {
@@ -370,7 +366,7 @@ async function streamAIResponse({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled, propertyContext }),
+      body: JSON.stringify({ messages, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, propertyContext }),
       signal,
     });
 
@@ -602,7 +598,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       ai_base_prompt: (s.ai_base_prompt as string) ?? null,
       widget_icon: (s.widget_icon as string) ?? DEFAULT_SETTINGS.widget_icon,
       calendly_url: (s.calendly_url as string) ?? null,
-      human_typos_enabled: (s.human_typos_enabled as boolean) ?? DEFAULT_SETTINGS.human_typos_enabled,
       drop_capitalization_enabled: (s.drop_capitalization_enabled as boolean) ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
       drop_apostrophes_enabled: (s.drop_apostrophes_enabled as boolean) ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
       quick_reply_after_first_enabled: (s.quick_reply_after_first_enabled as boolean) ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
@@ -1034,11 +1029,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
-            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
             if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
             if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
             resolve();
@@ -1415,13 +1408,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           signal: abortController.signal,
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
-            // Apply text transforms
-            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
             if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
             if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
             resolve();
@@ -1751,11 +1741,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => { aiContent += delta; },
           onDone: async () => {
-            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
             if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
             if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
 
@@ -1806,7 +1794,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => {
             aiContent += delta;
@@ -1817,7 +1804,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             });
           },
           onDone: async () => {
-            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
             if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
             if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
             setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: aiContent } : m));

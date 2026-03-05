@@ -34,7 +34,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     const messages = Array.isArray(body.messages) ? body.messages : [];
-    const { propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl, humanTyposEnabled } = body;
+    const { propertyContext, personalityPrompt, agentName, basePrompt, naturalLeadCaptureFields, calendlyUrl } = body;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
