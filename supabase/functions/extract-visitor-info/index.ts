@@ -135,7 +135,9 @@ Deno.serve(async (req) => {
         ],
         tool_choice: { type: 'function', function: { name: 'extract_visitor_info' } }
       }),
+      signal: aiController.signal,
     });
+    clearTimeout(aiTimeout);
 
     if (!response.ok) {
       console.error('AI extraction error:', response.status);
