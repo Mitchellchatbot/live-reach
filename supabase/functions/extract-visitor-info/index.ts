@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
       .map((msg: { role: string; content: string }) => `${msg.role}: ${msg.content}`)
       .join('\n');
 
-    // Use tool calling to extract structured info
+    // Use tool calling to extract structured info (with 20s timeout)
+    const aiController = new AbortController();
+    const aiTimeout = setTimeout(() => aiController.abort(), 20000);
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -133,7 +135,9 @@ Deno.serve(async (req) => {
         ],
         tool_choice: { type: 'function', function: { name: 'extract_visitor_info' } }
       }),
+      signal: aiController.signal,
     });
+    clearTimeout(aiTimeout);
 
     if (!response.ok) {
       console.error('AI extraction error:', response.status);
