@@ -204,14 +204,10 @@ const sleep = (ms: number): Promise<void> => {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`;
 const TRACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-page-analytics`;
-const EXTRACT_INFO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-visitor-info`;
 const LOCATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-visitor-location`;
 const UPDATE_VISITOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-visitor`;
 const BOOTSTRAP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-bootstrap`;
-const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-create-conversation`;
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
-const GET_MESSAGES_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-get-messages`;
-// PRESENCE_URL removed — now uses supabase.rpc('touch_conversation_presence') directly
 const SET_AI_QUEUE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-set-ai-queue`;
 
 // Secure visitor update through edge function
