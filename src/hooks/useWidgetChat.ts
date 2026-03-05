@@ -344,7 +344,6 @@ async function streamAIResponse({
   basePrompt,
   naturalLeadCaptureFields,
   calendlyUrl,
-  humanTyposEnabled,
   propertyContext,
   signal,
 }: {
@@ -357,7 +356,6 @@ async function streamAIResponse({
   basePrompt?: string | null;
   naturalLeadCaptureFields?: string[];
   calendlyUrl?: string | null;
-  humanTyposEnabled?: boolean;
   propertyContext?: string | null;
   signal?: AbortSignal;
 }) {
