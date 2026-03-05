@@ -1702,114 +1702,26 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         return;
       }
 
-      // Final guard: do one last DB check right before sending to catch a cancel OR pause
-      // that arrived after the deadline but before we started typing.
-      // If paused, enter a secondary wait loop until unpaused or cancelled.
-      const PAUSE_POLL_MS = 2000;
+      // Final guard: check Realtime-driven state for cancel/pause (no network calls)
       let finalGuardDone = false;
-      console.log('[useWidgetChat] Entering final guard check loop');
+      console.log('[useWidgetChat] Entering final guard check (Realtime-based)');
       while (!finalGuardDone) {
-        finalGuardDone = true; // assume done unless we find a pause
-        try {
-          const finalCheckSessionId = getOrCreateSessionId();
-          const finalCheckConvId = conversationIdRef.current;
-          const finalCheckVId = visitorIdRef.current;
-          if (finalCheckConvId && finalCheckVId) {
-            const fcResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: finalCheckConvId, visitorId: finalCheckVId, sessionId: finalCheckSessionId }),
-            });
-            if (fcResp.ok) {
-              const fcData = await fcResp.json();
-              console.log('[useWidgetChat] Final guard poll result:', { aiQueuedAt: fcData.aiQueuedAt, aiQueuedPaused: fcData.aiQueuedPaused, aiQueuedPreview: !!fcData.aiQueuedPreview });
-              if (queueWasSet && fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
-                // Queue was cancelled — abort.
-                hybridFlowActiveRef.current = false;
-                setIsTyping(false);
-                return;
-              }
-              if (fcData && fcData.aiQueuedPaused === true) {
-                // Agent is editing — wait and re-check. Pick up edited content if available.
-                if (fcData.aiQueuedPreview) {
-                  aiContent = fcData.aiQueuedPreview;
-                }
-                finalGuardDone = false; // loop again
-                await sleep(PAUSE_POLL_MS);
-                continue;
-              }
-              // Not paused and not cancelled — pick up any last-second edits
-              if (fcData && fcData.aiQueuedPreview) {
-                aiContent = fcData.aiQueuedPreview;
-              }
-            }
-          }
-        } catch { /* non-fatal: proceed if check fails */ }
-      }
-
-      // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue so the
-      // editable bubble stays visible on the dashboard while the widget types.
-      // Typing sleep is broken into chunks so we can re-poll for pause/cancel.
-      const aiMessageId = `ai-${Date.now()}`;
-      const TYPING_POLL_CHUNK_MS = 2000;
-
-      const doTypingSleep = async (totalMs: number): Promise<boolean> => {
-        let remaining = totalMs;
-        while (remaining > 0) {
-          const chunk = Math.min(remaining, TYPING_POLL_CHUNK_MS);
-          await sleep(chunk);
-          remaining -= chunk;
-
-          // Check abort from newer message
-          if (abortController.signal.aborted || aiGenerationIdRef.current !== myGenerationId) {
-            setIsTyping(false);
-            return false; // aborted
-          }
-
-          // Re-poll conversation state for pause/cancel
-          try {
-            const tpConvId = conversationIdRef.current;
-            const tpVId = visitorIdRef.current;
-            if (tpConvId && tpVId) {
-              const tpResp = await fetch(GET_MESSAGES_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
-              });
-              if (tpResp.ok) {
-                const tpData = await tpResp.json();
-                // Cancelled — abort entirely
-                if (tpData && 'aiQueuedAt' in tpData && tpData.aiQueuedAt === null) {
-                  setIsTyping(false);
-                  return false;
-                }
-                // Paused — wait in a sub-loop until unpaused or cancelled
-                if (tpData.aiQueuedPaused === true) {
-                  if (tpData.aiQueuedPreview) aiContent = tpData.aiQueuedPreview;
-                  setIsTyping(false); // hide typing dots while paused
-                  while (true) {
-                    await sleep(TYPING_POLL_CHUNK_MS);
-                    const reResp = await fetch(GET_MESSAGES_URL, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                      body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
-                    });
-                    if (!reResp.ok) break;
-                    const reData = await reResp.json();
-                    if (reData && 'aiQueuedAt' in reData && reData.aiQueuedAt === null) {
-                      return false; // cancelled during pause
-                    }
-                    if (reData && reData.aiQueuedPreview) aiContent = reData.aiQueuedPreview;
-                    if (!reData || reData.aiQueuedPaused !== true) {
-                      setIsTyping(true); // resume typing indicator
-                      break;
-                    }
-                  }
-                }
-              }
-            }
-          } catch { /* non-fatal */ }
+        finalGuardDone = true;
+        const cs = convStateRef.current;
+        console.log('[useWidgetChat] Final guard state:', { aiQueuedAt: cs.aiQueuedAt, aiQueuedPaused: cs.aiQueuedPaused, aiQueuedPreview: !!cs.aiQueuedPreview });
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          hybridFlowActiveRef.current = false;
+          setIsTyping(false);
+          return;
         }
+        if (cs.aiQueuedPaused) {
+          if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+          finalGuardDone = false;
+          await sleep(500);
+          continue;
+        }
+        if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+      }
         return true; // completed successfully
       };
 
