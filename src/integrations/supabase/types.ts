@@ -1064,6 +1064,10 @@ export type Database = {
         Returns: undefined
       }
       property_exists: { Args: { property_uuid: string }; Returns: boolean }
+      touch_conversation_presence: {
+        Args: { p_session_id: string; p_status?: string; p_visitor_id: string }
+        Returns: Json
+      }
       user_is_agent_for_property: {
         Args: { property_uuid: string; user_uuid: string }
         Returns: boolean
