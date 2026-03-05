@@ -1,68 +1,40 @@
 
 
-## Plan: Replace Widget Polling with Realtime Subscriptions
+## Plan: Fix Timer Pause During Editing (Both Visual and Functional)
 
-### Current Problem
+There are **two separate bugs** causing the timer to keep counting down and messages to still deliver during editing:
 
-The widget uses **polling** (every 2-3 seconds via `widget-get-messages` Edge Function) in two places:
+### Bug 1: ConversationList sidebar badge ignores pause entirely
 
-1. **Background poll** (lines 2152-2258): Polls every 2s for new human agent messages
-2. **Hybrid flow poll loop** (lines 1578-1652): Polls every 1.5-3s during the AI response delay window to check for human takeover, pause/cancel, and edits
+The `AgentCountdownBadge` component in `ConversationList.tsx` (lines 14-37) calculates remaining time with zero pause awareness. It just does `Date.now() - aiQueuedAt.getTime()` regardless of whether the queue is paused. This is the `⚡ 8s` badge you see ticking down in the sidebar.
 
-Each poll hits an Edge Function that makes 2 DB queries (validate conversation + fetch messages). With 10 concurrent users, this creates dozens of function invocations per second.
+**Fix**: Pass `aiQueuedPaused` to the badge and stop the countdown when paused. Show a "Paused" indicator instead.
 
-### Why Polling Exists Today
+### Bug 2: ChatPanel timer ref update timing
 
-The widget runs inside a cross-origin iframe **without Supabase authentication**. Supabase Realtime requires the anon key and respects RLS policies. Since the `messages` table has RLS policies that check `auth.uid()`, unauthenticated widget clients can't subscribe directly.
+The `isPausedRef` approach works in theory, but there's a subtle issue: the `update()` function inside the interval does `if (isPausedRef.current) return;` — this prevents updating the display but the underlying time keeps passing. When the pause ends, the offset calculation should compensate, but there may be an off-by-one-tick issue where the timer jumps. More critically, the `update()` function runs first on mount (line 503: `update();`) before the interval, and the effect that sets `isPausedRef.current` may not have fired yet.
 
-### Solution: Use Supabase Realtime with Anon Key + RLS Bypass
+**Fix**: Simplify the timer approach - instead of tracking pause offsets, simply stop and restart the interval when pause state changes, and freeze `queueSecondsLeft` at its current value when paused.
 
-The Realtime publication is already enabled for `messages` and `conversations` tables. We can make the widget subscribe by:
+### Bug 3: Widget delivery race condition
 
-1. **Adding an RLS SELECT policy** on `messages` that allows reads when the visitor's session is validated (using the existing `visitor_matches_session` security definer function)
-2. **Subscribing from the widget** using the Supabase JS client (already imported) with channel filters scoped to the `conversation_id`
+The widget polls every 3 seconds. If the agent clicks Edit when there are fewer than 3 seconds remaining, the widget's next poll may not fire before the deadline. The final guard check at line 1713 should catch this, but there's a window where the DB write hasn't committed yet.
 
-This eliminates polling entirely and replaces it with push-based updates.
+**Fix**: Reduce the poll interval from 3000ms to 1500ms for the last 10 seconds of the countdown. Also, the widget should do a mandatory pause check right before starting typing simulation (already exists as final guard, but ensure it's robust).
 
 ### Changes
 
-#### Database Migration
-- Add a new RLS SELECT policy on `messages`: allow select when the conversation's visitor matches the requesting session (using a new security definer function that validates visitor+session ownership of a conversation, to avoid exposing the anon key to arbitrary message reads)
-- Add a similar SELECT policy on `conversations` for queue state monitoring (pause/cancel/edit)
+**`src/components/dashboard/ConversationList.tsx`**:
+- Add `aiQueuedPaused` to the `AgentCountdownBadge` props
+- When paused, show "⏸" or freeze the display instead of counting down
+- Pass `aiQueuedPaused` from the conversation data through to the badge
 
-#### New Security Definer Function
-Create `visitor_owns_conversation(conv_id uuid, visitor_session text)` that returns true if the conversation belongs to a visitor with the matching session_id. This keeps the security model intact without requiring auth.
+**`src/components/dashboard/ChatPanel.tsx`**:
+- Simplify the timer: when `isPaused` becomes true, capture the current `queueSecondsLeft` and stop updating. When unpaused, recalculate the new `aiQueuedAt` effective start time.
 
-#### `src/hooks/useWidgetChat.ts`
-- **Replace background poll** (lines 2152-2258): Subscribe to `postgres_changes` on `messages` table filtered by `conversation_id`. On INSERT events where `sender_type = 'agent'` and `sender_id != 'ai-bot'`, add the message to state and set `humanHasTakenOver`.
-- **Replace hybrid flow poll loop** (lines 1578-1652): Subscribe to `postgres_changes` on `conversations` table filtered by `id = conversationId`. Listen for UPDATE events to detect changes to `ai_queued_at` (cancel), `ai_queued_paused` (pause/resume), `ai_queued_preview` (edits), and `ai_queued_window_ms` (send now). Use a promise-based approach where the subscription resolves/rejects based on events received, replacing the sleep+poll loop.
-- **Replace typing phase polls** (lines 1775-1816, 1822-1863): Same conversation subscription handles pause/cancel during typing simulation.
-- Keep `widget-get-messages` Edge Function as a **one-time initial load** to fetch message history when a returning visitor reopens the widget — but remove all interval-based polling.
+**`src/hooks/useWidgetChat.ts`**:
+- In the polling wait loop (line 1577), reduce `POLL_INTERVAL` to 1500ms when remaining time is under 10 seconds, to reduce the race window.
 
-#### `supabase/functions/widget-get-messages/index.ts`
-- No changes needed — still used for initial history load on reconnect.
-
-#### `supabase/functions/widget-save-message/index.ts`
-- No changes needed — still saves messages; Realtime will push the new row automatically.
-
-### Architecture After Change
-
-```text
-Before (per message exchange):
-  Widget → poll widget-get-messages every 2s → Edge Function → 2 DB queries → response
-  Widget → poll during 15s delay window (5-10 polls) → Edge Function → 2 DB queries each
-  Total: ~8-12 Edge Function calls per message exchange per user
-
-After:
-  Widget → supabase.channel().on('postgres_changes', ...).subscribe()
-  DB INSERT/UPDATE → Realtime pushes row to widget (zero Edge Function calls)
-  Total: 0 polling Edge Function calls per message exchange
-```
-
-### Important Considerations
-
-- The Realtime subscription uses the **anon key** (already available in the widget via `VITE_SUPABASE_PUBLISHABLE_KEY`). The RLS policy ensures only messages for the visitor's own conversation are visible.
-- Channel subscriptions are scoped with a filter like `filter: 'conversation_id=eq.{convId}'` to avoid receiving messages from other conversations.
-- Fallback: if the Realtime connection drops, the widget will do a one-time fetch via `widget-get-messages` to catch up, then re-subscribe. No interval polling.
-- The `conversations` subscription replaces all queue-state polling (pause, cancel, edit, send-now).
+**`src/pages/Dashboard.tsx`** and **`src/hooks/useConversations.ts`**:
+- Ensure `aiQueuedPaused` is passed through to the ConversationList component's conversation objects (verify it's already there).
 

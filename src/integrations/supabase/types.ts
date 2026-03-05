@@ -1076,6 +1076,10 @@ export type Database = {
         Args: { visitor_session_id: string; visitor_uuid: string }
         Returns: boolean
       }
+      visitor_owns_conversation: {
+        Args: { conv_id: string; visitor_session: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "client" | "agent"

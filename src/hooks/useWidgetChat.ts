@@ -505,6 +505,20 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // During the hybrid flow, the flow checks whether its own generation matches the current
   // value — if not, a newer message has arrived and this flow should abort.
   const aiGenerationIdRef = useRef(0);
+  // Realtime-driven conversation state (updated by subscription, consumed by hybrid flow)
+  const convStateRef = useRef<{
+    aiQueuedAt: string | null;
+    aiQueuedPaused: boolean;
+    aiQueuedPreview: string | null;
+    aiQueuedWindowMs: number | null;
+    aiEnabled: boolean;
+  }>({
+    aiQueuedAt: null,
+    aiQueuedPaused: false,
+    aiQueuedPreview: null,
+    aiQueuedWindowMs: null,
+    aiEnabled: true,
+  });
 
   const calculateTypingTimeMs = useCallback((text: string): number => {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
@@ -782,6 +796,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             // Track current AI enabled state from server.
             aiEnabledRef.current = (msgData?.aiEnabled ?? true) as boolean;
             prevAiEnabledRef.current = aiEnabledRef.current;
+            // Initialize Realtime-driven conversation state
+            convStateRef.current = {
+              aiQueuedAt: msgData?.aiQueuedAt ?? null,
+              aiQueuedPaused: msgData?.aiQueuedPaused ?? false,
+              aiQueuedPreview: msgData?.aiQueuedPreview ?? null,
+              aiQueuedWindowMs: msgData?.aiQueuedWindowMs ?? null,
+              aiEnabled: aiEnabledRef.current,
+            };
             
             if (existingMessages.length > 0) {
               // Map DB messages to UI format
@@ -1558,7 +1580,15 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, action: 'queue', preview: aiContent, windowMs: responseDelay }),
           });
           queueWasSet = queueResp.ok;
-          if (!queueResp.ok) {
+          if (queueResp.ok) {
+            convStateRef.current = {
+              ...convStateRef.current,
+              aiQueuedAt: new Date().toISOString(),
+              aiQueuedPaused: false,
+              aiQueuedPreview: aiContent,
+              aiQueuedWindowMs: responseDelay,
+            };
+          } else {
             console.warn('[useWidgetChat] Queue set failed:', queueResp.status);
           }
         } catch (queueErr) {
@@ -1566,88 +1596,50 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Step 3: Poll for human agent during the remaining delay window
+      // Step 3: Wait for human agent during the remaining delay window (Realtime-driven, no polling)
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
-      const BASE_POLL_INTERVAL = 3000;
-      const FAST_POLL_INTERVAL = 1500;
+      const REALTIME_CHECK_INTERVAL = 500; // No network calls, just ref reads
       let deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let cancelledByDashboard = false;
 
       while (Date.now() < deadline) {
-        // If a newer sendMessage aborted this controller during the wait window, break out
         if (abortController.signal.aborted) break;
-
         const remaining = deadline - Date.now();
-        // Use faster polling when < 10s remain to reduce race window
-        const pollInterval = remaining < 10000 ? FAST_POLL_INTERVAL : BASE_POLL_INTERVAL;
-        await sleep(Math.min(pollInterval, remaining));
-
-        // Re-check abort after sleeping
+        await sleep(Math.min(REALTIME_CHECK_INTERVAL, remaining));
         if (abortController.signal.aborted) break;
 
         if (humanHasTakenOverRef.current) {
           humanReplied = true;
           break;
         }
-        const loopConvId = conversationIdRef.current;
-        const loopVId = visitorIdRef.current;
-        if (loopConvId && loopVId) {
-          try {
-            const loopSessionId = getOrCreateSessionId();
-            const pollResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: loopConvId, visitorId: loopVId, sessionId: loopSessionId, afterSequence: lastSeqRef.current }),
-            });
-            if (pollResp.ok) {
-              const pollData = await pollResp.json();
 
-              // CRITICAL: If the dashboard agent pressed "Cancel", ai_queued_at will be null.
-              // Abort immediately — do NOT send the AI response.
-              // Only check this if we confirmed the queue was set (prevents false positives
-              // when the queue-set call failed or was slow).
-              if (queueWasSet && pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
-                console.warn('[useWidgetChat] Dashboard cancelled AI response');
-                cancelledByDashboard = true;
-                break;
-              }
+        // Read latest state from Realtime subscription (no network call)
+        const cs = convStateRef.current;
 
-              // If dashboard paused the timer (e.g. agent is editing), push the deadline
-              // far into the future so the message is NEVER sent while the agent is editing.
-              // Each poll cycle re-extends if still paused; once resumed, normal deadline logic resumes.
-              if (pollData?.aiQueuedPaused === true) {
-                console.log('[useWidgetChat] Poll detected PAUSED — extending deadline by 60s');
-                deadline = Math.max(deadline, Date.now() + 60000);
-              }
+        // Cancelled by dashboard
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          console.warn('[useWidgetChat] Dashboard cancelled AI response (via Realtime)');
+          cancelledByDashboard = true;
+          break;
+        }
 
-              // If "Send Now" was triggered (window set to 0), break immediately to deliver
-              if (typeof pollData?.aiQueuedWindowMs === 'number' && pollData.aiQueuedWindowMs === 0 && queueWasSet) {
-                console.log('[useWidgetChat] Send Now triggered — delivering immediately');
-                break;
-              }
+        // Paused — extend deadline
+        if (cs.aiQueuedPaused) {
+          console.log('[useWidgetChat] Realtime detected PAUSED — extending deadline by 60s');
+          deadline = Math.max(deadline, Date.now() + 60000);
+        }
 
-              // If agent edited the preview, keep local copy in sync
-              if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
-                aiContent = pollData.aiQueuedPreview;
-              }
-              const newMsgs = (pollData?.messages ?? []) as Array<{ sender_type: string; sender_id: string; content: string; sequence_number: number; id: string; created_at: string }>;
-              const agentMsg = newMsgs.find(m => m.sender_type === 'agent' && m.sender_id !== 'ai-bot');
-              if (agentMsg) {
-                humanHasTakenOverRef.current = true;
-                setHumanHasTakenOver(true);
-                setMessages(prev => {
-                  const alreadyExists = prev.some(m => m.id === agentMsg.id);
-                  if (alreadyExists) return prev;
-                  return [...prev, { id: agentMsg.id, content: agentMsg.content, sender_type: 'agent' as const, created_at: agentMsg.created_at }];
-                });
-                lastSeqRef.current = Math.max(lastSeqRef.current, agentMsg.sequence_number);
-                humanReplied = true;
-                break;
-              }
-            }
-          } catch { /* ignore poll errors */ }
+        // Send Now
+        if (typeof cs.aiQueuedWindowMs === 'number' && cs.aiQueuedWindowMs === 0 && queueWasSet) {
+          console.log('[useWidgetChat] Send Now triggered (via Realtime) — delivering immediately');
+          break;
+        }
+
+        // Edited preview
+        if (cs.aiQueuedPreview && cs.aiQueuedPreview !== aiContent) {
+          aiContent = cs.aiQueuedPreview;
         }
       }
 
@@ -1662,6 +1654,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const staleConvId = conversationIdRef.current;
         const staleVId = visitorIdRef.current;
         if (staleConvId && staleVId) {
+          convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
           fetch(SET_AI_QUEUE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
@@ -1676,6 +1669,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const staleConvId = conversationIdRef.current;
         const staleVId = visitorIdRef.current;
         if (staleConvId && staleVId) {
+          convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
           fetch(SET_AI_QUEUE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
@@ -1698,6 +1692,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const clearConvId = conversationIdRef.current;
         const clearVId = visitorIdRef.current;
         if (clearConvId && clearVId) {
+          convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
           fetch(SET_AI_QUEUE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
@@ -1707,160 +1702,83 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         return;
       }
 
-      // Final guard: do one last DB check right before sending to catch a cancel OR pause
-      // that arrived after the deadline but before we started typing.
-      // If paused, enter a secondary wait loop until unpaused or cancelled.
-      const PAUSE_POLL_MS = 2000;
+      // Final guard: check Realtime-driven state for cancel/pause (no network calls)
       let finalGuardDone = false;
-      console.log('[useWidgetChat] Entering final guard check loop');
+      console.log('[useWidgetChat] Entering final guard check (Realtime-based)');
       while (!finalGuardDone) {
-        finalGuardDone = true; // assume done unless we find a pause
-        try {
-          const finalCheckSessionId = getOrCreateSessionId();
-          const finalCheckConvId = conversationIdRef.current;
-          const finalCheckVId = visitorIdRef.current;
-          if (finalCheckConvId && finalCheckVId) {
-            const fcResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: finalCheckConvId, visitorId: finalCheckVId, sessionId: finalCheckSessionId }),
-            });
-            if (fcResp.ok) {
-              const fcData = await fcResp.json();
-              console.log('[useWidgetChat] Final guard poll result:', { aiQueuedAt: fcData.aiQueuedAt, aiQueuedPaused: fcData.aiQueuedPaused, aiQueuedPreview: !!fcData.aiQueuedPreview });
-              if (queueWasSet && fcData && 'aiQueuedAt' in fcData && fcData.aiQueuedAt === null) {
-                // Queue was cancelled — abort.
-                hybridFlowActiveRef.current = false;
-                setIsTyping(false);
-                return;
-              }
-              if (fcData && fcData.aiQueuedPaused === true) {
-                // Agent is editing — wait and re-check. Pick up edited content if available.
-                if (fcData.aiQueuedPreview) {
-                  aiContent = fcData.aiQueuedPreview;
-                }
-                finalGuardDone = false; // loop again
-                await sleep(PAUSE_POLL_MS);
-                continue;
-              }
-              // Not paused and not cancelled — pick up any last-second edits
-              if (fcData && fcData.aiQueuedPreview) {
-                aiContent = fcData.aiQueuedPreview;
-              }
-            }
-          }
-        } catch { /* non-fatal: proceed if check fails */ }
+        finalGuardDone = true;
+        const cs = convStateRef.current;
+        console.log('[useWidgetChat] Final guard state:', { aiQueuedAt: cs.aiQueuedAt, aiQueuedPaused: cs.aiQueuedPaused, aiQueuedPreview: !!cs.aiQueuedPreview });
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          hybridFlowActiveRef.current = false;
+          setIsTyping(false);
+          return;
+        }
+        if (cs.aiQueuedPaused) {
+          if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+          finalGuardDone = false;
+          await sleep(500);
+          continue;
+        }
+        if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
       }
 
-      // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue so the
-      // editable bubble stays visible on the dashboard while the widget types.
-      // Typing sleep is broken into chunks so we can re-poll for pause/cancel.
+      // Step 4: Window elapsed — show typing indicator BEFORE clearing the queue
       const aiMessageId = `ai-${Date.now()}`;
-      const TYPING_POLL_CHUNK_MS = 2000;
 
       const doTypingSleep = async (totalMs: number): Promise<boolean> => {
         let remaining = totalMs;
         while (remaining > 0) {
-          const chunk = Math.min(remaining, TYPING_POLL_CHUNK_MS);
+          const chunk = Math.min(remaining, 500);
           await sleep(chunk);
           remaining -= chunk;
 
-          // Check abort from newer message
           if (abortController.signal.aborted || aiGenerationIdRef.current !== myGenerationId) {
             setIsTyping(false);
-            return false; // aborted
+            return false;
           }
 
-          // Re-poll conversation state for pause/cancel
-          try {
-            const tpConvId = conversationIdRef.current;
-            const tpVId = visitorIdRef.current;
-            if (tpConvId && tpVId) {
-              const tpResp = await fetch(GET_MESSAGES_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
-              });
-              if (tpResp.ok) {
-                const tpData = await tpResp.json();
-                // Cancelled — abort entirely
-                if (tpData && 'aiQueuedAt' in tpData && tpData.aiQueuedAt === null) {
-                  setIsTyping(false);
-                  return false;
-                }
-                // Paused — wait in a sub-loop until unpaused or cancelled
-                if (tpData.aiQueuedPaused === true) {
-                  if (tpData.aiQueuedPreview) aiContent = tpData.aiQueuedPreview;
-                  setIsTyping(false); // hide typing dots while paused
-                  while (true) {
-                    await sleep(TYPING_POLL_CHUNK_MS);
-                    const reResp = await fetch(GET_MESSAGES_URL, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                      body: JSON.stringify({ conversationId: tpConvId, visitorId: tpVId, sessionId: getOrCreateSessionId() }),
-                    });
-                    if (!reResp.ok) break;
-                    const reData = await reResp.json();
-                    if (reData && 'aiQueuedAt' in reData && reData.aiQueuedAt === null) {
-                      return false; // cancelled during pause
-                    }
-                    if (reData && reData.aiQueuedPreview) aiContent = reData.aiQueuedPreview;
-                    if (!reData || reData.aiQueuedPaused !== true) {
-                      setIsTyping(true); // resume typing indicator
-                      break;
-                    }
-                  }
-                }
-              }
+          // Check Realtime-driven state (no network calls)
+          const cs = convStateRef.current;
+          if (cs.aiQueuedAt === null) {
+            setIsTyping(false);
+            return false;
+          }
+          if (cs.aiQueuedPaused) {
+            if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+            setIsTyping(false);
+            while (convStateRef.current.aiQueuedPaused) {
+              await sleep(500);
+              if (convStateRef.current.aiQueuedAt === null) return false;
+              if (convStateRef.current.aiQueuedPreview) aiContent = convStateRef.current.aiQueuedPreview;
             }
-          } catch { /* non-fatal */ }
+            setIsTyping(true);
+          }
         }
-        return true; // completed successfully
+        return true;
       };
 
-      // Immediate pre-typing pause check (no blind spot)
+      // Immediate pre-typing pause check (Realtime-based, no network calls)
       {
-        const ptConvId = conversationIdRef.current;
-        const ptVId = visitorIdRef.current;
-        if (ptConvId && ptVId) {
-          try {
-            const ptResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
-            });
-            if (ptResp.ok) {
-              const ptData = await ptResp.json();
-              if (ptData && 'aiQueuedAt' in ptData && ptData.aiQueuedAt === null) {
-                hybridFlowActiveRef.current = false;
-                setIsTyping(false);
-                return;
-              }
-              if (ptData?.aiQueuedPaused === true) {
-                if (ptData.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
-                // Wait in pause loop before starting typing
-                while (true) {
-                  await sleep(2000);
-                  const prResp = await fetch(GET_MESSAGES_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-                    body: JSON.stringify({ conversationId: ptConvId, visitorId: ptVId, sessionId: getOrCreateSessionId() }),
-                  });
-                  if (!prResp.ok) break;
-                  const prData = await prResp.json();
-                  if (prData && 'aiQueuedAt' in prData && prData.aiQueuedAt === null) {
-                    hybridFlowActiveRef.current = false;
-                    setIsTyping(false);
-                    return;
-                  }
-                  if (prData?.aiQueuedPreview) aiContent = prData.aiQueuedPreview;
-                  if (!prData || prData.aiQueuedPaused !== true) break;
-                }
-              }
-              if (ptData?.aiQueuedPreview) aiContent = ptData.aiQueuedPreview;
-            }
-          } catch { /* non-fatal */ }
+        const cs = convStateRef.current;
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          hybridFlowActiveRef.current = false;
+          setIsTyping(false);
+          return;
         }
+        if (cs.aiQueuedPaused) {
+          if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
+          while (convStateRef.current.aiQueuedPaused) {
+            await sleep(500);
+            if (convStateRef.current.aiQueuedAt === null) {
+              hybridFlowActiveRef.current = false;
+              setIsTyping(false);
+              return;
+            }
+            if (convStateRef.current.aiQueuedPreview) aiContent = convStateRef.current.aiQueuedPreview;
+          }
+        }
+        if (cs.aiQueuedPreview) aiContent = cs.aiQueuedPreview;
       }
 
       if (settings.smart_typing_enabled) {
@@ -1899,6 +1817,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }).catch(e => console.error('Failed to save AI message:', e));
 
         // Clear queue AFTER typing finishes so dashboard bubble stays editable throughout
+        convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
         fetch(SET_AI_QUEUE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
@@ -2149,113 +2068,93 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, [startProactiveTimer]);
 
 
-  // Poll for new messages (human agent responses) - realtime requires auth which widget doesn't have
+  // Realtime subscriptions for messages and conversation state (replaces polling)
   useEffect(() => {
-    // Only poll for live embeds (not preview mode)
     if (isPreview || !propertyId || propertyId === 'demo') return;
-    
+
     const convId = conversationIdRef.current;
-    const vId = visitorIdRef.current;
-    if (!convId || !vId) return;
+    if (!convId) return;
 
-    const sessionId = getOrCreateSessionId();
-    let isMounted = true;
+    let disposed = false;
 
-    const pollMessages = async () => {
-      if (!isMounted) return;
-      
-      try {
-        const response = await fetch(GET_MESSAGES_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            conversationId: convId,
-            visitorId: vId,
-            sessionId,
-            afterSequence: lastSeqRef.current,
-          }),
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        const fetchedMessages = data.messages || [];
-        const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
-
-        // Track dashboard AI enable/disable separately from human takeover.
-        const prev = prevAiEnabledRef.current;
-        aiEnabledRef.current = serverAiEnabled;
-        prevAiEnabledRef.current = serverAiEnabled;
-
-        // If AI was turned back on, reset humanHasTakenOver so AI can respond again.
-        // The humanHasTakenOver flag is only meaningful while AI is disabled;
-        // re-enabling AI signals the operator wants AI to resume.
-        if (prev === false && serverAiEnabled === true) {
-          if (humanHasTakenOverRef.current) {
-            setHumanHasTakenOver(false);
-            humanHasTakenOverRef.current = false;
-          }
-          void autoReplyIfPending();
-        }
-
-        if (fetchedMessages.length === 0) return;
-
-        // Update lastSeqRef
-        const maxSeq = Math.max(...fetchedMessages.map((m: { sequence_number: number }) => m.sequence_number));
-        if (maxSeq > lastSeqRef.current) {
-          lastSeqRef.current = maxSeq;
-        }
-
-        // Process new messages
-        for (const rawMsg of fetchedMessages) {
-          // Only add agent messages that aren't from AI (human agent override)
-          if (rawMsg.sender_type === 'agent' && rawMsg.sender_id !== 'ai-bot') {
-            // Mark human has taken over - AI should stop responding
+    const channel = supabase
+      .channel(`widget-rt-${convId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${convId}`,
+        },
+        (payload) => {
+          if (disposed) return;
+          const msg = payload.new as Record<string, unknown>;
+          // Only process human agent messages (AI messages are added locally by the hybrid flow)
+          if (msg.sender_type === 'agent' && msg.sender_id !== 'ai-bot') {
             if (!humanHasTakenOverRef.current) {
               setHumanHasTakenOver(true);
               humanHasTakenOverRef.current = true;
             }
-            if (!isEscalated) {
-              setIsEscalated(true);
-            }
-
-            // Track human escalation event (only once per conversation)
-            if (!humanEscalationTracked && propertyId && propertyId !== 'demo') {
-              setHumanEscalationTracked(true);
-              trackAnalyticsEvent(propertyId, 'human_escalation');
-            }
+            setIsEscalated(true);
 
             const newMsg: Message = {
-              id: rawMsg.id,
-              content: rawMsg.content,
+              id: msg.id as string,
+              content: msg.content as string,
               sender_type: 'agent',
-              created_at: rawMsg.created_at,
+              created_at: msg.created_at as string,
             };
             setMessages(prev => {
-              const exists = prev.some(m => m.id === newMsg.id);
-              if (exists) return prev;
+              if (prev.some(m => m.id === newMsg.id)) return prev;
               return [...prev, newMsg];
             });
+            if (typeof msg.sequence_number === 'number') {
+              lastSeqRef.current = Math.max(lastSeqRef.current, msg.sequence_number);
+            }
           }
         }
-      } catch (e) {
-        console.error('Error polling messages:', e);
-      }
-    };
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${convId}`,
+        },
+        (payload) => {
+          if (disposed) return;
+          const conv = payload.new as Record<string, unknown>;
+          convStateRef.current = {
+            aiQueuedAt: (conv.ai_queued_at as string | null) ?? null,
+            aiQueuedPaused: (conv.ai_queued_paused as boolean) ?? false,
+            aiQueuedPreview: (conv.ai_queued_preview as string | null) ?? null,
+            aiQueuedWindowMs: (conv.ai_queued_window_ms as number | null) ?? null,
+            aiEnabled: (conv.ai_enabled as boolean) ?? true,
+          };
 
-    // Poll every 2 seconds
-    const intervalId = setInterval(pollMessages, 2000);
-    // Also poll immediately
-    pollMessages();
+          // Handle AI enabled toggle
+          const serverAiEnabled = (conv.ai_enabled as boolean) ?? true;
+          const prev = prevAiEnabledRef.current;
+          aiEnabledRef.current = serverAiEnabled;
+          prevAiEnabledRef.current = serverAiEnabled;
+
+          if (prev === false && serverAiEnabled === true) {
+            if (humanHasTakenOverRef.current) {
+              setHumanHasTakenOver(false);
+              humanHasTakenOverRef.current = false;
+            }
+            void autoReplyIfPending();
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      isMounted = false;
-      clearInterval(intervalId);
+      disposed = true;
+      supabase.removeChannel(channel);
     };
-  }, [conversationId, humanEscalationTracked, propertyId, isEscalated, isPreview, autoReplyIfPending]);
+  }, [conversationId, propertyId, isPreview, autoReplyIfPending]);
 
   return {
     messages,
