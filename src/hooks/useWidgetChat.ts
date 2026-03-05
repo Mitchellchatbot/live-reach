@@ -498,6 +498,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // During the hybrid flow, the flow checks whether its own generation matches the current
   // value — if not, a newer message has arrived and this flow should abort.
   const aiGenerationIdRef = useRef(0);
+  // Ref that always tracks the latest messages array for use in callbacks without stale closures
+  const messagesRef = useRef<Message[]>([]);
   // Realtime-driven conversation state (updated by subscription, consumed by hybrid flow)
   const convStateRef = useRef<{
     aiQueuedAt: string | null;
