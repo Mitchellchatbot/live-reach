@@ -1,40 +1,69 @@
 
 
-## Plan: Fix Timer Pause During Editing (Both Visual and Functional)
+## Chat Flow Performance Optimization Plan
 
-There are **two separate bugs** causing the timer to keep counting down and messages to still deliver during editing:
+After reviewing the entire chat pipeline (2091-line widget hook, dashboard conversations, bootstrap, message save, AI generation), here are the key bottlenecks slowing things down — excluding humanizing delays.
 
-### Bug 1: ConversationList sidebar badge ignores pause entirely
+### 1. Eliminate `close-stale-conversations` from every conversation fetch
 
-The `AgentCountdownBadge` component in `ConversationList.tsx` (lines 14-37) calculates remaining time with zero pause awareness. It just does `Date.now() - aiQueuedAt.getTime()` regardless of whether the queue is paused. This is the `⚡ 8s` badge you see ticking down in the sidebar.
+**Problem**: `useConversations.ts` line 166 calls `close-stale-conversations` Edge Function on **every single `fetchConversationsData`** call. This adds 200-800ms of latency before conversations even load, and it runs `getUser()` + multiple DB queries + potentially Salesforce exports.
 
-**Fix**: Pass `aiQueuedPaused` to the badge and stop the countdown when paused. Show a "Paused" indicator instead.
+**Fix**: Move stale conversation cleanup to a **periodic background interval** (every 60s) instead of blocking every fetch. This alone could shave 500ms+ off initial dashboard load.
 
-### Bug 2: ChatPanel timer ref update timing
+### 2. Merge `widget-create-conversation` into `widget-save-message`
 
-The `isPausedRef` approach works in theory, but there's a subtle issue: the `update()` function inside the interval does `if (isPausedRef.current) return;` — this prevents updating the display but the underlying time keeps passing. When the pause ends, the offset calculation should compensate, but there may be an off-by-one-tick issue where the timer jumps. More critically, the `update()` function runs first on mount (line 503: `update();`) before the interval, and the effect that sets `isPausedRef.current` may not have fired yet.
+**Problem**: In `sendMessage` (line 1254-1276), the flow is sequential:
+1. `await ensureWidgetIds()` (bootstrap Edge Function)
+2. `await ensureConversationExists()` (create-conversation Edge Function)
+3. `await fetch(SAVE_MESSAGE_URL)` (save message Edge Function)
 
-**Fix**: Simplify the timer approach - instead of tracking pause offsets, simply stop and restart the interval when pause state changes, and freeze `queueSecondsLeft` at its current value when paused.
+That's **3 sequential Edge Function calls** before AI generation even starts.
 
-### Bug 3: Widget delivery race condition
+**Fix**: Merge `widget-create-conversation` into `widget-save-message` — if no conversation exists, create it atomically in the same call. This eliminates one full round-trip (~200-400ms).
 
-The widget polls every 3 seconds. If the agent clicks Edit when there are fewer than 3 seconds remaining, the widget's next poll may not fire before the deadline. The final guard check at line 1713 should catch this, but there's a window where the DB write hasn't committed yet.
+### 3. Start AI generation while saving visitor message
 
-**Fix**: Reduce the poll interval from 3000ms to 1500ms for the last 10 seconds of the countdown. Also, the widget should do a mandatory pause check right before starting typing simulation (already exists as final guard, but ensure it's robust).
+**Problem**: AI generation only starts **after** the visitor message save completes (line 1276 blocks, then generation begins at line 1432). The save doesn't need to finish for AI to generate — it just needs the conversation history.
 
-### Changes
+**Fix**: Fire the visitor message save as fire-and-forget (or parallel with generation start), and begin AI streaming immediately. The local `conversationHistory` already has the content.
 
-**`src/components/dashboard/ConversationList.tsx`**:
-- Add `aiQueuedPaused` to the `AgentCountdownBadge` props
-- When paused, show "⏸" or freeze the display instead of counting down
-- Pass `aiQueuedPaused` from the conversation data through to the badge
+### 4. Merge message history into `widget-bootstrap`
 
-**`src/components/dashboard/ChatPanel.tsx`**:
-- Simplify the timer: when `isPaused` becomes true, capture the current `queueSecondsLeft` and stop updating. When unpaused, recalculate the new `aiQueuedAt` effective start time.
+**Problem**: `ensureWidgetIds` (line 710-768) first calls `widget-bootstrap`, then **sequentially** calls `widget-get-messages` as a second Edge Function. Both could be done in one call.
 
-**`src/hooks/useWidgetChat.ts`**:
-- In the polling wait loop (line 1577), reduce `POLL_INTERVAL` to 1500ms when remaining time is under 10 seconds, to reduce the race window.
+**Fix**: Merge message history loading into the `widget-bootstrap` Edge Function for returning visitors. If a conversation exists, return the last N messages in the same response. Eliminates one full round-trip (~200-400ms) for returning visitors.
 
-**`src/pages/Dashboard.tsx`** and **`src/hooks/useConversations.ts`**:
-- Ensure `aiQueuedPaused` is passed through to the ConversationList component's conversation objects (verify it's already there).
+### 5. Remove redundant DB history fetches
 
+**Problem**: `autoReplyIfPending` (line 1007-1021) calls `GET_MESSAGES_URL` to fetch the full conversation history from DB, even though the widget already has it locally in `messages` state. Then the hybrid flow does it **again** at line 1412.
+
+**Fix**: Use the local `messages` state as the primary source for AI history. Only fall back to DB fetch when there's a suspicion of missed messages (e.g., after reconnection).
+
+### 6. Single-query conversation fetch on dashboard
+
+**Problem**: In the realtime handler (line 580-611), when a new conversation arrives, it fetches the conversation and then fetches messages **sequentially**.
+
+**Fix**: Use a single query with embedded select: `conversations.select('*, visitor:visitors(*), messages(*)')` to get everything in one call.
+
+---
+
+### Summary of impact (estimated latency savings)
+
+| Optimization | Estimated Saving |
+|---|---|
+| 1. Background stale cleanup | 300-800ms per dashboard load |
+| 2. Merge create-conv into save-message | 200-400ms on first message |
+| 3. Parallel AI gen + message save | 200-500ms per message |
+| 4. Merge messages into bootstrap | 200-400ms for returning visitors |
+| 5. Skip redundant DB history fetch | 100-300ms per AI reply |
+| 6. Single-query conversation fetch | 50-150ms per new conv on dashboard |
+| **Total potential** | **~1-2.5s faster end-to-end** |
+
+### Implementation order (by impact)
+
+1. Background stale cleanup (biggest dashboard improvement)
+2. Parallel AI generation + message save (biggest widget improvement)
+3. Merge messages into bootstrap (returning visitor improvement)
+4. Merge create-conversation into save-message (first message improvement)
+5. Single-query conversation fetch on dashboard
+6. Remove redundant history fetches
