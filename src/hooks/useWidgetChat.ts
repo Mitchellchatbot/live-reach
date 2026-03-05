@@ -796,6 +796,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             // Track current AI enabled state from server.
             aiEnabledRef.current = (msgData?.aiEnabled ?? true) as boolean;
             prevAiEnabledRef.current = aiEnabledRef.current;
+            // Initialize Realtime-driven conversation state
+            convStateRef.current = {
+              aiQueuedAt: msgData?.aiQueuedAt ?? null,
+              aiQueuedPaused: msgData?.aiQueuedPaused ?? false,
+              aiQueuedPreview: msgData?.aiQueuedPreview ?? null,
+              aiQueuedWindowMs: msgData?.aiQueuedWindowMs ?? null,
+              aiEnabled: aiEnabledRef.current,
+            };
             
             if (existingMessages.length > 0) {
               // Map DB messages to UI format
