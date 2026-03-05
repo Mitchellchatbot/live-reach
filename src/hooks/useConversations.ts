@@ -579,31 +579,28 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     console.log('[useConversations] Setting up realtime subscriptions');
 
-    // Define fetchSingleConversation BEFORE the channels so it's in scope for closures
+    // Optimization #6: Single-query conversation fetch with embedded messages
     const fetchSingleConversation = async (conversationId: string) => {
       const { data } = await supabase
         .from('conversations')
-        .select(`*, visitor:visitors(*), property:properties(*)`)
+        .select(`*, visitor:visitors(*), property:properties(*), messages(*)`)
         .eq('id', conversationId)
         .single();
       
       if (!data) return;
       
-      const { data: messages } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('sequence_number', { ascending: true });
-      
+      const msgs = (data.messages || []) as any[];
       // Skip if no visitor messages yet
-      if (!messages?.some(m => m.sender_type === 'visitor')) return;
+      if (!msgs.some(m => m.sender_type === 'visitor')) return;
+      
+      // Sort messages by sequence_number
+      const sortedMessages = msgs
+        .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
+        .sort((a, b) => a.sequence_number - b.sequence_number);
       
       const newConversation: DbConversation = {
         ...data,
-        messages: (messages || []).map(m => ({
-          ...m,
-          sender_type: m.sender_type as 'agent' | 'visitor',
-        })),
+        messages: sortedMessages,
         status: data.status as 'active' | 'closed' | 'pending',
       };
       
