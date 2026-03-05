@@ -313,14 +313,17 @@ const EditableInfoItem = ({
 const VisitorInfoSidebar = ({
   visitor,
   assignedAgent,
-  propertyName
+  propertyName,
+  conversationId
 }: {
   visitor: any;
   assignedAgent: any;
   propertyName?: string;
+  conversationId?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [localVisitor, setLocalVisitor] = useState(visitor);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   // Sync when visitor prop changes (e.g. switching conversations)
   useEffect(() => {
