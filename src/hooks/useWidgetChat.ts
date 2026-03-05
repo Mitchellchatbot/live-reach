@@ -1382,7 +1382,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
         // Paused — extend deadline
         if (cs.aiQueuedPaused) {
-          console.log('[useWidgetChat] Realtime detected PAUSED — extending deadline by 60s');
+          // Paused — extend deadline
           deadline = Math.max(deadline, Date.now() + 60000);
         }
 
