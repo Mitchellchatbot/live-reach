@@ -502,8 +502,28 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, []);
 
 
+  // --- Shared helpers to avoid duplication across autoReply, hybrid flow, and preview ---
+  const buildNaturalLeadCaptureFields = useCallback((): string[] => {
+    const fields: string[] = [];
+    if (settings.natural_lead_capture_enabled) {
+      if (settings.require_name_before_chat) fields.push('name');
+      if (settings.require_email_before_chat) fields.push('email');
+      if (settings.require_phone_before_chat) fields.push('phone');
+      if (settings.require_insurance_card_before_chat) fields.push('insurance_card');
+    }
+    return fields;
+  }, [settings.natural_lead_capture_enabled, settings.require_name_before_chat, settings.require_email_before_chat, settings.require_phone_before_chat, settings.require_insurance_card_before_chat]);
+
+  const computeResponseDelay = useCallback((opts?: { demoOrPreview?: boolean }): number => {
+    if (opts?.demoOrPreview) return randomInRange(1000, 2000);
+    const isFirst = aiMessageCountRef.current === 0;
+    const useQuickReply = settings.quick_reply_after_first_enabled && !isFirst;
+    return useQuickReply
+      ? randomInRange(5000, 5000)
+      : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+  }, [settings.quick_reply_after_first_enabled, settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms]);
+
   // These are now handled by the consolidated widget-bootstrap call.
-  // fetchAiAgents and fetchSettings are no longer separate functions.
 
   // Cycle to next AI agent
   const cycleToNextAgent = useCallback(() => {
