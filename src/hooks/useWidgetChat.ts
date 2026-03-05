@@ -241,8 +241,8 @@ const updateVisitorSecure = async (
 };
 
 // Mark the conversation as active/closed based on widget visibility.
-// This is "best effort" (unload events are not guaranteed), so we also rely on
-// dashboard-side stale closing to keep statuses accurate.
+// Uses a lightweight RPC function instead of an Edge Function to eliminate
+// HTTP overhead and cold starts (runs as a single SQL call).
 const updateConversationPresenceSecure = async (args: {
   propertyId: string;
   visitorId: string;
@@ -250,18 +250,13 @@ const updateConversationPresenceSecure = async (args: {
   status: 'active' | 'closed';
 }) => {
   try {
-    const resp = await fetch(PRESENCE_URL, {
-      method: 'POST',
-      keepalive: args.status === 'closed',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify(args),
+    const { error } = await supabase.rpc('touch_conversation_presence', {
+      p_visitor_id: args.visitorId,
+      p_session_id: args.sessionId,
+      p_status: args.status,
     });
-
-    if (!resp.ok) {
-      console.error('Failed to update conversation presence:', await resp.text());
+    if (error) {
+      console.error('Failed to update conversation presence:', error.message);
     }
   } catch (error) {
     // Swallow errors (especially on unload), but log in case it's systematic.
