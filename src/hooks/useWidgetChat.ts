@@ -1400,8 +1400,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Always release the hybrid flow lock (whether human replied or not)
-      hybridFlowActiveRef.current = false;
+      // Lock is NOT released here — kept through typing simulation to prevent
+      // autoReplyIfPending from firing a duplicate. Released in the finally block.
 
       // If this flow was aborted by a newer sendMessage during the delay window,
       // update the queued preview with the new content that the newer flow will regenerate.
