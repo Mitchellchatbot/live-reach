@@ -1388,7 +1388,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
         // Send Now
         if (typeof cs.aiQueuedWindowMs === 'number' && cs.aiQueuedWindowMs === 0 && queueWasSet) {
-          console.log('[useWidgetChat] Send Now triggered (via Realtime) — delivering immediately');
+          
           break;
         }
 
