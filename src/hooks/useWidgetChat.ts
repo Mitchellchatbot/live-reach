@@ -1086,6 +1086,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Step 4: Save to DB and reveal to visitor
       const saveAiToDb = async (finalContent: string) => {
+        const autoSessionId = getOrCreateSessionId();
         const saveResp = await fetch(SAVE_MESSAGE_URL, {
           method: 'POST',
           headers: {
@@ -1095,7 +1096,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           body: JSON.stringify({
             conversationId: convId,
             visitorId: vId,
-            sessionId,
+            sessionId: autoSessionId,
             senderType: 'agent',
             content: finalContent,
           }),
