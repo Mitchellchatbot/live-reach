@@ -1596,88 +1596,50 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Step 3: Poll for human agent during the remaining delay window
+      // Step 3: Wait for human agent during the remaining delay window (Realtime-driven, no polling)
       const generationElapsed = Date.now() - generationStart;
       const remainingDelay = Math.max(0, responseDelay - generationElapsed);
-      const BASE_POLL_INTERVAL = 3000;
-      const FAST_POLL_INTERVAL = 1500;
+      const REALTIME_CHECK_INTERVAL = 500; // No network calls, just ref reads
       let deadline = Date.now() + remainingDelay;
       let humanReplied = false;
       let cancelledByDashboard = false;
 
       while (Date.now() < deadline) {
-        // If a newer sendMessage aborted this controller during the wait window, break out
         if (abortController.signal.aborted) break;
-
         const remaining = deadline - Date.now();
-        // Use faster polling when < 10s remain to reduce race window
-        const pollInterval = remaining < 10000 ? FAST_POLL_INTERVAL : BASE_POLL_INTERVAL;
-        await sleep(Math.min(pollInterval, remaining));
-
-        // Re-check abort after sleeping
+        await sleep(Math.min(REALTIME_CHECK_INTERVAL, remaining));
         if (abortController.signal.aborted) break;
 
         if (humanHasTakenOverRef.current) {
           humanReplied = true;
           break;
         }
-        const loopConvId = conversationIdRef.current;
-        const loopVId = visitorIdRef.current;
-        if (loopConvId && loopVId) {
-          try {
-            const loopSessionId = getOrCreateSessionId();
-            const pollResp = await fetch(GET_MESSAGES_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-              body: JSON.stringify({ conversationId: loopConvId, visitorId: loopVId, sessionId: loopSessionId, afterSequence: lastSeqRef.current }),
-            });
-            if (pollResp.ok) {
-              const pollData = await pollResp.json();
 
-              // CRITICAL: If the dashboard agent pressed "Cancel", ai_queued_at will be null.
-              // Abort immediately — do NOT send the AI response.
-              // Only check this if we confirmed the queue was set (prevents false positives
-              // when the queue-set call failed or was slow).
-              if (queueWasSet && pollData && 'aiQueuedAt' in pollData && pollData.aiQueuedAt === null) {
-                console.warn('[useWidgetChat] Dashboard cancelled AI response');
-                cancelledByDashboard = true;
-                break;
-              }
+        // Read latest state from Realtime subscription (no network call)
+        const cs = convStateRef.current;
 
-              // If dashboard paused the timer (e.g. agent is editing), push the deadline
-              // far into the future so the message is NEVER sent while the agent is editing.
-              // Each poll cycle re-extends if still paused; once resumed, normal deadline logic resumes.
-              if (pollData?.aiQueuedPaused === true) {
-                console.log('[useWidgetChat] Poll detected PAUSED — extending deadline by 60s');
-                deadline = Math.max(deadline, Date.now() + 60000);
-              }
+        // Cancelled by dashboard
+        if (queueWasSet && cs.aiQueuedAt === null) {
+          console.warn('[useWidgetChat] Dashboard cancelled AI response (via Realtime)');
+          cancelledByDashboard = true;
+          break;
+        }
 
-              // If "Send Now" was triggered (window set to 0), break immediately to deliver
-              if (typeof pollData?.aiQueuedWindowMs === 'number' && pollData.aiQueuedWindowMs === 0 && queueWasSet) {
-                console.log('[useWidgetChat] Send Now triggered — delivering immediately');
-                break;
-              }
+        // Paused — extend deadline
+        if (cs.aiQueuedPaused) {
+          console.log('[useWidgetChat] Realtime detected PAUSED — extending deadline by 60s');
+          deadline = Math.max(deadline, Date.now() + 60000);
+        }
 
-              // If agent edited the preview, keep local copy in sync
-              if (pollData?.aiQueuedPreview && pollData.aiQueuedPreview !== aiContent) {
-                aiContent = pollData.aiQueuedPreview;
-              }
-              const newMsgs = (pollData?.messages ?? []) as Array<{ sender_type: string; sender_id: string; content: string; sequence_number: number; id: string; created_at: string }>;
-              const agentMsg = newMsgs.find(m => m.sender_type === 'agent' && m.sender_id !== 'ai-bot');
-              if (agentMsg) {
-                humanHasTakenOverRef.current = true;
-                setHumanHasTakenOver(true);
-                setMessages(prev => {
-                  const alreadyExists = prev.some(m => m.id === agentMsg.id);
-                  if (alreadyExists) return prev;
-                  return [...prev, { id: agentMsg.id, content: agentMsg.content, sender_type: 'agent' as const, created_at: agentMsg.created_at }];
-                });
-                lastSeqRef.current = Math.max(lastSeqRef.current, agentMsg.sequence_number);
-                humanReplied = true;
-                break;
-              }
-            }
-          } catch { /* ignore poll errors */ }
+        // Send Now
+        if (typeof cs.aiQueuedWindowMs === 'number' && cs.aiQueuedWindowMs === 0 && queueWasSet) {
+          console.log('[useWidgetChat] Send Now triggered (via Realtime) — delivering immediately');
+          break;
+        }
+
+        // Edited preview
+        if (cs.aiQueuedPreview && cs.aiQueuedPreview !== aiContent) {
+          aiContent = cs.aiQueuedPreview;
         }
       }
 
