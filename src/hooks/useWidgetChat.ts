@@ -1692,6 +1692,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const clearConvId = conversationIdRef.current;
         const clearVId = visitorIdRef.current;
         if (clearConvId && clearVId) {
+          convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
           fetch(SET_AI_QUEUE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
