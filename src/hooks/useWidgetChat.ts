@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { maybeInjectTypo, maybeDropCapitalization, maybeDropApostrophes } from '@/utils/typoInjector';
+import { maybeDropCapitalization, maybeDropApostrophes } from '@/utils/typoInjector';
 
 declare global {
   interface Window {
