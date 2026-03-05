@@ -744,7 +744,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             
             if (existingMessages.length > 0) {
               // Map DB messages to UI format
-              const greetingAgent = fetchedAgents && fetchedAgents.length > 0 ? fetchedAgents[0] : null;
+              const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
               const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
                 id: m.id,
                 content: m.content,
