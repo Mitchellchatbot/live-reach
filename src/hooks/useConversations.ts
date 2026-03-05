@@ -180,9 +180,10 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
   const fetchConversationsData = useCallback(async (): Promise<DbConversation[]> => {
     if (!user) return [];
 
+    // Fetch conversations with embedded messages — single query
     let query = supabase
       .from('conversations')
-      .select(`*, visitor:visitors(*), property:properties(*)`)
+      .select(`*, visitor:visitors(*), property:properties(*), messages(*)`)
       .order('updated_at', { ascending: false });
 
     if (selectedPropertyId && selectedPropertyId !== 'all') {
@@ -203,47 +204,17 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     if (!convData || convData.length === 0) return [];
 
-    // Batch fetch messages
-    const conversationIds = convData.map(c => c.id);
-    const chunkSize = 25;
-    const idChunks: string[][] = [];
-    for (let i = 0; i < conversationIds.length; i += chunkSize) {
-      idChunks.push(conversationIds.slice(i, i + chunkSize));
-    }
-
-    const messageChunkResults = await Promise.all(
-      idChunks.map((ids) =>
-        supabase
-          .from('messages')
-          .select('*')
-          .in('conversation_id', ids)
-          .order('sequence_number', { ascending: true })
-      )
-    );
-
-    const allMessages = messageChunkResults.flatMap((r) => r.data || []);
-    const messagesError = messageChunkResults.find((r) => r.error)?.error;
-    if (messagesError) {
-      console.error('Error fetching messages:', messagesError);
-    }
-
-    const messagesByConversation: Record<string, DbMessage[]> = {};
-    (allMessages || []).forEach((msg) => {
-      const convId = msg.conversation_id;
-      if (!messagesByConversation[convId]) {
-        messagesByConversation[convId] = [];
-      }
-      messagesByConversation[convId].push({
-        ...msg,
-        sender_type: msg.sender_type as 'agent' | 'visitor',
-      });
+    const conversationsWithMessages = convData.map((conv) => {
+      const msgs = ((conv as any).messages || []) as any[];
+      const sortedMessages: DbMessage[] = msgs
+        .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
+        .sort((a, b) => a.sequence_number - b.sequence_number);
+      return {
+        ...conv,
+        status: conv.status as 'active' | 'closed' | 'pending',
+        messages: sortedMessages,
+      };
     });
-
-    const conversationsWithMessages = convData.map((conv) => ({
-      ...conv,
-      status: conv.status as 'active' | 'closed' | 'pending',
-      messages: messagesByConversation[conv.id] || [],
-    }));
 
     // Filter out conversations without visitor messages
     return conversationsWithMessages.filter(
@@ -577,7 +548,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
   useEffect(() => {
     if (!user) return;
 
-    console.log('[useConversations] Setting up realtime subscriptions');
+    
 
     // Optimization #6: Single-query conversation fetch with embedded messages
     const fetchSingleConversation = async (conversationId: string) => {
@@ -590,10 +561,8 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       if (!data) return;
       
       const msgs = (data.messages || []) as any[];
-      // Skip if no visitor messages yet
       if (!msgs.some(m => m.sender_type === 'visitor')) return;
       
-      // Sort messages by sequence_number
       const sortedMessages = msgs
         .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
         .sort((a, b) => a.sequence_number - b.sequence_number);
@@ -610,41 +579,34 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       });
     };
 
-    const messagesChannel = supabase
-      .channel(`messages-realtime-${realtimeChannelSuffixRef.current}`)
+    // Single consolidated Realtime channel for messages, conversations, and visitors
+    const realtimeChannel = supabase
+      .channel(`dashboard-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-          console.log('[useConversations] New message:', payload);
           const newMessage = payload.new as DbMessage;
           
           updateConversationsCache(prev => {
             const conversationExists = prev.some(c => c.id === newMessage.conversation_id);
             if (!conversationExists) {
-              // Fetch this new conversation (including for agent messages from AI)
               fetchSingleConversation(newMessage.conversation_id);
               return prev;
             }
             
             return prev.map(c => {
               if (c.id !== newMessage.conversation_id) return c;
-              // Deduplicate by both id and sequence_number
               const existing = c.messages || [];
               const alreadyExists = existing.some(
                 m => m.id === newMessage.id || m.sequence_number === newMessage.sequence_number
               );
               if (alreadyExists) return { ...c, updated_at: newMessage.created_at };
-              // Keep sorted by sequence_number
               const merged = [...existing, {
                 ...newMessage,
                 sender_type: newMessage.sender_type as 'agent' | 'visitor',
               }].sort((a, b) => a.sequence_number - b.sequence_number);
-              return { 
-                ...c, 
-                messages: merged,
-                updated_at: newMessage.created_at,
-              };
+              return { ...c, messages: merged, updated_at: newMessage.created_at };
             });
           });
         }
@@ -653,7 +615,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages' },
         (payload) => {
-          console.log('[useConversations] Message updated:', payload);
           const updatedMessage = payload.new as DbMessage;
           
           updateConversationsCache(prev =>
@@ -672,23 +633,15 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
           );
         }
       )
-      .subscribe();
-
-    const conversationsChannel = supabase
-      .channel(`conversations-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'conversations' },
         async (payload) => {
           const newConv = payload.new;
-          
-          // Skip if not for current property filter
           if (selectedPropertyId && selectedPropertyId !== 'all' 
               && newConv.property_id !== selectedPropertyId) {
             return;
           }
-          
-          // Fetch only this single conversation
           fetchSingleConversation(newConv.id);
         }
       )
@@ -696,7 +649,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'conversations' },
         (payload) => {
-          console.log('[useConversations] Conversation updated:', payload);
           const updated = payload.new;
           
           updateConversationsCache(prev =>
@@ -726,15 +678,10 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
           updateConversationsCache(prev => prev.filter(c => c.id !== deleted.id));
         }
       )
-      .subscribe();
-
-    const visitorsChannel = supabase
-      .channel(`visitors-realtime-${realtimeChannelSuffixRef.current}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'visitors' },
         (payload) => {
-          console.log('[useConversations] Visitor updated:', payload);
           const updatedVisitor = payload.new as DbVisitor;
           
           updateConversationsCache(prev =>
@@ -749,10 +696,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       .subscribe();
 
     return () => {
-      console.log('[useConversations] Cleaning up realtime subscriptions');
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(conversationsChannel);
-      supabase.removeChannel(visitorsChannel);
+      supabase.removeChannel(realtimeChannel);
     };
   }, [user, selectedPropertyId, updateConversationsCache]);
 

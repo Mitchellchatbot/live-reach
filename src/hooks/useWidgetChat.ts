@@ -204,14 +204,10 @@ const sleep = (ms: number): Promise<void> => {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-ai`;
 const TRACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-page-analytics`;
-const EXTRACT_INFO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-visitor-info`;
 const LOCATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-visitor-location`;
 const UPDATE_VISITOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-visitor`;
 const BOOTSTRAP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-bootstrap`;
-const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-create-conversation`;
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
-const GET_MESSAGES_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-get-messages`;
-// PRESENCE_URL removed — now uses supabase.rpc('touch_conversation_presence') directly
 const SET_AI_QUEUE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-set-ai-queue`;
 
 // Secure visitor update through edge function
@@ -277,28 +273,6 @@ const fetchVisitorLocation = async (visitorId: string) => {
   }
 };
 
-const extractVisitorInfo = async (
-  visitorId: string,
-  conversationHistory: { role: string; content: string }[]
-) => {
-  if (!visitorId || conversationHistory.length < 1) return;
-  
-  try {
-    await fetch(EXTRACT_INFO_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({
-        visitorId,
-        conversationHistory,
-      }),
-    });
-  } catch (error) {
-    console.error('Failed to extract visitor info:', error);
-  }
-};
   const trackAnalyticsEvent = async (
   propertyId: string,
   eventType: 'chat_open' | 'human_escalation'
@@ -475,7 +449,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
   const bootstrapPromiseRef = useRef<Promise<void> | null>(null); // Mutex for ensureWidgetIds
-  const conversationPromiseRef = useRef<Promise<string | null> | null>(null); // Mutex for ensureConversationExists
+  
   const lastSeqRef = useRef<number>(0); // Track last sequence number for message polling
   const humanHasTakenOverRef = useRef(false); // True only when a human agent has actually responded
   const aiEnabledRef = useRef<boolean>(true); // Tracks dashboard AI toggle (do not conflate with human takeover)
@@ -527,43 +501,29 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }));
   }, []);
 
-  const refreshAiEnabledFromServer = useCallback(async (): Promise<boolean> => {
-    // Only meaningful for real embeds.
-    if (isPreview || !propertyId || propertyId === 'demo') return true;
-    const convId = conversationIdRef.current;
-    const vId = visitorIdRef.current;
-    if (!convId || !vId) return aiEnabledRef.current;
 
-    const sessionId = getOrCreateSessionId();
-    try {
-      const resp = await fetch(GET_MESSAGES_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          conversationId: convId,
-          visitorId: vId,
-          sessionId,
-          // Keep it small; we only need aiEnabled.
-          afterSequence: lastSeqRef.current,
-        }),
-      });
-
-      if (!resp.ok) return aiEnabledRef.current;
-      const data = await resp.json();
-      const next = (data?.aiEnabled ?? true) as boolean;
-      aiEnabledRef.current = next;
-      prevAiEnabledRef.current = next;
-      return next;
-    } catch {
-      return aiEnabledRef.current;
+  // --- Shared helpers to avoid duplication across autoReply, hybrid flow, and preview ---
+  const buildNaturalLeadCaptureFields = useCallback((): string[] => {
+    const fields: string[] = [];
+    if (settings.natural_lead_capture_enabled) {
+      if (settings.require_name_before_chat) fields.push('name');
+      if (settings.require_email_before_chat) fields.push('email');
+      if (settings.require_phone_before_chat) fields.push('phone');
+      if (settings.require_insurance_card_before_chat) fields.push('insurance_card');
     }
-  }, [isPreview, propertyId]);
+    return fields;
+  }, [settings.natural_lead_capture_enabled, settings.require_name_before_chat, settings.require_email_before_chat, settings.require_phone_before_chat, settings.require_insurance_card_before_chat]);
+
+  const computeResponseDelay = useCallback((opts?: { demoOrPreview?: boolean }): number => {
+    if (opts?.demoOrPreview) return randomInRange(1000, 2000);
+    const isFirst = aiMessageCountRef.current === 0;
+    const useQuickReply = settings.quick_reply_after_first_enabled && !isFirst;
+    return useQuickReply
+      ? randomInRange(5000, 5000)
+      : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+  }, [settings.quick_reply_after_first_enabled, settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms]);
 
   // These are now handled by the consolidated widget-bootstrap call.
-  // fetchAiAgents and fetchSettings are no longer separate functions.
 
   // Cycle to next AI agent
   const cycleToNextAgent = useCallback(() => {
@@ -764,60 +724,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     await bootstrapPromiseRef.current;
   }, [propertyId, isPreview]);
 
-  // Create conversation on-demand (lazy creation when visitor sends first message)
-  const ensureConversationExists = useCallback(async (): Promise<string | null> => {
-    if (!propertyId || propertyId === 'demo' || isPreview) return null;
-    if (conversationIdRef.current) return conversationIdRef.current;
-    if (!visitorIdRef.current) return null;
-
-    // Mutex: if another call is already creating, piggyback on it
-    if (conversationPromiseRef.current) {
-      return conversationPromiseRef.current;
-    }
-
-    const doCreate = async (): Promise<string | null> => {
-      // Re-check after acquiring the slot (another caller may have finished)
-      if (conversationIdRef.current) return conversationIdRef.current;
-
-      const sessionId = getOrCreateSessionId();
-
-      try {
-        const response = await fetch(CREATE_CONVERSATION_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            propertyId,
-            visitorId: visitorIdRef.current,
-            sessionId,
-          }),
-        });
-
-        if (!response.ok) {
-          console.error('Widget create conversation failed:', response.status, await response.text());
-          return null;
-        }
-
-        const data = await response.json();
-        if (data?.conversationId) {
-          setConversationId(data.conversationId);
-          conversationIdRef.current = data.conversationId;
-          return data.conversationId;
-        }
-        return null;
-      } catch (e) {
-        console.error('Widget create conversation error:', e);
-        return null;
-      }
-    };
-
-    conversationPromiseRef.current = doCreate().finally(() => {
-      conversationPromiseRef.current = null;
-    });
-    return conversationPromiseRef.current;
-  }, [propertyId, isPreview]);
 
   // Check for escalation keywords in message
   const checkForEscalationKeywords = useCallback((content: string): boolean => {
@@ -897,14 +803,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             setVisitorId(testVisitor.id);
             visitorIdRef.current = testVisitor.id; // Update ref immediately for extraction
 
-            // Trigger extraction for test conversations too
-            const conversationHistory = allMessages.map(m => ({
-              role: m.sender_type === 'visitor' ? 'user' : 'assistant',
-              content: m.content,
-            }));
-            if (conversationHistory.length >= 1) {
-              extractVisitorInfo(testVisitor.id, conversationHistory);
-            }
+            // Visitor info extraction is handled server-side
           }
         }
       } catch (error) {
@@ -999,20 +898,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Mark handled so we don't auto-reply repeatedly on subsequent polls.
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
-      const isFirstAutoReply = aiMessageCountRef.current === 0;
-      const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
-      const responseDelay = useQuickReplyAuto
-        ? randomInRange(5000, 5000)
-        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+      const responseDelay = computeResponseDelay();
 
       const respondingAgent = currentAiAgent;
-      const naturalLeadCaptureFields: string[] = [];
-      if (settings.natural_lead_capture_enabled) {
-        if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
-        if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
-        if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
-        if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
-      }
+      const naturalLeadCaptureFields = buildNaturalLeadCaptureFields();
 
       const aiHistory = toAiHistoryFromDb(dbMessages);
 
@@ -1141,7 +1030,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
 
     proactiveTimerRef.current = setTimeout(() => {
-      if (messages.length === 0) {
+      // Use messagesRef to avoid stale closure over messages array
+      if (messagesRef.current.length === 0) {
         setShowProactiveMessage(true);
         setMessages(prev => [...prev, {
           id: 'proactive',
@@ -1151,7 +1041,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }]);
       }
     }, settings.proactive_message_delay_seconds * 1000);
-  }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds, messages]);
+  }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds]);
 
   const initializeChat = useCallback(async () => {
     // For preview/demo mode, use greeting prop directly
@@ -1257,11 +1147,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Don't return - let AI continue responding until human takes over
     }
 
-    // If AI was previously off, refresh aiEnabled right now (avoids race where user toggles on + immediately sends).
-    let aiEnabledNow = aiEnabledRef.current;
-    if (!aiEnabledNow) {
-      aiEnabledNow = await refreshAiEnabledFromServer();
-    }
+    // aiEnabledRef is kept in sync via Realtime subscription — no server refresh needed
+    const aiEnabledNow = aiEnabledRef.current;
 
     // Stop AI if either:
     // - dashboard has AI disabled, OR
@@ -1308,27 +1195,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // 5. If window elapsed → reveal in widget (with smart typing duration added on top)
     // responseDelay = human-priority window (AI settings for first msg, 15-25s for quick reply)
     // Smart typing duration is added AFTER the window, not within it.
-    const isFirstAiReply = aiMessageCountRef.current === 0;
-    const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
-    // For demo/preview mode, use a near-instant delay so people see the response quickly
     const isDemoOrPreview = isPreview || !propertyId || propertyId === 'demo';
-    const responseDelay = isDemoOrPreview
-      ? randomInRange(1000, 2000)
-      : useQuickReply
-        ? randomInRange(5000, 5000)
-        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+    const responseDelay = computeResponseDelay({ demoOrPreview: isDemoOrPreview });
 
     // Store current agent for this message (before cycling)
     const respondingAgent = currentAiAgent;
 
     // Build natural lead capture fields list
-    const naturalLeadCaptureFields: string[] = [];
-    if (settings.natural_lead_capture_enabled) {
-      if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
-      if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
-      if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
-      if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
-    }
+    const naturalLeadCaptureFields = buildNaturalLeadCaptureFields();
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
       // --- RAPID MESSAGE HANDLING ---
@@ -1508,13 +1382,13 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
         // Paused — extend deadline
         if (cs.aiQueuedPaused) {
-          console.log('[useWidgetChat] Realtime detected PAUSED — extending deadline by 60s');
+          // Paused — extend deadline
           deadline = Math.max(deadline, Date.now() + 60000);
         }
 
         // Send Now
         if (typeof cs.aiQueuedWindowMs === 'number' && cs.aiQueuedWindowMs === 0 && queueWasSet) {
-          console.log('[useWidgetChat] Send Now triggered (via Realtime) — delivering immediately');
+          
           break;
         }
 
@@ -1524,8 +1398,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
-      // Always release the hybrid flow lock (whether human replied or not)
-      hybridFlowActiveRef.current = false;
+      // Lock is NOT released here — kept through typing simulation to prevent
+      // autoReplyIfPending from firing a duplicate. Released in the finally block.
 
       // If this flow was aborted by a newer sendMessage during the delay window,
       // update the queued preview with the new content that the newer flow will regenerate.
@@ -1563,7 +1437,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Dashboard agent pressed Cancel — queue was already cleared by the dashboard.
       // Just release the lock and abort; do NOT send anything.
       if (cancelledByDashboard) {
-        hybridFlowActiveRef.current = false;
         setIsTyping(false);
         return;
       }
@@ -1585,11 +1458,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Final guard: check Realtime-driven state for cancel/pause (no network calls)
       let finalGuardDone = false;
-      console.log('[useWidgetChat] Entering final guard check (Realtime-based)');
+      
       while (!finalGuardDone) {
         finalGuardDone = true;
         const cs = convStateRef.current;
-        console.log('[useWidgetChat] Final guard state:', { aiQueuedAt: cs.aiQueuedAt, aiQueuedPaused: cs.aiQueuedPaused, aiQueuedPreview: !!cs.aiQueuedPreview });
+        
         if (queueWasSet && cs.aiQueuedAt === null) {
           hybridFlowActiveRef.current = false;
           setIsTyping(false);
@@ -1849,9 +1722,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       });
       if (msgErr) console.error('Error saving visitor message (preview):', msgErr);
 
-      if (conversationHistory.length >= 1) {
-        extractVisitorInfo(visitorId, conversationHistory);
-      }
+      // Visitor info extraction is handled server-side in widget-save-message
     }
   };
 
