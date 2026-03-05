@@ -1,25 +1,29 @@
 
 
-## Chat Flow Performance Optimization Plan — COMPLETED ✅
 
-All 6 optimizations implemented:
+## Chat System Audit Cleanup — COMPLETED ✅
 
-### 1. ✅ Background stale cleanup
-Moved `close-stale-conversations` from blocking every `fetchConversationsData` call to a 60s background interval via `useEffect` + `setInterval`.
+All audit items implemented:
 
-### 2. ✅ Merge create-conversation into save-message
-`widget-save-message` now accepts optional `propertyId` and auto-creates conversations atomically when no `conversationId` is provided. Eliminates one full Edge Function round-trip.
+### 1. ✅ Dead code removed
+Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
 
-### 3. ✅ Parallel AI generation + message save
-Visitor message save is now fire-and-forget (not awaited) for subsequent messages, allowing AI generation to start immediately in parallel. Only the first message (which creates the conversation) is awaited.
+### 2. ✅ Lock bug fixed
+Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
 
-### 4. ✅ Merge messages into bootstrap
-`widget-bootstrap` now returns `messages`, `aiEnabled`, `aiQueuedAt`, `aiQueuedPaused`, `aiQueuedPreview`, and `aiQueuedWindowMs` in its response. The separate `widget-get-messages` call is eliminated for returning visitors.
+### 3. ✅ Shared helpers extracted
+Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
 
-### 5. ✅ Remove redundant history fetches
-`autoReplyIfPending` and the hybrid flow now use `messagesRef.current` (synced via `useEffect`) instead of making DB round-trips to `widget-get-messages`.
+### 4. ✅ Proactive timer stale closure fixed
+`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
 
-### 6. ✅ Single-query dashboard fetch
-`fetchSingleConversation` in `useConversations.ts` now uses embedded select `conversations.select('*, visitor:visitors(*), property:properties(*), messages(*)')` — single DB call instead of two sequential ones.
+### 5. ✅ Dashboard fetch optimized
+`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
 
-### Estimated total savings: ~1-2.5s faster end-to-end
+### 6. ✅ Realtime channels consolidated
+Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
+
+### 7. ✅ Verbose logging removed
+Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
+
+### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
