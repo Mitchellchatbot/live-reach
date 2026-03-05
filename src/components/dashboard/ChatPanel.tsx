@@ -849,7 +849,7 @@ export const ChatPanel = ({
       </div>
 
       {/* Visitor Info Sidebar - Collapsible on large screens */}
-      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} propertyName={propertyName} />
+      <VisitorInfoSidebar visitor={visitor} assignedAgent={assignedAgent} propertyName={propertyName} conversationId={conversation?.id} />
 
       {/* Video Call Modal */}
       <VideoCallModal isOpen={isVideoCallOpen} onClose={() => setIsVideoCallOpen(false)} status={videoChat.status} isMuted={videoChat.isMuted} isVideoOff={videoChat.isVideoOff} error={videoChat.error} localVideoRef={videoChat.localVideoRef} remoteVideoRef={videoChat.remoteVideoRef} onEndCall={handleEndVideoCall} onToggleMute={videoChat.toggleMute} onToggleVideo={videoChat.toggleVideo} participantName={visitorName} isInitiator={true} />
