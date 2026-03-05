@@ -1408,13 +1408,10 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           signal: abortController.signal,
           onDelta: (delta) => { aiContent += delta; },
           onDone: () => {
-            // Apply text transforms
-            if (settings.human_typos_enabled) aiContent = maybeInjectTypo(aiContent, propertyId);
             if (settings.drop_capitalization_enabled) aiContent = maybeDropCapitalization(aiContent);
             if (settings.drop_apostrophes_enabled) aiContent = maybeDropApostrophes(aiContent);
             resolve();
