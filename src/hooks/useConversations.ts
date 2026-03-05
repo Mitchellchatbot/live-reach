@@ -154,28 +154,31 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     ? allProperties.filter(p => p.user_id === workspaceOwnerId)
     : allProperties;
 
+  // Background stale cleanup — runs every 60s instead of blocking every fetch
+  const staleCleanupRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    const runCleanup = async () => {
+      try {
+        const { data: { user: validUser } } = await supabase.auth.getUser();
+        if (validUser) {
+          await supabase.functions.invoke('close-stale-conversations', {
+            body: { propertyId: selectedPropertyId ?? null, staleSeconds: 45 },
+          });
+        }
+      } catch {
+        // Best-effort — silently ignore
+      }
+    };
+    // Run once on mount, then every 60s
+    runCleanup();
+    staleCleanupRef.current = setInterval(runCleanup, 60000);
+    return () => { if (staleCleanupRef.current) clearInterval(staleCleanupRef.current); };
+  }, [user, selectedPropertyId]);
+
   // Fetch conversations with React Query
   const fetchConversationsData = useCallback(async (): Promise<DbConversation[]> => {
     if (!user) return [];
-
-    // Best-effort: close stale "active" conversations (visitor tab closed, unload not fired, etc.)
-    try {
-      // Use getUser() to validate the token is actually valid (getSession can return stale tokens)
-      const { data: { user: validUser } } = await supabase.auth.getUser();
-      if (validUser) {
-        const { error } = await supabase.functions.invoke('close-stale-conversations', {
-          body: {
-            propertyId: selectedPropertyId ?? null,
-            staleSeconds: 45,
-          },
-        });
-        if (error) {
-          console.warn('[useConversations] close-stale-conversations failed:', error.message);
-        }
-      }
-    } catch (e) {
-      // Silently ignore – this is best-effort cleanup
-    }
 
     let query = supabase
       .from('conversations')
@@ -576,31 +579,28 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
 
     console.log('[useConversations] Setting up realtime subscriptions');
 
-    // Define fetchSingleConversation BEFORE the channels so it's in scope for closures
+    // Optimization #6: Single-query conversation fetch with embedded messages
     const fetchSingleConversation = async (conversationId: string) => {
       const { data } = await supabase
         .from('conversations')
-        .select(`*, visitor:visitors(*), property:properties(*)`)
+        .select(`*, visitor:visitors(*), property:properties(*), messages(*)`)
         .eq('id', conversationId)
         .single();
       
       if (!data) return;
       
-      const { data: messages } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('sequence_number', { ascending: true });
-      
+      const msgs = (data.messages || []) as any[];
       // Skip if no visitor messages yet
-      if (!messages?.some(m => m.sender_type === 'visitor')) return;
+      if (!msgs.some(m => m.sender_type === 'visitor')) return;
+      
+      // Sort messages by sequence_number
+      const sortedMessages = msgs
+        .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
+        .sort((a, b) => a.sequence_number - b.sequence_number);
       
       const newConversation: DbConversation = {
         ...data,
-        messages: (messages || []).map(m => ({
-          ...m,
-          sender_type: m.sender_type as 'agent' | 'visitor',
-        })),
+        messages: sortedMessages,
         status: data.status as 'active' | 'closed' | 'pending',
       };
       

@@ -1,4 +1,5 @@
 // Widget save message edge function — also handles AI queue state changes
+// and auto-creates conversations if needed (merged widget-create-conversation)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -13,9 +14,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { conversationId, visitorId, sessionId, senderType, content, aiQueueAction, aiQueuePreview, aiQueueWindowMs } = await req.json();
+    const { conversationId: incomingConvId, propertyId, visitorId, sessionId, senderType, content, aiQueueAction, aiQueuePreview, aiQueueWindowMs } = await req.json();
 
-    if (!conversationId || !visitorId || !sessionId || !senderType || !content) {
+    if (!visitorId || !sessionId || !senderType || !content) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -33,17 +34,103 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Single validation: use the security definer function to verify ownership
-    const { data: ownsConv } = await supabase.rpc("visitor_owns_conversation", {
-      conv_id: conversationId,
-      visitor_session: sessionId,
-    });
+    let conversationId = incomingConvId;
+    let conversationCreated = false;
 
-    if (!ownsConv) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // If no conversationId provided, auto-create one (merged create-conversation logic)
+    if (!conversationId) {
+      if (!propertyId) {
+        return new Response(JSON.stringify({ error: "propertyId required when no conversationId" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Validate visitor belongs to this session and property
+      const { data: visitor, error: visitorErr } = await supabase
+        .from("visitors")
+        .select("id,session_id,property_id")
+        .eq("id", visitorId)
+        .maybeSingle();
+
+      if (visitorErr || !visitor) {
+        return new Response(JSON.stringify({ error: "Invalid visitorId" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (visitor.session_id !== sessionId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (visitor.property_id !== propertyId) {
+        return new Response(JSON.stringify({ error: "Visitor does not belong to this property" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Check for existing open conversation
+      const { data: existingConv } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("property_id", propertyId)
+        .eq("visitor_id", visitorId)
+        .neq("status", "closed")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingConv?.id) {
+        conversationId = existingConv.id;
+      } else {
+        // Create new conversation
+        const { data: newConv, error: convCreateErr } = await supabase
+          .from("conversations")
+          .insert({ property_id: propertyId, visitor_id: visitorId, status: "active" })
+          .select("id")
+          .single();
+
+        if (convCreateErr || !newConv?.id) {
+          console.error("widget-save-message: failed to create conversation", convCreateErr);
+          return new Response(JSON.stringify({ error: "Failed to create conversation" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        conversationId = newConv.id;
+        conversationCreated = true;
+
+        // Fire email + Slack notifications for new conversation (non-blocking)
+        const notifyPayload = JSON.stringify({ propertyId, eventType: "new_conversation", conversationId });
+        const notifyHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${serviceKey}` };
+
+        fetch(`${supabaseUrl}/functions/v1/send-email-notification`, {
+          method: "POST", headers: notifyHeaders, body: notifyPayload,
+        }).catch((err) => console.error("Email notification error:", err));
+
+        fetch(`${supabaseUrl}/functions/v1/send-slack-notification`, {
+          method: "POST", headers: notifyHeaders, body: notifyPayload,
+        }).catch((err) => console.error("Slack notification error:", err));
+      }
+    } else {
+      // Existing path: validate ownership via RPC
+      const { data: ownsConv } = await supabase.rpc("visitor_owns_conversation", {
+        conv_id: conversationId,
+        visitor_session: sessionId,
       });
+
+      if (!ownsConv) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Get conversation status (needed for reopen logic)
@@ -85,12 +172,10 @@ Deno.serve(async (req) => {
     // Build conversation update payload
     const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-    // Reopen closed conversations on visitor message
     if (senderType === "visitor" && conv?.status === "closed") {
       updatePayload.status = "active";
     }
 
-    // Handle AI queue action if provided (eliminates separate widget-set-ai-queue call)
     if (aiQueueAction === "queue") {
       updatePayload.ai_queued_at = new Date().toISOString();
       updatePayload.ai_queued_preview = aiQueuePreview ?? null;
@@ -114,9 +199,7 @@ Deno.serve(async (req) => {
     }
 
     // Fire-and-forget: trigger server-side visitor info extraction
-    // ONLY for visitor messages, and debounce by checking message count
     if (senderType === "visitor") {
-      // Only extract every 3rd visitor message to reduce AI gateway load
       const { count: visitorMsgCount } = await supabase
         .from("messages")
         .select("id", { count: "exact", head: true })
@@ -155,7 +238,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, sequence_number: nextSeq }), {
+    return new Response(JSON.stringify({ success: true, sequence_number: nextSeq, conversationId, conversationCreated }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

@@ -498,6 +498,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // During the hybrid flow, the flow checks whether its own generation matches the current
   // value — if not, a newer message has arrived and this flow should abort.
   const aiGenerationIdRef = useRef(0);
+  // Ref that always tracks the latest messages array for use in callbacks without stale closures
+  const messagesRef = useRef<Message[]>([]);
   // Realtime-driven conversation state (updated by subscription, consumed by hybrid flow)
   const convStateRef = useRef<{
     aiQueuedAt: string | null;
@@ -706,69 +708,48 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         setCurrentAiAgent(null);
       }
 
-      // Load existing messages for returning visitors (only if conversation exists)
+      // Optimization #4: Use messages from bootstrap response (no separate GET_MESSAGES call)
       if (data?.visitorId && data?.conversationId) {
-        try {
-          const msgResponse = await fetch(GET_MESSAGES_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              conversationId: data.conversationId,
-              visitorId: data.visitorId,
-              sessionId,
-            }),
-          });
+        const existingMessages = data.messages || [];
+        // Track current AI enabled state from server.
+        aiEnabledRef.current = (data?.aiEnabled ?? true) as boolean;
+        prevAiEnabledRef.current = aiEnabledRef.current;
+        // Initialize Realtime-driven conversation state
+        convStateRef.current = {
+          aiQueuedAt: data?.aiQueuedAt ?? null,
+          aiQueuedPaused: data?.aiQueuedPaused ?? false,
+          aiQueuedPreview: data?.aiQueuedPreview ?? null,
+          aiQueuedWindowMs: data?.aiQueuedWindowMs ?? null,
+          aiEnabled: aiEnabledRef.current,
+        };
+        
+        if (existingMessages.length > 0) {
+          // Map DB messages to UI format
+          const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
+          const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
+            id: m.id,
+            content: m.content,
+            sender_type: m.sender_type === 'agent' ? 'agent' : 'visitor',
+            created_at: m.created_at,
+            sequence_number: m.sequence_number,
+            agent_name: m.sender_type === 'agent' ? greetingAgent?.name : undefined,
+            agent_avatar: m.sender_type === 'agent' ? greetingAgent?.avatar_url : undefined,
+          }));
 
-          if (msgResponse.ok) {
-            const msgData = await msgResponse.json();
-            const existingMessages = msgData.messages || [];
-            // Track current AI enabled state from server.
-            aiEnabledRef.current = (msgData?.aiEnabled ?? true) as boolean;
-            prevAiEnabledRef.current = aiEnabledRef.current;
-            // Initialize Realtime-driven conversation state
-            convStateRef.current = {
-              aiQueuedAt: msgData?.aiQueuedAt ?? null,
-              aiQueuedPaused: msgData?.aiQueuedPaused ?? false,
-              aiQueuedPreview: msgData?.aiQueuedPreview ?? null,
-              aiQueuedWindowMs: msgData?.aiQueuedWindowMs ?? null,
-              aiEnabled: aiEnabledRef.current,
-            };
-            
-            if (existingMessages.length > 0) {
-              // Map DB messages to UI format
-              const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
-              const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
-                id: m.id,
-                content: m.content,
-                sender_type: m.sender_type === 'agent' ? 'agent' : 'visitor',
-                created_at: m.created_at,
-                sequence_number: m.sequence_number,
-                // Add agent info for agent messages
-                agent_name: m.sender_type === 'agent' ? greetingAgent?.name : undefined,
-                agent_avatar: m.sender_type === 'agent' ? greetingAgent?.avatar_url : undefined,
-              }));
+          setMessages(mappedMessages);
+          
+          // Update lastSeqRef to prevent re-fetching these messages
+          const maxSeq = Math.max(...existingMessages.map((m: { sequence_number: number }) => m.sequence_number || 0));
+          lastSeqRef.current = maxSeq;
 
-              setMessages(mappedMessages);
-              
-              // Update lastSeqRef to prevent re-fetching these messages
-              const maxSeq = Math.max(...existingMessages.map((m: { sequence_number: number }) => m.sequence_number || 0));
-              lastSeqRef.current = maxSeq;
-
-              // Check if a human has taken over (any agent message not from ai-bot)
-              const humanAgentMsg = existingMessages.find((m: { sender_type: string; sender_id: string }) => 
-                m.sender_type === 'agent' && m.sender_id !== 'ai-bot'
-              );
-              if (humanAgentMsg) {
-                setHumanHasTakenOver(true);
-                humanHasTakenOverRef.current = true;
-              }
-            }
+          // Check if a human has taken over (any agent message not from ai-bot)
+          const humanAgentMsg = existingMessages.find((m: { sender_type: string; sender_id: string }) => 
+            m.sender_type === 'agent' && m.sender_id !== 'ai-bot'
+          );
+          if (humanAgentMsg) {
+            setHumanHasTakenOver(true);
+            humanHasTakenOverRef.current = true;
           }
-        } catch (msgError) {
-          console.error('Failed to load existing messages:', msgError);
         }
       }
 
@@ -1000,36 +981,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const vId = visitorIdRef.current;
     if (!convId || !vId) return;
 
-    const sessionId = getOrCreateSessionId();
+    // Optimization #5: Use local messages state instead of re-fetching from DB
+    const serverAiEnabled = aiEnabledRef.current;
+    if (!serverAiEnabled) return;
+    if (humanHasTakenOverRef.current) return;
+
     autoReplyInFlightRef.current = true;
 
     try {
-      const response = await fetch(GET_MESSAGES_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
-          conversationId: convId,
-          visitorId: vId,
-          sessionId,
-        }),
-      });
-
-      if (!response.ok) return;
-      const data = await response.json();
-      const serverAiEnabled = (data?.aiEnabled ?? true) as boolean;
-      aiEnabledRef.current = serverAiEnabled;
-      prevAiEnabledRef.current = serverAiEnabled;
-      if (!serverAiEnabled) return;
-      if (humanHasTakenOverRef.current) return; // human override still wins
-
-      const dbMessages = (data?.messages ?? []) as Array<{
-        sender_type: 'agent' | 'visitor';
-        content: string;
-        sequence_number?: number;
-      }>;
+      // Use current messages from state (set via setMessages) — no DB round-trip needed
+      const currentMessages = messagesRef.current;
+      const dbMessages = currentMessages
+        .filter(m => m.id !== 'proactive' && m.id !== 'greeting')
+        .map(m => ({ sender_type: m.sender_type, content: m.content, sequence_number: m.sequence_number }));
 
       if (dbMessages.length === 0) return;
       const last = dbMessages[dbMessages.length - 1];
@@ -1040,12 +1004,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Mark handled so we don't auto-reply repeatedly on subsequent polls.
       lastAutoReplyVisitorSeqRef.current = lastVisitorSeq;
 
-      // Generate-first approach (mirrors the hybrid flow):
-      // 1. Pick the human-priority window (responseDelay) based on first/quick-reply settings
-      // 2. Generate the AI response immediately (so generation time eats into the window)
-      // 3. Wait the remaining window time after generation completes
-      // 4. Add smart-typing duration ON TOP of the window
-      // 5. Reveal to visitor
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
@@ -1128,6 +1086,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       // Step 4: Save to DB and reveal to visitor
       const saveAiToDb = async (finalContent: string) => {
+        const autoSessionId = getOrCreateSessionId();
         const saveResp = await fetch(SAVE_MESSAGE_URL, {
           method: 'POST',
           headers: {
@@ -1137,7 +1096,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           body: JSON.stringify({
             conversationId: convId,
             visitorId: vId,
-            sessionId,
+            sessionId: autoSessionId,
             senderType: 'agent',
             content: finalContent,
           }),
@@ -1250,28 +1209,46 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     setMessages(prev => [...prev, visitorMessage]);
 
-    // For real embeds, make sure visitor exists and conversation is created
+    // For real embeds, make sure visitor exists (conversation created atomically with first message save)
     if (!isPreview && propertyId && propertyId !== 'demo') {
       await ensureWidgetIds();
-      await ensureConversationExists();
 
-      // ✅ Save visitor message to DB immediately (awaited) so dashboard sees it right away
-      const convId = conversationIdRef.current;
+      // Optimization #2+3: Save visitor message to DB (creates conversation atomically if needed)
+      // This is fire-and-forget — we don't await it to allow AI generation to start in parallel
       const vId = visitorIdRef.current;
-      if (convId && vId) {
+      if (vId) {
         const sessionId = getOrCreateSessionId();
-        try {
-          await fetch(SAVE_MESSAGE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
-          });
-        } catch (e) {
-          console.error('Failed to save visitor message:', e);
+        const convId = conversationIdRef.current; // may be null for first message
+        const savePromise = fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            conversationId: convId || undefined,
+            propertyId: convId ? undefined : propertyId, // only needed when creating
+            visitorId: vId,
+            sessionId,
+            senderType: 'visitor',
+            content,
+          }),
+        }).then(async (resp) => {
+          if (resp.ok) {
+            const data = await resp.json();
+            // If a new conversation was created, update our refs
+            if (data.conversationId && !conversationIdRef.current) {
+              conversationIdRef.current = data.conversationId;
+              setConversationId(data.conversationId);
+            }
+          }
+        }).catch(e => console.error('Failed to save visitor message:', e));
+
+        // For first message (no conversation yet), we need to await so we get the conversationId
+        if (!convId) {
+          await savePromise;
         }
+        // Otherwise, the save runs in parallel with AI generation below
       }
     }
 
@@ -1404,28 +1381,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       try {
 
-      // Rebuild conversation history from DB to include ALL rapid-fire messages
-      // (the `messages` state captured at function entry may be stale)
+      // Optimization #5: Use local messages ref for fresh history instead of DB round-trip
+      // messagesRef.current always has the latest messages (synced via useEffect)
       let freshHistory = conversationHistory;
-      if (convId && vId) {
-        try {
-          const histResp = await fetch(GET_MESSAGES_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId }),
-          });
-          if (histResp.ok) {
-            const histData = await histResp.json();
-            const dbMessages = (histData?.messages ?? []) as Array<{ sender_type: string; content: string }>;
-            if (dbMessages.length > 0) {
-              freshHistory = toAiHistoryFromDb(dbMessages);
-            }
-          }
-        } catch {
-          // Fall back to the locally-built history
+      const latestMessages = messagesRef.current;
+      if (latestMessages.length > 0) {
+        const localHistory = latestMessages
+          .filter(m => m.id !== 'proactive' && m.id !== 'greeting' && String(m.content || '').trim() !== '')
+          .map(m => ({
+            role: m.sender_type === 'visitor' ? 'user' as const : 'assistant' as const,
+            content: String(m.content),
+          }));
+        if (localHistory.length > 0) {
+          freshHistory = localHistory;
         }
       }
 
@@ -1904,6 +1872,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   useEffect(() => {
     initializeChat();
   }, [initializeChat]);
+
+  // Keep messagesRef in sync with messages state for use in callbacks
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Presence: keep conversations "active" while the widget is visible, and attempt
   // to mark them "closed" when the tab hides/unloads.

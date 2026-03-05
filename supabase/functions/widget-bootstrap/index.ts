@@ -175,11 +175,18 @@ Deno.serve(async (req) => {
       visitorId = newVisitor.id;
     }
 
-    // Find most recent conversation
+    // Find most recent conversation + its messages in parallel
     let conversationId: string | null = null;
+    let existingMessages: Array<{ id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }> = [];
+    let aiEnabled = true;
+    let aiQueuedAt: string | null = null;
+    let aiQueuedPaused = false;
+    let aiQueuedPreview: string | null = null;
+    let aiQueuedWindowMs: number | null = null;
+
     const { data: existingConv, error: convFindErr } = await supabase
       .from("conversations")
-      .select("id,status")
+      .select("id,status,ai_enabled,ai_queued_at,ai_queued_paused,ai_queued_preview,ai_queued_window_ms")
       .eq("property_id", propertyId)
       .eq("visitor_id", visitorId)
       .order("created_at", { ascending: false })
@@ -192,6 +199,21 @@ Deno.serve(async (req) => {
 
     if (existingConv?.id) {
       conversationId = existingConv.id;
+      aiEnabled = existingConv.ai_enabled ?? true;
+      aiQueuedAt = existingConv.ai_queued_at ?? null;
+      aiQueuedPaused = existingConv.ai_queued_paused ?? false;
+      aiQueuedPreview = existingConv.ai_queued_preview ?? null;
+      aiQueuedWindowMs = existingConv.ai_queued_window_ms ?? null;
+
+      // Fetch messages for this conversation (optimization #4: merged into bootstrap)
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("id, content, sender_type, sender_id, created_at, sequence_number")
+        .eq("conversation_id", conversationId)
+        .order("sequence_number", { ascending: true })
+        .limit(200);
+
+      existingMessages = msgs || [];
     }
 
     // Await AI agents (was running in parallel)
@@ -239,6 +261,13 @@ Deno.serve(async (req) => {
       greeting: property.greeting || null,
       settings,
       aiAgents,
+      // Optimization #4: include messages + conversation state in bootstrap response
+      messages: existingMessages,
+      aiEnabled,
+      aiQueuedAt,
+      aiQueuedPaused,
+      aiQueuedPreview,
+      aiQueuedWindowMs,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
