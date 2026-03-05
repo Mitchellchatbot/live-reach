@@ -706,69 +706,48 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         setCurrentAiAgent(null);
       }
 
-      // Load existing messages for returning visitors (only if conversation exists)
+      // Optimization #4: Use messages from bootstrap response (no separate GET_MESSAGES call)
       if (data?.visitorId && data?.conversationId) {
-        try {
-          const msgResponse = await fetch(GET_MESSAGES_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              conversationId: data.conversationId,
-              visitorId: data.visitorId,
-              sessionId,
-            }),
-          });
+        const existingMessages = data.messages || [];
+        // Track current AI enabled state from server.
+        aiEnabledRef.current = (data?.aiEnabled ?? true) as boolean;
+        prevAiEnabledRef.current = aiEnabledRef.current;
+        // Initialize Realtime-driven conversation state
+        convStateRef.current = {
+          aiQueuedAt: data?.aiQueuedAt ?? null,
+          aiQueuedPaused: data?.aiQueuedPaused ?? false,
+          aiQueuedPreview: data?.aiQueuedPreview ?? null,
+          aiQueuedWindowMs: data?.aiQueuedWindowMs ?? null,
+          aiEnabled: aiEnabledRef.current,
+        };
+        
+        if (existingMessages.length > 0) {
+          // Map DB messages to UI format
+          const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
+          const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
+            id: m.id,
+            content: m.content,
+            sender_type: m.sender_type === 'agent' ? 'agent' : 'visitor',
+            created_at: m.created_at,
+            sequence_number: m.sequence_number,
+            agent_name: m.sender_type === 'agent' ? greetingAgent?.name : undefined,
+            agent_avatar: m.sender_type === 'agent' ? greetingAgent?.avatar_url : undefined,
+          }));
 
-          if (msgResponse.ok) {
-            const msgData = await msgResponse.json();
-            const existingMessages = msgData.messages || [];
-            // Track current AI enabled state from server.
-            aiEnabledRef.current = (msgData?.aiEnabled ?? true) as boolean;
-            prevAiEnabledRef.current = aiEnabledRef.current;
-            // Initialize Realtime-driven conversation state
-            convStateRef.current = {
-              aiQueuedAt: msgData?.aiQueuedAt ?? null,
-              aiQueuedPaused: msgData?.aiQueuedPaused ?? false,
-              aiQueuedPreview: msgData?.aiQueuedPreview ?? null,
-              aiQueuedWindowMs: msgData?.aiQueuedWindowMs ?? null,
-              aiEnabled: aiEnabledRef.current,
-            };
-            
-            if (existingMessages.length > 0) {
-              // Map DB messages to UI format
-              const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
-              const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
-                id: m.id,
-                content: m.content,
-                sender_type: m.sender_type === 'agent' ? 'agent' : 'visitor',
-                created_at: m.created_at,
-                sequence_number: m.sequence_number,
-                // Add agent info for agent messages
-                agent_name: m.sender_type === 'agent' ? greetingAgent?.name : undefined,
-                agent_avatar: m.sender_type === 'agent' ? greetingAgent?.avatar_url : undefined,
-              }));
+          setMessages(mappedMessages);
+          
+          // Update lastSeqRef to prevent re-fetching these messages
+          const maxSeq = Math.max(...existingMessages.map((m: { sequence_number: number }) => m.sequence_number || 0));
+          lastSeqRef.current = maxSeq;
 
-              setMessages(mappedMessages);
-              
-              // Update lastSeqRef to prevent re-fetching these messages
-              const maxSeq = Math.max(...existingMessages.map((m: { sequence_number: number }) => m.sequence_number || 0));
-              lastSeqRef.current = maxSeq;
-
-              // Check if a human has taken over (any agent message not from ai-bot)
-              const humanAgentMsg = existingMessages.find((m: { sender_type: string; sender_id: string }) => 
-                m.sender_type === 'agent' && m.sender_id !== 'ai-bot'
-              );
-              if (humanAgentMsg) {
-                setHumanHasTakenOver(true);
-                humanHasTakenOverRef.current = true;
-              }
-            }
+          // Check if a human has taken over (any agent message not from ai-bot)
+          const humanAgentMsg = existingMessages.find((m: { sender_type: string; sender_id: string }) => 
+            m.sender_type === 'agent' && m.sender_id !== 'ai-bot'
+          );
+          if (humanAgentMsg) {
+            setHumanHasTakenOver(true);
+            humanHasTakenOverRef.current = true;
           }
-        } catch (msgError) {
-          console.error('Failed to load existing messages:', msgError);
         }
       }
 
