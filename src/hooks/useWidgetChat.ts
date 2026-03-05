@@ -1229,28 +1229,46 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     
     setMessages(prev => [...prev, visitorMessage]);
 
-    // For real embeds, make sure visitor exists and conversation is created
+    // For real embeds, make sure visitor exists (conversation created atomically with first message save)
     if (!isPreview && propertyId && propertyId !== 'demo') {
       await ensureWidgetIds();
-      await ensureConversationExists();
 
-      // ✅ Save visitor message to DB immediately (awaited) so dashboard sees it right away
-      const convId = conversationIdRef.current;
+      // Optimization #2+3: Save visitor message to DB (creates conversation atomically if needed)
+      // This is fire-and-forget — we don't await it to allow AI generation to start in parallel
       const vId = visitorIdRef.current;
-      if (convId && vId) {
+      if (vId) {
         const sessionId = getOrCreateSessionId();
-        try {
-          await fetch(SAVE_MESSAGE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId, senderType: 'visitor', content }),
-          });
-        } catch (e) {
-          console.error('Failed to save visitor message:', e);
+        const convId = conversationIdRef.current; // may be null for first message
+        const savePromise = fetch(SAVE_MESSAGE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            conversationId: convId || undefined,
+            propertyId: convId ? undefined : propertyId, // only needed when creating
+            visitorId: vId,
+            sessionId,
+            senderType: 'visitor',
+            content,
+          }),
+        }).then(async (resp) => {
+          if (resp.ok) {
+            const data = await resp.json();
+            // If a new conversation was created, update our refs
+            if (data.conversationId && !conversationIdRef.current) {
+              conversationIdRef.current = data.conversationId;
+              setConversationId(data.conversationId);
+            }
+          }
+        }).catch(e => console.error('Failed to save visitor message:', e));
+
+        // For first message (no conversation yet), we need to await so we get the conversationId
+        if (!convId) {
+          await savePromise;
         }
+        // Otherwise, the save runs in parallel with AI generation below
       }
     }
 
