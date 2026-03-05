@@ -449,7 +449,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
   const bootstrapPromiseRef = useRef<Promise<void> | null>(null); // Mutex for ensureWidgetIds
-  const conversationPromiseRef = useRef<Promise<string | null> | null>(null); // Mutex for ensureConversationExists
+  
   const lastSeqRef = useRef<number>(0); // Track last sequence number for message polling
   const humanHasTakenOverRef = useRef(false); // True only when a human agent has actually responded
   const aiEnabledRef = useRef<boolean>(true); // Tracks dashboard AI toggle (do not conflate with human takeover)
