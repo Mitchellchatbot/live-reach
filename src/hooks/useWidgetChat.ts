@@ -1794,7 +1794,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
           basePrompt: settings.ai_base_prompt,
           naturalLeadCaptureFields: naturalLeadCaptureFields.length > 0 ? naturalLeadCaptureFields : undefined,
           calendlyUrl: settings.calendly_url,
-          humanTyposEnabled: settings.human_typos_enabled ?? true,
           propertyContext: buildBusinessContext(settings),
           onDelta: (delta) => {
             aiContent += delta;
