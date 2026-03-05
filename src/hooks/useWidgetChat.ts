@@ -505,6 +505,20 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   // During the hybrid flow, the flow checks whether its own generation matches the current
   // value — if not, a newer message has arrived and this flow should abort.
   const aiGenerationIdRef = useRef(0);
+  // Realtime-driven conversation state (updated by subscription, consumed by hybrid flow)
+  const convStateRef = useRef<{
+    aiQueuedAt: string | null;
+    aiQueuedPaused: boolean;
+    aiQueuedPreview: string | null;
+    aiQueuedWindowMs: number | null;
+    aiEnabled: boolean;
+  }>({
+    aiQueuedAt: null,
+    aiQueuedPaused: false,
+    aiQueuedPreview: null,
+    aiQueuedWindowMs: null,
+    aiEnabled: true,
+  });
 
   const calculateTypingTimeMs = useCallback((text: string): number => {
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
