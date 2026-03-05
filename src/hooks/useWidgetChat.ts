@@ -1195,27 +1195,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // 5. If window elapsed → reveal in widget (with smart typing duration added on top)
     // responseDelay = human-priority window (AI settings for first msg, 15-25s for quick reply)
     // Smart typing duration is added AFTER the window, not within it.
-    const isFirstAiReply = aiMessageCountRef.current === 0;
-    const useQuickReply = settings.quick_reply_after_first_enabled && !isFirstAiReply;
-    // For demo/preview mode, use a near-instant delay so people see the response quickly
     const isDemoOrPreview = isPreview || !propertyId || propertyId === 'demo';
-    const responseDelay = isDemoOrPreview
-      ? randomInRange(1000, 2000)
-      : useQuickReply
-        ? randomInRange(5000, 5000)
-        : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
+    const responseDelay = computeResponseDelay({ demoOrPreview: isDemoOrPreview });
 
     // Store current agent for this message (before cycling)
     const respondingAgent = currentAiAgent;
 
     // Build natural lead capture fields list
-    const naturalLeadCaptureFields: string[] = [];
-    if (settings.natural_lead_capture_enabled) {
-      if (settings.require_name_before_chat) naturalLeadCaptureFields.push('name');
-      if (settings.require_email_before_chat) naturalLeadCaptureFields.push('email');
-      if (settings.require_phone_before_chat) naturalLeadCaptureFields.push('phone');
-      if (settings.require_insurance_card_before_chat) naturalLeadCaptureFields.push('insurance_card');
-    }
+    const naturalLeadCaptureFields = buildNaturalLeadCaptureFields();
 
     if (!isPreview && propertyId && propertyId !== 'demo' && !humanHasTakenOverRef.current) {
       // --- RAPID MESSAGE HANDLING ---
