@@ -697,6 +697,20 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
+      // Apply settings and AI agents from consolidated bootstrap response
+      let bootstrapAgents: AIAgent[] = [];
+      if (data?.settings) {
+        applySettings(data.settings);
+      }
+      if (data?.aiAgents && Array.isArray(data.aiAgents) && data.aiAgents.length > 0) {
+        bootstrapAgents = data.aiAgents;
+        setAiAgents(data.aiAgents);
+        setCurrentAiAgent(data.aiAgents[0]);
+      } else {
+        setAiAgents([]);
+        setCurrentAiAgent(null);
+      }
+
       // Load existing messages for returning visitors (only if conversation exists)
       if (data?.visitorId && data?.conversationId) {
         try {
