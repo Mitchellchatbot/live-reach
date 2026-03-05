@@ -209,8 +209,6 @@ const TRACK_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/track-page-
 const EXTRACT_INFO_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-visitor-info`;
 const LOCATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-visitor-location`;
 const UPDATE_VISITOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-visitor`;
-const AI_AGENTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-property-ai-agents`;
-const SETTINGS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-property-settings`;
 const BOOTSTRAP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-bootstrap`;
 const CREATE_CONVERSATION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-create-conversation`;
 const SAVE_MESSAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/widget-save-message`;
@@ -571,49 +569,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
   }, [isPreview, propertyId]);
 
-  // Fetch AI agents for this property via edge function (works without auth)
-  const fetchAiAgents = useCallback(async (): Promise<AIAgent[]> => {
-    if (!propertyId || propertyId === 'demo') {
-      setAiAgents([]);
-      setCurrentAiAgent(null);
-      return [];
-    }
-
-    try {
-      const response = await fetch(AI_AGENTS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ propertyId }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to fetch AI agents:', response.status);
-        setAiAgents([]);
-        setCurrentAiAgent(null);
-        return [];
-      }
-
-      const data = await response.json();
-      const agents: AIAgent[] = data.agents || [];
-
-      if (agents.length > 0) {
-        setAiAgents(agents);
-        setCurrentAiAgent(agents[0]);
-      } else {
-        setAiAgents([]);
-        setCurrentAiAgent(null);
-      }
-      return agents;
-    } catch (error) {
-      console.error('Error fetching AI agents:', error);
-      setAiAgents([]);
-      setCurrentAiAgent(null);
-      return [];
-    }
-  }, [propertyId]);
+  // These are now handled by the consolidated widget-bootstrap call.
+  // fetchAiAgents and fetchSettings are no longer separate functions.
 
   // Cycle to next AI agent
   const cycleToNextAgent = useCallback(() => {
@@ -623,90 +580,56 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     setCurrentAiAgent(aiAgents[aiAgentIndexRef.current]);
   }, [aiAgents]);
 
-  // Fetch property settings (works for live embeds without requiring auth)
-  const fetchSettings = useCallback(async (): Promise<PropertySettings> => {
-    if (!propertyId || propertyId === 'demo') return DEFAULT_SETTINGS;
+  // Apply settings from bootstrap response
+  const applySettings = useCallback((s: Record<string, unknown>): PropertySettings => {
+    const merged: PropertySettings = {
+      ...DEFAULT_SETTINGS,
+      ai_response_delay_min_ms: (s.ai_response_delay_min_ms as number) ?? DEFAULT_SETTINGS.ai_response_delay_min_ms,
+      ai_response_delay_max_ms: (s.ai_response_delay_max_ms as number) ?? DEFAULT_SETTINGS.ai_response_delay_max_ms,
+      typing_indicator_min_ms: (s.typing_indicator_min_ms as number) ?? DEFAULT_SETTINGS.typing_indicator_min_ms,
+      typing_indicator_max_ms: (s.typing_indicator_max_ms as number) ?? DEFAULT_SETTINGS.typing_indicator_max_ms,
+      smart_typing_enabled: (s.smart_typing_enabled as boolean) ?? DEFAULT_SETTINGS.smart_typing_enabled,
+      typing_wpm: (s.typing_wpm as number) ?? DEFAULT_SETTINGS.typing_wpm,
+      max_ai_messages_before_escalation: (s.max_ai_messages_before_escalation as number) ?? DEFAULT_SETTINGS.max_ai_messages_before_escalation,
+      escalation_keywords: (s.escalation_keywords as string[]) ?? DEFAULT_SETTINGS.escalation_keywords,
+      auto_escalation_enabled: (s.auto_escalation_enabled as boolean) ?? DEFAULT_SETTINGS.auto_escalation_enabled,
+      require_email_before_chat: (s.require_email_before_chat as boolean) ?? DEFAULT_SETTINGS.require_email_before_chat,
+      require_name_before_chat: (s.require_name_before_chat as boolean) ?? DEFAULT_SETTINGS.require_name_before_chat,
+      require_phone_before_chat: (s.require_phone_before_chat as boolean) ?? DEFAULT_SETTINGS.require_phone_before_chat,
+      require_insurance_card_before_chat: (s.require_insurance_card_before_chat as boolean) ?? DEFAULT_SETTINGS.require_insurance_card_before_chat,
+      natural_lead_capture_enabled: (s.natural_lead_capture_enabled as boolean) ?? DEFAULT_SETTINGS.natural_lead_capture_enabled,
+      proactive_message_enabled: (s.proactive_message_enabled as boolean) ?? DEFAULT_SETTINGS.proactive_message_enabled,
+      proactive_message: (s.proactive_message as string) ?? null,
+      proactive_message_delay_seconds: (s.proactive_message_delay_seconds as number) ?? DEFAULT_SETTINGS.proactive_message_delay_seconds,
+      greeting: (s.greeting as string) ?? null,
+      ai_base_prompt: (s.ai_base_prompt as string) ?? null,
+      widget_icon: (s.widget_icon as string) ?? DEFAULT_SETTINGS.widget_icon,
+      calendly_url: (s.calendly_url as string) ?? null,
+      human_typos_enabled: (s.human_typos_enabled as boolean) ?? DEFAULT_SETTINGS.human_typos_enabled,
+      drop_capitalization_enabled: (s.drop_capitalization_enabled as boolean) ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
+      drop_apostrophes_enabled: (s.drop_apostrophes_enabled as boolean) ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
+      quick_reply_after_first_enabled: (s.quick_reply_after_first_enabled as boolean) ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
+      business_phone: (s.business_phone as string) ?? null,
+      business_email: (s.business_email as string) ?? null,
+      business_address: (s.business_address as string) ?? null,
+      business_hours: (s.business_hours as string) ?? null,
+      business_description: (s.business_description as string) ?? null,
+      property_name: (s.name as string) ?? null,
+    };
 
-    try {
-      const response = await fetch(SETTINGS_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ propertyId }),
-      });
+    setSettings(merged);
 
-      if (!response.ok) {
-        console.error('Failed to fetch property settings:', response.status, await response.text());
-        setSettings(DEFAULT_SETTINGS);
-        setRequiresLeadCapture(false);
-        return DEFAULT_SETTINGS;
-      }
-
-      const data = await response.json();
-      const s = data?.settings ?? null;
-      if (!s) {
-        setSettings(DEFAULT_SETTINGS);
-        setRequiresLeadCapture(false);
-        return DEFAULT_SETTINGS;
-      }
-
-      const merged: PropertySettings = {
-        ...DEFAULT_SETTINGS,
-        ai_response_delay_min_ms: s.ai_response_delay_min_ms ?? DEFAULT_SETTINGS.ai_response_delay_min_ms,
-        ai_response_delay_max_ms: s.ai_response_delay_max_ms ?? DEFAULT_SETTINGS.ai_response_delay_max_ms,
-        typing_indicator_min_ms: s.typing_indicator_min_ms ?? DEFAULT_SETTINGS.typing_indicator_min_ms,
-        typing_indicator_max_ms: s.typing_indicator_max_ms ?? DEFAULT_SETTINGS.typing_indicator_max_ms,
-        smart_typing_enabled: s.smart_typing_enabled ?? DEFAULT_SETTINGS.smart_typing_enabled,
-        typing_wpm: s.typing_wpm ?? DEFAULT_SETTINGS.typing_wpm,
-        max_ai_messages_before_escalation: s.max_ai_messages_before_escalation ?? DEFAULT_SETTINGS.max_ai_messages_before_escalation,
-        escalation_keywords: s.escalation_keywords ?? DEFAULT_SETTINGS.escalation_keywords,
-        auto_escalation_enabled: s.auto_escalation_enabled ?? DEFAULT_SETTINGS.auto_escalation_enabled,
-        require_email_before_chat: s.require_email_before_chat ?? DEFAULT_SETTINGS.require_email_before_chat,
-        require_name_before_chat: s.require_name_before_chat ?? DEFAULT_SETTINGS.require_name_before_chat,
-        require_phone_before_chat: s.require_phone_before_chat ?? DEFAULT_SETTINGS.require_phone_before_chat,
-        require_insurance_card_before_chat: s.require_insurance_card_before_chat ?? DEFAULT_SETTINGS.require_insurance_card_before_chat,
-        natural_lead_capture_enabled: s.natural_lead_capture_enabled ?? DEFAULT_SETTINGS.natural_lead_capture_enabled,
-        proactive_message_enabled: s.proactive_message_enabled ?? DEFAULT_SETTINGS.proactive_message_enabled,
-        proactive_message: s.proactive_message ?? null,
-        proactive_message_delay_seconds: s.proactive_message_delay_seconds ?? DEFAULT_SETTINGS.proactive_message_delay_seconds,
-        greeting: s.greeting ?? null,
-        ai_base_prompt: s.ai_base_prompt ?? null,
-        widget_icon: s.widget_icon ?? DEFAULT_SETTINGS.widget_icon,
-        calendly_url: s.calendly_url ?? null,
-        human_typos_enabled: s.human_typos_enabled ?? DEFAULT_SETTINGS.human_typos_enabled,
-        drop_capitalization_enabled: s.drop_capitalization_enabled ?? DEFAULT_SETTINGS.drop_capitalization_enabled,
-        drop_apostrophes_enabled: s.drop_apostrophes_enabled ?? DEFAULT_SETTINGS.drop_apostrophes_enabled,
-        quick_reply_after_first_enabled: s.quick_reply_after_first_enabled ?? DEFAULT_SETTINGS.quick_reply_after_first_enabled,
-        business_phone: s.business_phone ?? null,
-        business_email: s.business_email ?? null,
-        business_address: s.business_address ?? null,
-        business_hours: s.business_hours ?? null,
-        business_description: s.business_description ?? null,
-        property_name: s.name ?? null,
-      };
-
-      setSettings(merged);
-
-      // Check if lead capture is required - only if NOT using natural lead capture
-      const naturalEnabled = merged.natural_lead_capture_enabled ?? true;
-      if (!naturalEnabled && (merged.require_email_before_chat || merged.require_name_before_chat)) {
-        setRequiresLeadCapture(true);
-      } else {
-        setRequiresLeadCapture(false);
-      }
-
-      return merged;
-    } catch (error) {
-      console.error('Error fetching property settings:', error);
-      setSettings(DEFAULT_SETTINGS);
+    const naturalEnabled = merged.natural_lead_capture_enabled ?? true;
+    if (!naturalEnabled && (merged.require_email_before_chat || merged.require_name_before_chat)) {
+      setRequiresLeadCapture(true);
+    } else {
       setRequiresLeadCapture(false);
-      return DEFAULT_SETTINGS;
     }
-  }, [propertyId]);
 
-  const ensureWidgetIds = useCallback(async (fetchedAgents?: AIAgent[]) => {
+    return merged;
+  }, []);
+
+  const ensureWidgetIds = useCallback(async () => {
     if (!propertyId || propertyId === 'demo' || isPreview) return;
     if (visitorIdRef.current) return; // Already have visitor
 
@@ -774,6 +697,20 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         }
       }
 
+      // Apply settings and AI agents from consolidated bootstrap response
+      let bootstrapAgents: AIAgent[] = [];
+      if (data?.settings) {
+        applySettings(data.settings);
+      }
+      if (data?.aiAgents && Array.isArray(data.aiAgents) && data.aiAgents.length > 0) {
+        bootstrapAgents = data.aiAgents;
+        setAiAgents(data.aiAgents);
+        setCurrentAiAgent(data.aiAgents[0]);
+      } else {
+        setAiAgents([]);
+        setCurrentAiAgent(null);
+      }
+
       // Load existing messages for returning visitors (only if conversation exists)
       if (data?.visitorId && data?.conversationId) {
         try {
@@ -807,7 +744,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
             
             if (existingMessages.length > 0) {
               // Map DB messages to UI format
-              const greetingAgent = fetchedAgents && fetchedAgents.length > 0 ? fetchedAgents[0] : null;
+              const greetingAgent = bootstrapAgents.length > 0 ? bootstrapAgents[0] : null;
               const mappedMessages: Message[] = existingMessages.map((m: { id: string; content: string; sender_type: string; sender_id: string; created_at: string; sequence_number: number }) => ({
                 id: m.id,
                 content: m.content,
@@ -1270,20 +1207,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds, messages]);
 
   const initializeChat = useCallback(async () => {
-    // Fetch settings and AI agents in parallel - they're independent
-    const [fetchedSettings, fetchedAgents] = await Promise.all([
-      fetchSettings(),
-      fetchAiAgents(),
-    ]);
-
-    // Store greeting for static display (not as a message)
-    const greetingContent = greeting || fetchedSettings.greeting || '';
-    if (greetingContent) {
-      setGreetingText(greetingContent);
-    }
-    
-    // For preview/demo mode, we're done - don't create DB records
+    // For preview/demo mode, use greeting prop directly
     if (!propertyId || propertyId === 'demo' || isPreview) {
+      if (greeting) {
+        setGreetingText(greeting);
+      }
       setLoading(false);
       return;
     }
@@ -1291,9 +1219,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // Mark loading as done early
     setLoading(false);
 
-    // Background bootstrap (visitor only - conversation created lazily on first message)
-    void ensureWidgetIds(fetchedAgents);
-  }, [propertyId, greeting, fetchSettings, fetchAiAgents, isPreview, ensureWidgetIds]);
+    // Background bootstrap — consolidated call returns visitor, settings, and AI agents
+    void ensureWidgetIds();
+  }, [propertyId, greeting, isPreview, ensureWidgetIds]);
 
   // Submit lead info
   const submitLeadInfo = async (name?: string, email?: string) => {
@@ -1810,19 +1738,14 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const finalConvId = conversationIdRef.current;
       const finalVId = visitorIdRef.current;
       if (finalConvId && finalVId) {
+        // Save AI message AND clear queue in a single call
         fetch(SAVE_MESSAGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent }),
+          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, senderType: 'agent', content: aiContent, aiQueueAction: 'clear' }),
         }).catch(e => console.error('Failed to save AI message:', e));
 
-        // Clear queue AFTER typing finishes so dashboard bubble stays editable throughout
         convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
-        fetch(SET_AI_QUEUE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-          body: JSON.stringify({ conversationId: finalConvId, visitorId: finalVId, sessionId, action: 'clear' }),
-        }).catch(() => {});
       }
 
       setMessages(prev => [...prev, {
@@ -1951,13 +1874,8 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
     }
 
-    // Extract visitor info in background after each AI response (works in all modes)
-    // This allows us to capture details as they're shared naturally in conversation
-    // Use ref to get the most current visitor ID (state may be stale in preview mode)
-    const currentVisitorId = visitorIdRef.current || visitorId;
-    if (currentVisitorId && conversationHistory.length >= 1) {
-      extractVisitorInfo(currentVisitorId, conversationHistory);
-    }
+    // Visitor info extraction is now handled server-side in widget-save-message
+    // (only for visitor messages, with debouncing). No client-side call needed.
 
     // NOTE: For real embeds the visitor message was already saved to DB at the top of sendMessage
     // (awaited, before the hybrid flow). For preview mode with a test conversation, save via
