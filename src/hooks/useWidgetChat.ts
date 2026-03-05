@@ -66,8 +66,8 @@ interface WidgetChatConfig {
 }
 
 const DEFAULT_SETTINGS: PropertySettings = {
-  ai_response_delay_min_ms: 30000,
-  ai_response_delay_max_ms: 60000,
+  ai_response_delay_min_ms: 15000,
+  ai_response_delay_max_ms: 15000,
   typing_indicator_min_ms: 1500,
   typing_indicator_max_ms: 3000,
   smart_typing_enabled: true,
@@ -1095,7 +1095,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       const isFirstAutoReply = aiMessageCountRef.current === 0;
       const useQuickReplyAuto = settings.quick_reply_after_first_enabled && !isFirstAutoReply;
       const responseDelay = useQuickReplyAuto
-        ? randomInRange(15000, 25000)
+        ? randomInRange(5000, 5000)
         : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
       const respondingAgent = currentAiAgent;
@@ -1400,7 +1400,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     const responseDelay = isDemoOrPreview
       ? randomInRange(1000, 2000)
       : useQuickReply
-        ? randomInRange(15000, 25000)
+        ? randomInRange(5000, 5000)
         : randomInRange(settings.ai_response_delay_min_ms, settings.ai_response_delay_max_ms);
 
     // Store current agent for this message (before cycling)
