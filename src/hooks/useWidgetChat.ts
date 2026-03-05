@@ -1439,7 +1439,6 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       // Dashboard agent pressed Cancel — queue was already cleared by the dashboard.
       // Just release the lock and abort; do NOT send anything.
       if (cancelledByDashboard) {
-        hybridFlowActiveRef.current = false;
         setIsTyping(false);
         return;
       }
