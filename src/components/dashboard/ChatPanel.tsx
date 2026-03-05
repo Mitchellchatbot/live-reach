@@ -334,6 +334,49 @@ const VisitorInfoSidebar = ({
     setLocalVisitor((prev: any) => ({ ...prev, [field]: newValue }));
   }, []);
 
+  const handleReExtract = useCallback(async () => {
+    if (!conversationId || !visitor.id) return;
+    setIsExtracting(true);
+    try {
+      // Fetch conversation messages
+      const { data: msgs } = await supabase
+        .from('messages')
+        .select('sender_type, content')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (!msgs || msgs.length === 0) return;
+
+      const conversationHistory = msgs.map(m => ({
+        role: m.sender_type === 'visitor' ? 'user' : 'assistant',
+        content: m.content,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('extract-visitor-info', {
+        body: { visitorId: visitor.id, conversationHistory },
+      });
+
+      if (error) throw error;
+
+      if (data?.extracted && data.info) {
+        // Re-fetch the full visitor to get updated fields
+        const { data: updated } = await supabase
+          .from('visitors')
+          .select('*')
+          .eq('id', visitor.id)
+          .single();
+        if (updated) {
+          setLocalVisitor(updated);
+        }
+      }
+    } catch (err) {
+      console.error('Re-extraction failed:', err);
+    } finally {
+      setIsExtracting(false);
+    }
+  }, [conversationId, visitor.id]);
+
   // Check if we have any treatment-specific info
   const hasTreatmentInfo = localVisitor.addiction_history || localVisitor.drug_of_choice || localVisitor.treatment_interest || localVisitor.insurance_info || localVisitor.urgency_level;
 
