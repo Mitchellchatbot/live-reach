@@ -1381,28 +1381,19 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
 
       try {
 
-      // Rebuild conversation history from DB to include ALL rapid-fire messages
-      // (the `messages` state captured at function entry may be stale)
+      // Optimization #5: Use local messages ref for fresh history instead of DB round-trip
+      // messagesRef.current always has the latest messages (synced via useEffect)
       let freshHistory = conversationHistory;
-      if (convId && vId) {
-        try {
-          const histResp = await fetch(GET_MESSAGES_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ conversationId: convId, visitorId: vId, sessionId }),
-          });
-          if (histResp.ok) {
-            const histData = await histResp.json();
-            const dbMessages = (histData?.messages ?? []) as Array<{ sender_type: string; content: string }>;
-            if (dbMessages.length > 0) {
-              freshHistory = toAiHistoryFromDb(dbMessages);
-            }
-          }
-        } catch {
-          // Fall back to the locally-built history
+      const latestMessages = messagesRef.current;
+      if (latestMessages.length > 0) {
+        const localHistory = latestMessages
+          .filter(m => m.id !== 'proactive' && m.id !== 'greeting' && String(m.content || '').trim() !== '')
+          .map(m => ({
+            role: m.sender_type === 'visitor' ? 'user' as const : 'assistant' as const,
+            content: String(m.content),
+          }));
+        if (localHistory.length > 0) {
+          freshHistory = localHistory;
         }
       }
 
