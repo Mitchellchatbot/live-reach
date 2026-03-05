@@ -1654,6 +1654,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
         const staleConvId = conversationIdRef.current;
         const staleVId = visitorIdRef.current;
         if (staleConvId && staleVId) {
+          convStateRef.current = { ...convStateRef.current, aiQueuedAt: null, aiQueuedPreview: null, aiQueuedPaused: false };
           fetch(SET_AI_QUEUE_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
