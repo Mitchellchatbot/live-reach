@@ -1207,20 +1207,11 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   }, [settings.proactive_message_enabled, settings.proactive_message, settings.proactive_message_delay_seconds, messages]);
 
   const initializeChat = useCallback(async () => {
-    // Fetch settings and AI agents in parallel - they're independent
-    const [fetchedSettings, fetchedAgents] = await Promise.all([
-      fetchSettings(),
-      fetchAiAgents(),
-    ]);
-
-    // Store greeting for static display (not as a message)
-    const greetingContent = greeting || fetchedSettings.greeting || '';
-    if (greetingContent) {
-      setGreetingText(greetingContent);
-    }
-    
-    // For preview/demo mode, we're done - don't create DB records
+    // For preview/demo mode, use greeting prop directly
     if (!propertyId || propertyId === 'demo' || isPreview) {
+      if (greeting) {
+        setGreetingText(greeting);
+      }
       setLoading(false);
       return;
     }
@@ -1228,9 +1219,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     // Mark loading as done early
     setLoading(false);
 
-    // Background bootstrap (visitor only - conversation created lazily on first message)
-    void ensureWidgetIds(fetchedAgents);
-  }, [propertyId, greeting, fetchSettings, fetchAiAgents, isPreview, ensureWidgetIds]);
+    // Background bootstrap — consolidated call returns visitor, settings, and AI agents
+    void ensureWidgetIds();
+  }, [propertyId, greeting, isPreview, ensureWidgetIds]);
 
   // Submit lead info
   const submitLeadInfo = async (name?: string, email?: string) => {
