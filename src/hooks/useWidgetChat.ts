@@ -1462,7 +1462,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       while (!finalGuardDone) {
         finalGuardDone = true;
         const cs = convStateRef.current;
-        console.log('[useWidgetChat] Final guard state:', { aiQueuedAt: cs.aiQueuedAt, aiQueuedPaused: cs.aiQueuedPaused, aiQueuedPreview: !!cs.aiQueuedPreview });
+        
         if (queueWasSet && cs.aiQueuedAt === null) {
           hybridFlowActiveRef.current = false;
           setIsTyping(false);
