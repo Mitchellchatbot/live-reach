@@ -129,10 +129,10 @@ const quickSalesforceSteps: Step[] = [
 
 const quickNotificationsSteps: Step[] = [
   {
-    target: '[data-tour="slack-connection"]',
+    target: '[data-tour="notifications-tabs"]',
     content: "quick-notifications-overview",
     title: "Stay Informed",
-    placement: 'left',
+    placement: 'bottom',
     disableBeacon: true,
     floaterProps: { disableFlip: true },
     data: { isQuickNotificationsOverview: true },
