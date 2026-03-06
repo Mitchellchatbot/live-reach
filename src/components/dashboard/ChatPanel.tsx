@@ -784,7 +784,7 @@ export const ChatPanel = ({
         
         {/* AI Toggle Header */}
         {onToggleAI && (
-          <div className="px-4 py-2 border-b border-border/30 flex items-center justify-between bg-background/50">
+          <div className="px-4 py-2 border-b border-border/30 flex items-center justify-between bg-accent">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">AI Assistant</span>
               <Badge variant={isAIEnabled ? "default" : "secondary"} className="text-xs">
