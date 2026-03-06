@@ -62,6 +62,21 @@ const TeamMembers = () => {
   const [creatingAIForId, setCreatingAIForId] = useState<string | null>(null);
   const [linkedAIAgents, setLinkedAIAgents] = useState<Record<string, string>>({}); // agent_id -> ai_name
 
+  // Co-Admin state
+  interface CoAdmin {
+    id: string; // account_co_owners row id
+    user_id: string;
+    email: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  }
+  const [coAdmins, setCoAdmins] = useState<CoAdmin[]>([]);
+  const [coAdminEmail, setCoAdminEmail] = useState('');
+  const [isAddingCoAdmin, setIsAddingCoAdmin] = useState(false);
+  const [isCoAdminDialogOpen, setIsCoAdminDialogOpen] = useState(false);
+  const [deleteCoAdminId, setDeleteCoAdminId] = useState<string | null>(null);
+  const [isDeletingCoAdmin, setIsDeletingCoAdmin] = useState(false);
+
   const [searchParams] = useSearchParams();
   const isTourActive = searchParams.get('tour') === '1';
 
