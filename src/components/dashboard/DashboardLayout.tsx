@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { DashboardSidebar } from './DashboardSidebar';
+import { HipaaTwoFactorBanner } from './HipaaTwoFactorBanner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
@@ -16,6 +18,9 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children, className, badgeCounts, hideMobileMenu }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { profile } = useUserProfile();
+
+  const show2FABanner = profile && !profile.two_factor_enabled;
 
   return (
     <div className={cn("flex h-screen overflow-hidden", className || "bg-sidebar")}>
@@ -26,6 +31,7 @@ export const DashboardLayout = ({ children, className, badgeCounts, hideMobileMe
       />
       <DashboardLayoutContext.Provider value={{ openSidebar: () => setSidebarOpen(true), isMobile: !!isMobile }}>
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {show2FABanner && <HipaaTwoFactorBanner />}
           {children}
         </div>
       </DashboardLayoutContext.Provider>
