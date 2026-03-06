@@ -605,16 +605,29 @@ export const documentationSections: DocSection[] = [
         title: 'Managing Conversations',
         description: 'View and respond to customer chats.',
         whatItDoes: 'The inbox shows all conversations from your websites. You can view active chats, respond to visitors, and close resolved conversations. Conversations are organized by status and property.',
+        detailedSections: [
+          {
+            heading: 'Inbox Layout and Navigation',
+            body: 'The inbox is divided into three main areas. On the left, you see the conversation list — a scrollable list of all conversations for your currently selected property. Each conversation card shows a preview of the latest message, the visitor\'s name (if available), and a timestamp. Conversations are sorted by most recent activity, so the most active chats always appear at the top.\n\nIn the center, the chat panel displays the full message history for the selected conversation. Messages from visitors appear on one side, and messages from the AI or human agents appear on the other. Each message includes a timestamp and a label indicating whether it was sent by the AI or a human agent, giving you full transparency into what has been communicated.\n\nOn the right, the visitor info panel provides context about who you are chatting with. This panel displays any information that has been collected during the conversation — name, phone number, email, location, insurance details, the page the visitor is currently browsing, and more. This context helps you provide personalized, relevant responses without asking the visitor to repeat information they have already shared.'
+          },
+          {
+            heading: 'Conversation Workflow',
+            body: 'When a new conversation arrives, it appears in the Active tab with a visual indicator showing it is unread. Click on the conversation to open the chat panel and review the message history. If the AI has been handling the conversation, you can read through the entire exchange to understand the context before deciding whether to intervene.\n\nIf the AI is doing a good job, you can simply monitor the conversation without taking action. If you want to take over, start typing in the message field — the AI will automatically pause for this conversation the moment you send a message. There is no need to explicitly "claim" or "transfer" the conversation; the handoff is seamless.\n\nWhen a conversation is resolved, click the Close button to move it to the Closed tab. This keeps your Active tab focused on ongoing conversations that still need attention. If you are unsure whether a conversation is truly resolved, you can leave it active — stale conversations will auto-close after a period of inactivity.\n\nThe property selector at the top of the inbox lets you filter conversations by website. If you manage multiple properties, use this selector to focus on one website at a time. You can also select "All Properties" to see conversations from all your websites in a single view.'
+          }
+        ],
         howToUse: [
           'Click on a conversation to open it in the chat panel',
           'Type your response in the message field',
           'Press Enter or click Send to deliver your message',
-          'Use the close button to mark conversations as resolved'
+          'Use the close button to mark conversations as resolved',
+          'Filter by property using the selector at the top',
+          'Check the Closed tab to review past conversations'
         ],
         tips: [
           'Respond quickly - visitors may leave if they wait too long',
           'Use the visitor info panel to personalize your responses',
-          'Closed conversations can be found in the Closed tab'
+          'Closed conversations can be found in the Closed tab',
+          'Use "/" shortcuts for faster replies to common questions'
         ],
         relatedTopics: [
           { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' },
@@ -627,16 +640,29 @@ export const documentationSections: DocSection[] = [
         title: 'Chat Panel',
         description: 'The interface for messaging visitors.',
         whatItDoes: 'The chat panel displays the full conversation history with a visitor. You can see all messages, send replies, and view visitor details. The panel updates in real-time as new messages arrive.',
+        detailedSections: [
+          {
+            heading: 'Chat Panel Features',
+            body: 'The chat panel is designed to give you everything you need to have effective conversations with visitors. At the top, you see the visitor\'s name (if known) and the conversation status. The main area shows the full message history in chronological order, with clear visual distinction between visitor messages, AI responses, and human agent responses.\n\nAt the bottom, the message input field is where you type your responses. Press Enter to send a message, or Shift+Enter to add a new line without sending. As you type, the visitor sees a typing indicator on their end, letting them know a response is being composed. This creates a more natural, conversational experience compared to messages that appear without any preview of activity.\n\nThe chat panel supports several keyboard shortcuts and features designed to speed up your workflow. Typing "/" opens the shortcut menu, where you can select pre-written responses for common questions. This is especially useful during high-volume periods when you need to respond quickly to multiple conversations. You can also scroll up through the conversation history to review earlier messages and understand the full context before responding.'
+          },
+          {
+            heading: 'Message Labels and Context',
+            body: 'Every message in the chat panel includes metadata that helps you understand the conversation flow. AI-generated messages are clearly labeled so you know exactly what the bot told the visitor. This is critical for maintaining consistency — if the AI made a claim or shared specific information, you can see it and either confirm or correct it in your response.\n\nThe timestamp on each message helps you understand the pace of the conversation. If there was a long gap between messages, the visitor may have been doing research or stepped away. If messages are rapid-fire, the visitor is actively engaged and expecting quick responses.\n\nThe visitor info panel on the right side of the chat panel updates in real time as new information is collected during the conversation. If the AI asks for and receives the visitor\'s phone number mid-conversation, it immediately appears in the visitor info panel. This means you always have the most up-to-date information available as you compose your responses.'
+          }
+        ],
         howToUse: [
           'Select a conversation from the list to open it',
           'Scroll up to view previous messages',
           'Type in the message field at the bottom',
-          'Press Enter to send, or Shift+Enter for a new line'
+          'Press Enter to send, or Shift+Enter for a new line',
+          'Type "/" to access conversation shortcuts',
+          'Review visitor info in the right panel for context'
         ],
         tips: [
           'Messages from AI are labeled so you know what was automated',
           'You can see when visitors are typing',
-          'The visitor info sidebar shows helpful context'
+          'The visitor info sidebar shows helpful context',
+          'Use shortcuts for faster responses to common questions'
         ],
         relatedTopics: [
           { title: 'Managing Conversations', path: '/documentation/inbox/conversations' },
@@ -649,15 +675,28 @@ export const documentationSections: DocSection[] = [
         title: 'Visitor Information',
         description: 'Understanding your visitors.',
         whatItDoes: 'The visitor info panel shows details about who you\'re chatting with. This includes their name, email, phone, location, insurance info, current page, and any other information collected during the conversation.',
+        detailedSections: [
+          {
+            heading: 'What Information Is Collected',
+            body: 'Scaled Bot collects visitor information from multiple sources, giving you a comprehensive picture of who you are chatting with. Some information is collected automatically — such as the visitor\'s approximate location (detected via IP address), the page they are currently browsing, and their browser type. Other information is collected through lead capture — either through upfront forms or natural conversation.\n\nThe fields available in the visitor info panel include: name, email address, phone number, geographic location (city, state), current page URL, insurance information, drug of choice (for treatment centers), treatment interest, urgency level, age, occupation, and addiction history. Not all fields will be populated for every visitor — it depends on what information was collected during the conversation and what lead capture settings you have configured.\n\nInsurance card photos, if collected, are also accessible from the visitor info panel. Clicking on the insurance section reveals any uploaded images, which your team can use for verification purposes. This is especially valuable for treatment centers that need to confirm insurance coverage before proceeding with an intake.'
+          },
+          {
+            heading: 'Using Visitor Info Effectively',
+            body: 'The visitor info panel is most powerful when used to personalize your responses. Instead of asking a visitor to repeat their name or phone number, reference the information already collected. This makes the conversation feel more natural and shows the visitor that their time is valued.\n\nLocation data can help you provide relevant information. If a visitor is chatting from a different state, you can proactively address questions about travel, virtual appointments, or referrals to local providers. If they are local, you can give specific directions or mention nearby landmarks.\n\nThe current page field shows you exactly where the visitor is on your website at this moment. This is incredibly useful for understanding context. If someone is on your pricing page and asks "how much does it cost?", you know they have already been looking at pricing information. If they are on your "About Us" page, they might be evaluating your credibility. Use this context to tailor your responses and anticipate their needs.\n\nAll visitor information is stored persistently, so if a visitor returns for a second conversation, their previous data is still available. This enables continuity across sessions — you can reference previous interactions and avoid asking for information the visitor has already provided.'
+          }
+        ],
         howToUse: [
           'Open a conversation to see visitor details in the sidebar',
           'Click on expandable sections to see more info',
-          'Use this context to personalize your responses'
+          'Use this context to personalize your responses',
+          'Check the current page to understand what the visitor is looking at',
+          'View insurance card uploads if available'
         ],
         tips: [
           'Visitors provide more info when asked naturally in conversation',
           'Enable lead capture to collect contact details automatically',
-          'Location is detected automatically based on IP address'
+          'Location is detected automatically based on IP address',
+          'Use current page data to anticipate visitor questions'
         ],
         relatedTopics: [
           { title: 'Lead Capture', path: '/documentation/ai-support/lead-capture' },
@@ -669,6 +708,12 @@ export const documentationSections: DocSection[] = [
         title: 'Conversation Shortcuts',
         description: 'Quick replies and chat shortcuts.',
         whatItDoes: 'Chat shortcuts let you quickly insert pre-written responses into conversations. Type a shortcut keyword (like "/hours" or "/thanks") and select from the matching suggestions to instantly send a common reply without typing it out every time.',
+        detailedSections: [
+          {
+            heading: 'How Shortcuts Work',
+            body: 'Shortcuts are triggered by typing "/" in the message input field. When you type the forward slash, a dropdown menu appears showing all available shortcuts. Continue typing after the slash to filter the list — for example, typing "/hours" would narrow the list to shortcuts related to business hours.\n\nEach shortcut has a keyword and a pre-written message. When you select a shortcut from the dropdown, the message text is inserted into the input field. You can then edit the text before sending if you want to customize it for the specific conversation. This gives you the speed of canned responses with the flexibility to personalize each one.\n\nShortcuts are particularly valuable during high-volume periods when you are managing multiple conversations simultaneously. Instead of typing the same response to common questions like "What are your hours?" or "Where are you located?", you can insert a shortcut in seconds and move on to the next conversation. This dramatically reduces response times and allows a single agent to handle more conversations effectively.\n\nThe shortcut system also ensures consistency across your team. When all agents use the same shortcuts, visitors receive consistent, accurate information regardless of which team member is responding. This is especially important for details like pricing, policies, or procedures where inconsistent answers could cause confusion.'
+          }
+        ],
         howToUse: [
           'Open a conversation in the chat panel',
           'Type "/" in the message field to see all available shortcuts',
@@ -679,7 +724,8 @@ export const documentationSections: DocSection[] = [
         tips: [
           'Shortcuts save time on frequently asked questions',
           'You can customize your shortcuts to match your brand voice',
-          'Combine shortcuts with personal touches for the best results'
+          'Combine shortcuts with personal touches for the best results',
+          'Create shortcuts for your most common responses to maximize efficiency'
         ],
         relatedTopics: [
           { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' },
@@ -691,6 +737,12 @@ export const documentationSections: DocSection[] = [
         title: 'Real-time Updates',
         description: 'Live conversation updates and indicators.',
         whatItDoes: 'Conversations update in real-time without needing to refresh. You\'ll see new messages appear instantly, typing indicators when someone is composing a message, and live status changes as conversations open or close.',
+        detailedSections: [
+          {
+            heading: 'How Real-time Works',
+            body: 'Scaled Bot uses a real-time subscription system that pushes updates to your browser the moment they happen. When a visitor sends a message, it appears in your chat panel within milliseconds. When a new conversation starts, it immediately shows up in your conversation list. When a conversation is closed (either manually or by auto-close), the status updates instantly across all tabs and team members.\n\nThis real-time architecture means you never need to refresh the page to see the latest information. The inbox is always up to date. If you have the inbox open in multiple browser tabs, all tabs stay synchronized. If a colleague closes a conversation in one tab, you will see that change reflected in your own view immediately.\n\nTyping indicators are a key part of the real-time experience. When a visitor starts typing a message, you see animated dots in the chat panel, letting you know a response is incoming. This helps you decide whether to wait for their message or continue composing your own response. Similarly, when you type in the message field, the visitor sees a typing indicator on their end, creating a more natural conversational flow.\n\nNotification bells in the sidebar also update in real time. Unread message counts change as new messages arrive and as you read them. This gives you a quick at-a-glance indicator of pending conversations without needing to navigate to the inbox.'
+          }
+        ],
         howToUse: [
           'Open the inbox — conversations update automatically',
           'Watch for typing indicators showing a visitor is writing',
@@ -701,7 +753,8 @@ export const documentationSections: DocSection[] = [
         tips: [
           'Keep the inbox open during business hours for fastest response',
           'Typing indicators help you know when to wait vs. respond',
-          'Real-time updates work across all your open tabs'
+          'Real-time updates work across all your open tabs',
+          'No page refresh needed — everything updates automatically'
         ],
         relatedTopics: [
           { title: 'Chat Panel', path: '/documentation/inbox/chat-panel' },
@@ -713,6 +766,12 @@ export const documentationSections: DocSection[] = [
         title: 'Conversation Status',
         description: 'Active, closed, and auto-close behavior.',
         whatItDoes: 'Conversations have three states: active (ongoing chat), closed (resolved), and pending. Stale conversations are automatically closed after a period of inactivity to keep your inbox clean. Closed conversations can be reopened if a visitor sends a new message.',
+        detailedSections: [
+          {
+            heading: 'Understanding Conversation States',
+            body: 'Every conversation in Scaled Bot goes through a lifecycle defined by its status. Understanding these states helps you manage your inbox effectively and ensures no conversation falls through the cracks.\n\nActive conversations are ongoing chats where the visitor or AI is still exchanging messages. These appear in the Active tab of your inbox and represent conversations that may need your attention. Some active conversations are being handled entirely by the AI, while others may have been escalated or taken over by a human agent.\n\nClosed conversations are chats that have been marked as resolved. They move to the Closed tab and no longer appear in your active inbox. Closing a conversation is a deliberate action that signals "this visitor\'s question has been addressed." Closed conversations are fully preserved — you can review the entire message history at any time.\n\nThe auto-close feature automatically closes conversations that have been inactive for approximately 45 seconds. This prevents your inbox from filling up with stale conversations where the visitor has left the website or stopped responding. Auto-close is a housekeeping feature that keeps your active inbox focused on conversations that are actually happening.\n\nIf a visitor sends a new message on a closed conversation, it automatically reopens and moves back to the Active tab. This ensures continuity — the visitor picks up where they left off, and the full conversation history is preserved. Your team is notified of the reopened conversation through the normal notification channels.'
+          }
+        ],
         howToUse: [
           'View active conversations in the "Active" tab of the inbox',
           'Click "Close" on a conversation to mark it resolved',
@@ -723,7 +782,8 @@ export const documentationSections: DocSection[] = [
         tips: [
           'Auto-close keeps your inbox tidy without manual cleanup',
           'Visitors can always restart a closed conversation',
-          'Closed conversations are still searchable in your history'
+          'Closed conversations are still searchable in your history',
+          'Reopened conversations include the full previous message history'
         ],
         relatedTopics: [
           { title: 'Managing Conversations', path: '/documentation/inbox/conversations' },
