@@ -71,17 +71,40 @@ export const documentationSections: DocSection[] = [
         id: 'properties',
         title: 'Creating Properties',
         description: 'Set up websites to manage with Scaled Bot.',
-        whatItDoes: 'Properties represent the websites where you want to deploy chat support. Each property has its own widget settings, team assignments, and conversation history.',
+        whatItDoes: 'Properties represent the websites where you want to deploy chat support. Each property has its own widget settings, team assignments, and conversation history. You can create as many properties as your subscription allows, making it easy to manage multiple websites from a single account.',
+        detailedSections: [
+          {
+            heading: 'Understanding Properties',
+            body: 'In Scaled Bot, a "property" is the fundamental unit of organization. Each property corresponds to one website or web application where you want to deploy the chat widget. When you create a property, the system generates a unique identifier that links your widget configuration, AI settings, team assignments, conversation history, and analytics to that specific website.\n\nThis architecture means that every aspect of your chat experience is scoped to a single property. Your dental practice website can have a warm, empathetic AI tone with insurance-related lead capture, while your consulting firm website can have a professional, direct tone focused on scheduling calls — all managed from the same Scaled Bot account.'
+          },
+          {
+            heading: 'When to Create Multiple Properties',
+            body: 'You should create a separate property for each distinct website or business unit that needs its own chat experience. Common scenarios include managing multiple business locations that each have their own website, running different brands under the same parent company, separating your main website from a landing page or microsite, or providing white-label chat support for clients if you are an agency.\n\nHowever, if you have a single website with multiple pages, you do not need multiple properties. One property covers your entire domain, and the widget will appear on every page where the embed code is installed. You can use page analytics to see which pages generate the most conversations without needing separate properties for each page.'
+          },
+          {
+            heading: 'Property Settings and Configuration',
+            body: 'Once a property is created, you can configure a wide range of settings that control how the chat widget behaves on that specific website. These settings include the widget color, icon style, greeting message, and offline message that visitors see. You can also configure the AI base prompt, escalation rules, lead capture fields, proactive messaging, geo-filtering, and humanization features — all independently for each property.\n\nTeam assignments are also property-specific. When you invite an agent, you choose which properties they have access to. Agents only see conversations from their assigned properties, which helps you organize workloads across different websites or departments. This is especially useful if you have specialized teams for different business lines.\n\nAnalytics and conversation history are also separated by property, giving you clean, per-website metrics. You can compare performance across properties to understand which websites generate the most engagement, which AI prompts work best, and where your team spends the most time.'
+          },
+          {
+            heading: 'Property Deletion and Data',
+            body: 'If you no longer need a property, you can delete it from the properties management page. Deleting a property is a permanent action — it removes all associated conversations, visitor data, team assignments, and widget configurations. You will be asked to confirm this action before it proceeds. If you have compliance requirements such as HIPAA, make sure you have exported or archived any necessary data before deleting a property.\n\nIf you simply want to stop the widget from appearing on a website without losing your data, you can remove the embed code from your site instead of deleting the property. This preserves all your conversation history and settings in case you want to re-enable the widget later.'
+          }
+        ],
         howToUse: [
-          'Click "Add Property" from any property selector',
-          'Enter your property name (e.g., "Main Website")',
-          'Enter your domain (e.g., "example.com")',
-          'Click "Create Property" to save'
+          'Click "Add Property" from any property selector or the properties management page',
+          'Enter your property name — use something descriptive like "Main Website" or "NYC Office"',
+          'Enter your domain (e.g., "example.com") — this is the website where the widget will appear',
+          'Click "Create Property" to save and generate your property',
+          'Configure widget settings, AI prompt, and team assignments for the new property',
+          'Copy the embed code and install it on your website',
+          'Test the widget by visiting your website and starting a conversation'
         ],
         tips: [
-          'Use descriptive names to easily identify properties',
-          'You can manage multiple websites from one account',
-          'Each property can have different widget colors and settings'
+          'Use descriptive names to easily identify properties — especially if you manage several websites',
+          'You can manage multiple websites from one account without switching logins',
+          'Each property can have different widget colors, AI prompts, and team assignments',
+          'The property selector in the sidebar lets you quickly switch between websites',
+          'Delete a property only after exporting any data you need — the action is permanent'
         ],
         relatedTopics: [
           { title: 'Widget Customization', path: '/documentation/widget/customization' },
