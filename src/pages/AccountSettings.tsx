@@ -49,7 +49,17 @@ const AccountSettings = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
   // 2FA
-  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [show2FASetup, setShow2FASetup] = useState(() => sessionStorage.getItem('show2FASetup') === 'true');
+
+  // Persist 2FA setup state so tab-switching doesn't close the dialog
+  const toggle2FASetup = (value: boolean) => {
+    setShow2FASetup(value);
+    if (value) {
+      sessionStorage.setItem('show2FASetup', 'true');
+    } else {
+      sessionStorage.removeItem('show2FASetup');
+    }
+  };
 
   // Sync profile state when profile loads
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
@@ -215,11 +225,10 @@ const AccountSettings = () => {
                   email={user.email || ''}
                   isSetup
                   onVerified={() => {
-                    setShow2FASetup(false);
-                    // Profile will refresh via re-fetch
+                    toggle2FASetup(false);
                     window.location.reload();
                   }}
-                  onCancel={() => setShow2FASetup(false)}
+                  onCancel={() => toggle2FASetup(false)}
                 />
               ) : profile?.two_factor_enabled ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 border border-primary/10">
@@ -236,7 +245,7 @@ const AccountSettings = () => {
                       HIPAA requires two-factor authentication to safeguard protected health information (PHI). Enable 2FA to ensure your account is compliant.
                     </p>
                   </div>
-                  <Button onClick={() => setShow2FASetup(true)} className="gap-1.5">
+                  <Button onClick={() => toggle2FASetup(true)} className="gap-1.5">
                     <ShieldCheck className="h-4 w-4" />
                     Enable Two-Factor Authentication
                   </Button>
