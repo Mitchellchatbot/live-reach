@@ -3,6 +3,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { DocsSidebar } from './DocsSidebar';
 import { ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DocsSearch } from './DocsSearch';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSlideIn, useFadeIn } from '@/hooks/useGSAP';
