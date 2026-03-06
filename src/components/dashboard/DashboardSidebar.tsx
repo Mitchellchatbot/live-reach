@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Inbox,
   Archive,
-  FlaskConical,
+  
   LifeBuoy,
   Bot,
   BookOpen,
@@ -379,12 +379,6 @@ export const DashboardSidebar = ({
             </SidebarSection>
           )}
 
-          {showAdminItems && (
-            <SidebarSection title="Dev" collapsed={!forMobile && collapsed}>
-              <SidebarItem to="/onboarding?dev=1" icon={FlaskConical} label="Test Onboarding" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
-              <SidebarItem to="/dashboard?tour=1" icon={FlaskConical} label="Test Tour" collapsed={!forMobile && collapsed} iconColor="#A855F7" />
-            </SidebarSection>
-          )}
 
           {/* Role switcher is now at the top of the sidebar */}
         </nav>
