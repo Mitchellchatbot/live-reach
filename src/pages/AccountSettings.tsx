@@ -47,6 +47,9 @@ const AccountSettings = () => {
 
   // Delete account
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  
+  // 2FA
+  const [show2FASetup, setShow2FASetup] = useState(false);
 
   // Sync profile state when profile loads
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
