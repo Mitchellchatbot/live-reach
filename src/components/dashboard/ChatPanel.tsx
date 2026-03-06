@@ -101,7 +101,7 @@ const MessageBubble = ({
   return (
     <div className={cn("flex gap-2 message-enter", isAgent ? "flex-row-reverse" : "flex-row")}>
       {!isAgent && <Avatar className="h-8 w-8 flex-shrink-0">
-          <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+          <AvatarFallback className="bg-background text-muted-foreground text-xs">
             V
           </AvatarFallback>
         </Avatar>}
@@ -109,7 +109,7 @@ const MessageBubble = ({
         {/* Message bubble — fades to full opacity once countdown hits 0 */}
         <div className={cn(
           "rounded-3xl px-4 py-2.5 transition-opacity duration-700",
-          isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-chat-visitor text-chat-visitor-foreground rounded-bl-xl",
+          isAgent ? "bg-chat-user text-chat-user-foreground rounded-br-xl" : "bg-background text-foreground rounded-bl-xl",
           isPendingDelivery && countdownActive ? "opacity-70" : "opacity-100"
         )}>
           {isPendingDelivery && isEditing ? (
