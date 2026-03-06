@@ -216,8 +216,24 @@ export default function Auth() {
       const { data: { user: loggedInUser } } = await supabase.auth.getUser();
       if (loggedInUser) {
         await acceptInvitationForExistingUser(loggedInUser.id, loggedInUser.email || loginEmail);
-        // Refresh role so hasAgentAccess updates immediately
         await refreshRole();
+      }
+    }
+
+    // Check if user has 2FA enabled
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('two_factor_enabled')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (profile?.two_factor_enabled) {
+        // Show 2FA screen instead of redirecting
+        setPending2FA({ userId: currentUser.id, email: currentUser.email || loginEmail });
+        setIsLoading(false);
+        return;
       }
     }
 
