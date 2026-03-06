@@ -27,17 +27,39 @@ export const documentationSections: DocSection[] = [
         title: 'Overview',
         description: 'Welcome to Scaled Bot - your AI-powered customer support solution.',
         whatItDoes: 'Scaled Bot helps you provide instant, 24/7 customer support through an intelligent chat widget on your website. It combines AI automation with human agent support to ensure your visitors always get the help they need.',
+        detailedSections: [
+          {
+            heading: 'Why Scaled Bot Exists',
+            body: 'Most businesses lose potential customers simply because they cannot respond fast enough. Studies show that 79% of visitors who start a live chat expect a response within 60 seconds, and over half will abandon a website entirely if they cannot get answers quickly. Scaled Bot was built to solve this exact problem — providing instant, intelligent responses around the clock so you never miss a conversation, a lead, or a sale.\n\nTraditional live chat tools require a human agent to be online at all times. That is expensive, hard to scale, and unrealistic for small and mid-size businesses. Scaled Bot flips this model by letting AI handle the majority of conversations while seamlessly handing off to human agents when the situation calls for it. The result is a support experience that feels personal, responsive, and always available — without the overhead of a full-time support team.'
+          },
+          {
+            heading: 'How It Works',
+            body: 'At its core, Scaled Bot is a chat widget that you embed on your website. When a visitor opens the widget and starts typing, the AI reads their message, references the base prompt and business information you have configured, and generates a helpful response in real time. The AI can answer frequently asked questions, collect visitor contact information, provide directions, share business hours, and much more — all without any human involvement.\n\nBehind the scenes, every conversation is logged in your inbox. You can monitor active chats, review closed conversations, and jump in at any time to take over from the AI. If the AI encounters a question it cannot confidently answer, or if a visitor uses certain keywords like "speak to a person," the system automatically escalates the conversation and notifies your team via Slack, email, or both.\n\nScaled Bot also includes powerful analytics so you can track how many conversations the AI resolves on its own, which pages generate the most chats, and how quickly your team responds to escalations. Over time, you can use these insights to refine your AI prompts, optimize your website content, and improve your overall customer experience.'
+          },
+          {
+            heading: 'Key Concepts',
+            body: 'Before diving into the setup process, it helps to understand a few key concepts that you will encounter throughout the platform.\n\nProperties are the websites where you deploy the chat widget. Each property has its own settings, team assignments, and conversation history. If you run multiple websites, you can manage them all from one account.\n\nThe Base Prompt is the set of instructions you give to the AI. It tells the bot who you are, what your business does, how to answer common questions, and what tone to use. A well-written base prompt is the single most important factor in how well your chatbot performs.\n\nAgents are the human team members who can respond to conversations. You can invite agents, assign them to specific properties, and even create AI personas based on real team members.\n\nEscalation is the process of handing a conversation from the AI to a human agent. This can happen automatically based on keywords, message count thresholds, or crisis detection.\n\nThe Widget is the chat bubble that appears on your website. You can customize its color, icon, greeting message, visual effects, and more to match your brand identity.'
+          },
+          {
+            heading: 'Who Is Scaled Bot For?',
+            body: 'Scaled Bot was originally designed for healthcare and treatment center websites, where timely responses can literally save lives. However, the platform is flexible enough to serve any business that needs to engage website visitors in real time — from real estate agencies and law firms to e-commerce stores and SaaS companies.\n\nIf your business receives inquiries through your website and you want to respond faster, capture more leads, and provide better support without hiring a full-time chat team, Scaled Bot is built for you. The platform includes specialized features like HIPAA-compliant data handling, insurance card collection, and Salesforce lead export that make it especially powerful for healthcare providers, but these features are entirely optional and can be disabled for non-healthcare use cases.'
+          }
+        ],
         howToUse: [
           'Create your first property (website) from the dashboard',
           'Customize your chat widget appearance and behavior',
           'Add team members to handle conversations',
           'Configure AI personas for automated responses',
-          'Embed the widget on your website'
+          'Embed the widget on your website',
+          'Monitor your inbox for incoming conversations',
+          'Review analytics to continuously improve performance'
         ],
         tips: [
           'Start with one property to learn the system before adding more',
           'Test your widget thoroughly before going live',
-          'Monitor conversations regularly to improve AI responses'
+          'Monitor conversations regularly to improve AI responses',
+          'Set up Slack or email notifications so you never miss an escalation',
+          'Review your base prompt weekly and update it based on real conversations'
         ],
         relatedTopics: [
           { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
