@@ -239,6 +239,24 @@ export const documentationSections: DocSection[] = [
         title: 'Getting Your Chatbot Live',
         description: 'End-to-end checklist from property creation to embedding the widget on your website.',
         whatItDoes: 'This guide walks you through every step needed to launch your chatbot — from creating a property in Scaled Bot, configuring basic settings, generating your embed code, and pasting it into your website. By the end, your visitors will see a fully functional chat widget on your site.',
+        detailedSections: [
+          {
+            heading: 'Pre-Launch Preparation',
+            body: 'Before you paste a single line of code on your website, there are a few things you should have ready. First, make sure you have completed the onboarding wizard or manually created at least one property. Your property should have a name that matches the website it represents and the correct domain entered.\n\nNext, take time to write a thorough base prompt. This is the instruction set that the AI uses to generate every response. A vague prompt like "help visitors" will produce generic, unhelpful answers. Instead, include specific information about your business — your services, pricing, hours, location, accepted insurance plans, FAQs, and any boundaries the AI should respect. The more specific your prompt, the fewer conversations will need to be escalated to a human agent.\n\nFinally, configure your notification channels. You need at least one way to know when conversations are happening — whether that is Slack, email, or both. Without notifications, you risk missing conversations entirely, especially escalated ones where the AI needs human backup.'
+          },
+          {
+            heading: 'Widget Configuration Checklist',
+            body: 'Once your property and base prompt are set, walk through the widget configuration settings. Start with the visual appearance: choose a widget color that matches your brand, select an icon style, and write a greeting message that visitors will see when they open the chat window. The greeting sets the tone for the conversation, so make it welcoming and relevant — something like "Hi! How can we help you today?" works well for most businesses.\n\nSet an offline message for when your team is not available. This message should let visitors know their inquiry was received and provide an alternative contact method, such as a phone number or email address. You can also configure proactive messaging to automatically reach out to visitors after they have been on your site for a specified number of seconds.\n\nDo not forget about lead capture settings. Decide whether to require visitors to provide their name, phone, or email before starting a chat, or whether you prefer natural lead capture where the AI asks for this information during the conversation. For most businesses, requiring a name and phone number upfront strikes the right balance between capturing leads and reducing friction.'
+          },
+          {
+            heading: 'Installing the Embed Code',
+            body: 'When you are ready to go live, navigate to the Widget Embed page from the sidebar. You will see a code snippet that looks similar to a standard JavaScript tag. Copy the entire snippet and paste it into your website\'s HTML, just before the closing body tag. This ensures the widget loads after your main content, preventing any impact on page load speed.\n\nIf you use a content management system like WordPress, Squarespace, or Wix, you can usually add the code through the custom code or footer injection settings. For WordPress, many themes have a "Header/Footer Scripts" option in the customizer. For Squarespace, go to Settings, then Advanced, then Code Injection, and paste the snippet in the Footer section.\n\nAfter adding the code, publish your website changes and visit your site in a new browser tab. You should see the chat widget icon in the bottom-right corner. Click it to open the chat window and send a test message. Verify that the AI responds appropriately and that the conversation appears in your Scaled Bot inbox. If everything looks good, you are live.'
+          },
+          {
+            heading: 'Post-Launch Best Practices',
+            body: 'Going live is just the beginning. During your first week, monitor conversations closely. Read through the AI responses and note any questions it struggles with or answers incorrectly. Add those answers to your base prompt. This iterative process is how you build a chatbot that truly understands your business.\n\nPay attention to your analytics dashboard. Track how many conversations the AI resolves on its own versus how many get escalated. A healthy AI resolution rate is between 60-80%. If your rate is significantly lower, your base prompt needs more detail. If it is above 80%, you might be able to reduce your human agent staffing during off-peak hours.\n\nAlso test the widget on mobile devices. More than half of website visitors browse on their phones, and the chat widget should look and function well on smaller screens. Check that the widget opens smoothly, text is readable, and visitors can type and send messages without issues.'
+          }
+        ],
         howToUse: [
           'Create a new property from the dashboard — enter your business name and website domain',
           'Configure your greeting message and offline message in AI Support settings',
@@ -253,7 +271,8 @@ export const documentationSections: DocSection[] = [
           'Test the widget on both desktop and mobile before announcing it to visitors',
           'Start with a simple base prompt and refine it after reviewing real conversations',
           'Use the Widget Preview page to see exactly how the chat bubble and window look before going live',
-          'Make sure you have notifications (Slack or email) set up so you never miss a lead'
+          'Make sure you have notifications (Slack or email) set up so you never miss a lead',
+          'Monitor your first 50 conversations closely and update your base prompt based on what you learn'
         ],
         relatedTopics: [
           { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
@@ -267,6 +286,20 @@ export const documentationSections: DocSection[] = [
         title: 'Writing Your AI Base Prompt',
         description: 'How to craft effective AI instructions for accurate, on-brand responses.',
         whatItDoes: 'The base prompt is a set of instructions you give to the AI that shapes every response it generates. It tells the bot what your business does, how to answer common questions, what tone to use, and what boundaries to respect. A well-written prompt means the AI can handle most conversations without human intervention.',
+        detailedSections: [
+          {
+            heading: 'Why the Base Prompt Matters',
+            body: 'The base prompt is arguably the single most important configuration in your entire Scaled Bot setup. Every word the AI generates is influenced by the instructions in your base prompt. If the prompt is vague, the AI will give vague answers. If the prompt is detailed and specific, the AI will respond with accuracy and confidence.\n\nThink of the base prompt as a training manual for a new employee. You would not hand someone a blank piece of paper and say "help visitors." You would give them a document that explains what your business does, what services you offer, how to answer common questions, what your hours are, what insurance you accept, and how to handle difficult situations. The base prompt serves the same purpose for the AI.\n\nBusinesses that invest time in writing a thorough base prompt see dramatically higher AI resolution rates — often resolving 70-80% of conversations without any human involvement. Businesses with thin prompts typically see resolution rates below 40%, meaning human agents need to step in for the majority of conversations.'
+          },
+          {
+            heading: 'Anatomy of a Great Base Prompt',
+            body: 'A strong base prompt typically contains several key sections. First, establish the AI\'s identity: "You are [Name], a friendly admissions coordinator for [Business Name], located in [City, State]." This gives the AI context about who it is and who it represents.\n\nNext, describe your services in detail. Do not just list categories — include specifics. Instead of "We offer treatment programs," write "We offer residential inpatient treatment (30, 60, and 90-day programs), intensive outpatient (IOP) with evening sessions three nights per week, partial hospitalization (PHP) from 9am-3pm Monday through Friday, and medically assisted detox with 24/7 nursing care."\n\nInclude a frequently asked questions section with actual answers. What are your hours? What insurance do you accept? What should someone bring? How long does treatment last? Can family visit? Is the facility co-ed? What happens after treatment? The more questions you answer in the prompt, the fewer will require human intervention.\n\nSet tone guidelines: "Be warm, empathetic, and non-judgmental. Use simple, conversational language. Avoid clinical jargon unless the visitor uses it first. Show compassion and understanding — many visitors are reaching out during difficult moments."\n\nFinally, define boundaries. Tell the AI what it should never do: "Never diagnose medical or mental health conditions. Never guarantee treatment outcomes. Never provide specific medical advice. If someone expresses suicidal thoughts or immediate danger, provide the 988 Suicide & Crisis Lifeline number and encourage them to call immediately."'
+          },
+          {
+            heading: 'Iterating and Improving Over Time',
+            body: 'Your base prompt should be a living document that you update regularly. The best way to improve it is to review real conversations. Look for patterns — are there questions that keep getting escalated? If the AI consistently cannot answer questions about insurance verification, add a detailed insurance section to your prompt.\n\nSet a weekly reminder to review 10-15 conversations from your inbox. Focus on escalated conversations and ones where the AI\'s response was not quite right. Add the correct answers to your prompt, and within a few weeks, you will notice a significant improvement in AI performance.\n\nAvoid making your prompt excessively long. While detail is important, a prompt over 2,000 words can actually dilute the AI\'s focus. If you find your prompt growing very long, consider whether some sections can be condensed or whether less important information can be removed. The goal is a focused, comprehensive prompt — not an exhaustive encyclopedia.'
+          }
+        ],
         howToUse: [
           'Go to AI Support from the sidebar and select your property',
           'Find the "Base Prompt" text area — this is where you write your instructions',
@@ -295,6 +328,20 @@ export const documentationSections: DocSection[] = [
         title: 'Configuring Lead Capture',
         description: 'Collect visitor contact details through forms or natural conversation.',
         whatItDoes: 'Lead capture collects visitor information — name, phone, email, and optionally insurance card photos — so your team can follow up. You can require these fields upfront before the chat begins, or enable natural lead capture where the AI asks for details conversationally during the chat.',
+        detailedSections: [
+          {
+            heading: 'Upfront Forms vs Natural Capture',
+            body: 'There are two fundamentally different approaches to collecting visitor information, and each has its trade-offs. Upfront forms display a short questionnaire before the chat window opens, requiring visitors to provide their name, phone number, email, or other details before they can send their first message. This guarantees you get contact information for every conversation, but it also creates friction that can cause some visitors to abandon the chat before it even starts.\n\nNatural lead capture takes the opposite approach. The chat opens immediately with no forms, and the AI collects contact information conversationally — for example, saying "That\'s a great question! Before I look into that for you, could I get your name and a good number to reach you?" This feels less intrusive and tends to produce higher overall engagement, but there is a risk that some visitors will end the conversation before providing their details.\n\nFor most businesses, we recommend starting with minimal upfront requirements (just a name) and enabling natural lead capture for phone and email. This gives you the best of both worlds: a low-friction entry point combined with conversational data collection. If your business requires phone numbers for follow-up, requiring phone upfront is a reasonable trade-off since the visitors who provide it are typically higher-intent leads.'
+          },
+          {
+            heading: 'Insurance Card Collection',
+            body: 'For healthcare and treatment center websites, Scaled Bot includes the ability to request insurance card photos directly in the chat. When enabled, the AI can ask visitors to upload a photo of the front and back of their insurance card. This is incredibly valuable for treatment centers that need to verify insurance coverage before admitting a patient.\n\nThe insurance card upload feature works on both desktop and mobile. On mobile devices, visitors can take a photo directly with their camera, making the process seamless. Uploaded images are stored securely and associated with the visitor\'s record, where your team can access them from the Visitor Info panel.\n\nIf you enable insurance card collection, be aware of HIPAA implications. Insurance cards contain protected health information (PHI), and you should ensure your data retention and access controls are configured appropriately. Review the HIPAA Settings documentation for guidance on setting up compliant data handling.'
+          },
+          {
+            heading: 'Managing and Following Up on Leads',
+            body: 'Captured lead data is accessible in multiple places. During a conversation, you can see all collected visitor information in the Visitor Info panel on the right side of the chat. After the conversation ends, leads are stored in the Visitor Leads table under Settings, where you can search, filter, and review all captured contacts.\n\nFor businesses using Salesforce, leads can be automatically exported to your CRM based on configurable triggers — such as when a phone number is detected, when the conversation escalates, or when the conversation ends. This ensures your sales or admissions team has immediate access to lead data in the tools they already use.\n\nEstablish a follow-up process for captured leads. The most effective approach is to contact new leads within 5 minutes of their conversation. Studies show that response time is the single biggest factor in lead conversion — contacting a lead within 5 minutes is 21 times more effective than waiting 30 minutes. Use Slack or email notifications to alert your team the moment a new lead comes in.'
+          }
+        ],
         howToUse: [
           'Go to AI Support settings for your property',
           'Under "Lead Capture," toggle which fields to require: Name, Phone, Email',
@@ -308,7 +355,8 @@ export const documentationSections: DocSection[] = [
           'Requiring too many fields upfront creates friction — phone + name is often enough to start',
           'Natural lead capture feels less intrusive and typically results in higher engagement',
           'Insurance card uploads are especially valuable for treatment centers to verify coverage quickly',
-          'Review your Visitor Leads table regularly to ensure no leads are falling through the cracks'
+          'Review your Visitor Leads table regularly to ensure no leads are falling through the cracks',
+          'Follow up with new leads within 5 minutes for the highest conversion rates'
         ],
         relatedTopics: [
           { title: 'Visitor Information', path: '/documentation/inbox/visitor-info' },
@@ -321,6 +369,20 @@ export const documentationSections: DocSection[] = [
         title: 'Humanizing AI Responses',
         description: 'Make your chatbot feel like a real person with typos, delays, and natural cadence.',
         whatItDoes: 'Humanization features make the AI\'s responses feel more natural and less robotic. This includes injecting occasional typos, dropping apostrophes, adding realistic response delays, showing typing indicators, and enabling quick-reply behavior after the first message. Together, these features make visitors believe they\'re chatting with a real human.',
+        detailedSections: [
+          {
+            heading: 'Why Humanization Matters',
+            body: 'Visitors who believe they are chatting with a real person engage more deeply, share more information, and are more likely to convert. Research on chatbot interactions consistently shows that perceived humanness is one of the strongest predictors of user satisfaction and trust. When a chatbot responds instantly with perfectly formatted text, visitors immediately suspect they are talking to a bot — and many disengage.\n\nScaled Bot\'s humanization features address this by introducing subtle imperfections and timing patterns that mirror how a real person communicates through text. The goal is not to deceive visitors, but to create a conversational experience that feels natural and comfortable. People are simply more open and responsive when they feel they are communicating with someone who is genuinely engaged, not a machine spitting out canned responses.\n\nThe combination of multiple humanization features creates a compounding effect. A typo alone might not be convincing, but a typo combined with a realistic typing delay, followed by a slightly faster second response, creates a pattern that closely matches human chat behavior.'
+          },
+          {
+            heading: 'Individual Humanization Features',
+            body: 'Human Typos introduces occasional, realistic typos into AI responses. The typos are carefully designed to look natural — common keystroke errors like "teh" instead of "the" or "becasue" instead of "because." They appear at a rate of roughly one every 2-3 messages, which matches the typical error rate of someone typing quickly in a chat conversation.\n\nDrop Apostrophes removes apostrophes from contractions, turning "don\'t" into "dont" and "I\'m" into "Im." This creates a casual, text-message-style tone that feels authentic for informal conversations. It works especially well when combined with dropped capitalization, which converts all AI responses to lowercase.\n\nSmart Typing Indicator shows typing dots in the chat window for a duration that corresponds to the length of the AI\'s response. A short response shows typing dots for 1-2 seconds, while a longer response shows them for 4-6 seconds. This prevents the jarring experience of a long, detailed response appearing instantly.\n\nResponse Delays add a configurable pause between when the visitor sends a message and when the AI begins "typing." This simulates the time a real person would take to read the message, think about their response, and start typing. Delays of 2-5 seconds feel most realistic for most conversations.\n\nQuick Reply After First makes the AI respond faster after its initial message in a conversation. The first response uses the full configured delay, but subsequent messages are delivered more quickly — mimicking how a real person types faster once they are actively engaged in a conversation.'
+          },
+          {
+            heading: 'Choosing the Right Combination',
+            body: 'Not every business should enable all humanization features. The right combination depends on your brand voice and audience. Healthcare and professional services may want typing indicators and response delays without typos or dropped apostrophes — maintaining professionalism while still feeling natural. Consumer brands targeting younger demographics might enable everything for a casual, text-message feel.\n\nStart by enabling smart typing indicators and response delays — these are the most universally effective features and rarely feel out of place. Then gradually add typos and apostrophe dropping based on how you want your brand to sound. Test each combination by having a few conversations in preview mode and reading the responses aloud. If something feels off, adjust or disable that feature.\n\nThe preview widget is your best tool for dialing in humanization. Spend 15-20 minutes having realistic conversations and pay attention to how the timing and text feel. Small adjustments to delay ranges and typing speed can make a significant difference in overall naturalness.'
+          }
+        ],
         howToUse: [
           'Go to AI Support settings for your property',
           'Toggle "Human Typos" to occasionally insert realistic typos in AI responses',
@@ -347,6 +409,20 @@ export const documentationSections: DocSection[] = [
         title: 'Escalation & Crisis Detection',
         description: 'Automatic handoff triggers and crisis keyword alerts.',
         whatItDoes: 'Escalation settings control when the AI stops responding and hands the conversation to a human agent. This can happen based on keyword triggers (e.g., "speak to someone"), after a set number of AI messages, or automatically when crisis-related language is detected (suicidal ideation, self-harm). Crisis keywords trigger immediate notifications to your team.',
+        detailedSections: [
+          {
+            heading: 'Understanding Escalation Triggers',
+            body: 'Escalation is the mechanism by which a conversation transitions from AI-handled to human-handled. There are three types of escalation triggers in Scaled Bot, and they work together to ensure that the right conversations get human attention at the right time.\n\nKeyword-based escalation triggers when a visitor uses specific words or phrases like "talk to a person," "speak to someone," "real human," or "manager." You can customize this keyword list to match the language your visitors typically use. When a keyword match is detected, the AI immediately stops responding and your team is notified.\n\nMessage-count escalation triggers after the AI has sent a configurable number of messages without resolving the conversation. If a visitor and the AI go back and forth 10 times without reaching a resolution, it is likely that the AI cannot fully address the visitor\'s needs. Setting a reasonable message limit ensures these conversations get escalated before the visitor becomes frustrated.\n\nCrisis detection is a special, always-on escalation trigger that cannot be disabled. It monitors conversations for language related to suicidal ideation, self-harm, overdose, or other life-threatening situations. When crisis language is detected, the conversation is immediately escalated with a high-priority notification to your team. This feature is critical for healthcare and treatment center websites where visitors may be in acute distress.'
+          },
+          {
+            heading: 'Configuring Escalation Settings',
+            body: 'Finding the right escalation settings requires balancing two competing priorities: you want the AI to handle as many conversations as possible to reduce your team\'s workload, but you also want to ensure that complex or sensitive issues get human attention before the visitor gives up.\n\nFor the message count threshold, start with 8-12 messages. This gives the AI enough runway to address most questions while catching conversations that are going in circles. If your AI resolution rate is high and most escalations seem unnecessary, you can increase the threshold. If visitors frequently complain about not getting helpful answers, lower it.\n\nFor keyword triggers, include common phrases visitors use when they want human help. In addition to the obvious ones ("talk to a person," "speak to someone"), consider industry-specific phrases. For treatment centers, phrases like "I need help now," "is someone there," or "can I call you" often indicate a visitor who needs immediate human contact.\n\nWhen an escalation triggers, two things happen simultaneously: the AI stops generating responses for that conversation, and your team is notified through all configured channels (Slack, email, or both). The notification includes the visitor\'s name (if captured), the conversation context, and the reason for escalation. Agents can then open the conversation from the inbox and take over immediately.'
+          },
+          {
+            heading: 'Using Escalation Data to Improve',
+            body: 'Escalated conversations are one of your most valuable sources of information for improving your chatbot. Every escalation represents a gap — either in your base prompt\'s coverage, the AI\'s understanding, or the visitor\'s expectations. By reviewing escalated conversations regularly, you can identify patterns and fill those gaps.\n\nLook for recurring themes in escalated conversations. If five different visitors this week asked about insurance verification and the AI could not give a confident answer, that is a clear signal to add detailed insurance information to your base prompt. If visitors frequently escalate because they want to schedule an appointment, add a Calendly link and instructions for the AI to share it.\n\nTrack your escalation rate over time using the Analytics dashboard. A decreasing escalation rate means your base prompt improvements are working. If the rate suddenly increases, it might indicate a new marketing campaign bringing in visitors with questions your AI is not prepared for, or a change in your services that has not been reflected in the prompt yet.'
+          }
+        ],
         howToUse: [
           'Go to AI Support settings for your property',
           'Under "Escalation," toggle "Auto Escalation" on',
@@ -373,6 +449,16 @@ export const documentationSections: DocSection[] = [
         title: 'Proactive Engagement',
         description: 'Automatically reach out to visitors before they start chatting.',
         whatItDoes: 'Proactive messages let your chatbot initiate the conversation by sending a message after a visitor has been on your site for a set amount of time. Combined with geo-filtering, you can target only visitors from specific states or regions, ensuring your proactive outreach is relevant and compliant with your service area.',
+        detailedSections: [
+          {
+            heading: 'The Impact of Proactive Messaging',
+            body: 'Most website visitors never start a chat conversation, even when they have questions. They browse, hesitate, and leave. Proactive messaging changes this dynamic by having the chatbot reach out first. Instead of waiting for the visitor to click the chat icon, a friendly message bubble appears after a set delay, inviting the visitor to engage.\n\nThe impact can be significant. Websites with proactive messaging enabled typically see 30-50% more chat conversations than those that rely solely on visitor-initiated contact. These additional conversations represent leads that would have otherwise been lost — visitors who had questions but were not motivated enough to start a chat on their own.\n\nThe key to effective proactive messaging is timing and tone. A message that appears too quickly feels aggressive and interrupts the visitor\'s browsing. A message that appears too late misses visitors who have already left. And a message that sounds too salesy will be dismissed. The ideal proactive message is warm, helpful, and appears at just the right moment.'
+          },
+          {
+            heading: 'Timing and Geo-Filtering',
+            body: 'The delay setting controls how many seconds a visitor must be on your site before the proactive message appears. For most websites, 15-20 seconds is the sweet spot. At this point, the visitor has had enough time to start reading your content and forming questions, but has not yet made a decision to leave.\n\nFor high-intent pages like pricing or contact pages, a shorter delay of 8-12 seconds can work well because visitors on these pages are already further along in their decision-making process. For blog posts or informational pages, a longer delay of 25-30 seconds gives visitors time to engage with the content first.\n\nGeo-filtering adds another layer of targeting by restricting proactive messages to visitors from specific geographic locations. This is especially important for businesses with regional service areas, such as treatment centers that are only licensed in certain states. You can set the filter to "Specific States" and select only the states you serve, ensuring you do not engage visitors you cannot help.\n\nThe blocked message for visitors outside your service area can be customized. Instead of simply hiding the widget, you can display a helpful message like "We currently serve patients in California, Arizona, and Nevada. For assistance in your state, please visit [resource link]." This provides value even to visitors you cannot directly serve.'
+          }
+        ],
         howToUse: [
           'Go to AI Support settings for your property',
           'Toggle "Proactive Message" on',
@@ -386,7 +472,8 @@ export const documentationSections: DocSection[] = [
           'Keep proactive messages short and inviting — one sentence is ideal',
           'A 15-20 second delay works best: long enough that visitors have settled in, short enough they haven\'t left',
           'Geo-filtering is especially important for treatment centers with state-specific licensing',
-          'Test your proactive message on a private/incognito browser to see the visitor experience'
+          'Test your proactive message on a private/incognito browser to see the visitor experience',
+          'Try different messages and delays to find what drives the most engagement'
         ],
         relatedTopics: [
           { title: 'Geo-Filtering', path: '/documentation/ai-support/geo-filtering' },
@@ -399,6 +486,20 @@ export const documentationSections: DocSection[] = [
         title: 'Managing Conversations',
         description: 'Inbox workflow, agent handoff, and conversation lifecycle.',
         whatItDoes: 'Once your chatbot is live, conversations flow into your inbox in real time. This guide covers the daily workflow: monitoring active chats, using shortcuts for quick replies, viewing visitor details, taking over from the AI, closing resolved conversations, and using the Closed tab for reference.',
+        detailedSections: [
+          {
+            heading: 'Daily Inbox Workflow',
+            body: 'The inbox is the central hub for all conversations happening across your websites. When a visitor starts a chat, the conversation appears in the Active tab of your inbox in real time. Each conversation shows a preview of the latest message, the visitor\'s name (if captured), and the property it belongs to.\n\nYour daily workflow should start with opening the inbox and reviewing any active conversations. During business hours, aim to check the inbox at least every few minutes. Faster response times lead to higher visitor satisfaction and conversion rates. If you have Slack or email notifications configured, you will be alerted the moment a new conversation starts, so you do not need to constantly watch the inbox.\n\nWhen you click on a conversation, the chat panel opens showing the full message history. On the right side, the Visitor Info panel displays any captured information — name, phone, email, location, insurance details, and the page the visitor is currently browsing. Use this context to personalize your responses and provide more relevant help.'
+          },
+          {
+            heading: 'Taking Over from AI',
+            body: 'When the AI is handling a conversation, you can take over at any time simply by typing a message in the chat panel. The moment you send a human response, the AI automatically pauses for that conversation and your team takes control. This seamless handoff means visitors experience a natural transition without any awkward "you are now being connected to a human agent" messages.\n\nYou should take over from the AI when you notice it providing incorrect information, when the conversation involves a sensitive topic that requires human empathy, or when the visitor explicitly asks to speak with a person. The chat panel clearly labels which messages were sent by the AI and which were sent by human agents, so you can always see what the visitor has been told.\n\nAfter you take over, you can use chat shortcuts to speed up your responses. Type "/" in the message field to see a list of pre-written responses for common situations — things like business hours, directions, insurance verification requests, or scheduling links. These shortcuts save significant time during high-volume periods.'
+          },
+          {
+            heading: 'Closing and Reviewing Conversations',
+            body: 'When a conversation is resolved, click the "Close" button to move it to the Closed tab. This keeps your active inbox clean and focused on conversations that still need attention. Stale conversations — where neither the visitor nor the agent has sent a message for approximately 45 seconds — are automatically closed to prevent clutter.\n\nClosed conversations are not deleted. They remain fully searchable and accessible in the Closed tab, where you can review them at any time. This archive is valuable for several purposes: training new team members, identifying gaps in your AI base prompt, reviewing what the AI handled well, and tracking visitor needs over time.\n\nIf a visitor sends a new message on a previously closed conversation, it automatically reopens and moves back to the Active tab. This ensures continuity — the visitor does not need to start a new conversation or repeat their previous questions.'
+          }
+        ],
         howToUse: [
           'Open the Inbox from the sidebar — active conversations appear on the left',
           'Click a conversation to open the chat panel and see the full message history',
@@ -425,6 +526,16 @@ export const documentationSections: DocSection[] = [
         title: 'Connecting Notifications',
         description: 'Set up Slack, email, and Salesforce so your team never misses a lead.',
         whatItDoes: 'Notifications ensure your team is alerted the moment something important happens — a new conversation starts, a visitor shares their phone number, or the AI escalates. You can receive alerts via Slack, email, or both. Salesforce integration can also auto-export leads based on triggers like escalation or insurance detection.',
+        detailedSections: [
+          {
+            heading: 'Why Notifications Are Critical',
+            body: 'Without notifications, your team has to manually check the inbox to discover new conversations. In practice, this means conversations get missed — especially escalated ones where the AI has already reached its limits and a visitor is waiting for a human response. Every minute a visitor waits increases the likelihood they will leave your website and not return.\n\nNotifications solve this by pushing alerts directly to the tools your team already uses. Slack notifications deliver instant messages to a channel where your team is active. Email notifications reach team members who may not be in front of their computer. Together, they create multiple layers of coverage that ensure no conversation falls through the cracks.\n\nThe most critical notifications to enable are escalation alerts and phone submission alerts. Escalated conversations represent high-intent visitors who need human help. Phone submissions indicate visitors who have shared their direct contact number — these are typically your most valuable leads and should be followed up on immediately.'
+          },
+          {
+            heading: 'Setting Up Multiple Channels',
+            body: 'We recommend configuring both Slack and email notifications for maximum coverage. Slack is ideal for real-time alerts during business hours when your team is active in their Slack workspace. Email provides a backup for off-hours or for team members who are away from Slack.\n\nFor Slack, connect your workspace through the OAuth flow and choose a dedicated channel for notifications — something like #leads or #admissions-alerts. Avoid posting to a general channel where notifications might get buried among other messages. For email, add the email addresses of everyone on your team who handles incoming leads or conversations.\n\nConfigure notification triggers thoughtfully. Start with all three event types enabled — new conversations, phone submissions, and escalations — then adjust based on volume. If you receive dozens of conversations per day, you might want to limit Slack notifications to escalations and phone submissions only, while keeping all event types enabled for email to maintain a complete record.\n\nThe Notification Log in Settings shows a history of every notification sent, including delivery status and any error messages. Check this log periodically to ensure notifications are being delivered successfully. If you see failures, the error messages usually indicate the cause — such as an expired Slack token or an invalid email address.'
+          }
+        ],
         howToUse: [
           'Go to Settings from the sidebar and select your property',
           'Under "Slack," click "Connect to Slack" and authorize the integration',
@@ -451,6 +562,16 @@ export const documentationSections: DocSection[] = [
         title: 'Measuring Performance',
         description: 'Use analytics to track chatbot effectiveness and continuously improve.',
         whatItDoes: 'The Analytics dashboard gives you insight into how your chatbot is performing. Track total conversations, AI resolution rates (conversations handled without human intervention), average response times, page-level engagement, and visitor trends. Use this data to refine your base prompt, adjust escalation thresholds, and optimize your proactive messaging.',
+        detailedSections: [
+          {
+            heading: 'Key Metrics to Track',
+            body: 'Understanding your chatbot\'s performance starts with knowing which metrics matter most. The four most important metrics are: total conversation count, AI resolution rate, average response time, and escalation rate.\n\nTotal conversation count tells you how many visitors are engaging with your chatbot. A rising count indicates growing awareness and engagement. If the count is flat or declining, consider whether your widget is visible enough, whether your proactive message is effective, or whether there are technical issues preventing the widget from loading.\n\nAI resolution rate is the percentage of conversations that the AI handles completely without human intervention. This is your primary indicator of base prompt quality. A rate of 60-80% is considered healthy. Below 50% means your base prompt needs significant improvement. Above 80% is excellent and means the AI is handling the vast majority of inquiries on its own.\n\nAverage response time measures how quickly visitors get answers. For AI responses, this is typically 2-5 seconds (depending on your humanization delay settings). For human responses, aim for under 2 minutes during business hours. Longer response times correlate directly with visitor abandonment.\n\nEscalation rate tracks how often conversations get handed off to humans. A high escalation rate is not inherently bad — it may indicate that your escalation keywords are working correctly. But if the rate is climbing, it usually means visitors are asking questions the AI cannot answer, which is a signal to update your base prompt.'
+          },
+          {
+            heading: 'Using Data to Improve',
+            body: 'Analytics are only valuable if you act on them. Establish a weekly review routine where you spend 15-20 minutes looking at your dashboard and recent conversations. Start with the overview metrics to spot any unusual trends, then drill into specific conversations — especially escalated ones — to understand what is happening.\n\nPage analytics show which pages on your website generate the most conversations. Use this data to optimize your proactive message strategy. If your pricing page generates the most chats, make sure your base prompt has comprehensive pricing information. If your insurance page drives conversations, ensure the AI can confidently answer insurance-related questions.\n\nCompare performance across different time periods to measure the impact of changes you have made. After updating your base prompt, check whether the AI resolution rate improved the following week. After adjusting your proactive message, see if conversation volume increased. This data-driven approach ensures you are continuously improving rather than guessing.\n\nIf you manage multiple properties, compare performance across websites to identify best practices. A base prompt that works exceptionally well for one website might contain strategies you can adapt for others. Similarly, if one property has significantly lower engagement, investigate whether it has different widget settings, proactive message configuration, or traffic patterns.'
+          }
+        ],
         howToUse: [
           'Go to Analytics from the sidebar',
           'Review the overview cards: total conversations, AI-resolved %, average response time',
