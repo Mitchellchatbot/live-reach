@@ -822,7 +822,7 @@ export const ChatPanel = ({
         )}
 
         {/* Messages */}
-        <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-background scrollbar-thin">
+        <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-accent scrollbar-thin">
           {messages.map((msg) => (
             <MessageBubble
               key={msg.id}
