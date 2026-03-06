@@ -134,7 +134,7 @@ const ConversationItem = ({
       className={cn(
         "p-4 border-b border-border/50 cursor-pointer transition-all duration-200",
         "hover:bg-accent/40 hover:border-l-2 hover:border-l-primary/30",
-        isSelected && !selectionMode && "bg-accent border-l-2 border-l-primary shadow-sm",
+        isSelected && !selectionMode && "bg-accent border-l-2 border-l-primary border-r-0",
         isChecked && selectionMode && "bg-primary/10 border-l-2 border-l-primary",
         unreadCount > 0 && !isSelected && !isChecked && "bg-primary/5"
       )}
