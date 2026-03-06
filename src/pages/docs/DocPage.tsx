@@ -83,6 +83,24 @@ const DocPage = () => {
         </section>
       </div>
 
+      {/* Detailed Sections */}
+      {topic.detailedSections && topic.detailedSections.length > 0 && (
+        <div className="mb-8 space-y-6">
+          {topic.detailedSections.map((section, index) => (
+            <section key={index}>
+              <h2 className="text-xl font-semibold text-foreground mb-3">
+                {section.heading}
+              </h2>
+              <div className="text-muted-foreground leading-relaxed space-y-3">
+                {section.body.split('\n\n').map((paragraph, pIdx) => (
+                  <p key={pIdx}>{paragraph}</p>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
       {/* How To Use */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold text-foreground mb-3">
