@@ -5,34 +5,8 @@ export interface DocTopic {
   whatItDoes: string;
   howToUse: string[];
   tips: string[];
-  heroImage?: string;
   relatedTopics?: { title: string; path: string }[];
 }
-
-// Section-level hero images mapping
-import overviewHero from '@/assets/docs/overview-hero.jpg';
-import inboxHero from '@/assets/docs/inbox-hero.jpg';
-import aiSupportHero from '@/assets/docs/ai-support-hero.jpg';
-import widgetHero from '@/assets/docs/widget-hero.jpg';
-import integrationsHero from '@/assets/docs/integrations-hero.jpg';
-import analyticsHero from '@/assets/docs/analytics-hero.jpg';
-import teamHero from '@/assets/docs/team-hero.jpg';
-import complianceHero from '@/assets/docs/compliance-hero.jpg';
-import accountHero from '@/assets/docs/account-hero.jpg';
-import chatbotManualHero from '@/assets/docs/chatbot-manual-hero.jpg';
-
-export const sectionHeroImages: Record<string, string> = {
-  'getting-started': overviewHero,
-  'chatbot-manual': chatbotManualHero,
-  'inbox': inboxHero,
-  'team': teamHero,
-  'ai-support': aiSupportHero,
-  'widget': widgetHero,
-  'integrations': integrationsHero,
-  'compliance': complianceHero,
-  'account': accountHero,
-  'analytics': analyticsHero,
-};
 
 export interface DocSection {
   id: string;
