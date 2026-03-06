@@ -1,29 +1,56 @@
 
 
+## Admin Portal Enhancement Plan
 
-## Chat System Audit Cleanup — COMPLETED ✅
+The existing `/admin` page has basic stats and a client table. Here's the plan to make it a comprehensive monitoring portal.
 
-All audit items implemented:
+### What We'll Build
 
-### 1. ✅ Dead code removed
-Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
+**Enhanced Client Overview Table** — expand each client row to show:
+- Total conversations (already there)
+- Phone numbers captured (count visitors with non-null `phone` per client's properties)
+- Leads collected (count visitors with non-null `name` OR `email` OR `phone`)
+- Agent complaints (count from `agent_complaints` table per client)
 
-### 2. ✅ Lock bug fixed
-Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
+**Client Detail Drill-Down** — clicking a client row expands or navigates to a detail view showing:
+- Their properties list with per-property conversation counts
+- Recent conversations with visitor info
+- Their agents and statuses
+- Any open agent complaints
 
-### 3. ✅ Shared helpers extracted
-Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
+**New "Complaints" Tab** — a dedicated tab showing all `agent_complaints` across the platform, with status filters (open/resolved) and the ability to update status.
 
-### 4. ✅ Proactive timer stale closure fixed
-`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
+**Platform Stats Enhancement** — add cards for:
+- Total phone numbers captured
+- Total leads (visitors with contact info)
+- Open complaints count
 
-### 5. ✅ Dashboard fetch optimized
-`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
+### Technical Approach
 
-### 6. ✅ Realtime channels consolidated
-Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
+1. **No database changes needed** — all data already exists in `visitors`, `agent_complaints`, `conversations`, `properties`, and `agents` tables. The admin role already has RLS access to profiles and user_roles. However, we need to verify admin can read `visitors`, `conversations`, `properties`, `agents`, and `agent_complaints`.
 
-### 7. ✅ Verbose logging removed
-Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
+2. **RLS gap**: The admin currently can only read `profiles` and `user_roles` via `has_role()` policies. Tables like `visitors`, `conversations`, `properties`, `agents`, and `agent_complaints` don't have admin SELECT policies — we'll need to add them.
 
-### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
+3. **Database migration** — add admin SELECT policies to:
+   - `properties` — "Admins can view all properties"
+   - `conversations` — "Admins can view all conversations"  
+   - `visitors` — "Admins can view all visitors"
+   - `agents` — already has admin policy
+   - `agent_complaints` — "Admins can view all complaints" + "Admins can update complaints"
+
+4. **Frontend** — rebuild `AdminDashboard.tsx` with:
+   - Enhanced stat cards (add phones captured, leads, complaints)
+   - Richer client table with the new columns
+   - New "Complaints" tab pulling from `agent_complaints`
+   - Expandable client rows or a detail dialog
+
+### Implementation Steps
+
+1. Run migration to add admin RLS policies on `properties`, `conversations`, `visitors`, `agent_complaints`
+2. Update `AdminDashboard.tsx`:
+   - Fetch visitor data to compute phone/lead counts per client
+   - Fetch `agent_complaints` for the complaints tab
+   - Add new stat cards
+   - Add complaints tab with status management
+   - Enhance client overview table columns
+
