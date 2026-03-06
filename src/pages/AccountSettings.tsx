@@ -49,7 +49,17 @@ const AccountSettings = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
   // 2FA
-  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [show2FASetup, setShow2FASetup] = useState(() => sessionStorage.getItem('show2FASetup') === 'true');
+
+  // Persist 2FA setup state so tab-switching doesn't close the dialog
+  const toggle2FASetup = (value: boolean) => {
+    setShow2FASetup(value);
+    if (value) {
+      sessionStorage.setItem('show2FASetup', 'true');
+    } else {
+      sessionStorage.removeItem('show2FASetup');
+    }
+  };
 
   // Sync profile state when profile loads
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User';
