@@ -194,6 +194,57 @@ const AccountSettings = () => {
             </CardContent>
           </Card>
 
+
+          {/* Two-Factor Authentication Section */}
+          <Card className={!profile?.two_factor_enabled ? 'border-amber-300/50' : ''}>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle className="text-lg">Two-Factor Authentication</CardTitle>
+                  <CardDescription>
+                    Required for HIPAA compliance. Adds an extra layer of security by sending a verification code to your email on each login.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {show2FASetup && user ? (
+                <TwoFactorVerification
+                  userId={user.id}
+                  email={user.email || ''}
+                  isSetup
+                  onVerified={() => {
+                    setShow2FASetup(false);
+                    // Profile will refresh via re-fetch
+                    window.location.reload();
+                  }}
+                  onCancel={() => setShow2FASetup(false)}
+                />
+              ) : profile?.two_factor_enabled ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 border border-primary/10">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">2FA is enabled</p>
+                    <p className="text-xs text-muted-foreground">A verification code is sent to your email each time you sign in.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      HIPAA requires two-factor authentication to safeguard protected health information (PHI). Enable 2FA to ensure your account is compliant.
+                    </p>
+                  </div>
+                  <Button onClick={() => setShow2FASetup(true)} className="gap-1.5">
+                    <ShieldCheck className="h-4 w-4" />
+                    Enable Two-Factor Authentication
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Password Section */}
           <Card>
             <CardHeader>
