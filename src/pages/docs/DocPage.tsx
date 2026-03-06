@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { getSection, getTopic } from '@/data/documentation';
+import { getSection, getTopic, sectionHeroImages } from '@/data/documentation';
 import { 
   Breadcrumb,
   BreadcrumbItem,
@@ -62,6 +62,18 @@ const DocPage = () => {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {/* Hero Image */}
+      {sectionId && sectionHeroImages[sectionId] && (
+        <div className="mb-8 rounded-xl overflow-hidden border border-border">
+          <img
+            src={topic.heroImage || sectionHeroImages[sectionId]}
+            alt={topic.title}
+            className="w-full h-48 sm:h-64 object-cover"
+            loading="lazy"
+          />
+        </div>
+      )}
 
       {/* Title */}
       <div ref={headerRef}>
