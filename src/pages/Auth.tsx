@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import { Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
+import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -44,6 +45,7 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+  const [pending2FA, setPending2FA] = useState<{ userId: string; email: string } | null>(null);
 
   const { signIn, signUp, user, role, loading, refreshRole } = useAuth();
   const navigate = useNavigate();
@@ -214,8 +216,24 @@ export default function Auth() {
       const { data: { user: loggedInUser } } = await supabase.auth.getUser();
       if (loggedInUser) {
         await acceptInvitationForExistingUser(loggedInUser.id, loggedInUser.email || loginEmail);
-        // Refresh role so hasAgentAccess updates immediately
         await refreshRole();
+      }
+    }
+
+    // Check if user has 2FA enabled
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('two_factor_enabled')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+      if (profile?.two_factor_enabled) {
+        // Show 2FA screen instead of redirecting
+        setPending2FA({ userId: currentUser.id, email: currentUser.email || loginEmail });
+        setIsLoading(false);
+        return;
       }
     }
 
@@ -333,6 +351,24 @@ export default function Auth() {
 
     setIsLoading(false);
   };
+
+  // Show 2FA verification screen
+  if (pending2FA) {
+    return (
+      <TwoFactorVerification
+        userId={pending2FA.userId}
+        email={pending2FA.email}
+        onVerified={() => {
+          setPending2FA(null);
+          // Navigation will happen via the useEffect watching user/role
+        }}
+        onCancel={async () => {
+          await supabase.auth.signOut();
+          setPending2FA(null);
+        }}
+      />
+    );
+  }
 
   if (loading) {
     return (
