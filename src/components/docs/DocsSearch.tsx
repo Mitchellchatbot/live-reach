@@ -126,7 +126,7 @@ export const DocsSearch = () => {
         </kbd>
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
         <CommandInput
           placeholder="Search all documentation…"
           value={query}
