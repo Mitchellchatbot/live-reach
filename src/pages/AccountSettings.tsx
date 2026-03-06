@@ -245,7 +245,7 @@ const AccountSettings = () => {
                       HIPAA requires two-factor authentication to safeguard protected health information (PHI). Enable 2FA to ensure your account is compliant.
                     </p>
                   </div>
-                  <Button onClick={() => setShow2FASetup(true)} className="gap-1.5">
+                  <Button onClick={() => toggle2FASetup(true)} className="gap-1.5">
                     <ShieldCheck className="h-4 w-4" />
                     Enable Two-Factor Authentication
                   </Button>
