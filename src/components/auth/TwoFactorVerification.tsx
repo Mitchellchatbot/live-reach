@@ -86,6 +86,8 @@ export const TwoFactorVerification = ({
     }
 
     toast({ title: isSetup ? '2FA Enabled!' : 'Verified!', description: isSetup ? 'Two-factor authentication is now active on your account.' : 'Successfully verified.' });
+    sessionStorage.removeItem('2fa_code_sent_at');
+    sessionStorage.removeItem('show2FASetup');
     onVerified();
   };
 
