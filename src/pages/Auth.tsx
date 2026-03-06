@@ -45,6 +45,7 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+  const [pending2FA, setPending2FA] = useState<{ userId: string; email: string } | null>(null);
 
   const { signIn, signUp, user, role, loading, refreshRole } = useAuth();
   const navigate = useNavigate();
