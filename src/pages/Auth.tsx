@@ -352,6 +352,24 @@ export default function Auth() {
     setIsLoading(false);
   };
 
+  // Show 2FA verification screen
+  if (pending2FA) {
+    return (
+      <TwoFactorVerification
+        userId={pending2FA.userId}
+        email={pending2FA.email}
+        onVerified={() => {
+          setPending2FA(null);
+          // Navigation will happen via the useEffect watching user/role
+        }}
+        onCancel={async () => {
+          await supabase.auth.signOut();
+          setPending2FA(null);
+        }}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/30 to-muted/50">
