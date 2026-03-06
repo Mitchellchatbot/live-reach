@@ -1139,6 +1139,99 @@ const TeamMembers = () => {
               )}
             </CardContent>
           </Card>
+          {/* Co-Admins Section */}
+          <Card className="mt-6">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Co-Admins
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Co-admins have full access to your account — same properties, inbox, and settings
+                  </CardDescription>
+                </div>
+                <Dialog open={isCoAdminDialogOpen} onOpenChange={setIsCoAdminDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-xs sm:text-sm">
+                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                      Add Co-Admin
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="text-base">Add Co-Admin</DialogTitle>
+                      <DialogDescription className="text-xs">
+                        Enter the email of an existing account holder. They'll immediately get full access to your workspace.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-email" className="text-xs">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            id="co-admin-email"
+                            type="email"
+                            placeholder="partner@company.com"
+                            className="pl-8 h-8 text-sm"
+                            value={coAdminEmail}
+                            onChange={(e) => setCoAdminEmail(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" size="sm" onClick={() => setIsCoAdminDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim()}>
+                        {isAddingCoAdmin && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                        Add Co-Admin
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {coAdmins.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No co-admins yet</p>
+                  <p className="text-xs mt-1">Add someone to share full access to your account</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {coAdmins.map((coAdmin) => (
+                    <div key={coAdmin.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={coAdmin.avatar_url || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                            {(coAdmin.full_name || coAdmin.email).charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{coAdmin.full_name || 'Unnamed'}</p>
+                          <p className="text-xs text-muted-foreground">{coAdmin.email}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteCoAdminId(coAdmin.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
             </div>
           </div>
         </div>
