@@ -225,11 +225,10 @@ const AccountSettings = () => {
                   email={user.email || ''}
                   isSetup
                   onVerified={() => {
-                    setShow2FASetup(false);
-                    // Profile will refresh via re-fetch
+                    toggle2FASetup(false);
                     window.location.reload();
                   }}
-                  onCancel={() => setShow2FASetup(false)}
+                  onCancel={() => toggle2FASetup(false)}
                 />
               ) : profile?.two_factor_enabled ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 border border-primary/10">
