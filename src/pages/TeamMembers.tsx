@@ -503,6 +503,118 @@ const TeamMembers = () => {
     setCreatingAIForId(null);
   };
 
+  const fetchCoAdmins = async () => {
+    if (!user) return;
+
+    const { data: records } = await supabase
+      .from('account_co_owners')
+      .select('id, co_owner_user_id')
+      .eq('owner_user_id', user.id);
+
+    if (!records || records.length === 0) {
+      setCoAdmins([]);
+      return;
+    }
+
+    const coOwnerUserIds = records.map(r => r.co_owner_user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, email, full_name, avatar_url')
+      .in('user_id', coOwnerUserIds);
+
+    const mapped: CoAdmin[] = records.map(r => {
+      const profile = profiles?.find(p => p.user_id === r.co_owner_user_id);
+      return {
+        id: r.id,
+        user_id: r.co_owner_user_id,
+        email: profile?.email || 'Unknown',
+        full_name: profile?.full_name || null,
+        avatar_url: profile?.avatar_url || null,
+      };
+    });
+
+    setCoAdmins(mapped);
+  };
+
+  const handleAddCoAdmin = async () => {
+    if (!coAdminEmail.trim() || !user) return;
+    const email = coAdminEmail.trim().toLowerCase();
+
+    if (email === user.email) {
+      toast.error("You can't add yourself as a co-admin");
+      return;
+    }
+
+    setIsAddingCoAdmin(true);
+
+    // Look up the user by email
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (!profile) {
+      toast.error('No account found with that email. They need to sign up first.');
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    // Check not already a co-admin
+    const existing = coAdmins.find(c => c.user_id === profile.user_id);
+    if (existing) {
+      toast.error('This person is already a co-admin');
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('account_co_owners')
+      .insert({
+        owner_user_id: user.id,
+        co_owner_user_id: profile.user_id,
+      });
+
+    if (error) {
+      toast.error('Failed to add co-admin: ' + error.message);
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    // Ensure the co-owner has the 'client' role so they can access properties
+    await supabase
+      .from('user_roles')
+      .insert({ user_id: profile.user_id, role: 'client' })
+      .select()
+      .maybeSingle(); // ignore duplicate
+
+    toast.success('Co-admin added! They now have full access to your account.');
+    setCoAdminEmail('');
+    setIsCoAdminDialogOpen(false);
+    setIsAddingCoAdmin(false);
+    fetchCoAdmins();
+  };
+
+  const handleRemoveCoAdmin = async () => {
+    if (!deleteCoAdminId) return;
+    setIsDeletingCoAdmin(true);
+
+    const { error } = await supabase
+      .from('account_co_owners')
+      .delete()
+      .eq('id', deleteCoAdminId);
+
+    if (error) {
+      toast.error('Failed to remove co-admin');
+    } else {
+      toast.success('Co-admin removed');
+    }
+
+    setDeleteCoAdminId(null);
+    setIsDeletingCoAdmin(false);
+    fetchCoAdmins();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-primary';
