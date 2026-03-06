@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_co_owners: {
+        Row: {
+          co_owner_user_id: string
+          created_at: string
+          id: string
+          owner_user_id: string
+        }
+        Insert: {
+          co_owner_user_id: string
+          created_at?: string
+          id?: string
+          owner_user_id: string
+        }
+        Update: {
+          co_owner_user_id?: string
+          created_at?: string
+          id?: string
+          owner_user_id?: string
+        }
+        Relationships: []
+      }
       agent_complaints: {
         Row: {
           agent_id: string
@@ -1082,6 +1103,7 @@ export type Database = {
         Returns: boolean
       }
       conversation_exists: { Args: { conv_uuid: string }; Returns: boolean }
+      get_account_owner_ids: { Args: { user_uuid: string }; Returns: string[] }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
