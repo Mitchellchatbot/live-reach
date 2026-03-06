@@ -1258,6 +1258,28 @@ const TeamMembers = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Co-Admin Confirmation */}
+      <AlertDialog open={!!deleteCoAdminId} onOpenChange={(open) => !open && setDeleteCoAdminId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Co-Admin</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure? They will immediately lose access to your properties, conversations, and settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingCoAdmin}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveCoAdmin}
+              disabled={isDeletingCoAdmin}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingCoAdmin ? 'Removing...' : 'Remove Co-Admin'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <DashboardTour />
     </DashboardLayout>
   );
