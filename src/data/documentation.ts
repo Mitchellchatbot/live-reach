@@ -117,17 +117,35 @@ export const documentationSections: DocSection[] = [
         title: 'Onboarding Flow',
         description: 'The guided setup wizard for new accounts.',
         whatItDoes: 'When you first sign up, the onboarding flow walks you through setting up your account step by step. You\'ll choose an AI personality tone, create your first property, and configure basic settings so you\'re ready to go.',
+        detailedSections: [
+          {
+            heading: 'The Onboarding Experience',
+            body: 'The onboarding wizard is designed to get you from zero to a fully functional chatbot in under five minutes. Rather than dropping you into a complex dashboard and expecting you to figure things out, the wizard guides you through each essential step in a logical sequence. By the time you finish, you will have a configured AI persona, a property linked to your website, and a base prompt that is already tailored to your business.\n\nThe wizard begins by asking you to choose an AI tone preset. There are four options — Emily (warm and empathetic), Michael (professional and direct), Daniel (friendly and casual), and Sarah (knowledgeable and supportive). Each preset comes with a pre-written base prompt, an avatar, and tone-specific instructions that the AI follows when responding to visitors. You can always change or refine these later, but choosing a starting point helps you get up and running quickly.'
+          },
+          {
+            heading: 'Website Extraction',
+            body: 'One of the most powerful features of onboarding is automatic website extraction. After you enter your domain name, Scaled Bot visits your website and pulls key information — your business name, description, services offered, contact details, and even brand colors. This data is used to pre-fill your base prompt and widget color settings, saving you significant setup time.\n\nThe extraction is not perfect for every website, and you should always review the generated prompt and settings before going live. However, for most businesses, it provides an excellent starting point that captures 70-80% of the information the AI needs to respond accurately. You can then refine the prompt by adding specific details like pricing, FAQs, accepted insurance plans, or unique selling points.'
+          },
+          {
+            heading: 'Completing vs Skipping Onboarding',
+            body: 'While the onboarding wizard is the fastest way to get started, it is entirely optional. If you skip onboarding, you can set up every single feature manually from the dashboard. Properties can be created from the properties page, AI prompts can be written in AI Support settings, and widget colors can be configured in the widget customization section.\n\nHowever, we strongly recommend completing onboarding for your first property. The wizard handles several tasks simultaneously — creating the property, setting the AI persona, generating the base prompt, and configuring initial widget settings — that would otherwise require visiting multiple pages. Once you are familiar with the platform, subsequent properties can be added manually if you prefer more control over the setup process.\n\nAfter onboarding completes, you are taken directly to your dashboard where the interactive tour begins. The tour walks you through the key areas of the interface so you know where to find everything. Together, onboarding and the dashboard tour ensure you are fully oriented before your first real conversation arrives.'
+          }
+        ],
         howToUse: [
           'Sign up for a new account to start onboarding automatically',
           'Choose an AI tone preset (Emily, Michael, Daniel, or Sarah)',
           'Enter your business name and website domain',
-          'Review the suggested base prompt and customize it',
+          'Wait for the system to extract information from your website',
+          'Review the suggested base prompt and customize it as needed',
+          'Confirm your widget color and settings',
           'Complete the wizard to land on your dashboard'
         ],
         tips: [
           'You can always change your AI tone and settings later in AI Support',
           'The onboarding wizard extracts info from your website to pre-fill settings',
-          'If you skip onboarding, you can still set everything up manually from settings'
+          'If you skip onboarding, you can still set everything up manually from settings',
+          'Review the auto-generated base prompt carefully — add specific FAQs and service details',
+          'The tone you choose during onboarding is just a starting point, not a permanent decision'
         ],
         relatedTopics: [
           { title: 'Overview', path: '/documentation/getting-started/overview' },
@@ -140,17 +158,34 @@ export const documentationSections: DocSection[] = [
         title: 'Dashboard Tour',
         description: 'The interactive guided tour of your dashboard.',
         whatItDoes: 'After onboarding, an interactive guided tour highlights key areas of your dashboard. It walks you through the sidebar, inbox, AI settings, and other features with step-by-step tooltips so you know where everything is.',
+        detailedSections: [
+          {
+            heading: 'How the Tour Works',
+            body: 'The dashboard tour uses highlighted tooltips that point to specific interface elements and explain what they do. Each tooltip includes a brief description and a "Next" button that advances you to the next step. The tour is designed to follow the natural workflow of the platform — starting with the sidebar navigation, moving through the inbox, then covering AI settings, notifications, and other key areas.\n\nThe tour automatically navigates you between pages as needed. For example, when it highlights the inbox, it takes you to the inbox page. When it explains AI settings, it navigates to the AI Support page. This means you do not need to manually find each feature — the tour brings you there and explains what you are looking at.'
+          },
+          {
+            heading: 'Quick Tour vs Deep Dive Tours',
+            body: 'There are two types of tours in Scaled Bot. The Quick Tour is the initial walkthrough that covers the entire dashboard at a high level. It touches on the most important features — sidebar navigation, inbox, AI support, notifications, widget settings, and team management — in about 8-10 steps. This gives you a bird\'s-eye view of the platform.\n\nDeep Dive Tours are page-specific tours that go into more detail about individual features. For example, the AI Support page has its own deep dive tour that explains each setting — base prompt, humanization features, escalation rules, lead capture, and more — in granular detail. You can trigger deep dive tours by clicking the "Tour this page" button that appears on supported pages.\n\nBoth tour types remember your progress. Once you complete the Quick Tour, it will not show again automatically. However, you can always re-trigger it from the help menu if you want a refresher or if you are training a new team member.'
+          },
+          {
+            heading: 'Celebration and Completion',
+            body: 'When you complete the Quick Tour, a celebration moment is triggered — confetti fills the screen and a congratulatory message appears. This is a small but intentional design choice to mark the transition from setup to active use. After the celebration, you are fully oriented and ready to start receiving and managing conversations.\n\nIf you dismiss the tour before completing it, the system remembers where you left off. The next time you log in, the tour may prompt you to continue from the step you stopped at. If you prefer to skip the tour entirely, you can dismiss it and explore the platform on your own — every feature is always accessible from the sidebar navigation.'
+          }
+        ],
         howToUse: [
           'The tour starts automatically after completing onboarding',
           'Follow the highlighted tooltips as they point to each feature',
           'Click "Next" to advance through tour steps',
+          'The tour navigates you between pages automatically',
           'Complete the tour to unlock a celebration confetti moment',
+          'Use "Tour this page" buttons for deep-dive tours on specific pages',
           'You can revisit the tour from the help menu if needed'
         ],
         tips: [
           'Don\'t skip the tour on your first visit — it covers features you might miss',
-          'Each page may have its own deep-dive mini-tour',
-          'The tour remembers your progress so you won\'t see it again once completed'
+          'Each page may have its own deep-dive mini-tour for detailed guidance',
+          'The tour remembers your progress so you won\'t see it again once completed',
+          'Use the tour to train new team members — it explains every feature clearly'
         ],
         relatedTopics: [
           { title: 'Onboarding Flow', path: '/documentation/getting-started/onboarding' },
@@ -162,17 +197,30 @@ export const documentationSections: DocSection[] = [
         title: 'Workspaces',
         description: 'Switch between and manage workspaces.',
         whatItDoes: 'Workspaces let you organize multiple businesses or client accounts under one login. Each workspace has its own properties, team members, and settings. You can switch between workspaces from the sidebar.',
+        detailedSections: [
+          {
+            heading: 'What Workspaces Are For',
+            body: 'Workspaces provide a layer of organization above properties. While properties represent individual websites, workspaces represent entire businesses, brands, or client accounts. If you are a single business owner with one or two websites, you may only ever need one workspace. But if you manage multiple businesses, operate an agency serving multiple clients, or want to keep different ventures completely separated, workspaces give you that flexibility.\n\nEach workspace is fully isolated. Properties, team members, conversations, analytics, and settings in one workspace are completely invisible to another. This means you can manage a healthcare client and a real estate client from the same Scaled Bot login without any data crossing over. Agents invited to one workspace do not automatically have access to another — you must invite them separately to each workspace they need to work in.'
+          },
+          {
+            heading: 'Switching and Managing Workspaces',
+            body: 'The workspace switcher is located at the top of the sidebar. Clicking it reveals a dropdown showing all workspaces you have access to, along with an option to create a new one. Switching between workspaces is instant — there is no logout or page reload required. When you switch, the sidebar, property selector, inbox, and all other views update immediately to reflect the selected workspace.\n\nYour personal profile settings — such as your name, avatar, and email — carry across all workspaces. This means you only need to set up your profile once, and it will appear consistently regardless of which workspace you are working in. However, workspace-specific settings like notification preferences and property configurations are scoped to each workspace individually.\n\nCreating a new workspace is straightforward. Click "Create Workspace" from the switcher, give it a name, and you are ready to start adding properties and inviting team members. There is no limit to the number of workspaces you can create, though each workspace\'s properties count toward your overall subscription limits.'
+          }
+        ],
         howToUse: [
           'Click the workspace switcher at the top of the sidebar',
-          'Select an existing workspace to switch to it',
+          'Select an existing workspace to switch to it instantly',
           'Click "Create Workspace" to set up a new one',
-          'Each workspace has its own properties and team',
+          'Each workspace has its own properties, team, and settings',
+          'Invite agents to specific workspaces as needed',
           'Your personal settings (profile, avatar) carry across all workspaces'
         ],
         tips: [
           'Use workspaces to separate different businesses or clients',
-          'Agents can be invited to specific workspaces',
-          'Switching workspaces is instant — no need to log out'
+          'Agents can be invited to specific workspaces independently',
+          'Switching workspaces is instant — no need to log out',
+          'Workspace data is fully isolated — nothing crosses between workspaces',
+          'Name your workspaces clearly to avoid confusion when switching'
         ],
         relatedTopics: [
           { title: 'Creating Properties', path: '/documentation/getting-started/properties' },
