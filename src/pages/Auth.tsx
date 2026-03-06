@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import { Eye, EyeOff, ArrowLeft, Mail } from 'lucide-react';
+import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
