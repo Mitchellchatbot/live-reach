@@ -63,10 +63,23 @@ const DocPage = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
+      {/* Hero Image */}
+      {sectionId && sectionHeroImages[sectionId] && (
+        <div className="mb-8 rounded-xl overflow-hidden border border-border">
+          <img
+            src={topic.heroImage || sectionHeroImages[sectionId]}
+            alt={topic.title}
+            className="w-full h-48 sm:h-64 object-cover"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       {/* Title */}
       <div ref={headerRef}>
         <h1 className="text-3xl font-bold text-foreground mb-3">
           {topic.title}
+        </h1>
         </h1>
         <p className="text-lg text-muted-foreground mb-8">
           {topic.description}
