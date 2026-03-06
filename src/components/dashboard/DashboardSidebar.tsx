@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Inbox,
   Archive,
-  FlaskConical,
+  
   LifeBuoy,
   Bot,
   BookOpen,
