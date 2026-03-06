@@ -48,6 +48,9 @@ export const DocsLayout = () => {
               <span className="sm:hidden">Back</span>
             </Button>
           </Link>
+          <div className="ml-auto">
+            <DocsSearch />
+          </div>
         </header>
 
         {/* Content */}
