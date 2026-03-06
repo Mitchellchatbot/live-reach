@@ -80,7 +80,6 @@ const DocPage = () => {
         <h1 className="text-3xl font-bold text-foreground mb-3">
           {topic.title}
         </h1>
-        </h1>
         <p className="text-lg text-muted-foreground mb-8">
           {topic.description}
         </p>
