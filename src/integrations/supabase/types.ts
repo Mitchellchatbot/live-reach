@@ -527,6 +527,7 @@ export type Database = {
           id: string
           onboarding_complete: boolean
           session_timeout_minutes: number
+          two_factor_enabled: boolean
           updated_at: string
           user_id: string
         }
@@ -540,6 +541,7 @@ export type Database = {
           id?: string
           onboarding_complete?: boolean
           session_timeout_minutes?: number
+          two_factor_enabled?: boolean
           updated_at?: string
           user_id: string
         }
@@ -553,6 +555,7 @@ export type Database = {
           id?: string
           onboarding_complete?: boolean
           session_timeout_minutes?: number
+          two_factor_enabled?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -911,6 +914,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      two_factor_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
