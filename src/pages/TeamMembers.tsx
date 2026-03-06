@@ -558,7 +558,7 @@ const TeamMembers = () => {
     }
 
     // Check not already a co-admin
-    const existing = coAdmins.find(c => c.user_id === profile.user_id);
+    const existing = coAdmins.find(c => c.user_id === userId);
     if (existing) {
       toast.error('This person is already a co-admin');
       setIsAddingCoAdmin(false);
@@ -569,7 +569,7 @@ const TeamMembers = () => {
       .from('account_co_owners')
       .insert({
         owner_user_id: user.id,
-        co_owner_user_id: profile.user_id,
+        co_owner_user_id: userId,
       });
 
     if (error) {
@@ -581,7 +581,7 @@ const TeamMembers = () => {
     // Ensure the co-owner has the 'client' role so they can access properties
     await supabase
       .from('user_roles')
-      .insert({ user_id: profile.user_id, role: 'client' })
+      .insert({ user_id: userId, role: 'client' })
       .select()
       .maybeSingle(); // ignore duplicate
 
