@@ -18,7 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save, KeyRound } from 'lucide-react';
+import { Users, UserPlus, Mail, Loader2, Trash2, RefreshCw, Send, Upload, Bot, Globe, ChevronDown, Save, KeyRound, Shield } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -62,6 +62,21 @@ const TeamMembers = () => {
   const [creatingAIForId, setCreatingAIForId] = useState<string | null>(null);
   const [linkedAIAgents, setLinkedAIAgents] = useState<Record<string, string>>({}); // agent_id -> ai_name
 
+  // Co-Admin state
+  interface CoAdmin {
+    id: string; // account_co_owners row id
+    user_id: string;
+    email: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  }
+  const [coAdmins, setCoAdmins] = useState<CoAdmin[]>([]);
+  const [coAdminEmail, setCoAdminEmail] = useState('');
+  const [isAddingCoAdmin, setIsAddingCoAdmin] = useState(false);
+  const [isCoAdminDialogOpen, setIsCoAdminDialogOpen] = useState(false);
+  const [deleteCoAdminId, setDeleteCoAdminId] = useState<string | null>(null);
+  const [isDeletingCoAdmin, setIsDeletingCoAdmin] = useState(false);
+
   const [searchParams] = useSearchParams();
   const isTourActive = searchParams.get('tour') === '1';
 
@@ -96,6 +111,7 @@ const TeamMembers = () => {
   useEffect(() => {
     fetchAgents();
     fetchLinkedAIAgents();
+    fetchCoAdmins();
   }, [user]);
 
   // Real-time agent status updates
@@ -485,6 +501,118 @@ const TeamMembers = () => {
     }
 
     setCreatingAIForId(null);
+  };
+
+  const fetchCoAdmins = async () => {
+    if (!user) return;
+
+    const { data: records } = await supabase
+      .from('account_co_owners')
+      .select('id, co_owner_user_id')
+      .eq('owner_user_id', user.id);
+
+    if (!records || records.length === 0) {
+      setCoAdmins([]);
+      return;
+    }
+
+    const coOwnerUserIds = records.map(r => r.co_owner_user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, email, full_name, avatar_url')
+      .in('user_id', coOwnerUserIds);
+
+    const mapped: CoAdmin[] = records.map(r => {
+      const profile = profiles?.find(p => p.user_id === r.co_owner_user_id);
+      return {
+        id: r.id,
+        user_id: r.co_owner_user_id,
+        email: profile?.email || 'Unknown',
+        full_name: profile?.full_name || null,
+        avatar_url: profile?.avatar_url || null,
+      };
+    });
+
+    setCoAdmins(mapped);
+  };
+
+  const handleAddCoAdmin = async () => {
+    if (!coAdminEmail.trim() || !user) return;
+    const email = coAdminEmail.trim().toLowerCase();
+
+    if (email === user.email) {
+      toast.error("You can't add yourself as a co-admin");
+      return;
+    }
+
+    setIsAddingCoAdmin(true);
+
+    // Look up the user by email
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (!profile) {
+      toast.error('No account found with that email. They need to sign up first.');
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    // Check not already a co-admin
+    const existing = coAdmins.find(c => c.user_id === profile.user_id);
+    if (existing) {
+      toast.error('This person is already a co-admin');
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('account_co_owners')
+      .insert({
+        owner_user_id: user.id,
+        co_owner_user_id: profile.user_id,
+      });
+
+    if (error) {
+      toast.error('Failed to add co-admin: ' + error.message);
+      setIsAddingCoAdmin(false);
+      return;
+    }
+
+    // Ensure the co-owner has the 'client' role so they can access properties
+    await supabase
+      .from('user_roles')
+      .insert({ user_id: profile.user_id, role: 'client' })
+      .select()
+      .maybeSingle(); // ignore duplicate
+
+    toast.success('Co-admin added! They now have full access to your account.');
+    setCoAdminEmail('');
+    setIsCoAdminDialogOpen(false);
+    setIsAddingCoAdmin(false);
+    fetchCoAdmins();
+  };
+
+  const handleRemoveCoAdmin = async () => {
+    if (!deleteCoAdminId) return;
+    setIsDeletingCoAdmin(true);
+
+    const { error } = await supabase
+      .from('account_co_owners')
+      .delete()
+      .eq('id', deleteCoAdminId);
+
+    if (error) {
+      toast.error('Failed to remove co-admin');
+    } else {
+      toast.success('Co-admin removed');
+    }
+
+    setDeleteCoAdminId(null);
+    setIsDeletingCoAdmin(false);
+    fetchCoAdmins();
   };
 
   const getStatusColor = (status: string) => {
@@ -1011,6 +1139,99 @@ const TeamMembers = () => {
               )}
             </CardContent>
           </Card>
+          {/* Co-Admins Section */}
+          <Card className="mt-6">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Co-Admins
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Co-admins have full access to your account — same properties, inbox, and settings
+                  </CardDescription>
+                </div>
+                <Dialog open={isCoAdminDialogOpen} onOpenChange={setIsCoAdminDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-xs sm:text-sm">
+                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                      Add Co-Admin
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="text-base">Add Co-Admin</DialogTitle>
+                      <DialogDescription className="text-xs">
+                        Enter the email of an existing account holder. They'll immediately get full access to your workspace.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-email" className="text-xs">Email</Label>
+                        <div className="relative">
+                          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            id="co-admin-email"
+                            type="email"
+                            placeholder="partner@company.com"
+                            className="pl-8 h-8 text-sm"
+                            value={coAdminEmail}
+                            onChange={(e) => setCoAdminEmail(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" size="sm" onClick={() => setIsCoAdminDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim()}>
+                        {isAddingCoAdmin && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                        Add Co-Admin
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {coAdmins.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No co-admins yet</p>
+                  <p className="text-xs mt-1">Add someone to share full access to your account</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {coAdmins.map((coAdmin) => (
+                    <div key={coAdmin.id} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={coAdmin.avatar_url || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                            {(coAdmin.full_name || coAdmin.email).charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{coAdmin.full_name || 'Unnamed'}</p>
+                          <p className="text-xs text-muted-foreground">{coAdmin.email}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteCoAdminId(coAdmin.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
             </div>
           </div>
         </div>
@@ -1033,6 +1254,28 @@ const TeamMembers = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? 'Removing...' : 'Remove Agent'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Co-Admin Confirmation */}
+      <AlertDialog open={!!deleteCoAdminId} onOpenChange={(open) => !open && setDeleteCoAdminId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Co-Admin</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure? They will immediately lose access to your properties, conversations, and settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingCoAdmin}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveCoAdmin}
+              disabled={isDeletingCoAdmin}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingCoAdmin ? 'Removing...' : 'Remove Co-Admin'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

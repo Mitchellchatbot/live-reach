@@ -61,6 +61,33 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       });
     }
 
+    // 1b. Co-owner workspaces — accounts where this user is a co-owner
+    const { data: coOwnerRecords } = await supabase
+      .from('account_co_owners')
+      .select('owner_user_id')
+      .eq('co_owner_user_id', user.id);
+
+    if (coOwnerRecords && coOwnerRecords.length > 0) {
+      const ownerIds = coOwnerRecords.map(r => r.owner_user_id).filter(id => id !== user.id);
+      if (ownerIds.length > 0) {
+        const { data: ownerProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, company_name, avatar_url')
+          .in('user_id', ownerIds);
+
+        if (ownerProfiles) {
+          for (const profile of ownerProfiles) {
+            result.push({
+              id: profile.user_id,
+              name: profile.company_name || profile.full_name || 'Shared Workspace',
+              type: 'owner', // co-owners get full owner experience
+              avatarUrl: profile.avatar_url,
+            });
+          }
+        }
+      }
+    }
+
     // 2. Agent workspaces - find all admins who invited this user as an agent
     const { data: agentRecords } = await supabase
       .from('agents')
@@ -69,15 +96,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       .eq('invitation_status', 'accepted');
 
     if (agentRecords && agentRecords.length > 0) {
-      // Build a map of invited_by -> agent id
       const agentByOwner = new Map<string, string>();
       for (const a of agentRecords) {
         if (a.invited_by) agentByOwner.set(a.invited_by, a.id);
       }
       const ownerIds = [...agentByOwner.keys()];
       
-      // Don't include own workspace again
-      const otherOwnerIds = ownerIds.filter(id => id !== user.id);
+      // Don't include own workspace or co-owner workspaces again
+      const existingIds = new Set(result.map(w => w.id));
+      const otherOwnerIds = ownerIds.filter(id => !existingIds.has(id));
 
       if (otherOwnerIds.length > 0) {
         const { data: ownerProfiles } = await supabase
