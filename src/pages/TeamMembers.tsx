@@ -547,14 +547,11 @@ const TeamMembers = () => {
 
     setIsAddingCoAdmin(true);
 
-    // Look up the user by email
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('email', email)
-      .maybeSingle();
+    // Look up the user by email using security definer function (bypasses RLS)
+    const { data: userId, error: lookupError } = await supabase
+      .rpc('lookup_user_id_by_email', { lookup_email: email });
 
-    if (!profile) {
+    if (lookupError || !userId) {
       toast.error('No account found with that email. They need to sign up first.');
       setIsAddingCoAdmin(false);
       return;
