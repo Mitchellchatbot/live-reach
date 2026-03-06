@@ -24,8 +24,16 @@ export const TwoFactorVerification = ({
   const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [sending, setSending] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [codeSent, setCodeSent] = useState(() => {
+    const sentAt = sessionStorage.getItem('2fa_code_sent_at');
+    return sentAt ? Date.now() - Number(sentAt) < 60000 : false;
+  });
+  const [resendCooldown, setResendCooldown] = useState(() => {
+    const sentAt = sessionStorage.getItem('2fa_code_sent_at');
+    if (!sentAt) return 0;
+    const remaining = Math.ceil(60 - (Date.now() - Number(sentAt)) / 1000);
+    return remaining > 0 ? remaining : 0;
+  });
   const { toast } = useToast();
 
   const sendCode = async () => {
@@ -42,12 +50,17 @@ export const TwoFactorVerification = ({
 
     setCodeSent(true);
     setResendCooldown(60);
+    sessionStorage.setItem('2fa_code_sent_at', String(Date.now()));
     toast({ title: 'Code sent!', description: `A verification code has been sent to ${email}` });
   };
 
-  // Auto-send code on mount
+  // Auto-send code on first mount only (skip if recently sent)
   useEffect(() => {
-    sendCode();
+    const sentAt = sessionStorage.getItem('2fa_code_sent_at');
+    const recentlySent = sentAt && Date.now() - Number(sentAt) < 60000;
+    if (!recentlySent) {
+      sendCode();
+    }
   }, []);
 
   // Resend cooldown timer
