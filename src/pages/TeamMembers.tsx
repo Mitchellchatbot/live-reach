@@ -111,6 +111,7 @@ const TeamMembers = () => {
   useEffect(() => {
     fetchAgents();
     fetchLinkedAIAgents();
+    fetchCoAdmins();
   }, [user]);
 
   // Real-time agent status updates
