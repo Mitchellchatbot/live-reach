@@ -1111,6 +1111,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_user_id_by_email: {
+        Args: { lookup_email: string }
+        Returns: string
+      }
       mark_onboarding_complete: {
         Args: { user_uuid: string }
         Returns: undefined
