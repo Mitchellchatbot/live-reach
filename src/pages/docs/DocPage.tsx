@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { getSection, getTopic } from '@/data/documentation';
+import { getSection, getTopic, sectionHeroImages } from '@/data/documentation';
 import { 
   Breadcrumb,
   BreadcrumbItem,
