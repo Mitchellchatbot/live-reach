@@ -3,6 +3,7 @@ export interface DocTopic {
   title: string;
   description: string;
   whatItDoes: string;
+  detailedSections?: { heading: string; body: string }[];
   howToUse: string[];
   tips: string[];
   relatedTopics?: { title: string; path: string }[];
