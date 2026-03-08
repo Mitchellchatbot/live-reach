@@ -176,6 +176,11 @@ Deno.serve(async (req) => {
       updatePayload.status = "active";
     }
 
+    // Stamp last_visitor_message_at so the cron extraction job picks it up
+    if (senderType === "visitor") {
+      updatePayload.last_visitor_message_at = new Date().toISOString();
+    }
+
     if (aiQueueAction === "queue") {
       updatePayload.ai_queued_at = new Date().toISOString();
       updatePayload.ai_queued_preview = aiQueuePreview ?? null;
@@ -187,47 +192,6 @@ Deno.serve(async (req) => {
       updatePayload.ai_queued_at = null;
       updatePayload.ai_queued_preview = null;
       updatePayload.ai_queued_paused = false;
-    }
-
-    const { error: updateErr } = await supabase
-      .from("conversations")
-      .update(updatePayload)
-      .eq("id", conversationId);
-
-    if (updateErr) {
-      console.error("widget-save-message: failed to update conversation", updateErr);
-    }
-
-    // Fire-and-forget: trigger server-side visitor info extraction on every visitor message
-    if (senderType === "visitor") {
-      try {
-        const { data: allMsgs } = await supabase
-          .from("messages")
-          .select("sender_type, content")
-          .eq("conversation_id", conversationId)
-          .order("sequence_number", { ascending: true })
-          .limit(50);
-
-        if (allMsgs && allMsgs.length > 0) {
-          const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
-            role: m.sender_type === "visitor" ? "user" : "assistant",
-            content: m.content,
-          }));
-
-          console.log("widget-save-message: triggering extract-visitor-info for visitor", visitorId, "msgs:", allMsgs.length);
-
-          fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${serviceKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ visitorId, conversationHistory }),
-          }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
-        }
-      } catch (extractErr) {
-        console.error("Failed to trigger extraction:", extractErr);
-      }
     }
 
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq, conversationId, conversationCreated }), {
