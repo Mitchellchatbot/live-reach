@@ -198,43 +198,35 @@ Deno.serve(async (req) => {
       console.error("widget-save-message: failed to update conversation", updateErr);
     }
 
-    // Fire-and-forget: trigger server-side visitor info extraction
+    // Fire-and-forget: trigger server-side visitor info extraction on every visitor message
     if (senderType === "visitor") {
-      const { count: visitorMsgCount } = await supabase
-        .from("messages")
-        .select("id", { count: "exact", head: true })
-        .eq("conversation_id", conversationId)
-        .eq("sender_type", "visitor");
+      try {
+        const { data: allMsgs } = await supabase
+          .from("messages")
+          .select("sender_type, content")
+          .eq("conversation_id", conversationId)
+          .order("sequence_number", { ascending: true })
+          .limit(50);
 
-      const shouldExtract = (visitorMsgCount ?? 0) <= 1 || (visitorMsgCount ?? 0) % 3 === 0;
+        if (allMsgs && allMsgs.length > 0) {
+          const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
+            role: m.sender_type === "visitor" ? "user" : "assistant",
+            content: m.content,
+          }));
 
-      if (shouldExtract) {
-        try {
-          const { data: allMsgs } = await supabase
-            .from("messages")
-            .select("sender_type, content")
-            .eq("conversation_id", conversationId)
-            .order("sequence_number", { ascending: true })
-            .limit(50);
+          console.log("widget-save-message: triggering extract-visitor-info for visitor", visitorId, "msgs:", allMsgs.length);
 
-          if (allMsgs && allMsgs.length > 0) {
-            const conversationHistory = allMsgs.map((m: { sender_type: string; content: string }) => ({
-              role: m.sender_type === "visitor" ? "user" : "assistant",
-              content: m.content,
-            }));
-
-            fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${serviceKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ visitorId, conversationHistory }),
-            }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
-          }
-        } catch (extractErr) {
-          console.error("Failed to trigger extraction:", extractErr);
+          fetch(`${supabaseUrl}/functions/v1/extract-visitor-info`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${serviceKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ visitorId, conversationHistory }),
+          }).catch((e: unknown) => console.error("extract-visitor-info fire-and-forget error:", e));
         }
+      } catch (extractErr) {
+        console.error("Failed to trigger extraction:", extractErr);
       }
     }
 
