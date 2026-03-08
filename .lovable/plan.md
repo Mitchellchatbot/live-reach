@@ -1,81 +1,29 @@
 
 
-# Plan: Generate Downloadable Project Structure Document
 
-I'll create a downloadable HTML file in the `public/` folder that contains the full project tree. You can then open it from the preview URL and save it (or copy the text).
+## Chat System Audit Cleanup — COMPLETED ✅
 
-## What it will contain
+All audit items implemented:
 
-A single file `public/project-structure.txt` with the complete directory tree of the project, organized by folder, covering:
+### 1. ✅ Dead code removed
+Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
 
-- Root config files (package.json, vite.config.ts, tsconfig, etc.)
-- `src/` — all pages, components, hooks, data, types, utils, assets, integrations
-- `supabase/` — all edge functions and migration files
-- `public/` — static assets
+### 2. ✅ Lock bug fixed
+Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
 
-## File format
+### 3. ✅ Shared helpers extracted
+Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
 
-Plain `.txt` file placed in `public/project-structure.txt`. Once deployed, you can download it at `https://live-reach.lovable.app/project-structure.txt` or from the preview URL.
+### 4. ✅ Proactive timer stale closure fixed
+`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
 
-## Content structure
+### 5. ✅ Dashboard fetch optimized
+`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
 
-```text
-care-assist/
-├── index.html
-├── package.json
-├── vite.config.ts
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.node.json
-├── capacitor.config.ts
-├── components.json
-├── tailwind.config.ts
-├── postcss.config.js
-├── eslint.config.js
-├── public/
-│   ├── favicon.ico / .png / .svg
-│   ├── og-image.png
-│   ├── robots.txt
-│   ├── sitemap.xml
-│   └── placeholder.svg
-├── src/
-│   ├── main.tsx
-│   ├── App.tsx
-│   ├── App.css
-│   ├── index.css
-│   ├── WidgetApp.tsx
-│   ├── vite-env.d.ts
-│   ├── lib/utils.ts
-│   ├── types/chat.ts
-│   ├── utils/typoInjector.ts
-│   ├── data/ (3 files)
-│   ├── hooks/ (17 files)
-│   ├── integrations/supabase/ (client.ts, types.ts)
-│   ├── assets/ (logos, personas, testimonials, images)
-│   ├── pages/ (28 pages + docs subfolder)
-│   └── components/
-│       ├── ui/ (51 shadcn components)
-│       ├── dashboard/ (11 files)
-│       ├── settings/ (9 files)
-│       ├── admin/ (3 files)
-│       ├── agent/ (1 file)
-│       ├── auth/ (1 file)
-│       ├── docs/ (4 files)
-│       ├── landing/ (2 files)
-│       ├── pricing/ (2 files)
-│       ├── sidebar/ (2 files)
-│       ├── video/ (2 files)
-│       ├── widget/ (2 files)
-│       └── 3 root components
-├── supabase/
-│   ├── config.toml
-│   ├── functions/ (36 edge functions)
-│   └── migrations/ (78 migration files)
-```
+### 6. ✅ Realtime channels consolidated
+Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
 
-The actual file will expand every folder fully with every filename listed.
+### 7. ✅ Verbose logging removed
+Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
 
-## Implementation
-
-One new file: `public/project-structure.txt`
-
+### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
