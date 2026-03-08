@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.salesforce-oauth-start]
 verify_jwt = false
+
+[functions.run-scheduled-extraction]
+verify_jwt = false

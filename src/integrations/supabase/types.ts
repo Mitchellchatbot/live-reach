@@ -218,6 +218,8 @@ export type Database = {
           created_at: string
           id: string
           is_test: boolean
+          last_extraction_at: string | null
+          last_visitor_message_at: string | null
           property_id: string
           status: string
           updated_at: string
@@ -233,6 +235,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_test?: boolean
+          last_extraction_at?: string | null
+          last_visitor_message_at?: string | null
           property_id: string
           status?: string
           updated_at?: string
@@ -248,6 +252,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_test?: boolean
+          last_extraction_at?: string | null
+          last_visitor_message_at?: string | null
           property_id?: string
           status?: string
           updated_at?: string
