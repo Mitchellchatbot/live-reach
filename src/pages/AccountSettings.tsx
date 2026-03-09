@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
-import { Eye, EyeOff, User, Lock, Trash2, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Trash2, Mail, ShieldCheck, Download } from 'lucide-react';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 import {
   AlertDialog,
