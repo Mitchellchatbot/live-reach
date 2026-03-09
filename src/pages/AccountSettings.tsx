@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatarUpload } from '@/components/sidebar/UserAvatarUpload';
-import { Eye, EyeOff, User, Lock, Trash2, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Trash2, Mail, ShieldCheck, Download } from 'lucide-react';
 import { TwoFactorVerification } from '@/components/auth/TwoFactorVerification';
 import {
   AlertDialog,
@@ -368,6 +368,43 @@ const AccountSettings = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </CardContent>
+          </Card>
+
+          {/* Data Export */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Data Export
+              </CardTitle>
+              <CardDescription>Download a full SQL backup of all your data</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) { toast({ title: 'Please log in first', variant: 'destructive' }); return; }
+                    toast({ title: 'Generating backup...', description: 'This may take a moment for large datasets.' });
+                    const resp = await supabase.functions.invoke('export-data-backup', {});
+                    if (resp.error) throw resp.error;
+                    const blob = new Blob([resp.data], { type: 'application/sql' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `data-backup-${new Date().toISOString().slice(0, 10)}.sql`;
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                    toast({ title: 'Backup downloaded!' });
+                  } catch (err: any) {
+                    toast({ title: 'Export failed', description: err.message, variant: 'destructive' });
+                  }
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download SQL Data Backup
+              </Button>
             </CardContent>
           </Card>
         </div>
