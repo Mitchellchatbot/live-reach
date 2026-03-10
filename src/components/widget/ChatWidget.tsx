@@ -33,6 +33,8 @@ interface ChatWidgetProps {
   fillContainer?: boolean;
   /** A closing agent message to inject locally after the autoplay script ends */
   closingAgentMessage?: string;
+  /** Fired with the 0-based index each time an autoplay script message is sent */
+  onScriptMessageSent?: (index: number) => void;
 }
 
 export const ChatWidget = ({
