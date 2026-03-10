@@ -695,130 +695,83 @@ export const ChatWidget = ({
                   </div>
                 ))}
 
-                {!hardcodedMessages && messages.map((msg, index) => {
-                  // For agent messages, use per-message agent info or fall back to current
-                  const msgAgentName = msg.agent_name || displayName;
-                  const msgAgentAvatar = msg.agent_avatar || displayAvatar;
-                  
-                  return (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        "flex gap-3 animate-fade-in",
-                        msg.sender_type === 'visitor' ? "flex-row-reverse" : "flex-row"
-                      )}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      {msg.sender_type === 'agent' && (
-                        <div 
-                          className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
-                          style={{ background: msgAgentAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
-                        >
-                          {msgAgentAvatar ? (
-                            <img src={msgAgentAvatar} alt={msgAgentName} className="h-full w-full object-cover" />
-                          ) : (
-                            <MessageCircle className="h-4 w-4 text-white" />
-                          )}
+                {!hardcodedMessages && (() => {
+                  // Interleave visitor messages with their corresponding local agent replies
+                  // messages[] contains only visitor messages in scripted-reply mode
+                  // localAgentMessages[i] is the agent reply after visitor message i
+                  const visitorMessages = messages.filter(m => m.sender_type === 'visitor');
+                  const agentBackendMessages = messages.filter(m => m.sender_type !== 'visitor');
+                  const allItems: React.ReactNode[] = [];
+
+                  // Render non-visitor (backend agent) messages first if any
+                  agentBackendMessages.forEach((msg, index) => {
+                    const msgAgentName = msg.agent_name || displayName;
+                    const msgAgentAvatar = msg.agent_avatar || displayAvatar;
+                    allItems.push(
+                      <div key={msg.id} className="flex gap-3 animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                        <div className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                          style={{ background: msgAgentAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}>
+                          {msgAgentAvatar ? <img src={msgAgentAvatar} alt={msgAgentName} className="h-full w-full object-cover" /> : <MessageCircle className="h-4 w-4 text-white" />}
                         </div>
-                      )}
-                      <div className={cn("max-w-[75%]", msg.sender_type === 'agent' && "flex flex-col")}>
-                        <div
-                          className={cn(
-                            "px-4 py-3 shadow-sm",
-                            msg.sender_type === 'visitor'
-                              ? ""
-                              : "bg-card border border-border/30"
-                          )}
-                          style={msg.sender_type === 'visitor' 
-                            ? { 
-                                background: 'var(--widget-primary)', 
-                                color: 'white',
-                                borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}`
-                              } 
-                            : {
-                                borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}`
-                              }
-                          }
-                        >
-                          {/* Check if message contains an image URL */}
-                          {msg.content.includes('[Image uploaded:') && msg.content.includes('https://') ? (
-                            <div className="space-y-2">
-                              <p className="text-sm text-opacity-80">📷 Image uploaded</p>
-                              <img 
-                                src={msg.content.split('\n').pop() || ''} 
-                                alt="Uploaded" 
-                                className="max-w-full rounded-lg max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => window.open(msg.content.split('\n').pop(), '_blank')}
-                              />
-                            </div>
-                          ) : (
+                        <div className="max-w-[75%] flex flex-col">
+                          <div className="px-4 py-3 shadow-sm bg-card border border-border/30"
+                            style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}>
                             <p className="text-xs whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
-                          )}
-                          <p className={cn(
-                            "text-xs mt-1.5 text-right",
-                            msg.sender_type === 'visitor' ? "text-white/70" : "text-muted-foreground"
-                          )}>
-                            {format(new Date(msg.created_at), 'h:mm a')}
-                          </p>
+                            <p className="text-xs mt-1.5 text-right text-muted-foreground">{format(new Date(msg.created_at), 'h:mm a')}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+
+                  // Interleave: visitor msg[i] then localAgentMessages[i]
+                  visitorMessages.forEach((msg, index) => {
+                    allItems.push(
+                      <div key={msg.id} className="flex gap-3 flex-row-reverse animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                        <div className="max-w-[75%]">
+                          <div className="px-4 py-3 shadow-sm"
+                            style={{ background: 'var(--widget-primary)', color: 'white', borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}` }}>
+                            {msg.content.includes('[Image uploaded:') && msg.content.includes('https://') ? (
+                              <div className="space-y-2">
+                                <p className="text-sm text-opacity-80">📷 Image uploaded</p>
+                                <img src={msg.content.split('\n').pop() || ''} alt="Uploaded"
+                                  className="max-w-full rounded-lg max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => window.open(msg.content.split('\n').pop(), '_blank')} />
+                              </div>
+                            ) : (
+                              <p className="text-xs whitespace-pre-wrap leading-relaxed text-left">{msg.content}</p>
+                            )}
+                            <p className="text-xs mt-1.5 text-right text-white/70">{format(new Date(msg.created_at), 'h:mm a')}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+
+                    // Inject the corresponding local agent reply right after this visitor message
+                    const agentReply = localAgentMessages[index];
+                    if (agentReply) {
+                      allItems.push(
+                        <div key={`local-agent-${index}`} className="flex gap-3 items-end animate-fade-in">
+                          <div className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                            style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}>
+                            {displayAvatar ? <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" /> : <MessageCircle className="h-4 w-4 text-white" />}
+                          </div>
+                          <div className="flex flex-col">
+                            <div className="bg-card px-4 py-3 shadow-sm border border-border/30 text-xs text-foreground"
+                              style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}>
+                              {agentReply.text}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">{format(agentReply.time, 'h:mm a')}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                  });
+
+                  return allItems;
+                })()}
 
                 {!hardcodedMessages && isTyping && (
-                  <div className="flex gap-3 items-end animate-fade-in">
-                    <div 
-                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
-                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
-                    >
-                      {displayAvatar ? (
-                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
-                      ) : (
-                        <MessageCircle className="h-4 w-4 text-white" />
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <div 
-                        className="bg-card px-4 py-3 shadow-sm border border-border/30"
-                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
-                      >
-                        <div className="flex gap-1.5">
-                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Local scripted agent replies (mid-conversation) */}
-                {localAgentMessages.map((lm, i) => (
-                  <div key={`local-agent-${i}`} className="flex gap-3 items-end animate-fade-in">
-                    <div 
-                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
-                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
-                    >
-                      {displayAvatar ? (
-                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
-                      ) : (
-                        <MessageCircle className="h-4 w-4 text-white" />
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <div 
-                        className="bg-card px-4 py-3 shadow-sm border border-border/30 text-xs text-foreground"
-                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
-                      >
-                        {lm.text}
-                      </div>
-                      <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
-                        {format(lm.time, 'h:mm a')}
-                      </span>
-                    </div>
-                  </div>
-                ))}
 
                 {/* Closing agent message injected locally after autoplay ends */}
                 {closingMessage && (
