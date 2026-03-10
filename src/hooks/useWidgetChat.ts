@@ -1176,6 +1176,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       return;
     }
 
+    // Skip AI response if caller explicitly requested it (e.g. demo closing message)
+    if (opts?.skipAiReply) return;
+
     // Build conversation history for AI (proactive messages are transient UI only)
     const conversationHistory = messages
       .filter(m => m.id !== 'proactive')
