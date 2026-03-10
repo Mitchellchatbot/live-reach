@@ -33,6 +33,8 @@ interface ChatWidgetProps {
   fillContainer?: boolean;
   /** A closing agent message to inject locally after the autoplay script ends */
   closingAgentMessage?: string;
+  /** Fired with the 0-based index each time an autoplay script message is sent */
+  onScriptMessageSent?: (index: number) => void;
 }
 
 export const ChatWidget = ({
@@ -57,6 +59,7 @@ export const ChatWidget = ({
   autoPlaySpeed = 1,
   fillContainer = false,
   closingAgentMessage,
+  onScriptMessageSent,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -230,7 +233,9 @@ export const ChatWidget = ({
         await sleep(s(300));
         if (cancelled) return;
         sendMessage(text);
+        const sentIndex = autoPlayIndexRef.current;
         autoPlayIndexRef.current++;
+        onScriptMessageSent?.(sentIndex);
 
         // After the last script message, inject the closing agent message locally
         if (isLastMessage) {

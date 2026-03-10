@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, User, Phone, Shield, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,41 +20,36 @@ interface Annotation {
   label: string;
   detail: string;
   color: string;
-  delayMs: number;
+  /** Which script message index (0-based) triggers this annotation */
+  triggerIndex: number;
 }
 
 const ANNOTATIONS: Annotation[] = [
-  { icon: <User className="h-3.5 w-3.5" />, label: "Name Captured", detail: "Sarah", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", delayMs: 8000 },
-  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20", delayMs: 22000 },
-  { icon: <Phone className="h-3.5 w-3.5" />, label: "Phone Collected", detail: "555-123-4567", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", delayMs: 36000 },
-  { icon: <Shield className="h-3.5 w-3.5" />, label: "Insurance Verified", detail: "BCBS · Employer", color: "bg-purple-500/10 text-purple-600 border-purple-500/20", delayMs: 50000 },
+  { icon: <User className="h-3.5 w-3.5" />, label: "Name Captured",        detail: "Sarah",                  color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", triggerIndex: 0 },
+  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",    triggerIndex: 1 },
+  { icon: <Phone className="h-3.5 w-3.5" />,  label: "Phone Collected",     detail: "555-123-4567",            color: "bg-amber-500/10 text-amber-600 border-amber-500/20",   triggerIndex: 2 },
+  { icon: <Shield className="h-3.5 w-3.5" />, label: "Insurance Verified",  detail: "BCBS · Employer",        color: "bg-purple-500/10 text-purple-600 border-purple-500/20", triggerIndex: 3 },
 ];
 
 const DemoInsurance = () => {
   const [mode, setMode] = useState<'demo' | 'interactive'>('demo');
   const [widgetKey, setWidgetKey] = useState(0);
   const [visibleAnnotations, setVisibleAnnotations] = useState<number[]>([]);
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(() => {
-    if (mode !== 'demo') return;
-    setVisibleAnnotations([]);
-    timersRef.current.forEach(clearTimeout);
-    timersRef.current = [];
-
-    ANNOTATIONS.forEach((a, i) => {
-      const t = setTimeout(() => {
-        setVisibleAnnotations(prev => [...prev, i]);
-      }, a.delayMs);
-      timersRef.current.push(t);
-    });
-
-    return () => timersRef.current.forEach(clearTimeout);
-  }, [mode, widgetKey]);
+  const handleScriptMessageSent = useCallback((index: number) => {
+    // Reveal the annotation whose triggerIndex matches the sent message index
+    const annotationIndex = ANNOTATIONS.findIndex(a => a.triggerIndex === index);
+    if (annotationIndex !== -1) {
+      setVisibleAnnotations(prev =>
+        prev.includes(annotationIndex) ? prev : [...prev, annotationIndex]
+      );
+    }
+  }, []);
 
   const handleStartOwnChat = () => {
     setMode('interactive');
     setWidgetKey(prev => prev + 1);
+    setVisibleAnnotations([]);
   };
 
   return (
@@ -119,9 +114,9 @@ const DemoInsurance = () => {
 
             {mode === 'demo' && visibleAnnotations.length === ANNOTATIONS.length && (
               <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
-                ✓ Full lead captured in under 2 min
-              </Badge>
+                <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
+                  ✓ Full lead captured in under 2 min
+                </Badge>
               </div>
             )}
           </div>
@@ -142,6 +137,7 @@ const DemoInsurance = () => {
                 autoPlaySpeed={2.5}
                 demoOverlay={mode === 'demo'}
                 closingAgentMessage={mode === 'demo' ? "Got it, one of our team members will give you a call shortly. Youre in good hands." : undefined}
+                onScriptMessageSent={mode === 'demo' ? handleScriptMessageSent : undefined}
                 onStartOwnChat={handleStartOwnChat}
               />
             </div>
