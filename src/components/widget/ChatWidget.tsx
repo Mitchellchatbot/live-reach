@@ -600,7 +600,7 @@ export const ChatWidget = ({
               {/* Messages */}
               <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/20 scrollbar-thin">
                 {/* Static Greeting - displayed first, not stored as a message */}
-                {greetingText && (
+                {greetingText && !hardcodedMessages && (
                   <div className="flex gap-3 animate-fade-in">
                     <div 
                       className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
@@ -624,6 +624,51 @@ export const ChatWidget = ({
                     </div>
                   </div>
                 )}
+
+                {/* Hardcoded conversation — fully static, no AI */}
+                {hardcodedMessages && hardcodedMessages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex gap-3 animate-fade-in",
+                      msg.type === 'visitor' ? "flex-row-reverse" : "flex-row"
+                    )}
+                    style={{ animationDelay: `${index * 80}ms` }}
+                  >
+                    {msg.type === 'agent' && (
+                      <div 
+                        className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                        style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                      >
+                        {displayAvatar ? (
+                          <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                        ) : (
+                          <MessageCircle className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    )}
+                    <div className={cn("max-w-[75%]", msg.type === 'agent' && "flex flex-col")}>
+                      <div
+                        className={cn(
+                          "px-4 py-3 shadow-sm",
+                          msg.type === 'visitor' ? "" : "bg-card border border-border/30"
+                        )}
+                        style={msg.type === 'visitor'
+                          ? {
+                              background: 'var(--widget-primary)',
+                              color: 'white',
+                              borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall} ${messageRadiusLarge}`,
+                            }
+                          : {
+                              borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}`,
+                            }
+                        }
+                      >
+                        <p className="text-xs whitespace-pre-wrap leading-relaxed text-left">{msg.text}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
                 {messages.map((msg, index) => {
                   // For agent messages, use per-message agent info or fall back to current
