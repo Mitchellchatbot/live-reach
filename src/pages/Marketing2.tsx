@@ -62,23 +62,6 @@ const Marketing2 = () => {
         }}
       />
 
-      {/* Decorative right-side element */}
-      <div className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 opacity-[0.12]">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="h-1 rounded-full bg-primary"
-            style={{ width: `${120 - i * 16}px`, marginLeft: `${i * 8}px` }}
-          />
-        ))}
-      </div>
-
-      {/* Decorative dots top-right */}
-      <div className="pointer-events-none absolute top-12 right-16 hidden lg:grid grid-cols-4 gap-3 opacity-[0.1]">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="w-2 h-2 rounded-full bg-primary" />
-        ))}
-      </div>
 
       {/* Content — left-aligned */}
       <div className="relative z-10 flex flex-col gap-6 max-w-2xl pl-12 md:pl-20 lg:pl-28 pr-6">
