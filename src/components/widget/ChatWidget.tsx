@@ -156,7 +156,10 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
