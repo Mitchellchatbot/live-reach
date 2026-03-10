@@ -27,6 +27,8 @@ interface ChatWidgetProps {
   demoOverlay?: boolean;
   /** Callback when user clicks "Start Your Own Chat" */
   onStartOwnChat?: () => void;
+  /** Speed multiplier for autoplay: 1 = normal, 2 = 2x faster, etc. */
+  autoPlaySpeed?: number;
 }
 
 export const ChatWidget = ({
