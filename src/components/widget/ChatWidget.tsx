@@ -156,18 +156,29 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    const container = messagesContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
+    // Use two-pass scroll: immediate + deferred to catch both layout and paint
+    const doScroll = () => {
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
+    doScroll();
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 150);
   };
 
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
+    }
+  }, [isOpen, messages, isTyping, visitorTyping, agentClosingTyping, closingMessage]);
+
+  useEffect(() => {
+    if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen, messages, isTyping]);
+  }, [isOpen]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
