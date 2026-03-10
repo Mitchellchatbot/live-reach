@@ -209,11 +209,12 @@ export const ChatWidget = ({
   const [visitorTyping, setVisitorTyping] = useState(false);
   const [closingMessage, setClosingMessage] = useState<{ text: string; time: Date } | null>(null);
   const [agentClosingTyping, setAgentClosingTyping] = useState(false);
+  const [localAgentMessages, setLocalAgentMessages] = useState<{ text: string; time: Date }[]>([]);
 
   // Scroll to bottom whenever any chat content changes (always after paint)
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping, visitorTyping, agentClosingTyping, closingMessage]);
+  }, [messages, isTyping, visitorTyping, agentClosingTyping, closingMessage, localAgentMessages]);
 
   useEffect(() => {
     if (isOpen) scrollToBottom();
@@ -246,6 +247,16 @@ export const ChatWidget = ({
 
     const s = (ms: number) => ms / autoPlaySpeed; // speed-adjusted delay
 
+    const injectAgentReply = async (reply: string) => {
+      await sleep(s(1200));
+      if (cancelled) return;
+      setAgentClosingTyping(true);
+      await sleep(s(900 + reply.length * 22));
+      if (cancelled) return;
+      setAgentClosingTyping(false);
+      setLocalAgentMessages(prev => [...prev, { text: reply, time: new Date() }]);
+    };
+
     const runScript = async () => {
       // Wait for greeting to appear
       await sleep(s(2000));
@@ -265,11 +276,22 @@ export const ChatWidget = ({
         // Brief pause then send
         await sleep(s(300));
         if (cancelled) return;
-        // If this is the last message and we have a closing message, skip the real AI reply
-        sendMessage(text, isLastMessage && !!closingAgentMessage ? { skipAiReply: true } : undefined);
+
+        const hasScriptedReply = scriptedAgentReplies && scriptedAgentReplies[autoPlayIndexRef.current];
+        const useClosing = isLastMessage && !!closingAgentMessage && !hasScriptedReply;
+        sendMessage(text, (hasScriptedReply || useClosing) ? { skipAiReply: true } : undefined);
         const sentIndex = autoPlayIndexRef.current;
         autoPlayIndexRef.current++;
         onScriptMessageSent?.(sentIndex);
+
+        // Inject scripted agent reply locally (no AI)
+        if (hasScriptedReply) {
+          await injectAgentReply(scriptedAgentReplies[sentIndex]);
+          if (cancelled) return;
+          if (isLastMessage) break;
+          await sleep(s(600));
+          continue;
+        }
 
         // After the last script message, inject the closing agent message locally
         if (isLastMessage) {
