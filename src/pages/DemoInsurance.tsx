@@ -131,7 +131,7 @@ const DemoInsurance = () => {
                 autoOpen={true}
                 fillContainer={true}
                 greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
-                agentName="Care Assist"
+                agentName="Emily"
                 agentAvatar={agentAvatar}
                 autoPlayScript={mode === 'demo' ? DEMO_SCRIPT : undefined}
                 autoPlaySpeed={2.5}
