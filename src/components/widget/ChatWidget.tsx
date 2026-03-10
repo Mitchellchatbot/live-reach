@@ -180,6 +180,8 @@ export const ChatWidget = ({
   const autoPlayIndexRef = useRef(0);
   const autoPlayActiveRef = useRef(false);
   const [visitorTyping, setVisitorTyping] = useState(false);
+  const [closingMessage, setClosingMessage] = useState<{ text: string; time: Date } | null>(null);
+  const [agentClosingTyping, setAgentClosingTyping] = useState(false);
 
   useEffect(() => {
     if (!autoPlayScript || autoPlayScript.length === 0 || !isOpen) return;
