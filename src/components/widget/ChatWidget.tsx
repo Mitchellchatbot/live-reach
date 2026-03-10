@@ -232,8 +232,19 @@ export const ChatWidget = ({
         sendMessage(text);
         autoPlayIndexRef.current++;
 
-        // Don't wait for AI after the last script message — end the demo here
-        if (isLastMessage) break;
+        // After the last script message, inject the closing agent message locally
+        if (isLastMessage) {
+          if (closingAgentMessage) {
+            await sleep(s(1200));
+            if (cancelled) return;
+            setAgentClosingTyping(true);
+            await sleep(s(1000 + closingAgentMessage.length * 25));
+            if (cancelled) return;
+            setAgentClosingTyping(false);
+            setClosingMessage({ text: closingAgentMessage, time: new Date() });
+          }
+          break;
+        }
 
         // Wait for AI to fully finish responding
         await waitForAiDone();
