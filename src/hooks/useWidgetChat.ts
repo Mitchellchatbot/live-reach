@@ -444,7 +444,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
   const [geoBlockedMessage, setGeoBlockedMessage] = useState<string>('');
   
   const aiMessageCountRef = useRef(0);
-  const proactiveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const proactiveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const aiAgentIndexRef = useRef(0);
   const visitorIdRef = useRef<string | null>(null); // Ref to track current visitor ID for extraction
   const conversationIdRef = useRef<string | null>(null);
