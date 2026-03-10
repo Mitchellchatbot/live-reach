@@ -42,6 +42,8 @@ interface ChatWidgetProps {
   onScriptMessageSent?: (index: number) => void;
   /** Fully hardcoded conversation — bypasses AI/autoplay entirely and renders static messages */
   hardcodedMessages?: HardcodedMessage[];
+  /** Hardcoded agent replies injected locally (with typing sim) instead of calling the AI, one per visitor message */
+  scriptedAgentReplies?: string[];
 }
 
 export const ChatWidget = ({
@@ -68,6 +70,7 @@ export const ChatWidget = ({
   closingAgentMessage,
   onScriptMessageSent,
   hardcodedMessages,
+  scriptedAgentReplies,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -206,11 +209,12 @@ export const ChatWidget = ({
   const [visitorTyping, setVisitorTyping] = useState(false);
   const [closingMessage, setClosingMessage] = useState<{ text: string; time: Date } | null>(null);
   const [agentClosingTyping, setAgentClosingTyping] = useState(false);
+  const [localAgentMessages, setLocalAgentMessages] = useState<{ text: string; time: Date }[]>([]);
 
   // Scroll to bottom whenever any chat content changes (always after paint)
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping, visitorTyping, agentClosingTyping, closingMessage]);
+  }, [messages, isTyping, visitorTyping, agentClosingTyping, closingMessage, localAgentMessages]);
 
   useEffect(() => {
     if (isOpen) scrollToBottom();
@@ -243,6 +247,16 @@ export const ChatWidget = ({
 
     const s = (ms: number) => ms / autoPlaySpeed; // speed-adjusted delay
 
+    const injectAgentReply = async (reply: string) => {
+      await sleep(s(1200));
+      if (cancelled) return;
+      setAgentClosingTyping(true);
+      await sleep(s(900 + reply.length * 22));
+      if (cancelled) return;
+      setAgentClosingTyping(false);
+      setLocalAgentMessages(prev => [...prev, { text: reply, time: new Date() }]);
+    };
+
     const runScript = async () => {
       // Wait for greeting to appear
       await sleep(s(2000));
@@ -262,11 +276,22 @@ export const ChatWidget = ({
         // Brief pause then send
         await sleep(s(300));
         if (cancelled) return;
-        // If this is the last message and we have a closing message, skip the real AI reply
-        sendMessage(text, isLastMessage && !!closingAgentMessage ? { skipAiReply: true } : undefined);
+
+        const hasScriptedReply = scriptedAgentReplies && scriptedAgentReplies[autoPlayIndexRef.current];
+        const useClosing = isLastMessage && !!closingAgentMessage && !hasScriptedReply;
+        sendMessage(text, (hasScriptedReply || useClosing) ? { skipAiReply: true } : undefined);
         const sentIndex = autoPlayIndexRef.current;
         autoPlayIndexRef.current++;
         onScriptMessageSent?.(sentIndex);
+
+        // Inject scripted agent reply locally (no AI)
+        if (hasScriptedReply) {
+          await injectAgentReply(scriptedAgentReplies[sentIndex]);
+          if (cancelled) return;
+          if (isLastMessage) break;
+          await sleep(s(600));
+          continue;
+        }
 
         // After the last script message, inject the closing agent message locally
         if (isLastMessage) {
@@ -767,6 +792,33 @@ export const ChatWidget = ({
                     </div>
                   </div>
                 )}
+
+                {/* Local scripted agent replies (mid-conversation) */}
+                {localAgentMessages.map((lm, i) => (
+                  <div key={`local-agent-${i}`} className="flex gap-3 items-end animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30 text-xs text-foreground"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        {lm.text}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
+                        {format(lm.time, 'h:mm a')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
 
                 {/* Closing agent message injected locally after autoplay ends */}
                 {closingMessage && (

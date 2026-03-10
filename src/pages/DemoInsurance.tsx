@@ -1,35 +1,57 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, User, Phone, Shield, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChatWidget, HardcodedMessage } from '@/components/widget/ChatWidget';
+import { ChatWidget } from '@/components/widget/ChatWidget';
 import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import agentAvatar from '@/assets/personas/care-assist-agent.jpg';
 
-const HARDCODED_CONVERSATION: HardcodedMessage[] = [
-  { type: 'agent',   text: "Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?" },
-  { type: 'visitor', text: "Hey! My name is Sarah, I need help for my son, he has been struggling from Alcohol addiction." },
-  { type: 'agent',   text: "I am glad you reached out, could you please provide best number to reach at and insurance provider?" },
-  { type: 'visitor', text: "Yes please... 555-123-4567 and he has insurance through his employer Blue Cross Blue Shield." },
-  { type: 'agent',   text: "Thanks, got your number and insurance information. One of our team members will be in touch shortly to help you out." },
+const DEMO_SCRIPT = [
+  "Hey! My name is Sarah, I need help for my son, he has been struggling from Alcohol addiction.",
+  "Yes please... 555-123-4567 and he has insurance through his employer Blue Cross Blue Shield.",
 ];
 
-const ANNOTATIONS = [
-  { icon: <User className="h-3.5 w-3.5" />,        label: "Name Captured",        detail: "Sarah",                  color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  { icon: <Phone className="h-3.5 w-3.5" />,        label: "Phone Collected",       detail: "555-123-4567",           color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
-  { icon: <Shield className="h-3.5 w-3.5" />,       label: "Insurance Verified",    detail: "BCBS · Employer",        color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
+const SCRIPTED_AGENT_REPLIES = [
+  "I am glad you reached out, could you please provide best number to reach at and insurance provider?",
+  "Thanks, got your number and insurance information. One of our team members will be in touch shortly to help you out.",
+];
+
+interface Annotation {
+  icon: React.ReactNode;
+  label: string;
+  detail: string;
+  color: string;
+  triggerIndex: number;
+}
+
+const ANNOTATIONS: Annotation[] = [
+  { icon: <User className="h-3.5 w-3.5" />,        label: "Name Captured",        detail: "Sarah",                  color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", triggerIndex: 0 },
+  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",           triggerIndex: 0 },
+  { icon: <Phone className="h-3.5 w-3.5" />,        label: "Phone Collected",       detail: "555-123-4567",           color: "bg-amber-500/10 text-amber-600 border-amber-500/20",         triggerIndex: 1 },
+  { icon: <Shield className="h-3.5 w-3.5" />,       label: "Insurance Verified",    detail: "BCBS · Employer",        color: "bg-purple-500/10 text-purple-600 border-purple-500/20",      triggerIndex: 1 },
 ];
 
 const DemoInsurance = () => {
   const [mode, setMode] = useState<'demo' | 'interactive'>('demo');
   const [widgetKey, setWidgetKey] = useState(0);
+  const [visibleAnnotations, setVisibleAnnotations] = useState<number[]>([]);
+
+  const handleScriptMessageSent = useCallback((index: number) => {
+    const toReveal = ANNOTATIONS
+      .map((a, i) => ({ ...a, i }))
+      .filter(a => a.triggerIndex === index)
+      .map(a => a.i);
+    if (toReveal.length) {
+      setVisibleAnnotations(prev => [...new Set([...prev, ...toReveal])]);
+    }
+  }, []);
 
   const handleStartOwnChat = () => {
     setMode('interactive');
     setWidgetKey(prev => prev + 1);
+    setVisibleAnnotations([]);
   };
 
   return (
@@ -77,8 +99,11 @@ const DemoInsurance = () => {
               <div
                 key={i}
                 className={cn(
-                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium",
-                  a.color
+                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium transition-all duration-500",
+                  a.color,
+                  visibleAnnotations.includes(i)
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-4 pointer-events-none"
                 )}
               >
                 {a.icon}
@@ -88,11 +113,14 @@ const DemoInsurance = () => {
                 </div>
               </div>
             ))}
-            <div className="mt-2">
-              <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
-                ✓ Full lead captured in under 2 min
-              </Badge>
-            </div>
+
+            {mode === 'demo' && visibleAnnotations.length === ANNOTATIONS.length && (
+              <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
+                  ✓ Full lead captured in under 2 min
+                </Badge>
+              </div>
+            )}
           </div>
 
           {/* Center: Widget */}
@@ -104,10 +132,14 @@ const DemoInsurance = () => {
                 isPreview={true}
                 autoOpen={true}
                 fillContainer={true}
+                greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
                 agentName="Emily"
                 agentAvatar={agentAvatar}
-                hardcodedMessages={mode === 'demo' ? HARDCODED_CONVERSATION : undefined}
+                autoPlayScript={mode === 'demo' ? DEMO_SCRIPT : undefined}
+                scriptedAgentReplies={mode === 'demo' ? SCRIPTED_AGENT_REPLIES : undefined}
+                autoPlaySpeed={2.5}
                 demoOverlay={mode === 'demo'}
+                onScriptMessageSent={mode === 'demo' ? handleScriptMessageSent : undefined}
                 onStartOwnChat={handleStartOwnChat}
               />
             </div>
