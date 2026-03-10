@@ -39,6 +39,7 @@ const useGlobalErrorHandlers = () => {
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Test from "./pages/Test";
 
 // Lazy loaded pages (code splitting)
 const WidgetPreview = lazy(() => import("./pages/WidgetPreview"));
@@ -125,6 +126,7 @@ const AppRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/test" element={<Test />} />
         <Route path="/lp" element={<Funnel />} />
         <Route path="/meet-samantha" element={<MeetSamantha />} />
         <Route path="/demo" element={<Demo />} />
