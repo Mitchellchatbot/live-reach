@@ -60,6 +60,7 @@ const DocPage = lazy(() => import("./pages/docs/DocPage"));
 const WidgetEmbed = lazy(() => import("./pages/WidgetEmbed"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Demo = lazy(() => import("./pages/Demo"));
+const DemoInsurance = lazy(() => import("./pages/DemoInsurance"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Properties = lazy(() => import("./pages/Properties"));
 const HipaaCompliance = lazy(() => import("./pages/HipaaCompliance"));
@@ -127,6 +128,7 @@ const AppRoutes = () => {
         <Route path="/lp" element={<Funnel />} />
         <Route path="/meet-samantha" element={<MeetSamantha />} />
         <Route path="/demo" element={<Demo />} />
+        <Route path="/demo/insurance" element={<DemoInsurance />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
