@@ -1,50 +1,29 @@
 
 
-## Plan: Create `/marketing` Static Results Page
 
-Create a new page at `/marketing` that presents the Care Assist statistics script as a visually compelling, static marketing page using the same design elements from the homepage (floating orbs, grid overlay, mouse-follow glow).
+## Chat System Audit Cleanup — COMPLETED ✅
 
-### Layout
+All audit items implemented:
 
-```text
-┌──────────────────────────────────────┐
-│  [Background: orbs + grid + glow]    │
-│                                      │
-│  "On average, centers using          │
-│   Care-Assist see:"                  │
-│                                      │
-│  ┌────────┐ ┌────────┐ ┌────────┐   │
-│  │  3x    │ │  47%   │ │  35%   │   │
-│  │captured│ │lower   │ │lift in │   │
-│  │ leads  │ │cost/   │ │qual.   │   │
-│  │        │ │lead    │ │inquir. │   │
-│  └────────┘ └────────┘ └────────┘   │
-│                                      │
-│  "Not because they bought more       │
-│   traffic."                          │
-│  "Because they stopped leaking it."  │
-│                                      │
-│  [Care Assist logo at top]           │
-└──────────────────────────────────────┘
-```
+### 1. ✅ Dead code removed
+Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
 
-### What to build
+### 2. ✅ Lock bug fixed
+Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
 
-**1. Create `src/pages/Marketing.tsx`**
-- Full-screen layout with the same background layers as `/test` and homepage: floating orbs, 4rem grid, mouse-follow glow
-- Care Assist favicon logo at top
-- Intro line: "On average, centers using Care-Assist see:"
-- Three stat cards in a row: "Up to 3x", "Up to 47%", "Up to 35%" with descriptions beneath each
-- Cards styled with glass/frosted effect, subtle border, staggered fade-in animation
-- Closing lines: "Not because they bought more traffic." / "Because they stopped leaking it." — styled as bold, impactful text
-- Responsive: cards stack vertically on mobile
+### 3. ✅ Shared helpers extracted
+Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
 
-**2. Register route in `src/App.tsx`**
-- Add `/marketing` route (lazy loaded)
+### 4. ✅ Proactive timer stale closure fixed
+`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
 
-### File changes
-| File | Change |
-|------|--------|
-| `src/pages/Marketing.tsx` | New file |
-| `src/App.tsx` | Add lazy import + `/marketing` route |
+### 5. ✅ Dashboard fetch optimized
+`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
 
+### 6. ✅ Realtime channels consolidated
+Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
+
+### 7. ✅ Verbose logging removed
+Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
+
+### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
