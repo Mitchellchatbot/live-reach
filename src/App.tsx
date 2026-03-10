@@ -69,6 +69,7 @@ const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const Funnel = lazy(() => import("./pages/Funnel"));
 const MeetSamantha = lazy(() => import("./pages/MeetSamantha"));
 const Marketing = lazy(() => import("./pages/Marketing"));
+const Marketing2 = lazy(() => import("./pages/Marketing2"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
