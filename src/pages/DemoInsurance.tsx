@@ -77,11 +77,8 @@ const DemoInsurance = () => {
               <div
                 key={i}
                 className={cn(
-                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium transition-all duration-500",
-                  a.color,
-                  visibleAnnotations.includes(i)
-                    ? "opacity-100 translate-x-0"
-                    : "opacity-0 -translate-x-4 pointer-events-none"
+                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium",
+                  a.color
                 )}
               >
                 {a.icon}
@@ -91,14 +88,11 @@ const DemoInsurance = () => {
                 </div>
               </div>
             ))}
-
-            {mode === 'demo' && visibleAnnotations.length === ANNOTATIONS.length && (
-              <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
-                  ✓ Full lead captured in under 2 min
-                </Badge>
-              </div>
-            )}
+            <div className="mt-2">
+              <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
+                ✓ Full lead captured in under 2 min
+              </Badge>
+            </div>
           </div>
 
           {/* Center: Widget */}
@@ -110,14 +104,10 @@ const DemoInsurance = () => {
                 isPreview={true}
                 autoOpen={true}
                 fillContainer={true}
-                greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
                 agentName="Emily"
                 agentAvatar={agentAvatar}
-                autoPlayScript={mode === 'demo' ? DEMO_SCRIPT : undefined}
-                autoPlaySpeed={2.5}
+                hardcodedMessages={mode === 'demo' ? HARDCODED_CONVERSATION : undefined}
                 demoOverlay={mode === 'demo'}
-                closingAgentMessage={mode === 'demo' ? "Got it, one of our team members will give you a call shortly. Youre in good hands." : undefined}
-                onScriptMessageSent={mode === 'demo' ? handleScriptMessageSent : undefined}
                 onStartOwnChat={handleStartOwnChat}
               />
             </div>
