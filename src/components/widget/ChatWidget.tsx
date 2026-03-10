@@ -670,7 +670,7 @@ export const ChatWidget = ({
                   </div>
                 ))}
 
-                {messages.map((msg, index) => {
+                {!hardcodedMessages && messages.map((msg, index) => {
                   // For agent messages, use per-message agent info or fall back to current
                   const msgAgentName = msg.agent_name || displayName;
                   const msgAgentAvatar = msg.agent_avatar || displayAvatar;
