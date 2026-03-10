@@ -254,7 +254,8 @@ export const ChatWidget = ({
         // Brief pause then send
         await sleep(s(300));
         if (cancelled) return;
-        sendMessage(text);
+        // If this is the last message and we have a closing message, skip the real AI reply
+        sendMessage(text, isLastMessage && !!closingAgentMessage ? { skipAiReply: true } : undefined);
         const sentIndex = autoPlayIndexRef.current;
         autoPlayIndexRef.current++;
         onScriptMessageSent?.(sentIndex);

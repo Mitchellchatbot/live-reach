@@ -1076,7 +1076,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
   };
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, opts?: { skipAiReply?: boolean }) => {
     // Clear proactive timer when user sends a message
     if (proactiveTimerRef.current) {
       clearTimeout(proactiveTimerRef.current);
@@ -1175,6 +1175,9 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
       }
       return;
     }
+
+    // Skip AI response if caller explicitly requested it (e.g. demo closing message)
+    if (opts?.skipAiReply) return;
 
     // Build conversation history for AI (proactive messages are transient UI only)
     const conversationHistory = messages
