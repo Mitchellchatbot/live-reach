@@ -741,7 +741,7 @@ export const ChatWidget = ({
                   );
                 })}
 
-                {isTyping && (
+                {!hardcodedMessages && isTyping && (
                   <div className="flex gap-3 items-end animate-fade-in">
                     <div 
                       className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
