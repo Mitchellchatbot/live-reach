@@ -29,6 +29,8 @@ interface ChatWidgetProps {
   onStartOwnChat?: () => void;
   /** Speed multiplier for autoplay: 1 = normal, 2 = 2x faster, etc. */
   autoPlaySpeed?: number;
+  /** When true, the widget panel fills its parent container (100% width/height) */
+  fillContainer?: boolean;
 }
 
 export const ChatWidget = ({
