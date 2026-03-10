@@ -155,7 +155,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     : allProperties;
 
   // Background stale cleanup — runs every 60s instead of blocking every fetch
-  const staleCleanupRef = useRef<NodeJS.Timeout | null>(null);
+  const staleCleanupRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!user) return;
     const runCleanup = async () => {
