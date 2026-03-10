@@ -31,6 +31,8 @@ interface ChatWidgetProps {
   autoPlaySpeed?: number;
   /** When true, the widget panel fills its parent container (100% width/height) */
   fillContainer?: boolean;
+  /** A closing agent message to inject locally after the autoplay script ends */
+  closingAgentMessage?: string;
 }
 
 export const ChatWidget = ({
