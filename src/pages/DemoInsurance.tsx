@@ -10,7 +10,7 @@ import agentAvatar from '@/assets/personas/care-assist-agent.jpg';
 
 const DEMO_SCRIPT = [
   "Hi, my name is Sarah",
-  "For my brother. He's been struggling with alcohol and we're not sure where to start",
+  "For my son. He's been struggling with alcohol and we're not sure where to start",
   "555-123-4567",
   "He has Blue Cross Blue Shield through his employer",
 ];
