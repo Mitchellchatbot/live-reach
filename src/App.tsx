@@ -68,6 +68,7 @@ const HipaaCompliance = lazy(() => import("./pages/HipaaCompliance"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const Funnel = lazy(() => import("./pages/Funnel"));
 const MeetSamantha = lazy(() => import("./pages/MeetSamantha"));
+const Marketing = lazy(() => import("./pages/Marketing"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
