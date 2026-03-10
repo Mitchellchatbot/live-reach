@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import careAssistLogo from "@/assets/care-assist-logo.png";
-import favicon from "@/public/favicon.png";
+import favicon from "/favicon.png";
 
 const Test = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
