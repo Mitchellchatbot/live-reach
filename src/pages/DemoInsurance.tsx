@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChatWidget } from '@/components/widget/ChatWidget';
 import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
+import agentAvatar from '@/assets/personas/care-assist-agent.jpg';
 
 const DEMO_SCRIPT = [
   "Hi, my name is Sarah",
