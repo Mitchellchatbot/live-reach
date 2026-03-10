@@ -126,6 +126,7 @@ const AppRoutes = () => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/test" element={<Test />} />
         <Route path="/lp" element={<Funnel />} />
         <Route path="/meet-samantha" element={<MeetSamantha />} />
         <Route path="/demo" element={<Demo />} />
