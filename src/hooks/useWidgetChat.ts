@@ -1076,7 +1076,7 @@ export const useWidgetChat = ({ propertyId, greeting, isPreview = false }: Widge
     }
   };
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, opts?: { skipAiReply?: boolean }) => {
     // Clear proactive timer when user sends a message
     if (proactiveTimerRef.current) {
       clearTimeout(proactiveTimerRef.current);
