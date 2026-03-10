@@ -84,10 +84,6 @@ const Marketing2 = () => {
         </div>
       </div>
 
-      {/* Bottom-right accent line */}
-      <div className="pointer-events-none absolute bottom-8 right-8 hidden md:block">
-        <div className="w-24 h-[2px] bg-gradient-to-r from-primary/40 to-transparent rounded-full" />
-      </div>
     </div>
   );
 };
