@@ -233,7 +233,9 @@ export const ChatWidget = ({
         await sleep(s(300));
         if (cancelled) return;
         sendMessage(text);
+        const sentIndex = autoPlayIndexRef.current;
         autoPlayIndexRef.current++;
+        onScriptMessageSent?.(sentIndex);
 
         // After the last script message, inject the closing agent message locally
         if (isLastMessage) {
