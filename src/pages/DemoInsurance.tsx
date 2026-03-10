@@ -141,6 +141,7 @@ const DemoInsurance = () => {
                 autoPlayScript={mode === 'demo' ? DEMO_SCRIPT : undefined}
                 autoPlaySpeed={2.5}
                 demoOverlay={mode === 'demo'}
+                closingAgentMessage={mode === 'demo' ? "Got it, one of our team members will give you a call shortly. Youre in good hands." : undefined}
                 onStartOwnChat={handleStartOwnChat}
               />
             </div>
