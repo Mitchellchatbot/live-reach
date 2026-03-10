@@ -19,7 +19,7 @@ const Marketing2 = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+    <div className="relative h-screen flex items-center overflow-hidden bg-background">
       {/* Floating orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px] animate-float" />
@@ -30,6 +30,11 @@ const Marketing2 = () => {
         <div
           className="absolute top-1/3 right-1/4 h-[300px] w-[300px] rounded-full bg-primary/5 blur-[100px] animate-float"
           style={{ animationDelay: "2s" }}
+        />
+        {/* Extra orb bottom-left */}
+        <div
+          className="absolute bottom-1/4 left-1/6 h-[250px] w-[250px] rounded-full bg-primary/8 blur-[90px] animate-float"
+          style={{ animationDelay: "3s" }}
         />
       </div>
 
@@ -57,25 +62,48 @@ const Marketing2 = () => {
         }}
       />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-10 max-w-3xl px-6 md:px-12 py-20">
+      {/* Decorative right-side element */}
+      <div className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 opacity-[0.12]">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="h-1 rounded-full bg-primary"
+            style={{ width: `${120 - i * 16}px`, marginLeft: `${i * 8}px` }}
+          />
+        ))}
+      </div>
+
+      {/* Decorative dots top-right */}
+      <div className="pointer-events-none absolute top-12 right-16 hidden lg:grid grid-cols-4 gap-3 opacity-[0.1]">
+        {[...Array(12)].map((_, i) => (
+          <div key={i} className="w-2 h-2 rounded-full bg-primary" />
+        ))}
+      </div>
+
+      {/* Content — left-aligned */}
+      <div className="relative z-10 flex flex-col gap-6 max-w-2xl pl-12 md:pl-20 lg:pl-28 pr-6">
         {/* Logo */}
-        <img src="/favicon.png" alt="Care Assist" className="h-16 md:h-20 animate-fade-in" />
+        <img src="/favicon.png" alt="Care Assist" className="h-12 md:h-16 self-start animate-fade-in" />
 
         {/* Offer points */}
-        <div className="flex flex-col gap-6 w-full stagger-children">
+        <div className="flex flex-col gap-4 w-full stagger-children">
           {points.map((point, i) => (
             <div
               key={i}
-              className="glass rounded-2xl p-6 md:p-8 flex flex-col gap-1 card-interactive text-center"
+              className="glass rounded-xl px-6 py-4 md:px-8 md:py-5 flex flex-col gap-0.5 card-interactive text-left"
             >
-              <span className="text-xl md:text-2xl font-bold text-foreground">{point.highlight}</span>
+              <span className="text-lg md:text-xl font-bold text-foreground">{point.highlight}</span>
               {point.detail && (
-                <span className="text-base md:text-lg text-muted-foreground">{point.detail}</span>
+                <span className="text-sm md:text-base text-muted-foreground">{point.detail}</span>
               )}
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Bottom-right accent line */}
+      <div className="pointer-events-none absolute bottom-8 right-8 hidden md:block">
+        <div className="w-24 h-[2px] bg-gradient-to-r from-primary/40 to-transparent rounded-full" />
       </div>
     </div>
   );
