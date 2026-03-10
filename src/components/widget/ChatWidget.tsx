@@ -42,6 +42,8 @@ interface ChatWidgetProps {
   onScriptMessageSent?: (index: number) => void;
   /** Fully hardcoded conversation — bypasses AI/autoplay entirely and renders static messages */
   hardcodedMessages?: HardcodedMessage[];
+  /** Hardcoded agent replies injected locally (with typing sim) instead of calling the AI, one per visitor message */
+  scriptedAgentReplies?: string[];
 }
 
 export const ChatWidget = ({
