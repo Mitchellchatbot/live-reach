@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import careAssistIcon from "@/assets/care-assist-icon.png";
+import careAssistLogo from "@/assets/care-assist-logo.png";
 
 const Test = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
