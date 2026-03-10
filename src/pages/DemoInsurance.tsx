@@ -1,55 +1,35 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, User, Phone, Shield, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChatWidget } from '@/components/widget/ChatWidget';
+import { ChatWidget, HardcodedMessage } from '@/components/widget/ChatWidget';
 import { cn } from '@/lib/utils';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
 import agentAvatar from '@/assets/personas/care-assist-agent.jpg';
 
-const DEMO_SCRIPT = [
-  "Hi, my name is Sarah",
-  "For my son. He's been struggling with alcohol and we're not sure where to start",
-  "555-123-4567",
-  "He has Blue Cross Blue Shield through his employer",
+const HARDCODED_CONVERSATION: HardcodedMessage[] = [
+  { type: 'agent',   text: "Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?" },
+  { type: 'visitor', text: "Hey! My name is Sarah, I need help for my son, he has been struggling from Alcohol addiction." },
+  { type: 'agent',   text: "I am glad you reached out, could you please provide best number to reach at and insurance provider?" },
+  { type: 'visitor', text: "Yes please... 555-123-4567 and he has insurance through his employer Blue Cross Blue Shield." },
+  { type: 'agent',   text: "Thanks, got your number and insurance information. One of our team members will be in touch shortly to help you out." },
 ];
 
-interface Annotation {
-  icon: React.ReactNode;
-  label: string;
-  detail: string;
-  color: string;
-  /** Which script message index (0-based) triggers this annotation */
-  triggerIndex: number;
-}
-
-const ANNOTATIONS: Annotation[] = [
-  { icon: <User className="h-3.5 w-3.5" />, label: "Name Captured",        detail: "Sarah",                  color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", triggerIndex: 0 },
-  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20",    triggerIndex: 1 },
-  { icon: <Phone className="h-3.5 w-3.5" />,  label: "Phone Collected",     detail: "555-123-4567",            color: "bg-amber-500/10 text-amber-600 border-amber-500/20",   triggerIndex: 2 },
-  { icon: <Shield className="h-3.5 w-3.5" />, label: "Insurance Verified",  detail: "BCBS · Employer",        color: "bg-purple-500/10 text-purple-600 border-purple-500/20", triggerIndex: 3 },
+const ANNOTATIONS = [
+  { icon: <User className="h-3.5 w-3.5" />,        label: "Name Captured",        detail: "Sarah",                  color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
+  { icon: <CheckCircle2 className="h-3.5 w-3.5" />, label: "Situation Identified", detail: "Alcohol · Family member", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  { icon: <Phone className="h-3.5 w-3.5" />,        label: "Phone Collected",       detail: "555-123-4567",           color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+  { icon: <Shield className="h-3.5 w-3.5" />,       label: "Insurance Verified",    detail: "BCBS · Employer",        color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
 ];
 
 const DemoInsurance = () => {
   const [mode, setMode] = useState<'demo' | 'interactive'>('demo');
   const [widgetKey, setWidgetKey] = useState(0);
-  const [visibleAnnotations, setVisibleAnnotations] = useState<number[]>([]);
-
-  const handleScriptMessageSent = useCallback((index: number) => {
-    // Reveal the annotation whose triggerIndex matches the sent message index
-    const annotationIndex = ANNOTATIONS.findIndex(a => a.triggerIndex === index);
-    if (annotationIndex !== -1) {
-      setVisibleAnnotations(prev =>
-        prev.includes(annotationIndex) ? prev : [...prev, annotationIndex]
-      );
-    }
-  }, []);
 
   const handleStartOwnChat = () => {
     setMode('interactive');
     setWidgetKey(prev => prev + 1);
-    setVisibleAnnotations([]);
   };
 
   return (
