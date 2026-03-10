@@ -329,7 +329,14 @@ export const ChatWidget = ({
 
   // In preview mode, still respect widgetSize so demo/mobile can render a truly smaller widget.
   // On mobile (non-preview), fill the entire iframe which is already sized to the screen
-  const previewPanelStyle: React.CSSProperties = isPreview
+  const previewPanelStyle: React.CSSProperties = fillContainer
+    ? {
+        width: '100%',
+        height: '100%',
+        borderRadius: panelRadius,
+        border: `1px solid ${borderColor}`,
+      }
+    : isPreview
     ? {
         width: `min(${currentSize.width}px, 92vw)`,
         height: `min(${currentSize.height}px, 78vh)`,
