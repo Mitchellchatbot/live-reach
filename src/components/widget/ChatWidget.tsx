@@ -150,10 +150,7 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    const container = messagesContainerRef.current;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -161,7 +158,7 @@ export const ChatWidget = ({
       scrollToBottom();
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [isOpen, messages]);
+  }, [isOpen, messages, isTyping]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
