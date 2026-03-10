@@ -156,16 +156,21 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    // Always defer so the DOM has fully painted before we measure scrollHeight
+    // Primary: scroll the container directly (works when flex-1 has bounded height)
+    // Fallback: scrollIntoView with block:nearest to avoid page-level scroll
     const doScroll = () => {
       const container = messagesContainerRef.current;
       if (container) {
         container.scrollTop = container.scrollHeight;
       }
+      const end = messagesEndRef.current;
+      if (end) {
+        end.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
     };
     setTimeout(doScroll, 0);
-    setTimeout(doScroll, 80);
-    setTimeout(doScroll, 200);
+    setTimeout(doScroll, 100);
+    setTimeout(doScroll, 300);
   };
 
   useEffect(() => {
