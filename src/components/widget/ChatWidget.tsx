@@ -211,6 +211,7 @@ export const ChatWidget = ({
 
       while (autoPlayIndexRef.current < autoPlayScript.length && !cancelled) {
         const text = autoPlayScript[autoPlayIndexRef.current];
+        const isLastMessage = autoPlayIndexRef.current === autoPlayScript.length - 1;
 
         // Show visitor typing bubble for a natural duration
         await sleep(s(1000));
@@ -225,6 +226,9 @@ export const ChatWidget = ({
         if (cancelled) return;
         sendMessage(text);
         autoPlayIndexRef.current++;
+
+        // Don't wait for AI after the last script message — end the demo here
+        if (isLastMessage) break;
 
         // Wait for AI to fully finish responding
         await waitForAiDone();
