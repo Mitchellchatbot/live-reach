@@ -31,6 +31,8 @@ interface ChatWidgetProps {
   autoPlaySpeed?: number;
   /** When true, the widget panel fills its parent container (100% width/height) */
   fillContainer?: boolean;
+  /** A closing agent message to inject locally after the autoplay script ends */
+  closingAgentMessage?: string;
 }
 
 export const ChatWidget = ({
@@ -54,6 +56,7 @@ export const ChatWidget = ({
   onStartOwnChat,
   autoPlaySpeed = 1,
   fillContainer = false,
+  closingAgentMessage,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
@@ -177,6 +180,8 @@ export const ChatWidget = ({
   const autoPlayIndexRef = useRef(0);
   const autoPlayActiveRef = useRef(false);
   const [visitorTyping, setVisitorTyping] = useState(false);
+  const [closingMessage, setClosingMessage] = useState<{ text: string; time: Date } | null>(null);
+  const [agentClosingTyping, setAgentClosingTyping] = useState(false);
 
   useEffect(() => {
     if (!autoPlayScript || autoPlayScript.length === 0 || !isOpen) return;
@@ -227,8 +232,19 @@ export const ChatWidget = ({
         sendMessage(text);
         autoPlayIndexRef.current++;
 
-        // Don't wait for AI after the last script message — end the demo here
-        if (isLastMessage) break;
+        // After the last script message, inject the closing agent message locally
+        if (isLastMessage) {
+          if (closingAgentMessage) {
+            await sleep(s(1200));
+            if (cancelled) return;
+            setAgentClosingTyping(true);
+            await sleep(s(1000 + closingAgentMessage.length * 25));
+            if (cancelled) return;
+            setAgentClosingTyping(false);
+            setClosingMessage({ text: closingAgentMessage, time: new Date() });
+          }
+          break;
+        }
 
         // Wait for AI to fully finish responding
         await waitForAiDone();
@@ -243,6 +259,7 @@ export const ChatWidget = ({
       cancelled = true;
       autoPlayActiveRef.current = false;
       setVisitorTyping(false);
+      setAgentClosingTyping(false);
     };
   }, [autoPlayScript, isOpen]);
 
@@ -644,6 +661,61 @@ export const ChatWidget = ({
                 })}
 
                 {isTyping && (
+                  <div className="flex gap-3 items-end animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        <div className="flex gap-1.5">
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Closing agent message injected locally after autoplay ends */}
+                {closingMessage && (
+                  <div className="flex gap-3 items-end animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30 text-sm text-foreground max-w-[240px]"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        {closingMessage.text}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
+                        {format(closingMessage.time, 'h:mm a')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Agent closing typing indicator */}
+                {agentClosingTyping && (
                   <div className="flex gap-3 items-end animate-fade-in">
                     <div 
                       className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
