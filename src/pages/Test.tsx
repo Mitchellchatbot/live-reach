@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import careAssistLogo from "@/assets/care-assist-logo.png";
+import favicon from "@/public/favicon.png";
 
 const Test = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -49,8 +50,7 @@ const Test = () => {
           height: 600,
           left: mousePos.x - 300,
           top: mousePos.y - 300,
-          background:
-            "radial-gradient(circle, hsl(var(--primary) / 0.06) 0%, transparent 70%)",
+          background: "radial-gradient(circle, hsl(var(--primary) / 0.06) 0%, transparent 70%)",
           filter: "blur(40px)",
           transition: "left 0.3s ease-out, top 0.3s ease-out",
         }}
@@ -58,18 +58,11 @@ const Test = () => {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-start gap-6 max-w-3xl px-6 md:px-12 animate-fade-in">
-        <img
-          src={careAssistLogo}
-          alt="Care Assist"
-          className="h-14 md:h-16"
-        />
+        <img src={favicon} alt="Care Assist" className="h-14 md:h-16" />
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-          What if you could increase qualified leads by{" "}
-          <span className="text-primary">35%</span>?
+          What if you could increase qualified leads by <span className="text-primary">35%</span>?
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground">
-          Without increasing ad spend or hiring more staff.
-        </p>
+        <p className="text-lg md:text-xl text-muted-foreground">Without increasing ad spend or hiring more staff.</p>
       </div>
     </div>
   );
