@@ -823,7 +823,7 @@ export const ChatWidget = ({
                   </div>
                 )}
 
-                {visitorTyping && (
+                {!hardcodedMessages && visitorTyping && (
                   <div className="flex gap-3 items-end justify-end animate-fade-in">
                     <div className="flex flex-col items-end">
                       <div 
