@@ -259,6 +259,7 @@ export const ChatWidget = ({
       cancelled = true;
       autoPlayActiveRef.current = false;
       setVisitorTyping(false);
+      setAgentClosingTyping(false);
     };
   }, [autoPlayScript, isOpen]);
 
