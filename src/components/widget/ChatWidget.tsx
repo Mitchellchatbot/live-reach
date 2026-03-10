@@ -156,16 +156,16 @@ export const ChatWidget = ({
 
 
   const scrollToBottom = () => {
-    // Use two-pass scroll: immediate + deferred to catch both layout and paint
+    // Always defer so the DOM has fully painted before we measure scrollHeight
     const doScroll = () => {
       const container = messagesContainerRef.current;
       if (container) {
         container.scrollTop = container.scrollHeight;
       }
     };
-    doScroll();
-    setTimeout(doScroll, 50);
-    setTimeout(doScroll, 150);
+    setTimeout(doScroll, 0);
+    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 200);
   };
 
   useEffect(() => {
@@ -194,12 +194,14 @@ export const ChatWidget = ({
   const [closingMessage, setClosingMessage] = useState<{ text: string; time: Date } | null>(null);
   const [agentClosingTyping, setAgentClosingTyping] = useState(false);
 
-  // Scroll to bottom whenever any chat content changes
+  // Scroll to bottom whenever any chat content changes (always after paint)
   useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-    }
-  }, [isOpen, messages, isTyping, visitorTyping, agentClosingTyping, closingMessage]);
+    scrollToBottom();
+  }, [messages, isTyping, visitorTyping, agentClosingTyping, closingMessage]);
+
+  useEffect(() => {
+    if (isOpen) scrollToBottom();
+  }, [isOpen]);
 
   useEffect(() => {
     if (!autoPlayScript || autoPlayScript.length === 0 || !isOpen) return;
