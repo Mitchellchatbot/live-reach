@@ -127,17 +127,19 @@ const DemoInsurance = () => {
           </div>
 
           {/* Center: Widget */}
-          <div className="relative order-1 lg:order-2 w-full max-w-[400px] mx-auto">
-            <div className="bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden p-3" style={{ minHeight: 520 }}>
+          <div className="relative order-1 lg:order-2 w-full max-w-[480px] mx-auto">
+            <div className="bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden p-3" style={{ minHeight: 580 }}>
               <ChatWidget
                 key={widgetKey}
                 propertyId="demo"
                 isPreview={true}
                 autoOpen={true}
-                widgetSize="small"
+                widgetSize="large"
                 greeting="Hi there! 👋 I'm so glad you reached out. Before we get started, can I get your first name?"
                 agentName="Care Assist"
+                agentAvatar={agentAvatar}
                 autoPlayScript={mode === 'demo' ? DEMO_SCRIPT : undefined}
+                autoPlaySpeed={2.5}
                 demoOverlay={mode === 'demo'}
                 onStartOwnChat={handleStartOwnChat}
               />
