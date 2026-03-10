@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import careAssistIcon from "@/assets/care-assist-icon.png";
+import careAssistLogo from "@/assets/care-assist-logo.png";
 
 const Test = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -59,9 +59,9 @@ const Test = () => {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-start gap-6 max-w-3xl px-6 md:px-12 animate-fade-in">
         <img
-          src={careAssistIcon}
+          src={careAssistLogo}
           alt="Care Assist"
-          className="h-14 w-14 md:h-16 md:w-16 rounded-xl shadow-md"
+          className="h-14 md:h-16"
         />
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
           What if you could increase qualified leads by{" "}
