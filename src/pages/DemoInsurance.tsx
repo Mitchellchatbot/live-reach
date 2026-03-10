@@ -118,9 +118,9 @@ const DemoInsurance = () => {
 
             {mode === 'demo' && visibleAnnotations.length === ANNOTATIONS.length && (
               <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <Badge className="bg-emerald-500 text-white border-0 text-xs px-3 py-1">
-                  ✓ Full lead captured in under 2 min
-                </Badge>
+              <Badge className="bg-primary text-primary-foreground border-0 text-xs px-3 py-1">
+                ✓ Full lead captured in under 2 min
+              </Badge>
               </div>
             )}
           </div>
