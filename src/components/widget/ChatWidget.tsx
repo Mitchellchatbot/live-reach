@@ -5,6 +5,11 @@ import { format } from 'date-fns';
 import { useWidgetChat } from '@/hooks/useWidgetChat';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface HardcodedMessage {
+  type: 'agent' | 'visitor';
+  text: string;
+}
+
 interface ChatWidgetProps {
   propertyId?: string;
   primaryColor?: string;
@@ -35,6 +40,8 @@ interface ChatWidgetProps {
   closingAgentMessage?: string;
   /** Fired with the 0-based index each time an autoplay script message is sent */
   onScriptMessageSent?: (index: number) => void;
+  /** Fully hardcoded conversation — bypasses AI/autoplay entirely and renders static messages */
+  hardcodedMessages?: HardcodedMessage[];
 }
 
 export const ChatWidget = ({
