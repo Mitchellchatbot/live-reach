@@ -59,6 +59,7 @@ export const ChatWidget = ({
   autoPlaySpeed = 1,
   fillContainer = false,
   closingAgentMessage,
+  onScriptMessageSent,
 }: ChatWidgetProps) => {
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
