@@ -793,6 +793,33 @@ export const ChatWidget = ({
                   </div>
                 )}
 
+                {/* Local scripted agent replies (mid-conversation) */}
+                {localAgentMessages.map((lm, i) => (
+                  <div key={`local-agent-${i}`} className="flex gap-3 items-end animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30 text-xs text-foreground"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        {lm.text}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/60 mt-1 px-1">
+                        {format(lm.time, 'h:mm a')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
                 {/* Closing agent message injected locally after autoplay ends */}
                 {closingMessage && (
                   <div className="flex gap-3 items-end animate-fade-in">
