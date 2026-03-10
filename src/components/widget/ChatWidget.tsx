@@ -203,23 +203,25 @@ export const ChatWidget = ({
       });
     };
 
+    const s = (ms: number) => ms / autoPlaySpeed; // speed-adjusted delay
+
     const runScript = async () => {
       // Wait for greeting to appear
-      await sleep(2000);
+      await sleep(s(2000));
 
       while (autoPlayIndexRef.current < autoPlayScript.length && !cancelled) {
         const text = autoPlayScript[autoPlayIndexRef.current];
 
         // Show visitor typing bubble for a natural duration
-        await sleep(1000);
+        await sleep(s(1000));
         if (cancelled) return;
         setVisitorTyping(true);
-        await sleep(1200 + text.length * 30); // longer text = longer typing
+        await sleep(s(1200 + text.length * 30)); // longer text = longer typing
         if (cancelled) return;
         setVisitorTyping(false);
 
         // Brief pause then send
-        await sleep(300);
+        await sleep(s(300));
         if (cancelled) return;
         sendMessage(text);
         autoPlayIndexRef.current++;
@@ -227,7 +229,7 @@ export const ChatWidget = ({
         // Wait for AI to fully finish responding
         await waitForAiDone();
         if (cancelled) return;
-        await sleep(800);
+        await sleep(s(800));
       }
     };
 
