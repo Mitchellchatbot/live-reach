@@ -772,6 +772,31 @@ export const ChatWidget = ({
                 })()}
 
                 {!hardcodedMessages && isTyping && (
+                  <div className="flex gap-3 items-end animate-fade-in">
+                    <div 
+                      className="h-9 w-9 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden"
+                      style={{ background: displayAvatar ? 'transparent' : 'var(--widget-primary)', borderRadius: buttonRadius }}
+                    >
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div 
+                        className="bg-card px-4 py-3 shadow-sm border border-border/30"
+                        style={{ borderRadius: `${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusLarge} ${messageRadiusSmall}` }}
+                      >
+                        <div className="flex gap-1.5">
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-2 w-2 bg-muted-foreground/40 rounded-full animate-typing-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Closing agent message injected locally after autoplay ends */}
                 {closingMessage && (
