@@ -1,37 +1,29 @@
 
 
-# README Rewrite Plan
 
-## Project Overview
-This is **Care Assist** (also branded as Scaled Bot) - an AI-powered customer support platform specifically built for behavioral health and treatment centers. The application helps facilities capture leads 24/7 through an intelligent chat widget, with features tailored for healthcare compliance.
+## Chat System Audit Cleanup — COMPLETED ✅
 
-## Key Features to Highlight
-1. **AI Chat Widget** - Embeddable chat that captures leads naturally
-2. **Crisis Detection** - Real-time keyword monitoring with SAMHSA helpline integration
-3. **HIPAA Compliance** - Built-in audit logs, data retention, session timeouts
-4. **Human Handoff** - Seamless escalation to live agents with full context
-5. **Integrations** - Salesforce, Slack, Google Calendar, Gmail
-6. **Analytics** - Lead conversion tracking and ROI dashboard
+All audit items implemented:
 
-## Tech Stack Section
-- React 18 + TypeScript
-- Vite build system
-- Tailwind CSS + shadcn/ui components
-- Supabase (backend/auth/database)
-- TanStack Query for data fetching
-- React Router for navigation
+### 1. ✅ Dead code removed
+Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
 
-## Structure
-1. Project name + one-liner
-2. Key features list
-3. Screenshots placeholder (optional)
-4. Tech stack badges
-5. Getting started instructions
-6. Environment variables reference
-7. Scripts reference
-8. Project structure overview
-9. License
+### 2. ✅ Lock bug fixed
+Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
 
-## Tone
-Professional, clean, developer-friendly. No Lovable references. Focus on the actual product and its healthcare-focused mission.
+### 3. ✅ Shared helpers extracted
+Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
 
+### 4. ✅ Proactive timer stale closure fixed
+`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
+
+### 5. ✅ Dashboard fetch optimized
+`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
+
+### 6. ✅ Realtime channels consolidated
+Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
+
+### 7. ✅ Verbose logging removed
+Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
+
+### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.

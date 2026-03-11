@@ -1,73 +1,120 @@
-# Welcome to your Lovable project
+# Care Assist
 
-## Project info
+**AI-powered live chat & lead capture platform built for behavioral health and treatment centers.**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Care Assist helps addiction treatment facilities convert more website visitors into admissions through an intelligent chat widget that captures leads 24/7 — with built-in HIPAA compliance, crisis detection, and seamless human handoff.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- **AI Chat Widget** — Embeddable, white-labeled chat that captures visitor info naturally through conversation
+- **Crisis Detection** — Real-time keyword monitoring with automatic SAMHSA helpline integration
+- **HIPAA Compliance** — PHI audit logs, configurable data retention, session timeouts, and 2FA
+- **Human Handoff** — Seamless escalation from AI to live agents with full conversation context
+- **Multi-Property Support** — Manage multiple treatment centers from a single dashboard
+- **Integrations** — Salesforce CRM export, Slack notifications, Google Calendar, Gmail
+- **Analytics** — Lead conversion tracking, page analytics, and ROI reporting
+- **Proactive Messaging** — Configurable auto-greetings and engagement triggers
+- **Natural Lead Capture** — AI extracts name, phone, email, and insurance info mid-conversation
+- **Geo-Filtering** — Restrict or customize responses based on visitor location
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠 Tech Stack
 
-**Use your preferred IDE**
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite |
+| Styling | Tailwind CSS, shadcn/ui |
+| Backend | Supabase (Auth, Database, Edge Functions, Storage) |
+| Data Fetching | TanStack Query |
+| Routing | React Router v6 |
+| Animations | GSAP, Framer Motion |
+| Forms | React Hook Form + Zod |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Getting Started
 
-Follow these steps:
+### Prerequisites
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+- [Node.js](https://nodejs.org/) v18+
+- npm or bun
+
+### Installation
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd care-assist
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 📦 Scripts
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run build:dev` | Development build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 🔐 Environment Variables
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Create a `.env` file in the project root:
 
-## How can I deploy this project?
+```env
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-key>
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 📁 Project Structure
 
-Yes, you can!
+```
+src/
+├── assets/          # Images, logos, personas
+├── components/
+│   ├── admin/       # Admin dashboard components
+│   ├── agent/       # Agent-facing components
+│   ├── auth/        # Authentication (2FA, login)
+│   ├── dashboard/   # Main dashboard UI
+│   ├── docs/        # Documentation viewer
+│   ├── landing/     # Marketing & sales pages
+│   ├── pricing/     # Pricing section
+│   ├── settings/    # Settings panels (Slack, Salesforce, HIPAA, etc.)
+│   ├── sidebar/     # Navigation sidebar
+│   ├── ui/          # shadcn/ui primitives
+│   ├── video/       # Video call components
+│   └── widget/      # Embeddable chat widget
+├── data/            # Mock data & constants
+├── hooks/           # Custom React hooks
+├── integrations/    # Supabase client & types
+├── pages/           # Route pages
+├── types/           # TypeScript type definitions
+└── utils/           # Utility functions
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+supabase/
+├── functions/       # Edge Functions (AI chat, notifications, OAuth, etc.)
+└── migrations/      # Database migrations
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## 📄 License
+
+Proprietary. All rights reserved.
