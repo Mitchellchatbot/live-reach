@@ -161,34 +161,29 @@ const Funnel = () => {
       </section>
 
       {/* ═══════════════ STATS ═══════════════ */}
-      <section className="relative px-4 py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
-        {/* Decorative elements */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 w-[400px] h-[400px] rounded-full bg-white/5 blur-[100px]" />
+      <section className="px-4 py-10 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative rounded-3xl bg-primary text-primary-foreground px-6 py-8 md:px-10 md:py-10 overflow-hidden shadow-xl shadow-primary/20">
+            {/* Decorative glass circles */}
+            <div className="pointer-events-none absolute -top-16 -right-16 w-[200px] h-[200px] rounded-full bg-white/[0.07] blur-[2px]" />
+            <div className="pointer-events-none absolute -bottom-12 -left-12 w-[160px] h-[160px] rounded-full bg-white/[0.05] blur-[2px]" />
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-white/[0.03] blur-[60px]" />
 
-        <h2 className="text-center text-2xl md:text-4xl font-black mb-4 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
-          Real Results. Real Impact.
-        </h2>
-        <p className="text-center text-sm md:text-base opacity-70 mb-12 max-w-lg mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.05s' }}>
-          Treatment centers using Care Assist see measurable ROI from day one.
-        </p>
-
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label}
-              className="relative text-center group reveal opacity-0 translate-y-6 transition-all duration-700"
-              style={{ transitionDelay: `${i * 0.1}s` }}
-            >
-              <div className="absolute inset-0 rounded-2xl bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative py-6 px-3">
-                <p className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-3" style={{ textShadow: '0 2px 20px rgba(255,255,255,0.2)' }}>
-                  {stat.value}
-                </p>
-                <p className="text-sm md:text-base opacity-80 font-medium leading-snug">{stat.label}</p>
-              </div>
+            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {stats.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="text-center group reveal opacity-0 translate-y-4 transition-all duration-700"
+                  style={{ transitionDelay: `${i * 0.08}s` }}
+                >
+                  <p className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-1.5 group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 2px 15px rgba(255,255,255,0.15)' }}>
+                    {stat.value}
+                  </p>
+                  <p className="text-xs md:text-sm opacity-75 font-medium leading-snug">{stat.label}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
