@@ -55,7 +55,7 @@ const Funnel = () => {
   const handleCTA = () => navigate('/auth');
 
   return (
-    <div className="min-h-screen bg-primary text-primary-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ─── HERO ─── */}
       <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden bg-background text-primary">
         {/* Decorative lighter circles */}
