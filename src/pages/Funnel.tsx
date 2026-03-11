@@ -80,7 +80,14 @@ const Funnel = () => {
   const scrollRef = useScrollReveal();
 
   const [showCalendly, setShowCalendly] = useState(false);
+  const [showStickyFooter, setShowStickyFooter] = useState(false);
   const handleCTA = () => navigate('/auth');
+
+  useEffect(() => {
+    const onScroll = () => setShowStickyFooter(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div ref={scrollRef} className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
