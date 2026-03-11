@@ -147,15 +147,9 @@ const Funnel = () => {
           </p>
 
           {/* VSL Vimeo Embed */}
-          <div className="relative max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            {/* Animated outer glow */}
-            <div className="absolute -inset-4 rounded-[2rem] bg-primary/50 blur-2xl animate-[pulse_3s_ease-in-out_infinite]" />
-            <div className="absolute -inset-2 rounded-[1.5rem] bg-primary/30 blur-lg" />
-            {/* Solid orange ring */}
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-primary via-primary to-orange-500" />
-            {/* Main container with enhanced shadow */}
-            <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_80px_-10px_hsl(var(--primary)/0.6)] border-[6px] border-primary bg-primary">
-              <div className="aspect-video bg-foreground">
+          <div className="relative max-w-md mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+            <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 border-primary/30 bg-background p-1">
+              <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
                   src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1"
                   className="w-full h-full"
