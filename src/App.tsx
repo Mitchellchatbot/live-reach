@@ -130,7 +130,8 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/lp" element={<Funnel />} />
+        <Route path="/start" element={<Funnel />} />
+        <Route path="/lp" element={<Navigate to="/start" replace />} />
         <Route path="/meet-samantha" element={<MeetSamantha />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/demo/insurance" element={<DemoInsurance />} />
