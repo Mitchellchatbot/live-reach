@@ -141,6 +141,7 @@ const AppRoutes = () => {
         <Route path="/marketing2" element={<Marketing2 />} />
         <Route path="/marketing3" element={<Marketing3 />} />
         <Route path="/book-demo" element={<BookDemo />} />
+        <Route path="/get-started" element={<GetStarted />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
