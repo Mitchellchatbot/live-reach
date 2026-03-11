@@ -4,10 +4,29 @@ import { Check } from 'lucide-react';
 
 const BookDemo = () => {
   useEffect(() => {
-    // Fire Facebook Pixel Lead event via script tag
+    // Fire Facebook Pixel Lead event
+    const leadScript = document.createElement('script');
+    leadScript.innerHTML = `fbq('track', 'Lead');`;
+    document.head.appendChild(leadScript);
+
+    // Meta Pixel Code
     const fbScript = document.createElement('script');
-    fbScript.innerHTML = `fbq('track', 'Lead');`;
+    fbScript.innerHTML = `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '34129783716666250');
+fbq('track', 'PageView');`;
     document.head.appendChild(fbScript);
+
+    // Add noscript fallback
+    const noscriptEl = document.createElement('noscript');
+    noscriptEl.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=34129783716666250&ev=PageView&noscript=1" />';
+    document.body.appendChild(noscriptEl);
 
     // Load LeadConnector embed script
     const script = document.createElement('script');
@@ -17,7 +36,9 @@ const BookDemo = () => {
     document.body.appendChild(script);
 
     return () => {
+      document.head.removeChild(leadScript);
       document.head.removeChild(fbScript);
+      document.body.removeChild(noscriptEl);
       document.body.removeChild(script);
     };
   }, []);
