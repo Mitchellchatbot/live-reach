@@ -92,6 +92,17 @@ const Funnel = () => {
         <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[100px]" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
+          {/* Social proof badge */}
+          <div className="inline-flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5 mb-6 animate-fade-in" style={{ animationDelay: '0.05s', animationFillMode: 'both' }}>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
+              ))}
+            </div>
+            <span className="text-xs font-semibold text-foreground">5.0</span>
+            <span className="text-xs text-muted-foreground">from 40+ treatment centers</span>
+          </div>
+
           {/* Lead-in text with stagger */}
           <p className="text-base md:text-xl italic font-light text-muted-foreground mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
             You're Already Paying For Traffic.
@@ -184,32 +195,6 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ═══════════════ SOCIAL PROOF ═══════════════ */}
-      <section className="px-4 py-14 md:py-20 bg-background">
-        <div className="max-w-3xl mx-auto text-center reveal opacity-0 transition-all duration-700">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex -space-x-3">
-              {avatars.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt="Customer"
-                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-background object-cover shadow-lg"
-                />
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-7 h-7 md:w-8 md:h-8 fill-primary text-primary drop-shadow-sm" />
-              ))}
-            </div>
-            <div>
-              <p className="text-xl md:text-2xl font-extrabold text-foreground">Rated 5.0</p>
-              <p className="text-muted-foreground font-medium mt-0.5">by 40+ treatment centers across the country</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════ BENEFITS ═══════════════ */}
       <section className="px-4 py-16 md:py-24 bg-background">
