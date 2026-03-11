@@ -79,6 +79,7 @@ const Funnel = () => {
   const navigate = useNavigate();
   const scrollRef = useScrollReveal();
 
+  const [showCalendly, setShowCalendly] = useState(false);
   const handleCTA = () => navigate('/auth');
 
   return (
