@@ -340,7 +340,7 @@ const Funnel = () => {
             Start For Free
           </Button>
           <Button
-            onClick={() => window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank')}
+            onClick={() => setShowCalendly(true)}
             variant="outline"
             className="flex-1 border-primary/30 text-primary hover:bg-accent rounded-xl py-3 text-sm font-bold"
           >
@@ -348,6 +348,26 @@ const Funnel = () => {
           </Button>
         </div>
       </div>
+
+      {/* ═══════════════ CALENDLY MODAL ═══════════════ */}
+      {showCalendly && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowCalendly(false)}>
+          <div className="relative w-full max-w-lg mx-4 bg-card rounded-2xl overflow-hidden shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <p className="font-semibold text-foreground">Book a Demo</p>
+              <button onClick={() => setShowCalendly(false)} className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <iframe
+              src="https://calendly.com/care-assist-support/support-call-clone"
+              className="w-full border-0"
+              style={{ height: 'min(600px, 70vh)' }}
+              title="Book a Demo"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
