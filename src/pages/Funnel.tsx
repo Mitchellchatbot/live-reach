@@ -7,6 +7,7 @@ import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
 import { SalesChatBotInline } from '@/components/landing/SalesChatBotInline';
 import { SalesChatBot } from '@/components/landing/SalesChatBot';
+import PerformanceDashboardSection from '@/components/landing/PerformanceDashboardSection';
 import careAssistLogo from '@/assets/care-assist-logo.png';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
@@ -293,6 +294,9 @@ const Funnel = () => {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════ PERFORMANCE DASHBOARD ═══════════════ */}
+      <PerformanceDashboardSection />
 
       {/* ═══════════════ FINAL CTA WITH SALES CHAT ═══════════════ */}
       <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden bg-background">
