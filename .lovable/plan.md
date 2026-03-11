@@ -1,43 +1,29 @@
 
 
-## Replace Lovable AI Gateway with OpenAI GPT-4o
 
-### Summary
-Replace all 6 edge functions that currently use the Lovable AI Gateway (`ai.gateway.lovable.dev`) with direct OpenAI API calls using `gpt-4o`.
+## Chat System Audit Cleanup — COMPLETED ✅
 
-### Prerequisites
-- Add an `OPENAI_API_KEY` secret to the project (will prompt you to enter it)
+All audit items implemented:
 
-### Functions to Update
+### 1. ✅ Dead code removed
+Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
 
-| Function | Current Model | Change |
-|---|---|---|
-| `chat-ai` | gemini-2.5-flash | → `gpt-4o` via OpenAI API |
-| `sales-chat` | gemini-2.5-flash-lite | → `gpt-4o` via OpenAI API |
-| `generate-demo-script` | gemini-3-flash-preview | → `gpt-4o` via OpenAI API |
-| `generate-greeting` | gemini-2.5-flash | → `gpt-4o` via OpenAI API |
-| `extract-visitor-info` | gemini-2.5-flash | → `gpt-4o` via OpenAI API |
-| `salesforce-export-leads` | gemini-2.5-flash | → `gpt-4o` via OpenAI API |
+### 2. ✅ Lock bug fixed
+Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
 
-### Changes Per Function
-For each function, the edit is mechanical:
+### 3. ✅ Shared helpers extracted
+Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
 
-1. **Replace the API URL**:
-   - From: `https://ai.gateway.lovable.dev/v1/chat/completions`
-   - To: `https://api.openai.com/v1/chat/completions`
+### 4. ✅ Proactive timer stale closure fixed
+`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
 
-2. **Replace the API key**:
-   - From: `Deno.env.get('LOVABLE_API_KEY')`
-   - To: `Deno.env.get('OPENAI_API_KEY')`
+### 5. ✅ Dashboard fetch optimized
+`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
 
-3. **Replace the model name**:
-   - From: `google/gemini-*` variants
-   - To: `gpt-4o`
+### 6. ✅ Realtime channels consolidated
+Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
 
-4. **Authorization header stays the same format**: `Bearer ${key}`
+### 7. ✅ Verbose logging removed
+Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
 
-The OpenAI API is compatible with the same request/response format already used, so no structural changes to request bodies, tool calling, or response parsing are needed.
-
-### No Frontend Changes
-All AI calls go through edge functions — no client-side code changes required.
-
+### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
