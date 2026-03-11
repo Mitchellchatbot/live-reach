@@ -174,22 +174,18 @@ const Funnel = () => {
       {/* ═══════════════ STATS ═══════════════ */}
       <section className="px-4 py-8 bg-background">
         <div className="max-w-md md:max-w-4xl mx-auto">
-          <div className="relative rounded-3xl bg-gradient-to-br from-primary to-primary/85 text-primary-foreground p-5 md:px-10 md:py-8 overflow-hidden shadow-2xl shadow-primary/25">
-            {/* Decorative elements */}
-            <div className="pointer-events-none absolute -top-20 -right-20 w-[250px] h-[250px] rounded-full bg-white/[0.08]" />
-            <div className="pointer-events-none absolute -bottom-16 -left-16 w-[200px] h-[200px] rounded-full bg-white/[0.06]" />
-
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          <div className="relative rounded-3xl bg-primary text-primary-foreground p-4 md:px-10 md:py-8 overflow-hidden shadow-2xl shadow-primary/25">
+            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
               {stats.map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="text-center rounded-2xl bg-white/[0.08] backdrop-blur-sm py-4 px-2 reveal opacity-0 translate-y-4 transition-all duration-700 hover:bg-white/[0.14] hover:scale-[1.03]"
+                  className="text-center rounded-2xl bg-white/20 border border-white/15 py-5 px-3 reveal opacity-0 translate-y-4 transition-all duration-700 hover:bg-white/25 hover:scale-[1.03]"
                   style={{ transitionDelay: `${i * 0.08}s` }}
                 >
-                  <p className="text-3xl md:text-5xl font-black tracking-tighter leading-none mb-1" style={{ textShadow: '0 2px 12px rgba(255,255,255,0.2)' }}>
+                  <p className="text-3xl md:text-5xl font-black tracking-tighter leading-none mb-1.5 drop-shadow-md">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] md:text-sm opacity-80 font-medium leading-snug">{stat.label}</p>
+                  <p className="text-[11px] md:text-sm font-medium leading-snug text-white/90">{stat.label}</p>
                 </div>
               ))}
             </div>
