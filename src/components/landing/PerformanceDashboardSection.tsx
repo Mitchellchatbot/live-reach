@@ -76,7 +76,7 @@ const PerformanceDashboardSection = () => (
           {bigStats.map((s, i) => (
             <div key={s.label} className="flex items-start gap-6">
               <div className="text-center flex-1">
-                <p className="text-3xl md:text-4xl font-black text-primary leading-none mb-1">{s.value}</p>
+                <p className="text-3xl md:text-4xl font-black tracking-tighter text-primary leading-none mb-1">{s.value}</p>
                 <p className="text-[11px] text-muted-foreground leading-snug">{s.label}</p>
               </div>
               {i < bigStats.length - 1 && (
