@@ -82,7 +82,7 @@ const Funnel = () => {
   const handleCTA = () => navigate('/auth');
 
   return (
-    <div ref={scrollRef} className="min-h-screen bg-background text-foreground">
+    <div ref={scrollRef} className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
 
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="relative px-4 pt-12 pb-10 md:pt-20 md:pb-14 overflow-hidden bg-background">
@@ -326,6 +326,25 @@ const Funnel = () => {
 
       {/* Floating sales chat widget */}
       <SalesChatBot />
+
+      {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
+      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden">
+        <div className="bg-card/95 backdrop-blur-lg border-t border-border/50 px-4 py-3 flex gap-2.5">
+          <Button
+            onClick={handleCTA}
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 text-sm font-bold shadow-md shadow-primary/20"
+          >
+            Start For Free
+          </Button>
+          <Button
+            onClick={() => window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank')}
+            variant="outline"
+            className="flex-1 border-primary/30 text-primary hover:bg-accent rounded-xl py-3 text-sm font-bold"
+          >
+            Book a Demo
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
