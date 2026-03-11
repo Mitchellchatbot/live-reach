@@ -120,25 +120,24 @@ const Funnel = () => {
           </p>
 
           {/* Main headline — dramatic */}
-          <h1
-            className="animate-fade-in"
-            style={{
-              fontSize: 'clamp(3.2rem, 12vw, 8rem)',
-              fontWeight: 900,
-              lineHeight: 0.88,
-              letterSpacing: '-0.04em',
-              textTransform: 'uppercase',
-              marginBottom: '1.5rem',
-              animationDelay: '0.4s',
-              animationFillMode: 'both',
-              background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))',
-            }}
-          >
-            Never Miss<br />Another Lead
-          </h1>
+          <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both', filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))' }}>
+            <h1
+              style={{
+                fontSize: 'clamp(3.2rem, 12vw, 8rem)',
+                fontWeight: 900,
+                lineHeight: 0.88,
+                letterSpacing: '-0.04em',
+                textTransform: 'uppercase' as const,
+                marginBottom: '1.5rem',
+                background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Never Miss<br />Another Lead
+            </h1>
+          </div>
 
           {/* Sub-headline */}
           <p className="text-lg md:text-2xl mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
