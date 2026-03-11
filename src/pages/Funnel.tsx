@@ -237,8 +237,6 @@ const Funnel = () => {
               </div>
             ))}
           </div>
-            ))}
-          </div>
         </div>
       </section>
 
