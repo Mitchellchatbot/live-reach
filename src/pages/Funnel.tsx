@@ -92,6 +92,17 @@ const Funnel = () => {
         <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[100px]" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
+          {/* Social proof badge */}
+          <div className="inline-flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5 mb-6 animate-fade-in" style={{ animationDelay: '0.05s', animationFillMode: 'both' }}>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
+              ))}
+            </div>
+            <span className="text-xs font-semibold text-foreground">5.0</span>
+            <span className="text-xs text-muted-foreground">from 40+ treatment centers</span>
+          </div>
+
           {/* Lead-in text with stagger */}
           <p className="text-base md:text-xl italic font-light text-muted-foreground mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
             You're Already Paying For Traffic.
