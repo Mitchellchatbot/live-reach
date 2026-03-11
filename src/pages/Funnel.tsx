@@ -94,7 +94,7 @@ const Funnel = () => {
     <div ref={scrollRef} className="min-h-screen bg-background text-foreground pb-20 md:pb-0">
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative px-4 pt-12 pb-10 md:pt-20 md:pb-14 overflow-hidden bg-background">
+      <section className="relative px-4 pt-6 pb-6 md:pt-20 md:pb-14 overflow-hidden bg-background">
         {/* Ambient background blobs */}
         <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
         <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
@@ -102,7 +102,7 @@ const Funnel = () => {
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Social proof badge */}
-          <div className="inline-flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5 mb-6 animate-fade-in" style={{ animationDelay: '0.05s', animationFillMode: 'both' }}>
+          <div className="inline-flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5 mb-3 md:mb-6 animate-fade-in" style={{ animationDelay: '0.05s', animationFillMode: 'both' }}>
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-3.5 h-3.5 fill-primary text-primary" />
@@ -113,10 +113,10 @@ const Funnel = () => {
           </div>
 
           {/* Lead-in text with stagger */}
-          <p className="text-base md:text-xl italic font-light text-muted-foreground mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+          <p className="text-sm md:text-xl italic font-light text-muted-foreground mb-0.5 md:mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
             You're Already Paying For Traffic.
           </p>
-          <p className="text-base md:text-xl italic font-light text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '0.25s', animationFillMode: 'both' }}>
+          <p className="text-sm md:text-xl italic font-light text-muted-foreground mb-4 md:mb-8 animate-fade-in" style={{ animationDelay: '0.25s', animationFillMode: 'both' }}>
             SEO. Google Ads. Referrals.
           </p>
 
@@ -124,12 +124,12 @@ const Funnel = () => {
           <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both', filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))' }}>
             <h1
               style={{
-                fontSize: 'clamp(3.2rem, 12vw, 8rem)',
+                fontSize: 'clamp(2.6rem, 12vw, 8rem)',
                 fontWeight: 900,
                 lineHeight: 0.88,
                 letterSpacing: '-0.04em',
                 textTransform: 'uppercase' as const,
-                marginBottom: '1.5rem',
+                marginBottom: '1rem',
                 background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -141,13 +141,33 @@ const Funnel = () => {
           </div>
 
           {/* Sub-headline */}
-          <p className="text-lg md:text-2xl mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
+          <p className="text-base md:text-2xl mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
             <span className="font-extrabold text-foreground">Care Assist</span>{' '}
             <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
-          {/* VSL Vimeo Embed */}
-          <div className="relative max-w-md mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+          {/* CTA Button — visible on mobile load */}
+          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
+            <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
+            <Button
+              onClick={handleCTA}
+              size="lg"
+              className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-lg md:text-2xl px-10 py-6 md:px-14 md:py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold tracking-wide"
+            >
+              Start For Free
+            </Button>
+          </div>
+
+          <div className="flex flex-col items-center gap-1.5 mt-4 md:mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+            <p className="text-xs md:text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
+            <div className="flex items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" /> No credit card</span>
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" /> Cancel anytime</span>
+            </div>
+          </div>
+
+          {/* VSL Vimeo Embed — below CTA on mobile */}
+          <div className="relative max-w-md mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
             <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 border-primary/30 bg-background p-1">
               <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
@@ -157,26 +177,6 @@ const Funnel = () => {
                   title="Care Assist — Watch How It Works"
                 />
               </div>
-            </div>
-          </div>
-
-          {/* CTA Button — pulsing glow */}
-          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
-            <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
-            <Button
-              onClick={handleCTA}
-              size="lg"
-              className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-xl md:text-2xl px-14 py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold tracking-wide"
-            >
-              Start For Free
-            </Button>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
-            <p className="text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
-            <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
-              <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> Cancel anytime</span>
             </div>
           </div>
 
