@@ -1,29 +1,43 @@
 
 
+# Add "Performance Dashboard" Section to /lp
 
-## Chat System Audit Cleanup — COMPLETED ✅
+## Placement
+Insert a new section between the Testimonials section (line 295) and the Final CTA section (line 297).
 
-All audit items implemented:
+## Structure
+A full-width section with `bg-[#FAF8F6]` (warm light background) containing a two-column grid (`md:grid-cols-2`) at `max-w-6xl`:
 
-### 1. ✅ Dead code removed
-Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
+### Left Column
+1. Orange uppercase label: `CARE-ASSIST — AI CHAT WIDGET`
+2. Large headline (3 lines): "HIPAA Compliant." / "35% More Leads." / "27% Faster Learning." — with "27% Faster" in `text-primary` and "Learning." in black
+3. Body paragraph about cleaner conversion signals
+4. Four pill badges in a 2x2 grid with orange dot indicators
+5. Thin divider line
+6. Three large orange stats in a row: 35%, 27%, <4s with labels beneath
 
-### 2. ✅ Lock bug fixed
-Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
+### Right Column — Dark Card (`bg-[#1A1614]`, `rounded-3xl`)
+1. Orange uppercase label: `LIVE PERFORMANCE DASHBOARD`
+2. Fake chat widget preview:
+   - Orange header bar with "CA" avatar circle + "Care Assist / Here to help"
+   - Dark bot message bubble: "Are you looking for help for yourself or a loved one?"
+   - Orange user message bubble: "My son. He needs treatment."
+   - Animated typing indicator (3 bouncing orange dots via CSS keyframes)
+3. Divider, then three metric rows:
+   - "Leads Captured" → "+35%" with green "↑ This month"
+   - "Google Ad Learning" → "27% faster" with orange "↑ Cleaner signals"
+   - "Cost Per Lead" → "$42.10" with green "↓ 47%"
+4. Three mini stat cards in a row (dark bg, orange text): 3x, 24/7, <4s
+5. Green HIPAA strip at bottom with lock icon
 
-### 3. ✅ Shared helpers extracted
-Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
+## Technical Details
+- All content is static/decorative — no data fetching needed
+- Typing dots animation: CSS `@keyframes bounce` with staggered `animation-delay`
+- Add keyframes inline via `style` JSX or a small `<style>` block
+- Uses existing `reveal` class for scroll-triggered fade-in
+- Responsive: stacks to single column on mobile
+- Colors: primary orange `#F47920` (already `hsl(var(--primary))`), dark card `#1A1614`, green accents `#22C55E`
 
-### 4. ✅ Proactive timer stale closure fixed
-`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
+## Files Changed
+- `src/pages/Funnel.tsx` — add new section (~120 lines of JSX)
 
-### 5. ✅ Dashboard fetch optimized
-`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
-
-### 6. ✅ Realtime channels consolidated
-Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
-
-### 7. ✅ Verbose logging removed
-Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
-
-### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
