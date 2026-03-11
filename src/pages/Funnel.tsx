@@ -341,7 +341,7 @@ const Funnel = () => {
       <SalesChatBot />
 
       {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
-      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden">
+      <div className={`fixed bottom-0 inset-x-0 z-40 md:hidden transition-transform duration-300 ${showStickyFooter ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="bg-card/95 backdrop-blur-lg border-t border-border/50 px-4 py-3 flex gap-2.5">
           <Button
             onClick={handleCTA}
