@@ -184,32 +184,6 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ═══════════════ SOCIAL PROOF ═══════════════ */}
-      <section className="px-4 py-14 md:py-20 bg-background">
-        <div className="max-w-3xl mx-auto text-center reveal opacity-0 transition-all duration-700">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex -space-x-3">
-              {avatars.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt="Customer"
-                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-background object-cover shadow-lg"
-                />
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-7 h-7 md:w-8 md:h-8 fill-primary text-primary drop-shadow-sm" />
-              ))}
-            </div>
-            <div>
-              <p className="text-xl md:text-2xl font-extrabold text-foreground">Rated 5.0</p>
-              <p className="text-muted-foreground font-medium mt-0.5">by 40+ treatment centers across the country</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════ BENEFITS ═══════════════ */}
       <section className="px-4 py-16 md:py-24 bg-background">
