@@ -148,9 +148,10 @@ const Funnel = () => {
 
           {/* VSL Vimeo Embed */}
           <div className="relative max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-b from-primary/20 via-primary/10 to-transparent blur-xl" />
-            <div className="relative rounded-2xl overflow-hidden shadow-[0_0_60px_-12px_hsl(var(--primary)/0.3)] border-2 border-primary/20 bg-background p-1">
-              <div className="aspect-video rounded-xl overflow-hidden">
+            <div className="absolute -inset-3 rounded-[2rem] bg-primary/40 blur-2xl" />
+            <div className="absolute -inset-1 rounded-2xl bg-primary ring-4 ring-primary/60" />
+            <div className="relative rounded-2xl overflow-hidden shadow-[0_0_80px_-8px_hsl(var(--primary)/0.5)] border-4 border-primary bg-background">
+              <div className="aspect-video">
                 <iframe
                   src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1"
                   className="w-full h-full"
