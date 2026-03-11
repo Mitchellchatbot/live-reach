@@ -45,10 +45,10 @@ const benefits = [
 ];
 
 const stats = [
-  { value: '3x', label: 'More admissions from the same ad spend' },
-  { value: '<3s', label: 'Average visitor response time' },
-  { value: '47%', label: 'Lower cost per qualified lead' },
-  { value: '24/7', label: 'Coverage — no staffing needed' },
+  { value: '+47%', label: 'More Leads Captured', icon: BarChart3 },
+  { value: '<4s', label: 'Avg Response Time', icon: Clock },
+  { value: '24/7', label: 'Always Available', icon: Zap },
+  { value: '100+', label: 'Treatment Centers', icon: Heart },
 ];
 
 /* ── Scroll-triggered fade-in observer ── */
