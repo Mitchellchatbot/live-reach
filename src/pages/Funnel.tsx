@@ -89,12 +89,12 @@ const Funnel = () => {
           <p className="text-xs opacity-70 mb-8">↑ This is what your visitors will experience</p>
 
           {/* VSL Video Section */}
-          <div className="relative aspect-video bg-black/20 rounded-2xl border-2 border-white/20 overflow-hidden flex items-center justify-center mb-8 backdrop-blur-sm max-w-2xl mx-auto">
+          <div className="relative aspect-video bg-primary/5 rounded-2xl border-2 border-primary/20 overflow-hidden flex items-center justify-center mb-8 max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 hover:bg-white/30 transition-colors cursor-pointer">
-                <div className="w-0 h-0 border-l-[20px] border-l-white border-y-[14px] border-y-transparent ml-1.5" />
+              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3 hover:bg-primary/25 transition-colors cursor-pointer">
+                <div className="w-0 h-0 border-l-[20px] border-l-primary border-y-[14px] border-y-transparent ml-1.5" />
               </div>
-              <p className="text-white/60 text-sm">Watch how it works</p>
+              <p className="text-muted-foreground text-sm">Watch how it works</p>
             </div>
           </div>
 
