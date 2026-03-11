@@ -169,25 +169,24 @@ const Funnel = () => {
       </section>
 
       {/* ═══════════════ STATS ═══════════════ */}
-      <section className="px-4 py-10 bg-background">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative rounded-3xl bg-primary text-primary-foreground px-6 py-8 md:px-10 md:py-10 overflow-hidden shadow-xl shadow-primary/20">
-            {/* Decorative glass circles */}
-            <div className="pointer-events-none absolute -top-16 -right-16 w-[200px] h-[200px] rounded-full bg-white/[0.07] blur-[2px]" />
-            <div className="pointer-events-none absolute -bottom-12 -left-12 w-[160px] h-[160px] rounded-full bg-white/[0.05] blur-[2px]" />
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-white/[0.03] blur-[60px]" />
+      <section className="px-4 py-8 bg-background">
+        <div className="max-w-md md:max-w-4xl mx-auto">
+          <div className="relative rounded-3xl bg-gradient-to-br from-primary to-primary/85 text-primary-foreground p-5 md:px-10 md:py-8 overflow-hidden shadow-2xl shadow-primary/25">
+            {/* Decorative elements */}
+            <div className="pointer-events-none absolute -top-20 -right-20 w-[250px] h-[250px] rounded-full bg-white/[0.08]" />
+            <div className="pointer-events-none absolute -bottom-16 -left-16 w-[200px] h-[200px] rounded-full bg-white/[0.06]" />
 
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               {stats.map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="text-center group reveal opacity-0 translate-y-4 transition-all duration-700"
+                  className="text-center rounded-2xl bg-white/[0.08] backdrop-blur-sm py-4 px-2 reveal opacity-0 translate-y-4 transition-all duration-700 hover:bg-white/[0.14] hover:scale-[1.03]"
                   style={{ transitionDelay: `${i * 0.08}s` }}
                 >
-                  <p className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-1.5 group-hover:scale-105 transition-transform duration-300" style={{ textShadow: '0 2px 15px rgba(255,255,255,0.15)' }}>
+                  <p className="text-3xl md:text-5xl font-black tracking-tighter leading-none mb-1" style={{ textShadow: '0 2px 12px rgba(255,255,255,0.2)' }}>
                     {stat.value}
                   </p>
-                  <p className="text-xs md:text-sm opacity-75 font-medium leading-snug">{stat.label}</p>
+                  <p className="text-[11px] md:text-sm opacity-80 font-medium leading-snug">{stat.label}</p>
                 </div>
               ))}
             </div>
