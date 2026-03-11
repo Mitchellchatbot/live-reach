@@ -4,10 +4,10 @@ import { Check } from 'lucide-react';
 
 const BookDemo = () => {
   useEffect(() => {
-    // Fire Facebook Pixel Lead event
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Lead');
-    }
+    // Fire Facebook Pixel Lead event via script tag
+    const fbScript = document.createElement('script');
+    fbScript.innerHTML = `fbq('track', 'Lead');`;
+    document.head.appendChild(fbScript);
 
     // Load LeadConnector embed script
     const script = document.createElement('script');
@@ -17,6 +17,7 @@ const BookDemo = () => {
     document.body.appendChild(script);
 
     return () => {
+      document.head.removeChild(fbScript);
       document.body.removeChild(script);
     };
   }, []);
