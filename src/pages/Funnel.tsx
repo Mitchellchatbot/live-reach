@@ -147,10 +147,10 @@ const Funnel = () => {
           </p>
 
           {/* VSL Vimeo Embed */}
-          <div className="relative max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-primary/15 border border-border">
+          <div className="relative max-w-xl mx-auto mb-10 animate-fade-in bg-primary/10 rounded-2xl p-1" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-primary/15 border border-border bg-background">
               <iframe
-                src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479"
+                src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1"
                 className="w-full h-full"
                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                 title="Care Assist — Watch How It Works"
