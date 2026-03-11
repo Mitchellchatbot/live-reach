@@ -27,7 +27,6 @@ const miniStats = [
 
 const PerformanceDashboardSection = () => (
   <section className="px-4 py-16 md:py-24 bg-[#FAF8F6]">
-    {/* Bounce keyframes for typing dots */}
     <style>{`
       @keyframes typingBounce {
         0%, 60%, 100% { transform: translateY(0); }
@@ -84,50 +83,44 @@ const PerformanceDashboardSection = () => (
         </div>
       </div>
 
-      {/* ── RIGHT COLUMN — Dark Card ── */}
+      {/* ── RIGHT COLUMN — Light Card ── */}
       <div className="reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: "0.15s" }}>
-        <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: "#1A1614" }}>
+        <div className="rounded-3xl overflow-hidden bg-card border border-border/60 shadow-xl shadow-primary/5">
           {/* Label */}
           <div className="px-5 pt-5 pb-3">
             <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-primary">Performance Statistics</p>
           </div>
 
           {/* Chat preview */}
-          <div className="mx-4 rounded-xl overflow-hidden border border-white/10">
+          <div className="mx-4 rounded-xl overflow-hidden border border-border">
             {/* Chat header */}
             <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-primary">
-              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white">
+              <div className="w-7 h-7 rounded-full bg-primary-foreground/20 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
                 CA
               </div>
               <div>
-                <p className="text-xs font-bold text-white leading-tight">Care Assist</p>
-                <p className="text-[10px] text-white/70 leading-tight">Here to help</p>
+                <p className="text-xs font-bold text-primary-foreground leading-tight">Care Assist</p>
+                <p className="text-[10px] text-primary-foreground/70 leading-tight">Here to help</p>
               </div>
             </div>
 
             {/* Chat body */}
-            <div className="p-3 space-y-2.5" style={{ backgroundColor: "#222" }}>
+            <div className="p-3 space-y-2.5 bg-muted/40">
               {/* Bot message */}
               <div className="max-w-[85%]">
-                <div
-                  className="rounded-xl rounded-tl-sm px-3 py-2 text-xs text-white/90"
-                  style={{ backgroundColor: "#333" }}
-                >
+                <div className="rounded-xl rounded-tl-sm px-3 py-2 text-xs text-foreground bg-background border border-border/60">
                   Are you looking for help for yourself or a loved one?
                 </div>
               </div>
               {/* User message */}
               <div className="max-w-[75%] ml-auto">
-                <div className="rounded-xl rounded-tr-sm px-3 py-2 text-xs text-white font-medium bg-primary">
+                <div className="rounded-xl rounded-tr-sm px-3 py-2 text-xs text-primary-foreground font-medium bg-primary">
                   My son. He needs treatment.
                 </div>
               </div>
               {/* Typing indicator */}
               <div className="max-w-[85%]">
-                <div
-                  className="inline-flex gap-1 items-center rounded-xl rounded-tl-sm px-3.5 py-2.5"
-                  style={{ backgroundColor: "#333" }}
-                >
+                <div className="inline-flex gap-1 items-center rounded-xl rounded-tl-sm px-3.5 py-2.5 bg-background border border-border/60">
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
@@ -144,16 +137,12 @@ const PerformanceDashboardSection = () => (
           </div>
 
           {/* Metrics */}
-          <div className="mx-4 mt-4 rounded-xl border border-white/10 divide-y divide-white/10 overflow-hidden">
+          <div className="mx-4 mt-4 rounded-xl border border-border divide-y divide-border overflow-hidden">
             {metrics.map((m) => (
-              <div
-                key={m.label}
-                className="flex items-center justify-between px-4 py-2.5"
-                style={{ backgroundColor: "#222" }}
-              >
-                <span className="text-xs text-white/60">{m.label}</span>
+              <div key={m.label} className="flex items-center justify-between px-4 py-2.5 bg-background">
+                <span className="text-xs text-muted-foreground">{m.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white">{m.value}</span>
+                  <span className="text-xs font-bold text-foreground">{m.value}</span>
                   <span className={`text-[10px] font-semibold ${m.changeColor}`}>{m.change}</span>
                 </div>
               </div>
@@ -163,20 +152,17 @@ const PerformanceDashboardSection = () => (
           {/* Mini stat cards */}
           <div className="grid grid-cols-3 gap-2 mx-4 mt-3">
             {miniStats.map((s) => (
-              <div key={s.label} className="rounded-lg px-3 py-2.5 text-center" style={{ backgroundColor: "#222" }}>
+              <div key={s.label} className="rounded-lg px-3 py-2.5 text-center bg-muted/50 border border-border/40">
                 <p className="text-lg font-black text-primary leading-none mb-0.5">{s.value}</p>
-                <p className="text-[9px] text-white/50 leading-tight">{s.label}</p>
+                <p className="text-[9px] text-muted-foreground leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
 
           {/* HIPAA strip */}
-          <div
-            className="mx-4 mt-3 mb-4 rounded-lg flex items-center justify-center gap-2 px-3 py-2"
-            style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
-          >
-            <Shield className="w-3.5 h-3.5 text-green-500" />
-            <p className="text-[10px] font-semibold text-green-500 tracking-wide">
+          <div className="mx-4 mt-3 mb-4 rounded-lg flex items-center justify-center gap-2 px-3 py-2 bg-green-50 border border-green-200/60">
+            <Shield className="w-3.5 h-3.5 text-green-600" />
+            <p className="text-[10px] font-semibold text-green-600 tracking-wide">
               HIPAA-Compliant · Audit Logs · Session Controls · Encrypted
             </p>
           </div>
