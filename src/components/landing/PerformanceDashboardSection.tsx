@@ -43,13 +43,13 @@ const PerformanceDashboardSection = () => (
           Care-Assist — AI Chat Widget
         </p>
 
-        <h2 className="text-3xl md:text-[2.75rem] font-black leading-[1.1] tracking-tight mb-6">
+        <h2 className="text-2xl md:text-4xl font-extrabold leading-[1.1] tracking-tight mb-4">
           HIPAA Compliant.<br />
           35% More Leads.<br />
           <span className="text-primary">27% Faster</span> Learning.
         </h2>
 
-        <p className="text-muted-foreground leading-relaxed mb-8 max-w-md">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-8 max-w-md">
           Most centers overlook this. When Care-Assist captures structured, qualified lead data
           consistently — your Google and Meta campaigns receive cleaner conversion signals. Faster
           learning. Better targeting. Lower CPL over time.
@@ -76,8 +76,8 @@ const PerformanceDashboardSection = () => (
           {bigStats.map((s, i) => (
             <div key={s.label} className="flex items-start gap-6">
               <div className="text-center flex-1">
-                <p className="text-3xl md:text-4xl font-black text-primary leading-none mb-1">{s.value}</p>
-                <p className="text-[11px] text-muted-foreground leading-snug">{s.label}</p>
+                <p className="text-3xl md:text-4xl font-black tracking-tighter text-primary leading-none mb-1">{s.value}</p>
+                <p className="text-xs text-muted-foreground leading-snug">{s.label}</p>
               </div>
               {i < bigStats.length - 1 && (
                 <div className="w-px h-14 bg-border/60 shrink-0" />
