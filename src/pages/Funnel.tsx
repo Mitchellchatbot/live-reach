@@ -131,7 +131,7 @@ const Funnel = () => {
               marginBottom: '1.5rem',
               animationDelay: '0.4s',
               animationFillMode: 'both',
-              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(24 95% 40%) 50%, hsl(var(--primary)) 100%)',
+              background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))',
