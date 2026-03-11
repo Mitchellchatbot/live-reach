@@ -154,10 +154,6 @@ const Funnel = () => {
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> 7-day free trial</span>
           </div>
 
-          {/* Logo */}
-          <div className="mt-10 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.4s' }}>
-            <img src={careAssistLogo} alt="Care Assist" className="h-12 md:h-14 mx-auto" />
-          </div>
         </div>
       </section>
 
