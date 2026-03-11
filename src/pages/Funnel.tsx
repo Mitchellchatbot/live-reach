@@ -114,17 +114,20 @@ const Funnel = () => {
 
           {/* Main headline — dramatic */}
           <h1
-            className="text-primary animate-fade-in"
+            className="animate-fade-in"
             style={{
-              fontSize: 'clamp(2.8rem, 10vw, 7rem)',
+              fontSize: 'clamp(3.2rem, 12vw, 8rem)',
               fontWeight: 900,
-              lineHeight: 0.92,
-              letterSpacing: '-0.03em',
+              lineHeight: 0.88,
+              letterSpacing: '-0.04em',
               textTransform: 'uppercase',
               marginBottom: '1.5rem',
-              textShadow: '0 4px 30px hsl(var(--primary) / 0.25)',
               animationDelay: '0.4s',
               animationFillMode: 'both',
+              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(24 95% 40%) 50%, hsl(var(--primary)) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))',
             }}
           >
             Never Miss<br />Another Lead
