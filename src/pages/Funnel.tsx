@@ -231,7 +231,7 @@ const Funnel = () => {
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
             Try It FREE For 7 Days!
           </h2>
-          <p className="opacity-80 mb-8">
+          <p className="text-muted-foreground mb-8">
             Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
           </p>
           <Button
