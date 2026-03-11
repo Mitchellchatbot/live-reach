@@ -5,7 +5,7 @@ import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Arro
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
-import { SalesChatBot } from '@/components/landing/SalesChatBot';
+import { SalesChatBotInline } from '@/components/landing/SalesChatBotInline';
 import careAssistLogo from '@/assets/care-assist-logo.png';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
