@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, ArrowRight, Play, BarChart3, Heart } from 'lucide-react';
 import sarahImg from '@/assets/testimonials/sarah.jpg';
