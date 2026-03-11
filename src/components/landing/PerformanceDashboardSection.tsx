@@ -14,9 +14,9 @@ const bigStats = [
 ];
 
 const metrics = [
-  { label: 'Leads Captured', value: '+35%', change: '↑ This month', changeColor: 'text-green-500' },
+  { label: 'Leads Captured', value: '+35%', change: '↑ This month', changeColor: 'text-green-600' },
   { label: 'Google Ad Learning', value: '27% faster', change: '↑ Cleaner signals', changeColor: 'text-primary' },
-  { label: 'Cost Per Lead', value: '$42.10', change: '↓ 47%', changeColor: 'text-green-500' },
+  { label: 'Cost Per Lead', value: '$42.10', change: '↓ 47%', changeColor: 'text-green-600' },
 ];
 
 const miniStats = [
@@ -26,8 +26,7 @@ const miniStats = [
 ];
 
 const PerformanceDashboardSection = () => (
-  <section className="px-4 py-16 md:py-24 bg-[hsl(30,33%,97%)]">
-    {/* Bounce keyframes for typing dots */}
+  <section className="px-4 py-16 md:py-24 bg-muted/50">
     <style>{`
       @keyframes typingBounce {
         0%, 60%, 100% { transform: translateY(0); }
@@ -87,13 +86,9 @@ const PerformanceDashboardSection = () => (
         </div>
       </div>
 
-      {/* ── RIGHT COLUMN — Dark Card ── */}
+      {/* ── RIGHT COLUMN — Light Card ── */}
       <div className="reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
-        <div className="rounded-[2rem] overflow-hidden shadow-2xl shadow-black/30" style={{ backgroundColor: '#1A1614' }}>
-          {/* Subtle top glow */}
-          <div className="relative">
-            <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-primary/10 blur-3xl rounded-full" />
-          </div>
+        <div className="rounded-[2rem] overflow-hidden shadow-xl shadow-primary/10 bg-card border border-border/60">
 
           {/* Label */}
           <div className="px-6 pt-6 pb-4">
@@ -103,7 +98,7 @@ const PerformanceDashboardSection = () => (
           </div>
 
           {/* Chat preview */}
-          <div className="mx-5 rounded-2xl overflow-hidden border border-white/[0.08]">
+          <div className="mx-5 rounded-2xl overflow-hidden border border-border">
             {/* Chat header */}
             <div className="flex items-center gap-3 px-5 py-4 bg-primary">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">
@@ -111,27 +106,27 @@ const PerformanceDashboardSection = () => (
               </div>
               <div>
                 <p className="text-sm font-bold text-white leading-tight">Care Assist</p>
-                <p className="text-xs text-white/60 leading-tight">Here to help</p>
+                <p className="text-xs text-white/70 leading-tight">Here to help</p>
               </div>
             </div>
 
             {/* Chat body */}
-            <div className="px-4 py-5 space-y-4" style={{ backgroundColor: '#252220' }}>
+            <div className="px-4 py-5 space-y-4 bg-muted/50">
               {/* Bot message */}
               <div className="max-w-[88%]">
-                <div className="rounded-2xl rounded-tl-md px-4 py-3 text-sm text-white/80 leading-relaxed" style={{ backgroundColor: '#3a3634' }}>
+                <div className="rounded-2xl rounded-tl-md px-4 py-3 text-sm text-foreground leading-relaxed bg-background border border-border/60">
                   Are you looking for help for yourself or a loved one?
                 </div>
               </div>
               {/* User message */}
               <div className="max-w-[80%] ml-auto">
-                <div className="rounded-2xl rounded-tr-md px-4 py-3 text-sm text-white font-medium bg-primary leading-relaxed">
+                <div className="rounded-2xl rounded-tr-md px-4 py-3 text-sm text-primary-foreground font-medium bg-primary leading-relaxed">
                   My son. He needs treatment.
                 </div>
               </div>
               {/* Typing indicator */}
               <div className="max-w-[88%]">
-                <div className="inline-flex gap-1.5 items-center rounded-2xl rounded-tl-md px-4 py-3.5" style={{ backgroundColor: '#3a3634' }}>
+                <div className="inline-flex gap-1.5 items-center rounded-2xl rounded-tl-md px-4 py-3.5 bg-background border border-border/60">
                   {[0, 1, 2].map((i) => (
                     <span
                       key={i}
@@ -148,12 +143,12 @@ const PerformanceDashboardSection = () => (
           </div>
 
           {/* Metrics */}
-          <div className="mx-5 mt-5 rounded-2xl border border-white/[0.08] divide-y divide-white/[0.08] overflow-hidden">
+          <div className="mx-5 mt-5 rounded-2xl border border-border divide-y divide-border overflow-hidden">
             {metrics.map((m) => (
-              <div key={m.label} className="flex items-center justify-between px-5 py-3.5" style={{ backgroundColor: '#252220' }}>
-                <span className="text-sm text-white/50">{m.label}</span>
+              <div key={m.label} className="flex items-center justify-between px-5 py-3.5 bg-background">
+                <span className="text-sm text-muted-foreground">{m.label}</span>
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm font-bold text-white">{m.value}</span>
+                  <span className="text-sm font-bold text-foreground">{m.value}</span>
                   <span className={`text-xs font-semibold ${m.changeColor}`}>{m.change}</span>
                 </div>
               </div>
@@ -163,17 +158,17 @@ const PerformanceDashboardSection = () => (
           {/* Mini stat cards */}
           <div className="grid grid-cols-3 gap-2.5 mx-5 mt-4">
             {miniStats.map((s) => (
-              <div key={s.label} className="rounded-xl px-3 py-4 text-center border border-white/[0.06]" style={{ backgroundColor: '#252220' }}>
+              <div key={s.label} className="rounded-xl px-3 py-4 text-center border border-border bg-muted/50">
                 <p className="text-2xl font-black text-primary leading-none mb-1">{s.value}</p>
-                <p className="text-[10px] text-white/40 leading-tight">{s.label}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
 
           {/* HIPAA strip */}
-          <div className="mx-5 mt-4 mb-5 rounded-xl flex items-center justify-center gap-2.5 px-4 py-3" style={{ backgroundColor: 'rgba(34,100,50,0.35)' }}>
-            <Shield className="w-4 h-4 text-green-500" />
-            <p className="text-xs font-semibold text-green-400 tracking-wide">
+          <div className="mx-5 mt-4 mb-5 rounded-xl flex items-center justify-center gap-2.5 px-4 py-3 bg-green-50 border border-green-200/60">
+            <Shield className="w-4 h-4 text-green-600" />
+            <p className="text-xs font-semibold text-green-700 tracking-wide">
               HIPAA-Compliant · Audit Logs · Session Controls · Encrypted
             </p>
           </div>
