@@ -96,12 +96,8 @@ const Funnel = () => {
           </p>
 
           {/* Headline */}
-          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-5 text-foreground">
-            Stop Losing Patients{' '}
-            <span className="underline decoration-primary decoration-4 underline-offset-4">
-              the Moment They Land
-            </span>{' '}
-            on Your Website
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight mb-5 text-foreground">
+            Never Miss Another Lead.
           </h1>
 
           {/* Sub-headline */}
