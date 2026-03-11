@@ -340,6 +340,9 @@ const Funnel = () => {
           </div>
         </div>
       </section>
+
+      {/* Floating sales chat widget */}
+      <SalesChatBot />
     </div>
   );
 };
