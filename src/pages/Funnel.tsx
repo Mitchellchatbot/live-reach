@@ -161,33 +161,61 @@ const Funnel = () => {
       </section>
 
       {/* ═══════════════ STATS ═══════════════ */}
-      <section className="px-4 py-12 bg-primary text-primary-foreground">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="relative px-4 py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
+        {/* Decorative elements */}
+        <div className="pointer-events-none absolute -top-20 -left-20 w-[300px] h-[300px] rounded-full bg-white/5 blur-[80px]" />
+        <div className="pointer-events-none absolute -bottom-20 -right-20 w-[400px] h-[400px] rounded-full bg-white/5 blur-[100px]" />
+
+        <h2 className="text-center text-2xl md:text-4xl font-black mb-4 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
+          Real Results. Real Impact.
+        </h2>
+        <p className="text-center text-sm md:text-base opacity-70 mb-12 max-w-lg mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.05s' }}>
+          Treatment centers using Care Assist see measurable ROI from day one.
+        </p>
+
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
           {stats.map((stat, i) => (
-            <div key={stat.label} className="text-center reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: `${i * 0.1}s` }}>
-              <p className="text-4xl md:text-5xl font-black tracking-tight">{stat.value}</p>
-              <p className="text-sm mt-2 opacity-80 font-medium">{stat.label}</p>
+            <div
+              key={stat.label}
+              className="relative text-center group reveal opacity-0 translate-y-6 transition-all duration-700"
+              style={{ transitionDelay: `${i * 0.1}s` }}
+            >
+              <div className="absolute inset-0 rounded-2xl bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative py-6 px-3">
+                <p className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-3" style={{ textShadow: '0 2px 20px rgba(255,255,255,0.2)' }}>
+                  {stat.value}
+                </p>
+                <p className="text-sm md:text-base opacity-80 font-medium leading-snug">{stat.label}</p>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ═══════════════ SOCIAL PROOF ═══════════════ */}
-      <section className="px-4 py-10 bg-background border-b border-border">
+      <section className="px-4 py-14 md:py-20 bg-background">
         <div className="max-w-3xl mx-auto text-center reveal opacity-0 transition-all duration-700">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="flex -space-x-2.5 mr-3">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex -space-x-3">
               {avatars.map((src, i) => (
-                <img key={i} src={src} alt="Customer" className="w-10 h-10 rounded-full border-[3px] border-background object-cover shadow-md" />
+                <img
+                  key={i}
+                  src={src}
+                  alt="Customer"
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-background object-cover shadow-lg"
+                />
               ))}
             </div>
-            <div className="flex gap-0.5">
+            <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-primary text-primary drop-shadow-sm" />
+                <Star key={i} className="w-7 h-7 md:w-8 md:h-8 fill-primary text-primary drop-shadow-sm" />
               ))}
+            </div>
+            <div>
+              <p className="text-xl md:text-2xl font-extrabold text-foreground">Rated 5.0</p>
+              <p className="text-muted-foreground font-medium mt-0.5">by 40+ treatment centers across the country</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground font-medium">Rated 5.0 by 40+ treatment centers</p>
         </div>
       </section>
 
