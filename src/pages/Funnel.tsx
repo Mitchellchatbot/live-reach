@@ -102,7 +102,7 @@ const Funnel = () => {
           <Button
             onClick={handleCTA}
             size="lg"
-            className="bg-foreground text-background hover:bg-foreground/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
           >
             Start For Free
           </Button>
