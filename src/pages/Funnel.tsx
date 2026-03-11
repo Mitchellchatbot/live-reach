@@ -295,6 +295,9 @@ const Funnel = () => {
         </div>
       </section>
 
+      {/* ═══════════════ PERFORMANCE DASHBOARD ═══════════════ */}
+      <PerformanceDashboardSection />
+
       {/* ═══════════════ FINAL CTA WITH SALES CHAT ═══════════════ */}
       <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden bg-background">
         <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-primary/8 blur-[120px]" />
