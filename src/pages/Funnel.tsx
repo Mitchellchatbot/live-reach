@@ -55,12 +55,12 @@ const Funnel = () => {
   const handleCTA = () => navigate('/auth');
 
   return (
-    <div className="min-h-screen bg-primary text-primary-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ─── HERO ─── */}
-      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden">
+      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden bg-background text-primary">
         {/* Decorative lighter circles */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-white/10 blur-[100px]" />
-        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-white/5 blur-[120px]" />
+        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Lead-in italic text */}
@@ -89,12 +89,12 @@ const Funnel = () => {
           <p className="text-xs opacity-70 mb-8">↑ This is what your visitors will experience</p>
 
           {/* VSL Video Section */}
-          <div className="relative aspect-video bg-black/20 rounded-2xl border-2 border-white/20 overflow-hidden flex items-center justify-center mb-8 backdrop-blur-sm max-w-2xl mx-auto">
+          <div className="relative aspect-video bg-primary/5 rounded-2xl border-2 border-primary/20 overflow-hidden flex items-center justify-center mb-8 max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 hover:bg-white/30 transition-colors cursor-pointer">
-                <div className="w-0 h-0 border-l-[20px] border-l-white border-y-[14px] border-y-transparent ml-1.5" />
+              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3 hover:bg-primary/25 transition-colors cursor-pointer">
+                <div className="w-0 h-0 border-l-[20px] border-l-primary border-y-[14px] border-y-transparent ml-1.5" />
               </div>
-              <p className="text-white/60 text-sm">Watch how it works</p>
+              <p className="text-muted-foreground text-sm">Watch how it works</p>
             </div>
           </div>
 
@@ -102,19 +102,19 @@ const Funnel = () => {
           <Button
             onClick={handleCTA}
             size="lg"
-            className="bg-foreground text-background hover:bg-foreground/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
           >
             Start For Free
           </Button>
 
-          <div className="flex items-center justify-center gap-5 mt-5 text-sm opacity-80">
+          <div className="flex items-center justify-center gap-5 mt-5 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> No credit card</span>
             <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> 7-day free trial</span>
           </div>
 
           {/* Logo */}
           <div className="mt-8">
-            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto brightness-0 invert" />
+            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto" />
           </div>
         </div>
       </section>
@@ -226,22 +226,22 @@ const Funnel = () => {
       </section>
 
       {/* ─── FINAL CTA ─── */}
-      <section className="px-4 py-16 md:py-24 text-center bg-primary text-primary-foreground">
+      <section className="px-4 py-16 md:py-24 text-center bg-accent text-foreground">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
             Try It FREE For 7 Days!
           </h2>
-          <p className="opacity-80 mb-8">
+          <p className="text-muted-foreground mb-8">
             Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
           </p>
           <Button
             onClick={handleCTA}
             size="lg"
-            className="bg-foreground text-background hover:bg-foreground/90 text-xl px-12 py-7 rounded-2xl shadow-2xl transition-all font-extrabold"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xl px-12 py-7 rounded-2xl shadow-2xl transition-all font-extrabold"
           >
             Start For Free <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-sm opacity-80">
+          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Live in 5 min</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
