@@ -222,15 +222,21 @@ const Funnel = () => {
             {benefits.map((b, i) => (
               <div
                 key={b.title}
-                className="group relative bg-card border border-border rounded-2xl p-6 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 reveal opacity-0 translate-y-6"
+                className="group relative bg-gradient-to-br from-card to-muted/50 border border-border/60 rounded-2xl p-7 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1.5 transition-all duration-300 reveal opacity-0 translate-y-6 overflow-hidden"
                 style={{ transitionDelay: `${i * 0.08}s` }}
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                  <b.icon className="w-6 h-6 text-primary" />
+                {/* Subtle accent glow */}
+                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors duration-500" />
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                    <b.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                  </div>
+                  <h3 className="font-bold text-lg mb-2.5 text-foreground">{b.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-foreground">{b.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
               </div>
+            ))}
+          </div>
             ))}
           </div>
         </div>
