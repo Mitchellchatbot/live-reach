@@ -171,7 +171,7 @@ const Funnel = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 border-primary/30 bg-background p-1">
               <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
-                  src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1"
+                  src="https://player.vimeo.com/video/1172714416?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1"
                   className="w-full h-full"
                   allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                   title="Care Assist — Watch How It Works"
