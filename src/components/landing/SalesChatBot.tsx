@@ -56,7 +56,7 @@ export const SalesChatBot = () => {
     setTimeout(() => {
       setShowMenu(false);
       setMenuClosing(false);
-      navigate('/auth');
+      window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank');
     }, 200);
   };
 
