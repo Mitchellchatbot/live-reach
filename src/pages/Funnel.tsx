@@ -114,7 +114,7 @@ const Funnel = () => {
 
           {/* Logo */}
           <div className="mt-8">
-            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto brightness-0 invert" />
+            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto" />
           </div>
         </div>
       </section>
