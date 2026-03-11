@@ -238,10 +238,7 @@ export const SalesChatBot = () => {
       {/* Quick action menu */}
       {(showMenu || menuClosing) && !isOpen && (
         <div
-          className={cn(
-            'mb-3 flex flex-col gap-2',
-            menuClosing ? 'animate-scale-out' : 'animate-scale-in'
-          )}
+          className="mb-3 flex flex-col gap-1.5"
           onAnimationEnd={() => {
             if (menuClosing) {
               setMenuClosing(false);
@@ -249,44 +246,37 @@ export const SalesChatBot = () => {
             }
           }}
         >
-          <button
-            onClick={handleOpenChat}
-            className="flex items-center gap-2.5 bg-card shadow-lg shadow-black/10 border border-border/50 rounded-xl px-4 py-3 hover:bg-accent transition-colors text-left group"
-          >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-              <MessageCircle className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Ask a Question</p>
-              <p className="text-[11px] text-muted-foreground">Chat with our AI assistant</p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleBookDemo}
-            className="flex items-center gap-2.5 bg-card shadow-lg shadow-black/10 border border-border/50 rounded-xl px-4 py-3 hover:bg-accent transition-colors text-left group"
-          >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-              <Calendar className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Book a Demo</p>
-              <p className="text-[11px] text-muted-foreground">See Care Assist in action</p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleTryFree}
-            className="flex items-center gap-2.5 bg-primary shadow-lg shadow-primary/20 rounded-xl px-4 py-3 hover:bg-primary/90 transition-colors text-left group"
-          >
-            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-              <Zap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-primary-foreground">Try For Free</p>
-              <p className="text-[11px] text-primary-foreground/80">7-day trial, no credit card</p>
-            </div>
-          </button>
+          {[
+            { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question', delay: '0.08s', variant: 'light' as const },
+            { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo', delay: '0.04s', variant: 'light' as const },
+            { onClick: handleTryFree, icon: Zap, label: 'Try For Free', delay: '0s', variant: 'primary' as const },
+          ].map((item, i) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              className={cn(
+                'flex items-center gap-3 rounded-full px-4 py-2.5 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]',
+                menuClosing ? 'animate-[wiggle-out_0.25s_ease-in_forwards]' : 'animate-[wiggle-in_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]',
+                item.variant === 'primary'
+                  ? 'bg-primary shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30'
+                  : 'bg-card shadow-md shadow-black/8 border border-border/40 hover:border-primary/20'
+              )}
+              style={{ animationDelay: menuClosing ? '0s' : item.delay }}
+            >
+              <div className={cn(
+                'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
+                item.variant === 'primary' ? 'bg-white/20' : 'bg-primary/10'
+              )}>
+                <item.icon className={cn('h-4 w-4', item.variant === 'primary' ? 'text-primary-foreground' : 'text-primary')} />
+              </div>
+              <span className={cn(
+                'text-sm font-semibold',
+                item.variant === 'primary' ? 'text-primary-foreground' : 'text-foreground'
+              )}>
+                {item.label}
+              </span>
+            </button>
+          ))}
         </div>
       )}
 

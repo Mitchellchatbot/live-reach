@@ -512,3 +512,15 @@ html.widget-embed-mode #root {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
+
+/* ── Widget menu wiggle pop ── */
+@keyframes wiggle-in {
+  0% { opacity: 0; transform: scale(0.3) rotate(-12deg) translateY(10px); }
+  60% { opacity: 1; transform: scale(1.05) rotate(2deg) translateY(-2px); }
+  80% { transform: scale(0.97) rotate(-1deg) translateY(0); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
+}
+@keyframes wiggle-out {
+  0% { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(0.5) rotate(8deg) translateY(10px); }
+}
