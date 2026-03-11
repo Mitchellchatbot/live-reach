@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, ArrowRight } from 'lucide-react';
+import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, ArrowRight, Play } from 'lucide-react';
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
@@ -49,121 +50,178 @@ const stats = [
   { value: '24/7', label: 'Coverage — no staffing needed' },
 ];
 
+/* ── Scroll-triggered fade-in observer ── */
+const useScrollReveal = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const children = el.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    children.forEach((c) => observer.observe(c));
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+};
+
 const Funnel = () => {
   const navigate = useNavigate();
+  const scrollRef = useScrollReveal();
 
   const handleCTA = () => navigate('/auth');
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* ─── HERO ─── */}
-      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden bg-background text-primary">
-        {/* Decorative lighter circles */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
-        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
+    <div ref={scrollRef} className="min-h-screen bg-background text-foreground">
+
+      {/* ═══════════════ HERO ═══════════════ */}
+      <section className="relative px-4 pt-12 pb-10 md:pt-20 md:pb-14 overflow-hidden bg-background">
+        {/* Ambient background blobs */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[100px]" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          {/* Lead-in italic text */}
-          <p className="text-lg md:text-2xl italic font-light opacity-90 mb-2 leading-snug">
+          {/* Lead-in text with stagger */}
+          <p className="text-base md:text-xl italic font-light text-muted-foreground mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
             You're Already Paying For Traffic.
           </p>
-          <p className="text-lg md:text-2xl italic font-light opacity-90 mb-6 leading-snug">
+          <p className="text-base md:text-xl italic font-light text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: '0.25s', animationFillMode: 'both' }}>
             SEO. Google Ads. Referrals.
           </p>
 
-          {/* Main headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase leading-[0.95] tracking-tight mb-6">
+          {/* Main headline — dramatic */}
+          <h1
+            className="text-primary animate-fade-in"
+            style={{
+              fontSize: 'clamp(2.8rem, 10vw, 7rem)',
+              fontWeight: 900,
+              lineHeight: 0.92,
+              letterSpacing: '-0.03em',
+              textTransform: 'uppercase',
+              marginBottom: '1.5rem',
+              textShadow: '0 4px 30px hsl(var(--primary) / 0.25)',
+              animationDelay: '0.4s',
+              animationFillMode: 'both',
+            }}
+          >
             Never Miss<br />Another Lead
           </h1>
 
           {/* Sub-headline */}
-          <p className="text-xl md:text-3xl font-semibold mb-8 leading-snug">
-            <span className="font-bold">Care Assist</span>{' '}
-            <span className="font-light">Captures Leads Instantly!</span>
+          <p className="text-lg md:text-2xl mb-10 animate-fade-in" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
+            <span className="font-extrabold text-foreground">Care Assist</span>{' '}
+            <span className="font-light text-muted-foreground">Captures Leads Instantly!</span>
           </p>
 
-          {/* Demo Widget */}
-          <div className="flex justify-center mb-6">
+          {/* Demo Widget with glow ring */}
+          <div className="relative flex justify-center mb-4 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+              <div className="w-[320px] h-[440px] rounded-3xl bg-primary/10 blur-[50px]" />
+            </div>
             <LPDemoWidget />
           </div>
-          <p className="text-xs opacity-70 mb-8">↑ This is what your visitors will experience</p>
+          <p className="text-xs text-muted-foreground mb-10 animate-fade-in" style={{ animationDelay: '0.85s', animationFillMode: 'both' }}>
+            ↑ This is what your visitors will experience
+          </p>
 
-          {/* VSL Video Section */}
-          <div className="relative aspect-video bg-primary/5 rounded-2xl border-2 border-primary/20 overflow-hidden flex items-center justify-center mb-8 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3 hover:bg-primary/25 transition-colors cursor-pointer">
-                <div className="w-0 h-0 border-l-[20px] border-l-primary border-y-[14px] border-y-transparent ml-1.5" />
+          {/* VSL Video Section — elevated card */}
+          <div className="relative max-w-2xl mx-auto mb-10 reveal opacity-0 translate-y-6 transition-all duration-700">
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent blur-sm" />
+            <div className="relative aspect-video bg-gradient-to-br from-muted to-background rounded-2xl border border-border overflow-hidden flex items-center justify-center shadow-xl">
+              <div className="text-center group cursor-pointer">
+                <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/30 group-hover:scale-110 group-hover:shadow-primary/50 transition-all duration-300">
+                  <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
+                </div>
+                <p className="text-muted-foreground text-sm font-medium">Watch how it works</p>
               </div>
-              <p className="text-muted-foreground text-sm">Watch how it works</p>
             </div>
           </div>
 
-          {/* CTA Button */}
-          <Button
-            onClick={handleCTA}
-            size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
-          >
-            Start For Free
-          </Button>
+          {/* CTA Button — pulsing glow */}
+          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
+            <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
+            <Button
+              onClick={handleCTA}
+              size="lg"
+              className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-xl md:text-2xl px-14 py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold tracking-wide"
+            >
+              Start For Free
+            </Button>
+          </div>
 
-          <div className="flex items-center justify-center gap-5 mt-5 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> No credit card</span>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> 7-day free trial</span>
+          <div className="flex items-center justify-center gap-5 mt-6 text-sm text-muted-foreground reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> 7-day free trial</span>
           </div>
 
           {/* Logo */}
-          <div className="mt-8">
-            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto" />
+          <div className="mt-10 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.4s' }}>
+            <img src={careAssistLogo} alt="Care Assist" className="h-12 md:h-14 mx-auto" />
           </div>
         </div>
       </section>
 
-      {/* ─── STATS ─── */}
-      <section className="px-4 py-10 bg-background text-foreground">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p className="text-3xl md:text-4xl font-extrabold text-primary">{stat.value}</p>
-              <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+      {/* ═══════════════ STATS ═══════════════ */}
+      <section className="px-4 py-12 bg-primary text-primary-foreground">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat, i) => (
+            <div key={stat.label} className="text-center reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: `${i * 0.1}s` }}>
+              <p className="text-4xl md:text-5xl font-black tracking-tight">{stat.value}</p>
+              <p className="text-sm mt-2 opacity-80 font-medium">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ─── SOCIAL PROOF ─── */}
-      <section className="px-4 py-10 bg-background text-foreground border-b border-border">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-1 mb-2">
-            <div className="flex -space-x-2 mr-3">
+      {/* ═══════════════ SOCIAL PROOF ═══════════════ */}
+      <section className="px-4 py-10 bg-background border-b border-border">
+        <div className="max-w-3xl mx-auto text-center reveal opacity-0 transition-all duration-700">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="flex -space-x-2.5 mr-3">
               {avatars.map((src, i) => (
-                <img key={i} src={src} alt="Customer" className="w-9 h-9 rounded-full border-2 border-background object-cover" />
+                <img key={i} src={src} alt="Customer" className="w-10 h-10 rounded-full border-[3px] border-background object-cover shadow-md" />
               ))}
             </div>
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-5 h-5 fill-primary text-primary" />
-            ))}
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-primary text-primary drop-shadow-sm" />
+              ))}
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">Rated 5.0 by 40+ treatment centers</p>
+          <p className="text-sm text-muted-foreground font-medium">Rated 5.0 by 40+ treatment centers</p>
         </div>
       </section>
 
-      {/* ─── BENEFITS ─── */}
-      <section className="px-4 py-14 md:py-20 bg-background text-foreground">
+      {/* ═══════════════ BENEFITS ═══════════════ */}
+      <section className="px-4 py-16 md:py-24 bg-background">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-4">
-            Every Click You Pay For Deserves a Conversation
+          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3 reveal opacity-0 translate-y-4 transition-all duration-700">
+            Every Click You Pay For<br className="hidden md:block" /> Deserves a Conversation
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-14 max-w-2xl mx-auto reveal opacity-0 transition-all duration-700">
             You're spending thousands on Google Ads and Meta — but your "Contact Us" form converts at 2%. Here's what happens when every visitor gets a real conversation instead.
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {benefits.map((b) => (
-              <div key={b.title} className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow">
-                <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
-                  <b.icon className="w-5 h-5 text-accent-foreground" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {benefits.map((b, i) => (
+              <div
+                key={b.title}
+                className="group relative bg-card border border-border rounded-2xl p-6 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-300 reveal opacity-0 translate-y-6"
+                style={{ transitionDelay: `${i * 0.08}s` }}
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                  <b.icon className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">{b.title}</h3>
+                <h3 className="font-bold text-lg mb-2 text-foreground">{b.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
               </div>
             ))}
@@ -171,23 +229,23 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="px-4 py-14 md:py-20 bg-muted text-foreground">
+      {/* ═══════════════ HOW IT WORKS ═══════════════ */}
+      <section className="px-4 py-16 md:py-24 bg-muted">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-12">How It Works</h2>
-          <div className="space-y-8 text-left">
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-14 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
+          <div className="space-y-6 text-left">
             {[
               { step: '1', title: 'Paste One Line of Code', desc: 'Add the widget to your site in under 2 minutes. Works with WordPress, Wix, Squarespace — anything.' },
               { step: '2', title: 'AI Engages Every Visitor', desc: 'Within 3 seconds of landing, visitors get a warm, human-sounding conversation that naturally captures their name, phone, and insurance.' },
               { step: '3', title: 'Your Team Gets Warm Leads', desc: 'Slack ping, email alert, or Salesforce record — your admissions team gets notified instantly with full conversation context.' },
-            ].map((s) => (
-              <div key={s.step} className="flex gap-5 items-start">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <span className="font-bold text-primary-foreground text-sm">{s.step}</span>
+            ].map((s, i) => (
+              <div key={s.step} className="flex gap-5 items-start bg-background rounded-2xl p-5 border border-border shadow-sm reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: `${i * 0.12}s` }}>
+                <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/20">
+                  <span className="font-bold text-primary-foreground">{s.step}</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-lg mb-1">{s.title}</h3>
-                  <p className="text-muted-foreground text-sm">{s.desc}</p>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -195,27 +253,27 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section className="px-4 py-14 md:py-20 bg-background text-foreground">
+      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
+      <section className="px-4 py-16 md:py-24 bg-background">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-12">What Our Clients Say</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-14 reveal opacity-0 translate-y-4 transition-all duration-700">What Our Clients Say</h2>
+          <div className="grid md:grid-cols-3 gap-5">
             {[
               { name: 'Sarah M.', role: 'Clinical Director', img: sarahImg, quote: 'We went from missing 60% of after-hours inquiries to capturing every single one. CareAssist paid for itself in the first week.' },
               { name: 'Michael R.', role: 'Practice Owner', img: michaelImg, quote: 'The AI sounds so natural that patients don\'t realize they\'re chatting with a bot. Our intake volume doubled within a month.' },
               { name: 'Jennifer L.', role: 'Marketing Director', img: jenniferImg, quote: 'Setup was incredibly fast. We had it running on our site in under 5 minutes and started getting leads the same day.' },
-            ].map((t) => (
-              <div key={t.name} className="bg-card border border-border rounded-2xl p-6">
-                <div className="flex items-center gap-1 mb-3">
+            ].map((t, i) => (
+              <div key={t.name} className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 reveal opacity-0 translate-y-6" style={{ transitionDelay: `${i * 0.1}s` }}>
+                <div className="flex items-center gap-0.5 mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">"{t.quote}"</p>
+                <p className="text-sm text-foreground leading-relaxed mb-5 font-medium">"{t.quote}"</p>
                 <div className="flex items-center gap-3">
-                  <img src={t.img} alt={t.name} className="w-9 h-9 rounded-full object-cover" />
+                  <img src={t.img} alt={t.name} className="w-10 h-10 rounded-full object-cover border-2 border-primary/20 shadow-sm" />
                   <div>
-                    <p className="font-semibold text-sm">{t.name}</p>
+                    <p className="font-bold text-sm">{t.name}</p>
                     <p className="text-xs text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
@@ -225,26 +283,33 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ─── FINAL CTA ─── */}
-      <section className="px-4 py-16 md:py-24 text-center bg-accent text-foreground">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
+      {/* ═══════════════ FINAL CTA ═══════════════ */}
+      <section className="relative px-4 py-20 md:py-28 text-center overflow-hidden">
+        {/* Orange gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-[hsl(var(--primary)/0.85)]" />
+        <div className="pointer-events-none absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full bg-white/10 blur-[100px]" />
+
+        <div className="max-w-2xl mx-auto relative z-10 text-primary-foreground">
+          <h2 className="text-3xl md:text-5xl font-black mb-5 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
             Try It FREE For 7 Days!
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="opacity-90 mb-10 text-lg reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
             Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
           </p>
-          <Button
-            onClick={handleCTA}
-            size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xl px-12 py-7 rounded-2xl shadow-2xl transition-all font-extrabold"
-          >
-            Start For Free <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Live in 5 min</span>
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
+          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
+            <div className="absolute -inset-1 rounded-2xl bg-white/20 blur-lg animate-[pulse_3s_ease-in-out_infinite]" />
+            <Button
+              onClick={handleCTA}
+              size="lg"
+              className="relative bg-white text-primary hover:bg-white/95 text-xl px-14 py-7 rounded-2xl shadow-2xl hover:scale-[1.03] transition-all duration-300 font-extrabold"
+            >
+              Start For Free <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+          <div className="flex items-center justify-center gap-6 mt-7 text-sm opacity-90 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> No credit card</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> Live in 5 min</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> Cancel anytime</span>
           </div>
         </div>
       </section>
