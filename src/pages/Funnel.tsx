@@ -81,7 +81,7 @@ const Funnel = () => {
 
   const [showCalendly, setShowCalendly] = useState(false);
   const [showStickyFooter, setShowStickyFooter] = useState(false);
-  const handleCTA = () => navigate('/auth');
+  const handleCTA = () => setShowCalendly(true);
 
   useEffect(() => {
     const onScroll = () => setShowStickyFooter(window.scrollY > 400);
