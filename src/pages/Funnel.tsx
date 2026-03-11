@@ -241,7 +241,7 @@ const Funnel = () => {
           >
             Start For Free <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-sm opacity-80">
+          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Live in 5 min</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
