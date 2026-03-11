@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, Building2, ArrowRight } from 'lucide-react';
+import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, ArrowRight } from 'lucide-react';
 import sarahImg from '@/assets/testimonials/sarah.jpg';
 import michaelImg from '@/assets/testimonials/michael.jpg';
 import jenniferImg from '@/assets/testimonials/jennifer.jpg';
 import { LPDemoWidget } from '@/components/landing/LPDemoWidget';
+import careAssistLogo from '@/assets/care-assist-logo.png';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
 
@@ -48,119 +49,78 @@ const stats = [
   { value: '24/7', label: 'Coverage — no staffing needed' },
 ];
 
-// Placeholder logo slots — replace with actual uploaded logos
-const trustedLogos = [
-  { name: 'Company 1' },
-  { name: 'Company 2' },
-  { name: 'Company 3' },
-  { name: 'Company 4' },
-  { name: 'Company 5' },
-  { name: 'Company 6' },
-];
-
 const Funnel = () => {
   const navigate = useNavigate();
 
   const handleCTA = () => navigate('/auth');
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Hero Section */}
-      <section className="relative px-4 pt-12 pb-8 md:pt-20 md:pb-14">
-        <div className="max-w-3xl mx-auto text-center">
-          {/* Social proof avatars */}
-          <div className="flex items-center justify-center gap-1 mb-3">
-            <div className="flex -space-x-2">
-              {avatars.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt="Happy customer"
-                  className="w-9 h-9 rounded-full border-2 border-background object-cover"
-                />
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-1 mb-1">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-5 h-5 fill-primary text-primary" />
-            ))}
-          </div>
-          <p className="text-sm text-muted-foreground mb-6">
-            Rated 5.0 by 40+ treatment centers
+    <div className="min-h-screen bg-primary text-primary-foreground">
+      {/* ─── HERO ─── */}
+      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden">
+        {/* Decorative lighter circles */}
+        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-white/10 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-white/5 blur-[120px]" />
+
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          {/* Lead-in italic text */}
+          <p className="text-lg md:text-2xl italic font-light opacity-90 mb-2 leading-snug">
+            You're Already Paying For Traffic.
+          </p>
+          <p className="text-lg md:text-2xl italic font-light opacity-90 mb-6 leading-snug">
+            SEO. Google Ads. Referrals.
           </p>
 
-          {/* Target qualifier */}
-          <p className="text-primary font-semibold text-base md:text-lg mb-4">
-            For Treatment Centers Spending $5K+ on Ads and Losing 90% of Clicks:
-          </p>
-
-          {/* Headline */}
-          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight mb-5 text-foreground">
-            Never Miss Another Lead.
+          {/* Main headline */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase leading-[0.95] tracking-tight mb-6">
+            Never Miss<br />Another Lead
           </h1>
 
           {/* Sub-headline */}
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Your ads are working — but 9 out of 10 visitors leave without ever reaching your team. CareAssist engages them <strong className="text-foreground">in under 3 seconds</strong> with a conversation so natural they think it's a real person. Names, phone numbers, and insurance captured automatically — 24/7.
+          <p className="text-xl md:text-3xl font-semibold mb-8 leading-snug">
+            <span className="font-bold">Care Assist</span>{' '}
+            <span className="font-light">Captures Leads Instantly!</span>
           </p>
 
-          {/* Embedded Demo Widget */}
-          <div className="flex justify-center mt-6">
+          {/* Demo Widget */}
+          <div className="flex justify-center mb-6">
             <LPDemoWidget />
           </div>
-          <p className="text-xs text-muted-foreground mt-4">↑ This is what your visitors will experience — try it yourself</p>
-        </div>
-      </section>
+          <p className="text-xs opacity-70 mb-8">↑ This is what your visitors will experience</p>
 
-      {/* Trusted By Section */}
-      <section className="px-4 py-10 border-y border-border">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
-            Trusted by leading treatment centers
-          </p>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-6 items-center justify-items-center">
-            {trustedLogos.map((logo) => (
-              <div
-                key={logo.name}
-                className="h-10 w-24 md:w-28 rounded-lg bg-muted flex items-center justify-center"
-              >
-                <Building2 className="w-5 h-5 text-muted-foreground/50" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* VSL Section */}
-      <section className="px-4 py-10 md:py-16">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-center text-primary font-semibold text-sm uppercase tracking-wide mb-4">
-            Step 1: Watch the short video
-          </p>
-          <div className="relative aspect-video bg-muted rounded-2xl border border-border overflow-hidden flex items-center justify-center">
-            {/* VSL placeholder — replace with your video embed */}
+          {/* VSL Video Section */}
+          <div className="relative aspect-video bg-black/20 rounded-2xl border-2 border-white/20 overflow-hidden flex items-center justify-center mb-8 backdrop-blur-sm max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3">
-                <div className="w-0 h-0 border-l-[18px] border-l-primary border-y-[12px] border-y-transparent ml-1" />
+              <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 hover:bg-white/30 transition-colors cursor-pointer">
+                <div className="w-0 h-0 border-l-[20px] border-l-white border-y-[14px] border-y-transparent ml-1.5" />
               </div>
-              <p className="text-muted-foreground text-sm">Your VSL video goes here</p>
+              <p className="text-white/60 text-sm">Watch how it works</p>
             </div>
           </div>
-          <div className="text-center mt-6">
-            <Button
-              onClick={handleCTA}
-              size="lg"
-              className="text-lg px-10 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
-            >
-              Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
+
+          {/* CTA Button */}
+          <Button
+            onClick={handleCTA}
+            size="lg"
+            className="bg-foreground text-background hover:bg-foreground/90 text-xl md:text-2xl px-12 py-7 rounded-2xl shadow-2xl hover:shadow-3xl transition-all font-extrabold tracking-wide"
+          >
+            Start For Free
+          </Button>
+
+          <div className="flex items-center justify-center gap-5 mt-5 text-sm opacity-80">
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> No credit card</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> 7-day free trial</span>
+          </div>
+
+          {/* Logo */}
+          <div className="mt-8">
+            <img src={careAssistLogo} alt="Care Assist" className="h-14 md:h-16 mx-auto brightness-0 invert" />
           </div>
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="px-4 py-10 bg-accent">
+      {/* ─── STATS ─── */}
+      <section className="px-4 py-10 bg-background text-foreground">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
@@ -171,8 +131,25 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* Benefits Grid */}
-      <section className="px-4 py-14 md:py-20">
+      {/* ─── SOCIAL PROOF ─── */}
+      <section className="px-4 py-10 bg-background text-foreground border-b border-border">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <div className="flex -space-x-2 mr-3">
+              {avatars.map((src, i) => (
+                <img key={i} src={src} alt="Customer" className="w-9 h-9 rounded-full border-2 border-background object-cover" />
+              ))}
+            </div>
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">Rated 5.0 by 40+ treatment centers</p>
+        </div>
+      </section>
+
+      {/* ─── BENEFITS ─── */}
+      <section className="px-4 py-14 md:py-20 bg-background text-foreground">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-4">
             Every Click You Pay For Deserves a Conversation
@@ -182,10 +159,7 @@ const Funnel = () => {
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => (
-              <div
-                key={b.title}
-                className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow"
-              >
+              <div key={b.title} className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow">
                 <div className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-4">
                   <b.icon className="w-5 h-5 text-accent-foreground" />
                 </div>
@@ -197,12 +171,10 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="px-4 py-14 md:py-20 bg-muted">
+      {/* ─── HOW IT WORKS ─── */}
+      <section className="px-4 py-14 md:py-20 bg-muted text-foreground">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-12">
-            How It Works
-          </h2>
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-12">How It Works</h2>
           <div className="space-y-8 text-left">
             {[
               { step: '1', title: 'Paste One Line of Code', desc: 'Add the widget to your site in under 2 minutes. Works with WordPress, Wix, Squarespace — anything.' },
@@ -220,24 +192,13 @@ const Funnel = () => {
               </div>
             ))}
           </div>
-          <div className="mt-12">
-            <Button
-              onClick={handleCTA}
-              size="lg"
-              className="text-lg px-10 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
-            >
-              Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
-            </Button>
-          </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="px-4 py-14 md:py-20">
+      {/* ─── TESTIMONIALS ─── */}
+      <section className="px-4 py-14 md:py-20 bg-background text-foreground">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-12">
-            What Our Clients Say
-          </h2>
+          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-12">What Our Clients Say</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { name: 'Sarah M.', role: 'Clinical Director', img: sarahImg, quote: 'We went from missing 60% of after-hours inquiries to capturing every single one. CareAssist paid for itself in the first week.' },
@@ -264,23 +225,23 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="px-4 py-16 md:py-24 text-center bg-accent">
+      {/* ─── FINAL CTA ─── */}
+      <section className="px-4 py-16 md:py-24 text-center bg-primary text-primary-foreground">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
-            Your Competitors Are Already Using AI Chat.
+            Try It FREE For 7 Days!
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="opacity-80 mb-8">
             Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
           </p>
           <Button
             onClick={handleCTA}
             size="lg"
-            className="text-lg px-12 py-7 rounded-xl shadow-lg hover:shadow-xl transition-all font-bold"
+            className="bg-foreground text-background hover:bg-foreground/90 text-xl px-12 py-7 rounded-2xl shadow-2xl transition-all font-extrabold"
           >
-            Start Free Trial <ArrowRight className="w-5 h-5 ml-1" />
+            Start For Free <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-6 mt-6 text-sm opacity-80">
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> No credit card</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Live in 5 min</span>
             <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Cancel anytime</span>
