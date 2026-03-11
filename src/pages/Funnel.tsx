@@ -80,9 +80,8 @@ const Funnel = () => {
   const navigate = useNavigate();
   const scrollRef = useScrollReveal();
 
-  const [showCalendly, setShowCalendly] = useState(false);
   const [showStickyFooter, setShowStickyFooter] = useState(false);
-  const handleCTA = () => setShowCalendly(true);
+  const handleCTA = () => navigate('/get-started');
 
   useEffect(() => {
     const onScroll = () => setShowStickyFooter(window.scrollY > 400);
