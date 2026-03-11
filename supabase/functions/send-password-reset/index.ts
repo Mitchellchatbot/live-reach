@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Determine the app origin from the request headers
-    const origin = req.headers.get("origin") || "https://live-reach.lovable.app";
+    const origin = req.headers.get("origin") || "https://care-assist.io";
     const redirectTo = `${origin}/auth/reset-password`;
 
     const { data, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
