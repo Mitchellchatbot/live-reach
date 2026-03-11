@@ -146,18 +146,10 @@ const Funnel = () => {
             <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
-          {/* VSL Video Section — hero position */}
-          <div className="relative max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-primary/25 via-primary/10 to-transparent blur-md" />
-            <div className="relative aspect-video bg-gradient-to-br from-muted to-background rounded-2xl border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-2xl shadow-primary/10">
-              <div className="text-center group cursor-pointer">
-                <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/30 group-hover:scale-110 group-hover:shadow-primary/50 transition-all duration-300">
-                  <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
-                </div>
-                <p className="text-muted-foreground text-sm font-medium">Watch how it works</p>
-              </div>
-            </div>
-          </div>
+          {/* Tagline */}
+          <p className="text-sm md:text-base text-muted-foreground font-medium tracking-wide mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+            AI-powered chat that turns website visitors into qualified leads — 24/7.
+          </p>
 
           {/* CTA Button — pulsing glow */}
           <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
