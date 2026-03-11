@@ -141,9 +141,9 @@ const Funnel = () => {
           </h1>
 
           {/* Sub-headline */}
-          <p className="text-lg md:text-2xl mb-10 animate-fade-in" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
+          <p className="text-lg md:text-2xl mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
             <span className="font-extrabold text-foreground">Care Assist</span>{' '}
-            <span className="font-light text-muted-foreground">Captures Leads Instantly!</span>
+            <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
           {/* VSL Video Section — hero position */}
