@@ -272,33 +272,47 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ═══════════════ FINAL CTA ═══════════════ */}
-      <section className="relative px-4 py-20 md:py-28 text-center overflow-hidden">
-        {/* Orange gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-[hsl(var(--primary)/0.85)]" />
-        <div className="pointer-events-none absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full bg-white/10 blur-[100px]" />
+      {/* ═══════════════ FINAL CTA WITH SALES CHAT ═══════════════ */}
+      <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden bg-background">
+        <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-primary/8 blur-[120px]" />
 
-        <div className="max-w-2xl mx-auto relative z-10 text-primary-foreground">
-          <h2 className="text-3xl md:text-5xl font-black mb-5 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <h2 className="text-3xl md:text-5xl font-black mb-3 tracking-tight text-foreground reveal opacity-0 translate-y-4 transition-all duration-700">
             Try It FREE For 7 Days!
           </h2>
-          <p className="opacity-90 mb-10 text-lg reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
-            Every hour without CareAssist is leads walking away. Start your free trial — live on your site in 5 minutes.
+          <p className="text-muted-foreground mb-10 text-lg max-w-xl mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+            Every hour without CareAssist is leads walking away. Ask our AI anything about the product — or start your free trial now.
           </p>
-          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
-            <div className="absolute -inset-1 rounded-2xl bg-white/20 blur-lg animate-[pulse_3s_ease-in-out_infinite]" />
-            <Button
-              onClick={handleCTA}
-              size="lg"
-              className="relative bg-white text-primary hover:bg-white/95 text-xl px-14 py-7 rounded-2xl shadow-2xl hover:scale-[1.03] transition-all duration-300 font-extrabold"
-            >
-              Start For Free <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
-          <div className="flex items-center justify-center gap-6 mt-7 text-sm opacity-90 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> No credit card</span>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> Live in 5 min</span>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4" /> Cancel anytime</span>
+
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+            {/* Sales Chat Widget — inline */}
+            <div className="w-full max-w-[380px] reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
+              <div className="relative">
+                <div className="absolute -inset-2 rounded-3xl bg-primary/10 blur-lg" />
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border">
+                  <SalesChatBotInline />
+                </div>
+              </div>
+            </div>
+
+            {/* CTA side */}
+            <div className="flex flex-col items-center gap-5 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.35s' }}>
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Or skip the chat</p>
+              <div className="relative inline-block">
+                <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
+                <Button
+                  onClick={handleCTA}
+                  size="lg"
+                  className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-xl px-14 py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold"
+                >
+                  Start Now <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+              <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
+                <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> Cancel anytime</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
