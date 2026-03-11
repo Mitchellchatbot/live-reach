@@ -57,10 +57,10 @@ const Funnel = () => {
   return (
     <div className="min-h-screen bg-primary text-primary-foreground">
       {/* ─── HERO ─── */}
-      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden">
+      <section className="relative px-4 pt-10 pb-6 md:pt-16 md:pb-10 overflow-hidden bg-background text-primary">
         {/* Decorative lighter circles */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-white/10 blur-[100px]" />
-        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-white/5 blur-[120px]" />
+        <div className="pointer-events-none absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px]" />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Lead-in italic text */}
