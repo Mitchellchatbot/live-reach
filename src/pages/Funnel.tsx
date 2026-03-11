@@ -99,6 +99,11 @@ fbq('init', '34129783716666250');
 fbq('track', 'PageView');`;
     document.head.appendChild(fbScript);
 
+    // Track Lead event
+    const leadScript = document.createElement('script');
+    leadScript.innerHTML = `fbq('track', 'Lead');`;
+    document.head.appendChild(leadScript);
+
     // Load LeadConnector embed script
     const script = document.createElement('script');
     script.src = 'https://link.msgsndr.com/js/form_embed.js';
@@ -108,6 +113,7 @@ fbq('track', 'PageView');`;
     return () => { 
       if (document.body.contains(script)) document.body.removeChild(script);
       if (document.head.contains(fbScript)) document.head.removeChild(fbScript);
+      if (document.head.contains(leadScript)) document.head.removeChild(leadScript);
     };
   }, []);
 
