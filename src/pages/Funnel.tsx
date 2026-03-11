@@ -85,13 +85,30 @@ const Funnel = () => {
   const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   useEffect(() => {
+    // Load Meta Pixel Code
+    const fbScript = document.createElement('script');
+    fbScript.innerHTML = `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '34129783716666250');
+fbq('track', 'PageView');`;
+    document.head.appendChild(fbScript);
+
     // Load LeadConnector embed script
     const script = document.createElement('script');
     script.src = 'https://link.msgsndr.com/js/form_embed.js';
     script.type = 'text/javascript';
     script.async = true;
     document.body.appendChild(script);
-    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+    return () => { 
+      if (document.body.contains(script)) document.body.removeChild(script);
+      if (document.head.contains(fbScript)) document.head.removeChild(fbScript);
+    };
   }, []);
 
   useEffect(() => {
