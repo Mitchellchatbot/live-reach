@@ -160,9 +160,12 @@ const Funnel = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-5 mt-6 text-sm text-muted-foreground reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
-            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> 7-day free trial</span>
+          <div className="flex flex-col items-center gap-2 mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+            <p className="text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
+            <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
+              <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> Cancel anytime</span>
+            </div>
           </div>
 
         </div>
