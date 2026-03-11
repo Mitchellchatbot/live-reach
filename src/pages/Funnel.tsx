@@ -174,22 +174,30 @@ const Funnel = () => {
       {/* ═══════════════ STATS ═══════════════ */}
       <section className="px-4 py-8 bg-background">
         <div className="max-w-md md:max-w-4xl mx-auto">
-          <div className="relative rounded-3xl bg-primary text-primary-foreground p-4 md:px-10 md:py-8 overflow-hidden shadow-2xl shadow-primary/25">
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          <div className="rounded-3xl bg-card border border-border/60 p-5 md:px-10 md:py-8 shadow-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 divide-x-0 md:divide-x divide-border/40">
               {stats.map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="text-center rounded-2xl bg-white/20 border border-white/15 py-5 px-3 reveal opacity-0 translate-y-4 transition-all duration-700 hover:bg-white/25 hover:scale-[1.03]"
+                  className="text-center reveal opacity-0 translate-y-4 transition-all duration-700 flex flex-col items-center"
                   style={{ transitionDelay: `${i * 0.08}s` }}
                 >
-                  <p className="text-3xl md:text-5xl font-black tracking-tighter leading-none mb-1.5 drop-shadow-md">
+                  <div className="w-14 h-14 rounded-full border-2 border-primary/20 flex items-center justify-center mb-3">
+                    <stat.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <p className="text-3xl md:text-4xl font-black tracking-tighter leading-none mb-1 text-primary">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] md:text-sm font-medium leading-snug text-white/90">{stat.label}</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground leading-snug">{stat.label}</p>
                 </div>
               ))}
             </div>
+
+            {/* Divider between rows on mobile */}
+            <div className="border-t border-border/40 my-4 md:hidden" />
           </div>
+        </div>
+      </section>
         </div>
       </section>
 
