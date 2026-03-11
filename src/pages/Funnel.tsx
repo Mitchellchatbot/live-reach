@@ -81,7 +81,18 @@ const Funnel = () => {
   const scrollRef = useScrollReveal();
 
   const [showStickyFooter, setShowStickyFooter] = useState(false);
-  const handleCTA = () => navigate('/get-started');
+  const formRef = useRef<HTMLDivElement>(null);
+  const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  useEffect(() => {
+    // Load LeadConnector embed script
+    const script = document.createElement('script');
+    script.src = 'https://link.msgsndr.com/js/form_embed.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setShowStickyFooter(window.scrollY > 400);
