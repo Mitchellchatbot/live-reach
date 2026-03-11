@@ -123,21 +123,10 @@ const Funnel = () => {
             <span className="font-light text-muted-foreground">Captures Leads Instantly!</span>
           </p>
 
-          {/* Demo Widget with glow ring */}
-          <div className="relative flex justify-center mb-4 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-              <div className="w-[320px] h-[440px] rounded-3xl bg-primary/10 blur-[50px]" />
-            </div>
-            <LPDemoWidget />
-          </div>
-          <p className="text-xs text-muted-foreground mb-10 animate-fade-in" style={{ animationDelay: '0.85s', animationFillMode: 'both' }}>
-            ↑ This is what your visitors will experience
-          </p>
-
-          {/* VSL Video Section — elevated card */}
-          <div className="relative max-w-2xl mx-auto mb-10 reveal opacity-0 translate-y-6 transition-all duration-700">
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent blur-sm" />
-            <div className="relative aspect-video bg-gradient-to-br from-muted to-background rounded-2xl border border-border overflow-hidden flex items-center justify-center shadow-xl">
+          {/* VSL Video Section — hero position */}
+          <div className="relative max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+            <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-primary/25 via-primary/10 to-transparent blur-md" />
+            <div className="relative aspect-video bg-gradient-to-br from-muted to-background rounded-2xl border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-2xl shadow-primary/10">
               <div className="text-center group cursor-pointer">
                 <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mx-auto mb-3 shadow-lg shadow-primary/30 group-hover:scale-110 group-hover:shadow-primary/50 transition-all duration-300">
                   <Play className="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" />
