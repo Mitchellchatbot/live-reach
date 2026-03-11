@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
+    if (!OPENAI_API_KEY) throw new Error('OPENAI_API_KEY is not configured');
 
     if (!visitorId || !conversationHistory || conversationHistory.length === 0) {
       return new Response(JSON.stringify({ extracted: false }), {
