@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="https://care-assist.io/dashboard" style="display:inline-block;background:#F97316;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:10px;box-shadow:0 4px 12px rgba(249,115,22,0.3);">
+                    <a href="https://live-reach.lovable.app/dashboard" style="display:inline-block;background:#F97316;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:10px;box-shadow:0 4px 12px rgba(249,115,22,0.3);">
                       Go to Dashboard →
                     </a>
                   </td>

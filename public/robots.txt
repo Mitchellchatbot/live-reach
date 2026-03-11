@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://care-assist.io/sitemap.xml
+Sitemap: https://live-reach.lovable.app/sitemap.xml

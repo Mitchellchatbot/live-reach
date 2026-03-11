@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     }
 
     // Add a "View Conversation" button
-    const appBaseUrl = "https://care-assist.io";
+    const appBaseUrl = "https://live-reach.lovable.app";
     blocks.push({
       type: "actions",
       elements: [
