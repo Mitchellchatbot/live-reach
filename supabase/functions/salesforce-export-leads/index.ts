@@ -264,19 +264,19 @@ Deno.serve(async (req) => {
               } else {
                 // AI summary
                 try {
-                  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-                  if (!LOVABLE_API_KEY) {
-                    console.error("LOVABLE_API_KEY not configured, falling back to transcript");
+                  const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+                  if (!OPENAI_API_KEY) {
+                    console.error("OPENAI_API_KEY not configured, falling back to transcript");
                     fieldValue = transcript.substring(0, 32000);
                   } else {
-                    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
                       method: "POST",
                       headers: {
-                        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+                        "Authorization": `Bearer ${OPENAI_API_KEY}`,
                         "Content-Type": "application/json",
                       },
                       body: JSON.stringify({
-                        model: "google/gemini-2.5-flash-lite",
+                        model: "gpt-4o",
                         messages: [
                           {
                             role: "system",
