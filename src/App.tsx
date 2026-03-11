@@ -70,6 +70,7 @@ const Funnel = lazy(() => import("./pages/Funnel"));
 const MeetSamantha = lazy(() => import("./pages/MeetSamantha"));
 const Marketing = lazy(() => import("./pages/Marketing"));
 const Marketing2 = lazy(() => import("./pages/Marketing2"));
+const Marketing3 = lazy(() => import("./pages/Marketing3"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -135,6 +136,7 @@ const AppRoutes = () => {
         <Route path="/demo/insurance" element={<DemoInsurance />} />
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/marketing2" element={<Marketing2 />} />
+        <Route path="/marketing3" element={<Marketing3 />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
