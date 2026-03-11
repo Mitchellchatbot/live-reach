@@ -197,8 +197,7 @@ const Funnel = () => {
             <div className="border-t border-border/40 my-4 md:hidden" />
           </div>
         </div>
-
-
+      </section>
 
 
       {/* ═══════════════ BENEFITS ═══════════════ */}
