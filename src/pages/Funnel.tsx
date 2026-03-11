@@ -81,7 +81,18 @@ const Funnel = () => {
   const scrollRef = useScrollReveal();
 
   const [showStickyFooter, setShowStickyFooter] = useState(false);
-  const handleCTA = () => navigate('/get-started');
+  const formRef = useRef<HTMLDivElement>(null);
+  const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  useEffect(() => {
+    // Load LeadConnector embed script
+    const script = document.createElement('script');
+    script.src = 'https://link.msgsndr.com/js/form_embed.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setShowStickyFooter(window.scrollY > 400);
@@ -210,24 +221,23 @@ const Funnel = () => {
         </div>
       </section>
 
-      {/* ═══════════════ BOOK A DEMO SPOT ═══════════════ */}
-      <section className="px-4 py-12 md:py-16 bg-muted/40">
+      {/* ═══════════════ GET STARTED FORM ═══════════════ */}
+      <section className="px-4 py-12 md:py-16 bg-muted/40" ref={formRef} id="get-started-form">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-extrabold mb-3 reveal opacity-0 translate-y-4 transition-all duration-700">
-            See It In Action
+            Get Started For Free
           </h2>
           <p className="text-muted-foreground mb-6 text-sm md:text-base max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
-            Book a free 15-minute demo and see how Care Assist captures leads from your site — live.
+            Fill out the form below and we'll get your AI agent set up in minutes.
           </p>
-          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
-            <div className="absolute -inset-1 rounded-2xl bg-primary/25 blur-md animate-[pulse_3s_ease-in-out_infinite]" />
-            <Button
-              onClick={handleCTA}
-              size="lg"
-              className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-lg md:text-xl px-10 py-6 md:px-14 md:py-7 rounded-2xl shadow-xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold"
-            >
-              Book a Demo <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+          <div className="w-full rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-card p-4 md:p-6 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
+            <iframe
+              src="https://api.leadconnectorhq.com/widget/survey/VarcMdVarl1QzePQtEih"
+              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '600px' }}
+              scrolling="no"
+              id="VarcMdVarl1QzePQtEih"
+              title="Get Started Survey"
+            />
           </div>
         </div>
       </section>
