@@ -226,7 +226,7 @@ const Funnel = () => {
       </section>
 
       {/* ─── FINAL CTA ─── */}
-      <section className="px-4 py-16 md:py-24 text-center bg-primary text-primary-foreground">
+      <section className="px-4 py-16 md:py-24 text-center bg-accent text-foreground">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-4">
             Try It FREE For 7 Days!
