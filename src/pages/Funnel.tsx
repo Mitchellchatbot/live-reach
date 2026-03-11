@@ -145,15 +145,15 @@ const Funnel = () => {
             <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
-          {/* VSL Placeholder */}
+          {/* VSL Vimeo Embed */}
           <div className="relative max-w-xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="aspect-video bg-muted rounded-2xl border border-border overflow-hidden flex items-center justify-center shadow-lg">
-              <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-2 shadow-md shadow-primary/30 group-hover:scale-110 transition-transform duration-300">
-                  <Play className="w-7 h-7 text-primary-foreground ml-0.5" fill="currentColor" />
-                </div>
-                <p className="text-muted-foreground text-xs font-medium">Watch how it works</p>
-              </div>
+            <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-primary/15 border border-border">
+              <iframe
+                src="https://player.vimeo.com/video/1172690429?badge=0&autopause=0&player_id=0&app_id=58479"
+                className="w-full h-full"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                title="Care Assist — Watch How It Works"
+              />
             </div>
           </div>
 
