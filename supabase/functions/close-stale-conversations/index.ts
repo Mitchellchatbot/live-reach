@@ -50,6 +50,7 @@ Deno.serve(async (req) => {
     const staleSeconds = clamp(Number(body.staleSeconds ?? 45), 10, 3600);
     const propertyId = body.propertyId ?? null;
 
+    const serviceClient = createClient(supabaseUrl, serviceKey);
     let propertyIds: string[] = [];
 
     if (propertyId) {
@@ -121,7 +122,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const serviceClient = createClient(supabaseUrl, serviceKey);
 
     const thresholdIso = new Date(Date.now() - staleSeconds * 1000).toISOString();
 
