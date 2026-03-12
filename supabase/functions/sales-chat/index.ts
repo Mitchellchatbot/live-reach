@@ -52,7 +52,6 @@ serve(async (req) => {
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
-    }
 
     const { messages } = await req.json();
 
