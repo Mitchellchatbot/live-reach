@@ -1307,7 +1307,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                         ai_response_delay_max_ms: max,
                       })}
                       min={0}
-                      max={60000}
+                      max={120000}
                       step={1000}
                       minStepsBetweenThumbs={1}
                     />
