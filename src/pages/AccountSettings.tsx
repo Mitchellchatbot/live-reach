@@ -108,7 +108,7 @@ const AccountSettings = () => {
     }
   };
 
-
+  const handlePasswordChange = async () => {
     if (!newPassword || newPassword.length < 8) {
       toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
       return;
