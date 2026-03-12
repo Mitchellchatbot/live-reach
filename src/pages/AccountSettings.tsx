@@ -87,7 +87,28 @@ const AccountSettings = () => {
     }
   };
 
-  const handlePasswordChange = async () => {
+  const handleEmailChange = async () => {
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast({ title: 'Please enter a valid email address', variant: 'destructive' });
+      return;
+    }
+    if (trimmed === user?.email) {
+      toast({ title: 'This is already your current email', variant: 'destructive' });
+      return;
+    }
+    setEmailSaving(true);
+    const { error } = await supabase.auth.updateUser({ email: trimmed });
+    setEmailSaving(false);
+    if (error) {
+      toast({ title: 'Failed to update email', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Confirmation sent', description: 'Check both your current and new email inboxes to confirm the change.' });
+      setNewEmail('');
+    }
+  };
+
+
     if (!newPassword || newPassword.length < 8) {
       toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
       return;
