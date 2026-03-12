@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.run-scheduled-extraction]
 verify_jwt = false
+
+[functions.comparison-chat]
+verify_jwt = false
