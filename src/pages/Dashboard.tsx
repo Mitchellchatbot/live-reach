@@ -136,17 +136,25 @@ const DashboardContent = () => {
   const onboardingCheckedRef = useRef(false);
   
   useEffect(() => {
-    // Only check once, after both loading states are complete
+    // Wait until everything is fully loaded before checking
     if (authLoading || dataLoading) return;
     if (!user) return;
     if (onboardingCheckedRef.current) return;
     
-    // Mark as checked so we don't redirect again on re-renders
-    onboardingCheckedRef.current = true;
+    // Double-check: query the profile to see if onboarding is complete
+    const checkAndRedirect = async () => {
+      onboardingCheckedRef.current = true;
+      
+      if (properties.length === 0) {
+        // Verify via RPC as a safety net
+        const { data: isComplete } = await supabase.rpc('check_onboarding_complete', { user_uuid: user.id });
+        if (!isComplete) {
+          navigate('/onboarding');
+        }
+      }
+    };
     
-    if (properties.length === 0) {
-      navigate('/onboarding');
-    }
+    checkAndRedirect();
   }, [authLoading, dataLoading, user, properties.length, navigate]);
 
   // Persist selected conversation in URL search params so it survives tab switches
