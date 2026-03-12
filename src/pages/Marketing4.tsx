@@ -37,11 +37,7 @@ const Marketing4 = () => {
         {/* CTA Button */}
         <a
           href="/get-started"
-          className="mt-12 inline-flex items-center justify-center rounded-full px-10 py-4 text-lg font-bold transition-transform hover:scale-105"
-          style={{
-            backgroundColor: "white",
-            color: "hsl(24, 95%, 53%)",
-          }}
+          className="mt-12 inline-flex items-center justify-center rounded-full px-10 py-4 text-lg font-bold transition-transform hover:scale-105 bg-primary text-primary-foreground"
         >
           Get Your Free Trial Today
         </a>
