@@ -45,6 +45,10 @@ const AccountSettings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
 
+  // Email change
+  const [newEmail, setNewEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+
   // Delete account
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
@@ -80,6 +84,27 @@ const AccountSettings = () => {
       toast({ title: 'Failed to update profile', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: 'Profile updated' });
+    }
+  };
+
+  const handleEmailChange = async () => {
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast({ title: 'Please enter a valid email address', variant: 'destructive' });
+      return;
+    }
+    if (trimmed === user?.email) {
+      toast({ title: 'This is already your current email', variant: 'destructive' });
+      return;
+    }
+    setEmailSaving(true);
+    const { error } = await supabase.auth.updateUser({ email: trimmed });
+    setEmailSaving(false);
+    if (error) {
+      toast({ title: 'Failed to update email', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Confirmation sent', description: 'Check both your current and new email inboxes to confirm the change.' });
+      setNewEmail('');
     }
   };
 
@@ -197,10 +222,27 @@ const AccountSettings = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-sm font-medium">{user?.email}</span>
               </div>
+              <Separator />
+              <div className="space-y-1.5">
+                <Label htmlFor="newEmail">New Email Address</Label>
+                <Input
+                  id="newEmail"
+                  type="email"
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                  placeholder="Enter new email address"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A confirmation link will be sent to both your current and new email addresses.
+              </p>
+              <Button onClick={handleEmailChange} disabled={emailSaving || !newEmail.trim()}>
+                {emailSaving ? 'Sending...' : 'Change Email'}
+              </Button>
             </CardContent>
           </Card>
 
