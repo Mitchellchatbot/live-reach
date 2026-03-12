@@ -38,7 +38,7 @@ serve(async (req) => {
 
     console.log('Generating greeting for:', { companyName, businessType });
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
