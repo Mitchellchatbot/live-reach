@@ -71,7 +71,9 @@ const TeamMembers = () => {
     avatar_url: string | null;
   }
   const [coAdmins, setCoAdmins] = useState<CoAdmin[]>([]);
+  const [coAdminName, setCoAdminName] = useState('');
   const [coAdminEmail, setCoAdminEmail] = useState('');
+  const [coAdminPassword, setCoAdminPassword] = useState('');
   const [isAddingCoAdmin, setIsAddingCoAdmin] = useState(false);
   const [isCoAdminDialogOpen, setIsCoAdminDialogOpen] = useState(false);
   const [deleteCoAdminId, setDeleteCoAdminId] = useState<string | null>(null);
