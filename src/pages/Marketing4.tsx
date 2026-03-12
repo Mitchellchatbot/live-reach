@@ -1,4 +1,4 @@
-import careAssistLogo from "@/assets/care-assist-new-logo-nobg.png";
+import careAssistLogo from "@/assets/care-assist-icon-transparent.png";
 
 const Marketing4 = () => {
   return (
