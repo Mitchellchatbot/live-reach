@@ -59,12 +59,9 @@ export default function Auth() {
     const fetchInvitation = async () => {
       if (!inviteToken) return;
 
-      const { data: agent, error } = await supabase.
-      from('agents').
-      select('name, email, invitation_expires_at, invited_by').
-      eq('invitation_token', inviteToken).
-      eq('invitation_status', 'pending').
-      maybeSingle();
+      const { data: agents, error } = await supabase
+        .rpc('lookup_agent_by_invitation_token', { token: inviteToken });
+      const agent = agents?.[0] || null;
 
       if (error || !agent) {
         toast({
