@@ -74,6 +74,7 @@ const Marketing3 = lazy(() => import("./pages/Marketing3"));
 const Marketing4 = lazy(() => import("./pages/Marketing4"));
 const BookDemo = lazy(() => import("./pages/BookDemo"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
+const Comparison = lazy(() => import("./pages/Comparison"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
@@ -144,6 +145,7 @@ const AppRoutes = () => {
         <Route path="/marketing4" element={<Marketing4 />} />
         <Route path="/book-demo" element={<BookDemo />} />
         <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/comparison" element={<Comparison />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminDashboard />} />
