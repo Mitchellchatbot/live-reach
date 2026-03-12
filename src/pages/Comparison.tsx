@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Check, Phone, Mail, MapPin, Menu, X, Star, ChevronRight } from 'lucide-react';
-import { SalesChatBot } from '@/components/landing/SalesChatBot';
+import { ComparisonChatBot } from '@/components/comparison/ComparisonChatBot';
 
 const navLinks = ['Home', 'About Us', 'Our Services', 'Facilities', 'Blog', 'Contact Us'];
 
