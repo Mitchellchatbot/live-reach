@@ -60,25 +60,30 @@ Deno.serve(async (req) => {
       ]);
 
       if (!owns && !isAgent) {
-        return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403,
+        // Gracefully return 0 instead of 403 — caller may have stale property selection
+        console.warn("close-stale-conversations: user has no access to property", propertyId);
+        return new Response(JSON.stringify({ ok: true, closedCount: 0, staleSeconds, propertyIds: [] }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       propertyIds = [propertyId];
     } else {
-      // Close stale conversations across all properties the user can access.
-      const { data: ownedProps, error: ownedErr } = await authClient
+      // Close stale conversations across all properties the user can access,
+      // including co-owned properties via account_co_owners.
+      const { data: ownerIds } = await serviceClient.rpc("get_account_owner_ids", { user_uuid: userId });
+      const allOwnerIds: string[] = ownerIds ?? [userId];
+
+      const { data: ownedProps, error: ownedErr } = await serviceClient
         .from("properties")
         .select("id")
-        .eq("user_id", userId);
+        .in("user_id", allOwnerIds);
 
       if (ownedErr) {
         console.error("close-stale-conversations: failed to read owned properties", ownedErr);
       }
 
-      const { data: agent, error: agentErr } = await authClient
+      const { data: agent, error: agentErr } = await serviceClient
         .from("agents")
         .select("id")
         .eq("user_id", userId)
@@ -90,7 +95,7 @@ Deno.serve(async (req) => {
 
       let assignedProps: Array<{ property_id: string }> = [];
       if (agent?.id) {
-        const { data: assigned, error: assignedErr } = await authClient
+        const { data: assigned, error: assignedErr } = await serviceClient
           .from("property_agents")
           .select("property_id")
           .eq("agent_id", agent.id);
