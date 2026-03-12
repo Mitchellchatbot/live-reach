@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.comparison-chat]
 verify_jwt = false
+
+[functions.create-shared-login]
+verify_jwt = false
