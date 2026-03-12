@@ -110,6 +110,17 @@ const TeamMembers = () => {
   const displayAgents = (isTourActive && agents.length === 0) ? demoAgents : agents;
   const isDemoMode = isTourActive && agents.length === 0;
 
+  // Resolve all owner IDs (self + any primary owner who granted co-owner access)
+  const resolveOwnerIds = async (): Promise<string[]> => {
+    if (!user) return [];
+    const { data } = await supabase
+      .from('account_co_owners')
+      .select('owner_user_id')
+      .eq('co_owner_user_id', user.id);
+    const ownerIds = [user.id, ...(data || []).map(r => r.owner_user_id)];
+    return [...new Set(ownerIds)];
+  };
+
   useEffect(() => {
     fetchAgents();
     fetchLinkedAIAgents();
@@ -139,11 +150,12 @@ const TeamMembers = () => {
 
   const fetchLinkedAIAgents = async () => {
     if (!user) return;
+    const ownerIds = await resolveOwnerIds();
 
     const { data, error } = await supabase
       .from('ai_agents')
       .select('id, name, linked_agent_id')
-      .eq('owner_id', user.id)
+      .in('owner_id', ownerIds)
       .not('linked_agent_id', 'is', null);
 
     if (!error && data) {
@@ -161,11 +173,12 @@ const TeamMembers = () => {
     if (!user) return;
 
     setLoading(true);
+    const ownerIds = await resolveOwnerIds();
     
     const { data: agentsData, error: agentsError } = await supabase
       .from('agents')
       .select('*')
-      .eq('invited_by', user.id);
+      .in('invited_by', ownerIds);
 
     if (agentsError) {
       console.error('Error fetching agents:', agentsError);
@@ -507,28 +520,43 @@ const TeamMembers = () => {
 
   const fetchCoAdmins = async () => {
     if (!user) return;
+    const ownerIds = await resolveOwnerIds();
 
+    // Fetch co-owners created by any of the resolved owner IDs
     const { data: records } = await supabase
       .from('account_co_owners')
-      .select('id, co_owner_user_id')
-      .eq('owner_user_id', user.id);
+      .select('id, owner_user_id, co_owner_user_id')
+      .in('owner_user_id', ownerIds);
 
     if (!records || records.length === 0) {
       setCoAdmins([]);
       return;
     }
 
-    const coOwnerUserIds = records.map(r => r.co_owner_user_id);
+    // Collect all unique user IDs involved (both owners and co-owners), excluding current user
+    const allUserIds = new Set<string>();
+    records.forEach(r => {
+      allUserIds.add(r.co_owner_user_id);
+      allUserIds.add(r.owner_user_id);
+    });
+    allUserIds.delete(user.id); // Don't show self
+
+    if (allUserIds.size === 0) {
+      setCoAdmins([]);
+      return;
+    }
+
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, email, full_name, avatar_url')
-      .in('user_id', coOwnerUserIds);
+      .in('user_id', Array.from(allUserIds));
 
-    const mapped: CoAdmin[] = records.map(r => {
-      const profile = profiles?.find(p => p.user_id === r.co_owner_user_id);
+    const mapped: CoAdmin[] = Array.from(allUserIds).map(uid => {
+      const record = records.find(r => r.co_owner_user_id === uid || r.owner_user_id === uid);
+      const profile = profiles?.find(p => p.user_id === uid);
       return {
-        id: r.id,
-        user_id: r.co_owner_user_id,
+        id: record?.id || uid,
+        user_id: uid,
         email: profile?.email || 'Unknown',
         full_name: profile?.full_name || null,
         avatar_url: profile?.avatar_url || null,
