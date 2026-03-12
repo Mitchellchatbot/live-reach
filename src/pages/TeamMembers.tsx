@@ -71,7 +71,9 @@ const TeamMembers = () => {
     avatar_url: string | null;
   }
   const [coAdmins, setCoAdmins] = useState<CoAdmin[]>([]);
+  const [coAdminName, setCoAdminName] = useState('');
   const [coAdminEmail, setCoAdminEmail] = useState('');
+  const [coAdminPassword, setCoAdminPassword] = useState('');
   const [isAddingCoAdmin, setIsAddingCoAdmin] = useState(false);
   const [isCoAdminDialogOpen, setIsCoAdminDialogOpen] = useState(false);
   const [deleteCoAdminId, setDeleteCoAdminId] = useState<string | null>(null);
@@ -537,59 +539,43 @@ const TeamMembers = () => {
   };
 
   const handleAddCoAdmin = async () => {
-    if (!coAdminEmail.trim() || !user) return;
-    const email = coAdminEmail.trim().toLowerCase();
-
-    if (email === user.email) {
-      toast.error("You can't add yourself as a co-admin");
-      return;
-    }
+    if (!coAdminEmail.trim() || !coAdminName.trim() || !coAdminPassword.trim() || !user) return;
 
     setIsAddingCoAdmin(true);
 
-    // Look up the user by email using security definer function (bypasses RLS)
-    const { data: userId, error: lookupError } = await supabase
-      .rpc('lookup_user_id_by_email', { lookup_email: email });
-
-    if (lookupError || !userId) {
-      toast.error('No account found with that email. They need to sign up first.');
-      setIsAddingCoAdmin(false);
-      return;
-    }
-
-    // Check not already a co-admin
-    const existing = coAdmins.find(c => c.user_id === userId);
-    if (existing) {
-      toast.error('This person is already a co-admin');
-      setIsAddingCoAdmin(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('account_co_owners')
-      .insert({
-        owner_user_id: user.id,
-        co_owner_user_id: userId,
+    try {
+      const { data, error } = await supabase.functions.invoke('create-shared-login', {
+        body: {
+          name: coAdminName.trim(),
+          email: coAdminEmail.trim().toLowerCase(),
+          password: coAdminPassword,
+        },
       });
 
-    if (error) {
-      toast.error('Failed to add co-admin: ' + error.message);
-      setIsAddingCoAdmin(false);
-      return;
+      if (error) {
+        toast.error('Failed to create shared login: ' + error.message);
+        setIsAddingCoAdmin(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        setIsAddingCoAdmin(false);
+        return;
+      }
+
+      toast.success(`Shared login created! They can sign in with ${coAdminEmail.trim()} and the password you set.`);
+      setCoAdminName('');
+      setCoAdminEmail('');
+      setCoAdminPassword('');
+      setIsCoAdminDialogOpen(false);
+      fetchCoAdmins();
+    } catch (error) {
+      console.error('Error creating shared login:', error);
+      toast.error('Failed to create shared login');
     }
 
-    // Ensure the co-owner has the 'client' role so they can access properties
-    await supabase
-      .from('user_roles')
-      .insert({ user_id: userId, role: 'client' })
-      .select()
-      .maybeSingle(); // ignore duplicate
-
-    toast.success('Co-admin added! They now have full access to your account.');
-    setCoAdminEmail('');
-    setIsCoAdminDialogOpen(false);
     setIsAddingCoAdmin(false);
-    fetchCoAdmins();
   };
 
   const handleRemoveCoAdmin = async () => {
@@ -1143,27 +1129,37 @@ const TeamMembers = () => {
                 <div>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
-                    Co-Admins
+                    Shared Logins
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Co-admins have full access to your account — same properties, inbox, and settings
+                    Create additional email/password logins that share full access to your account
                   </CardDescription>
                 </div>
                 <Dialog open={isCoAdminDialogOpen} onOpenChange={setIsCoAdminDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="text-xs sm:text-sm">
-                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                      Add Co-Admin
+                      <KeyRound className="mr-1.5 h-3.5 w-3.5" />
+                      Create Login
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="text-base">Add Co-Admin</DialogTitle>
+                      <DialogTitle className="text-base">Create Shared Login</DialogTitle>
                       <DialogDescription className="text-xs">
-                        Enter the email of an existing account holder. They'll immediately get full access to your workspace.
+                        Create a new email &amp; password that can sign into your account with full access.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-name" className="text-xs">Name</Label>
+                        <Input
+                          id="co-admin-name"
+                          placeholder="Jane Doe"
+                          className="h-8 text-sm"
+                          value={coAdminName}
+                          onChange={(e) => setCoAdminName(e.target.value)}
+                        />
+                      </div>
                       <div className="space-y-1">
                         <Label htmlFor="co-admin-email" className="text-xs">Email</Label>
                         <div className="relative">
@@ -1178,14 +1174,28 @@ const TeamMembers = () => {
                           />
                         </div>
                       </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-password" className="text-xs">Password</Label>
+                        <div className="relative">
+                          <KeyRound className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            id="co-admin-password"
+                            type="password"
+                            placeholder="At least 6 characters"
+                            className="pl-8 h-8 text-sm"
+                            value={coAdminPassword}
+                            onChange={(e) => setCoAdminPassword(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" size="sm" onClick={() => setIsCoAdminDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim()}>
+                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim() || !coAdminName.trim() || coAdminPassword.length < 6}>
                         {isAddingCoAdmin && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
-                        Add Co-Admin
+                        Create Login
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -1196,8 +1206,8 @@ const TeamMembers = () => {
               {coAdmins.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No co-admins yet</p>
-                  <p className="text-xs mt-1">Add someone to share full access to your account</p>
+                  <p className="text-sm">No shared logins yet</p>
+                  <p className="text-xs mt-1">Create additional logins to share full access to your account</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1256,13 +1266,13 @@ const TeamMembers = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Co-Admin Confirmation */}
+      {/* Delete Shared Login Confirmation */}
       <AlertDialog open={!!deleteCoAdminId} onOpenChange={(open) => !open && setDeleteCoAdminId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Co-Admin</AlertDialogTitle>
+            <AlertDialogTitle>Remove Shared Login</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure? They will immediately lose access to your properties, conversations, and settings.
+              Are you sure? This login will immediately lose access to your properties, conversations, and settings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1272,7 +1282,7 @@ const TeamMembers = () => {
               disabled={isDeletingCoAdmin}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeletingCoAdmin ? 'Removing...' : 'Remove Co-Admin'}
+              {isDeletingCoAdmin ? 'Removing...' : 'Remove Login'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
