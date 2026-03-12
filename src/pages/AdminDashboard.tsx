@@ -140,14 +140,15 @@ export default function AdminDashboard() {
     const [
       { count: clientCount }, { count: agentCount }, { count: conversationCount },
       { count: activeCount }, { count: propertyCount },
-      { data: allVisitors }, { count: openComplaintsCount },
+      { count: phoneCount }, { count: leadCount }, { count: openComplaintsCount },
     ] = await Promise.all([
       supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'client'),
       supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'agent'),
       supabase.from('conversations').select('*', { count: 'exact', head: true }),
       supabase.from('conversations').select('*', { count: 'exact', head: true }).in('status', ['active', 'pending']),
       supabase.from('properties').select('*', { count: 'exact', head: true }),
-      supabase.from('visitors').select('id, phone, name, email'),
+      supabase.from('visitors').select('*', { count: 'exact', head: true }).not('phone', 'is', null),
+      supabase.from('visitors').select('*', { count: 'exact', head: true }).or('name.not.is.null,email.not.is.null,phone.not.is.null'),
       supabase.from('agent_complaints').select('*', { count: 'exact', head: true }).eq('status', 'open'),
     ]);
 
@@ -157,8 +158,8 @@ export default function AdminDashboard() {
       totalConversations: conversationCount || 0,
       totalProperties: propertyCount || 0,
       activeConversations: activeCount || 0,
-      totalPhones: (allVisitors || []).filter(v => v.phone).length,
-      totalLeads: (allVisitors || []).filter(v => v.name || v.email || v.phone).length,
+      totalPhones: phoneCount || 0,
+      totalLeads: leadCount || 0,
       openComplaints: openComplaintsCount || 0,
     });
   };
