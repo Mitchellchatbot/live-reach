@@ -110,6 +110,17 @@ const TeamMembers = () => {
   const displayAgents = (isTourActive && agents.length === 0) ? demoAgents : agents;
   const isDemoMode = isTourActive && agents.length === 0;
 
+  // Resolve all owner IDs (self + any primary owner who granted co-owner access)
+  const resolveOwnerIds = async (): Promise<string[]> => {
+    if (!user) return [];
+    const { data } = await supabase
+      .from('account_co_owners')
+      .select('owner_user_id')
+      .eq('co_owner_user_id', user.id);
+    const ownerIds = [user.id, ...(data || []).map(r => r.owner_user_id)];
+    return [...new Set(ownerIds)];
+  };
+
   useEffect(() => {
     fetchAgents();
     fetchLinkedAIAgents();
