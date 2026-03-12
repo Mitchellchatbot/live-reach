@@ -329,8 +329,12 @@ const VisitorInfoSidebar = ({
   // Sync when visitor prop changes (e.g. switching conversations or realtime update)
   useEffect(() => {
     setLocalVisitor(visitor);
-    setIsExtracting(false);
   }, [visitor]);
+
+  // Reset extraction state only when switching to a different visitor
+  useEffect(() => {
+    setIsExtracting(false);
+  }, [visitor.id]);
 
   const handleFieldUpdated = useCallback((field: string, newValue: string | null) => {
     setLocalVisitor((prev: any) => ({ ...prev, [field]: newValue }));
