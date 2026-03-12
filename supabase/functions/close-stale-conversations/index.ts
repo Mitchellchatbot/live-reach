@@ -122,7 +122,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const serviceClient = createClient(supabaseUrl, serviceKey);
 
     const thresholdIso = new Date(Date.now() - staleSeconds * 1000).toISOString();
 
