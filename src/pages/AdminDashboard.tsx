@@ -109,47 +109,30 @@ export default function AdminDashboard() {
   };
 
   const fetchClientOverview = async () => {
-    const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'client');
-    const clientUserIds = roles?.map(r => r.user_id) || [];
-    if (clientUserIds.length === 0) { setClients([]); setLoadingClients(false); return; }
+    // Use server-side aggregation to bypass 1000-row limits
+    const { data, error } = await supabase.rpc('admin_client_overview');
+    if (error || !data) {
+      console.error('Error fetching client overview:', error);
+      setClients([]);
+      setLoadingClients(false);
+      return;
+    }
 
-    const [{ data: profiles }, { data: properties }, { data: agents }, { data: conversations }, { data: visitors }, { data: agentComplaints }] = await Promise.all([
-      supabase.from('profiles').select('*').in('user_id', clientUserIds),
-      supabase.from('properties').select('id, user_id, name, domain'),
-      supabase.from('agents').select('id, invited_by, name, email, status'),
-      supabase.from('conversations').select('id, property_id, status'),
-      supabase.from('visitors').select('id, property_id, name, email, phone'),
-      supabase.from('agent_complaints').select('id, property_id, status'),
-    ]);
-
-    setClients((profiles || []).map(profile => {
-      const clientProps = (properties || []).filter(p => p.user_id === profile.user_id);
-      const propIds = clientProps.map(p => p.id);
-      const clientConvos = (conversations || []).filter(c => propIds.includes(c.property_id));
-      const clientVisitors = (visitors || []).filter(v => propIds.includes(v.property_id));
-      const clientAgents = (agents || []).filter(a => a.invited_by === profile.user_id);
-      const clientComplaints = (agentComplaints || []).filter(c => c.property_id && propIds.includes(c.property_id));
-
-      // Per-property conversation counts
-      const propConvoCounts = Object.fromEntries(propIds.map(id => [id, 0]));
-      clientConvos.forEach(c => { if (propConvoCounts[c.property_id] !== undefined) propConvoCounts[c.property_id]++; });
-
-      return {
-        user_id: profile.user_id,
-        email: profile.email,
-        full_name: profile.full_name,
-        company_name: profile.company_name,
-        created_at: profile.created_at,
-        properties_count: clientProps.length,
-        conversations_count: clientConvos.length,
-        agents_count: clientAgents.length,
-        phones_count: clientVisitors.filter(v => v.phone).length,
-        leads_count: clientVisitors.filter(v => v.name || v.email || v.phone).length,
-        complaints_count: clientComplaints.length,
-        properties: clientProps.map(p => ({ id: p.id, name: p.name, domain: p.domain, conversations_count: propConvoCounts[p.id] || 0 })),
-        agents: clientAgents.map(a => ({ name: a.name, email: a.email, status: a.status })),
-      };
-    }));
+    setClients((data as any[]).map(row => ({
+      user_id: row.user_id,
+      email: row.email,
+      full_name: row.full_name,
+      company_name: row.company_name,
+      created_at: row.created_at,
+      properties_count: Number(row.properties_count),
+      conversations_count: Number(row.conversations_count),
+      agents_count: Number(row.agents_count),
+      phones_count: Number(row.phones_count),
+      leads_count: Number(row.leads_count),
+      complaints_count: Number(row.complaints_count),
+      properties: [],
+      agents: [],
+    })));
     setLoadingClients(false);
   };
 
