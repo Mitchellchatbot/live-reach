@@ -326,9 +326,13 @@ const VisitorInfoSidebar = ({
   const [localVisitor, setLocalVisitor] = useState(visitor);
   const [isExtracting, setIsExtracting] = useState(false);
 
-  // Sync when visitor prop changes (e.g. switching conversations) & reset extraction state
+  // Sync when visitor prop changes (e.g. switching conversations or realtime update)
   useEffect(() => {
     setLocalVisitor(visitor);
+  }, [visitor]);
+
+  // Reset extraction state only when switching to a different visitor
+  useEffect(() => {
     setIsExtracting(false);
   }, [visitor.id]);
 
