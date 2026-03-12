@@ -1117,15 +1117,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      lookup_agent_by_invitation_token: {
-        Args: { token: string }
-        Returns: {
-          email: string
-          invitation_expires_at: string
-          invited_by: string
-          name: string
-        }[]
-      }
       lookup_user_id_by_email: {
         Args: { lookup_email: string }
         Returns: string
@@ -1146,14 +1137,6 @@ export type Database = {
       user_owns_property: {
         Args: { property_uuid: string; user_uuid: string }
         Returns: boolean
-      }
-      verify_agent_invitation: {
-        Args: { p_email: string; p_token: string }
-        Returns: {
-          email: string
-          id: string
-          invitation_expires_at: string
-        }[]
       }
       visitor_matches_session: {
         Args: { visitor_session_id: string; visitor_uuid: string }

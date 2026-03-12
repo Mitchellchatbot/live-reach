@@ -59,9 +59,12 @@ export default function Auth() {
     const fetchInvitation = async () => {
       if (!inviteToken) return;
 
-      const { data: agents, error } = await supabase
-        .rpc('lookup_agent_by_invitation_token', { token: inviteToken });
-      const agent = agents?.[0] || null;
+      const { data: agent, error } = await supabase.
+      from('agents').
+      select('name, email, invitation_expires_at, invited_by').
+      eq('invitation_token', inviteToken).
+      eq('invitation_status', 'pending').
+      maybeSingle();
 
       if (error || !agent) {
         toast({
@@ -128,9 +131,13 @@ export default function Auth() {
     if (!inviteToken) return;
 
     // Find pending invitation matching this token and email
-    const { data: agents, error: agentError } = await supabase
-      .rpc('verify_agent_invitation', { p_token: inviteToken, p_email: userEmail });
-    const agent = agents?.[0] || null;
+    const { data: agent, error: agentError } = await supabase.
+    from('agents').
+    select('id, email, invitation_expires_at').
+    eq('invitation_token', inviteToken).
+    eq('invitation_status', 'pending').
+    eq('email', userEmail).
+    maybeSingle();
 
     if (agentError || !agent) {
       console.log('No matching pending invitation found');
