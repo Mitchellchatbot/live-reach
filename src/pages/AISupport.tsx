@@ -1381,7 +1381,7 @@ Avoid em dashes, semicolons, and starting too many sentences with "I". Skip jarg
                             ...settings,
                             typing_wpm: val,
                           })}
-                          min={90}
+                          min={60}
                           max={150}
                           step={5}
                         />
