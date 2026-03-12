@@ -1,4 +1,4 @@
-import careAssistLogo from "@/assets/care-assist-new-logo.png";
+import careAssistLogo from "@/assets/care-assist-new-logo-nobg.png";
 
 const Marketing4 = () => {
   return (
@@ -24,7 +24,7 @@ const Marketing4 = () => {
         <img
           src={careAssistLogo}
           alt="Care Assist"
-          className="h-14 mb-12"
+          className="h-24 md:h-32 mb-12"
         />
 
         {/* Headline */}
