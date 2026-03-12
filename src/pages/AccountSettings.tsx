@@ -45,6 +45,10 @@ const AccountSettings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
 
+  // Email change
+  const [newEmail, setNewEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
+
   // Delete account
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   
