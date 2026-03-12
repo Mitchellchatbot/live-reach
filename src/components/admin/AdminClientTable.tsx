@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ClientOverview {
   user_id: string;
@@ -29,6 +30,26 @@ interface Props {
 
 export function AdminClientTable({ clients, loading }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detailsCache, setDetailsCache] = useState<Record<string, { properties: any[]; agents: any[] }>>({});
+  const [loadingDetails, setLoadingDetails] = useState<string | null>(null);
+
+  const handleToggle = async (userId: string) => {
+    if (expandedId === userId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(userId);
+
+    if (detailsCache[userId]) return;
+
+    setLoadingDetails(userId);
+    const { data, error } = await supabase.rpc('admin_client_details', { client_user_id: userId });
+    if (!error && data) {
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      setDetailsCache(prev => ({ ...prev, [userId]: parsed }));
+    }
+    setLoadingDetails(null);
+  };
 
   return (
     <Card>
@@ -60,8 +81,10 @@ export function AdminClientTable({ clients, loading }: Props) {
             <TableBody>
               {clients.map((client) => {
                 const isOpen = expandedId === client.user_id;
+                const details = detailsCache[client.user_id];
+                const isLoadingDetail = loadingDetails === client.user_id;
                 return (
-                  <Collapsible key={client.user_id} open={isOpen} onOpenChange={() => setExpandedId(isOpen ? null : client.user_id)} asChild>
+                  <Collapsible key={client.user_id} open={isOpen} onOpenChange={() => handleToggle(client.user_id)} asChild>
                     <>
                       <CollapsibleTrigger asChild>
                         <TableRow className="cursor-pointer hover:bg-muted/50">
@@ -89,38 +112,45 @@ export function AdminClientTable({ clients, loading }: Props) {
                       <CollapsibleContent asChild>
                         <TableRow>
                           <TableCell colSpan={10} className="bg-muted/30 p-4">
-                            <div className="grid md:grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="font-semibold mb-2 text-sm">Properties</h4>
-                                {client.properties.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">No properties</p>
-                                ) : (
-                                  <ul className="space-y-1">
-                                    {client.properties.map(p => (
-                                      <li key={p.id} className="text-sm flex justify-between">
-                                        <span>{p.name} <span className="text-muted-foreground">({p.domain})</span></span>
-                                        <Badge variant="outline" className="text-xs">{p.conversations_count} chats</Badge>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
+                            {isLoadingDetail ? (
+                              <div className="flex items-center justify-center py-4 gap-2 text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Loading details...
                               </div>
-                              <div>
-                                <h4 className="font-semibold mb-2 text-sm">Agents</h4>
-                                {client.agents.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">No agents</p>
-                                ) : (
-                                  <ul className="space-y-1">
-                                    {client.agents.map((a, i) => (
-                                      <li key={i} className="text-sm flex justify-between">
-                                        <span>{a.name} <span className="text-muted-foreground">({a.email})</span></span>
-                                        <Badge variant={a.status === 'online' ? 'default' : 'outline'} className="text-xs">{a.status}</Badge>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
+                            ) : (
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                  <h4 className="font-semibold mb-2 text-sm">Properties</h4>
+                                  {(!details?.properties || details.properties.length === 0) ? (
+                                    <p className="text-xs text-muted-foreground">No properties</p>
+                                  ) : (
+                                    <ul className="space-y-1">
+                                      {details.properties.map((p: any) => (
+                                        <li key={p.id} className="text-sm flex justify-between">
+                                          <span>{p.name} <span className="text-muted-foreground">({p.domain})</span></span>
+                                          <Badge variant="outline" className="text-xs">{p.conversations_count} chats</Badge>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold mb-2 text-sm">Agents</h4>
+                                  {(!details?.agents || details.agents.length === 0) ? (
+                                    <p className="text-xs text-muted-foreground">No agents</p>
+                                  ) : (
+                                    <ul className="space-y-1">
+                                      {details.agents.map((a: any, i: number) => (
+                                        <li key={i} className="text-sm flex justify-between">
+                                          <span>{a.name} <span className="text-muted-foreground">({a.email})</span></span>
+                                          <Badge variant={a.status === 'online' ? 'default' : 'outline'} className="text-xs">{a.status}</Badge>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </TableCell>
                         </TableRow>
                       </CollapsibleContent>

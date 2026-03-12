@@ -1104,6 +1104,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_client_details: { Args: { client_user_id: string }; Returns: Json }
+      admin_client_overview: {
+        Args: never
+        Returns: {
+          agents_count: number
+          company_name: string
+          complaints_count: number
+          conversations_count: number
+          created_at: string
+          email: string
+          full_name: string
+          leads_count: number
+          phones_count: number
+          properties_count: number
+          user_id: string
+        }[]
+      }
       check_onboarding_complete: {
         Args: { user_uuid: string }
         Returns: boolean
