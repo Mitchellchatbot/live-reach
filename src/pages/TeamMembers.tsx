@@ -533,17 +533,30 @@ const TeamMembers = () => {
       return;
     }
 
-    const coOwnerUserIds = records.map(r => r.co_owner_user_id);
+    // Collect all unique user IDs involved (both owners and co-owners), excluding current user
+    const allUserIds = new Set<string>();
+    records.forEach(r => {
+      allUserIds.add(r.co_owner_user_id);
+      allUserIds.add(r.owner_user_id);
+    });
+    allUserIds.delete(user.id); // Don't show self
+
+    if (allUserIds.size === 0) {
+      setCoAdmins([]);
+      return;
+    }
+
     const { data: profiles } = await supabase
       .from('profiles')
       .select('user_id, email, full_name, avatar_url')
-      .in('user_id', coOwnerUserIds);
+      .in('user_id', Array.from(allUserIds));
 
-    const mapped: CoAdmin[] = records.map(r => {
-      const profile = profiles?.find(p => p.user_id === r.co_owner_user_id);
+    const mapped: CoAdmin[] = Array.from(allUserIds).map(uid => {
+      const record = records.find(r => r.co_owner_user_id === uid || r.owner_user_id === uid);
+      const profile = profiles?.find(p => p.user_id === uid);
       return {
-        id: r.id,
-        user_id: r.co_owner_user_id,
+        id: record?.id || uid,
+        user_id: uid,
         email: profile?.email || 'Unknown',
         full_name: profile?.full_name || null,
         avatar_url: profile?.avatar_url || null,
