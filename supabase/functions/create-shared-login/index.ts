@@ -58,11 +58,57 @@ serve(async (req: Request) => {
 
     // Check if email already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const emailExists = existingUsers?.users?.some(u => u.email?.toLowerCase() === cleanEmail);
+    const existingUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
 
-    if (emailExists) {
-      return new Response(JSON.stringify({ error: "An account with this email already exists" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (existingUser) {
+      // Check if already linked as co-owner
+      const { data: existingLink } = await supabaseAdmin
+        .from("account_co_owners")
+        .select("id")
+        .eq("owner_user_id", callerUserId)
+        .eq("co_owner_user_id", existingUser.id)
+        .maybeSingle();
+
+      if (existingLink) {
+        // Already linked — update the password and return success
+        await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
+        console.log("Shared login password updated for existing co-owner:", cleanEmail);
+        return new Response(JSON.stringify({
+          success: true,
+          message: "Shared login password updated successfully",
+          userId: existingUser.id,
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Exists but not linked — link as co-owner and update password
+      const { error: linkError } = await supabaseAdmin.from("account_co_owners").insert({
+        owner_user_id: callerUserId,
+        co_owner_user_id: existingUser.id,
+      });
+
+      if (linkError) {
+        console.error("Error linking existing user as co-owner:", linkError);
+        return new Response(JSON.stringify({ error: "Failed to link existing account" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Ensure they have the client role
+      await supabaseAdmin.from("user_roles").delete().eq("user_id", existingUser.id).eq("role", "user");
+      await supabaseAdmin.from("user_roles").upsert({ user_id: existingUser.id, role: "client" }, { onConflict: "user_id,role" });
+
+      // Update password
+      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password });
+
+      console.log("Existing user linked as shared login:", cleanEmail, "for owner:", callerUserId);
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Existing account linked as shared login",
+        userId: existingUser.id,
+      }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
