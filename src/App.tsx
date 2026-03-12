@@ -71,6 +71,7 @@ const MeetSamantha = lazy(() => import("./pages/MeetSamantha"));
 const Marketing = lazy(() => import("./pages/Marketing"));
 const Marketing2 = lazy(() => import("./pages/Marketing2"));
 const Marketing3 = lazy(() => import("./pages/Marketing3"));
+const Marketing4 = lazy(() => import("./pages/Marketing4"));
 const BookDemo = lazy(() => import("./pages/BookDemo"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 
@@ -140,6 +141,7 @@ const AppRoutes = () => {
         <Route path="/marketing" element={<Marketing />} />
         <Route path="/marketing2" element={<Marketing2 />} />
         <Route path="/marketing3" element={<Marketing3 />} />
+        <Route path="/marketing4" element={<Marketing4 />} />
         <Route path="/book-demo" element={<BookDemo />} />
         <Route path="/get-started" element={<GetStarted />} />
         <Route path="/auth" element={<Auth />} />
