@@ -598,9 +598,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
             return prev.map(c => {
               if (c.id !== newMessage.conversation_id) return c;
               const existing = c.messages || [];
-              const alreadyExists = existing.some(
-                m => m.id === newMessage.id || m.sequence_number === newMessage.sequence_number
-              );
+              const alreadyExists = existing.some(m => m.id === newMessage.id);
               if (alreadyExists) return { ...c, updated_at: newMessage.created_at };
               const merged = [...existing, {
                 ...newMessage,
