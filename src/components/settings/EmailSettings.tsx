@@ -34,35 +34,40 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
 
   const { user } = useAuth();
   const [serverConfig, setServerConfig] = useState<EmailConfig | null>(null);
-  const [loading, setLoading] = useState(!isBulk);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [teamEmails, setTeamEmails] = useState<{ email: string; name: string }[]>([]);
   const [selectedTeamEmails, setSelectedTeamEmails] = useState<Set<string>>(new Set());
 
-  const draftKey = `email-settings-${effectivePropertyId || 'bulk'}`;
+  const draftKey = isBulk ? 'email-settings-bulk' : `email-settings-${effectivePropertyId || ''}`;
   const [config, setConfig, clearDraft] = useFormDraft<EmailConfig>(draftKey, serverConfig, loading);
 
   useEffect(() => {
-    if (isBulk) {
-      setServerConfig({
-        id: '',
-        enabled: true,
-        notification_emails: [],
-        notify_on_new_conversation: true,
-        notify_on_escalation: true,
-        notify_on_phone_submission: true,
-      });
+    const initialize = async () => {
+      setLoading(true);
+
+      if (isBulk) {
+        await Promise.all([fetchBulkSettings(), fetchTeamEmails()]);
+        return;
+      }
+
+      if (effectivePropertyId) {
+        await Promise.all([fetchSettings(), fetchTeamEmails()]);
+        return;
+      }
+
+      setServerConfig(null);
+      await fetchTeamEmails();
       setLoading(false);
-    } else if (effectivePropertyId) {
-      fetchSettings();
-    }
-    fetchTeamEmails();
-  }, [propertyId, bulkPropertyIds?.join(',')]);
+    };
+
+    initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId, bulkPropertyIds?.join(','), user?.id]);
 
   const fetchSettings = async () => {
     if (!effectivePropertyId) return;
-    setLoading(true);
     const { data, error } = await supabase
       .from('email_notification_settings')
       .select('*')
@@ -88,6 +93,60 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
     } else {
       setServerConfig(null);
     }
+    setLoading(false);
+  };
+
+  const fetchBulkSettings = async () => {
+    if (!bulkPropertyIds?.length) {
+      setServerConfig({
+        id: '',
+        enabled: true,
+        notification_emails: [],
+        notify_on_new_conversation: true,
+        notify_on_escalation: true,
+        notify_on_phone_submission: true,
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('email_notification_settings')
+      .select('enabled, notification_emails, notify_on_new_conversation, notify_on_escalation, notify_on_phone_submission')
+      .in('property_id', bulkPropertyIds);
+
+    if (error) {
+      console.error('Error fetching bulk Email settings:', error);
+      toast.error('Failed to load bulk Email settings');
+      setServerConfig({
+        id: '',
+        enabled: true,
+        notification_emails: [],
+        notify_on_new_conversation: true,
+        notify_on_escalation: true,
+        notify_on_phone_submission: true,
+      });
+      setLoading(false);
+      return;
+    }
+
+    const rows = data || [];
+    const mergedRecipients = Array.from(
+      new Set(
+        rows
+          .flatMap((row) => row.notification_emails || [])
+          .map((email) => email.toLowerCase()),
+      ),
+    );
+
+    setServerConfig({
+      id: '',
+      enabled: rows.length ? rows.some((row) => row.enabled) : true,
+      notification_emails: mergedRecipients,
+      notify_on_new_conversation: rows.length ? rows.some((row) => row.notify_on_new_conversation) : true,
+      notify_on_escalation: rows.length ? rows.some((row) => row.notify_on_escalation) : true,
+      notify_on_phone_submission: rows.length ? rows.some((row) => row.notify_on_phone_submission ?? true) : true,
+    });
     setLoading(false);
   };
 
