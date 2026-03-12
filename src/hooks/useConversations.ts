@@ -235,6 +235,19 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     gcTime: 5 * 60 * 1000,
   });
 
+  const loading = propertiesLoading || conversationsLoading;
+
+  // Helper to update conversations cache
+  const updateConversationsCache = useCallback(
+    (updater: (prev: DbConversation[]) => DbConversation[]) => {
+      queryClient.setQueryData<DbConversation[]>(
+        QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
+        (old) => updater(old || [])
+      );
+    },
+    [queryClient, user?.id, selectedPropertyId, agentId]
+  );
+
   // Fallback polling: periodically re-fetch to catch any messages missed by Realtime
   const pollIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPollRef = useRef<string>(new Date().toISOString());
@@ -248,7 +261,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     const poll = async () => {
       if (!isActive) return;
       try {
-        // Check if any conversations have been updated since our last poll
         const since = lastPollRef.current;
         let query = supabase
           .from('conversations')
@@ -264,7 +276,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
         const { data: updatedConvs } = await query;
 
         if (updatedConvs && updatedConvs.length > 0) {
-          // There are updates we may have missed — re-fetch those conversations' messages
           const convIds = updatedConvs.map(c => c.id);
           
           for (const convId of convIds) {
@@ -286,7 +297,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
             updateConversationsCache(prev => {
               const existing = prev.find(c => c.id === convId);
               if (!existing) {
-                // New conversation we don't have yet
                 return [{
                   ...freshConv,
                   messages: sortedMessages,
@@ -294,7 +304,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
                 } as DbConversation, ...prev];
               }
 
-              // Only update if we're actually missing messages
               const existingMsgIds = new Set((existing.messages || []).map(m => m.id));
               const hasMissing = sortedMessages.some(m => !existingMsgIds.has(m.id));
               
@@ -310,13 +319,11 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
           }
 
           lastPollRef.current = updatedConvs[0].updated_at;
-          pollInterval = 5000; // reset on activity
+          pollInterval = 5000;
         } else {
-          // No updates — back off gradually
           pollInterval = Math.min(pollInterval * 1.5, 30000);
         }
       } catch {
-        // Best-effort — don't crash on poll failure
         pollInterval = Math.min(pollInterval * 2, 30000);
       }
 
@@ -332,19 +339,6 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
       if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
     };
   }, [user, selectedPropertyId, updateConversationsCache]);
-
-  const loading = propertiesLoading || conversationsLoading;
-
-  // Helper to update conversations cache
-  const updateConversationsCache = useCallback(
-    (updater: (prev: DbConversation[]) => DbConversation[]) => {
-      queryClient.setQueryData<DbConversation[]>(
-        QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
-        (old) => updater(old || [])
-      );
-    },
-    [queryClient, user?.id, selectedPropertyId, agentId]
-  );
 
   const sendMessage = async (conversationId: string, content: string, senderId: string, assignAgentId?: string) => {
     const { data: maxSeqData } = await supabase
