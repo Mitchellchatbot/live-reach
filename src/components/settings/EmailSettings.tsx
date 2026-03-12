@@ -34,31 +34,37 @@ export const EmailSettings = ({ propertyId, bulkPropertyIds }: EmailSettingsProp
 
   const { user } = useAuth();
   const [serverConfig, setServerConfig] = useState<EmailConfig | null>(null);
-  const [loading, setLoading] = useState(!isBulk);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [teamEmails, setTeamEmails] = useState<{ email: string; name: string }[]>([]);
   const [selectedTeamEmails, setSelectedTeamEmails] = useState<Set<string>>(new Set());
 
-  const draftKey = `email-settings-${effectivePropertyId || 'bulk'}`;
+  const draftKey = isBulk ? 'email-settings-bulk' : `email-settings-${effectivePropertyId || ''}`;
   const [config, setConfig, clearDraft] = useFormDraft<EmailConfig>(draftKey, serverConfig, loading);
 
   useEffect(() => {
-    if (isBulk) {
-      setServerConfig({
-        id: '',
-        enabled: true,
-        notification_emails: [],
-        notify_on_new_conversation: true,
-        notify_on_escalation: true,
-        notify_on_phone_submission: true,
-      });
+    const initialize = async () => {
+      setLoading(true);
+
+      if (isBulk) {
+        await Promise.all([fetchBulkSettings(), fetchTeamEmails()]);
+        return;
+      }
+
+      if (effectivePropertyId) {
+        await Promise.all([fetchSettings(), fetchTeamEmails()]);
+        return;
+      }
+
+      setServerConfig(null);
+      await fetchTeamEmails();
       setLoading(false);
-    } else if (effectivePropertyId) {
-      fetchSettings();
-    }
-    fetchTeamEmails();
-  }, [propertyId, bulkPropertyIds?.join(',')]);
+    };
+
+    initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propertyId, bulkPropertyIds?.join(','), user?.id]);
 
   const fetchSettings = async () => {
     if (!effectivePropertyId) return;
