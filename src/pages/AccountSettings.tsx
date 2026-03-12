@@ -222,10 +222,27 @@ const AccountSettings = () => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                 <span className="text-sm font-medium">{user?.email}</span>
               </div>
+              <Separator />
+              <div className="space-y-1.5">
+                <Label htmlFor="newEmail">New Email Address</Label>
+                <Input
+                  id="newEmail"
+                  type="email"
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                  placeholder="Enter new email address"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A confirmation link will be sent to both your current and new email addresses.
+              </p>
+              <Button onClick={handleEmailChange} disabled={emailSaving || !newEmail.trim()}>
+                {emailSaving ? 'Sending...' : 'Change Email'}
+              </Button>
             </CardContent>
           </Card>
 
