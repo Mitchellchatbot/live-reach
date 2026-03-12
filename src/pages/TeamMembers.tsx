@@ -1266,13 +1266,13 @@ const TeamMembers = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Co-Admin Confirmation */}
+      {/* Delete Shared Login Confirmation */}
       <AlertDialog open={!!deleteCoAdminId} onOpenChange={(open) => !open && setDeleteCoAdminId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Co-Admin</AlertDialogTitle>
+            <AlertDialogTitle>Remove Shared Login</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure? They will immediately lose access to your properties, conversations, and settings.
+              Are you sure? This login will immediately lose access to your properties, conversations, and settings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1282,7 +1282,7 @@ const TeamMembers = () => {
               disabled={isDeletingCoAdmin}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeletingCoAdmin ? 'Removing...' : 'Remove Co-Admin'}
+              {isDeletingCoAdmin ? 'Removing...' : 'Remove Login'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
