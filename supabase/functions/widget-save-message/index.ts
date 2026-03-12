@@ -194,6 +194,12 @@ Deno.serve(async (req) => {
       updatePayload.ai_queued_paused = false;
     }
 
+    // Actually persist the conversation update
+    await supabase
+      .from("conversations")
+      .update(updatePayload)
+      .eq("id", conversationId);
+
     return new Response(JSON.stringify({ success: true, sequence_number: nextSeq, conversationId, conversationCreated }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
