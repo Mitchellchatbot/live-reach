@@ -539,59 +539,43 @@ const TeamMembers = () => {
   };
 
   const handleAddCoAdmin = async () => {
-    if (!coAdminEmail.trim() || !user) return;
-    const email = coAdminEmail.trim().toLowerCase();
-
-    if (email === user.email) {
-      toast.error("You can't add yourself as a co-admin");
-      return;
-    }
+    if (!coAdminEmail.trim() || !coAdminName.trim() || !coAdminPassword.trim() || !user) return;
 
     setIsAddingCoAdmin(true);
 
-    // Look up the user by email using security definer function (bypasses RLS)
-    const { data: userId, error: lookupError } = await supabase
-      .rpc('lookup_user_id_by_email', { lookup_email: email });
-
-    if (lookupError || !userId) {
-      toast.error('No account found with that email. They need to sign up first.');
-      setIsAddingCoAdmin(false);
-      return;
-    }
-
-    // Check not already a co-admin
-    const existing = coAdmins.find(c => c.user_id === userId);
-    if (existing) {
-      toast.error('This person is already a co-admin');
-      setIsAddingCoAdmin(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('account_co_owners')
-      .insert({
-        owner_user_id: user.id,
-        co_owner_user_id: userId,
+    try {
+      const { data, error } = await supabase.functions.invoke('create-shared-login', {
+        body: {
+          name: coAdminName.trim(),
+          email: coAdminEmail.trim().toLowerCase(),
+          password: coAdminPassword,
+        },
       });
 
-    if (error) {
-      toast.error('Failed to add co-admin: ' + error.message);
-      setIsAddingCoAdmin(false);
-      return;
+      if (error) {
+        toast.error('Failed to create shared login: ' + error.message);
+        setIsAddingCoAdmin(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        setIsAddingCoAdmin(false);
+        return;
+      }
+
+      toast.success(`Shared login created! They can sign in with ${coAdminEmail.trim()} and the password you set.`);
+      setCoAdminName('');
+      setCoAdminEmail('');
+      setCoAdminPassword('');
+      setIsCoAdminDialogOpen(false);
+      fetchCoAdmins();
+    } catch (error) {
+      console.error('Error creating shared login:', error);
+      toast.error('Failed to create shared login');
     }
 
-    // Ensure the co-owner has the 'client' role so they can access properties
-    await supabase
-      .from('user_roles')
-      .insert({ user_id: userId, role: 'client' })
-      .select()
-      .maybeSingle(); // ignore duplicate
-
-    toast.success('Co-admin added! They now have full access to your account.');
-    setCoAdminEmail('');
-    setIsCoAdminDialogOpen(false);
     setIsAddingCoAdmin(false);
-    fetchCoAdmins();
   };
 
   const handleRemoveCoAdmin = async () => {
