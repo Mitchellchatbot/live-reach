@@ -230,7 +230,7 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     queryKey: QUERY_KEYS.conversations(user?.id || '', selectedPropertyId, agentId),
     queryFn: fetchConversationsData,
     enabled: !!user,
-    // Realtime handles all live updates — never auto-refetch over the top of them
+    // Realtime handles most live updates; polling is a safety net for missed events
     staleTime: Infinity,
     gcTime: 5 * 60 * 1000,
   });
@@ -247,6 +247,98 @@ export const useConversations = (options: UseConversationsOptions = {}) => {
     },
     [queryClient, user?.id, selectedPropertyId, agentId]
   );
+
+  // Fallback polling: periodically re-fetch to catch any messages missed by Realtime
+  const pollIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastPollRef = useRef<string>(new Date().toISOString());
+
+  useEffect(() => {
+    if (!user) return;
+
+    let pollInterval = 5000; // start at 5s
+    let isActive = true;
+
+    const poll = async () => {
+      if (!isActive) return;
+      try {
+        const since = lastPollRef.current;
+        let query = supabase
+          .from('conversations')
+          .select('id, updated_at')
+          .gt('updated_at', since)
+          .order('updated_at', { ascending: false })
+          .limit(10);
+
+        if (selectedPropertyId && selectedPropertyId !== 'all') {
+          query = query.eq('property_id', selectedPropertyId);
+        }
+
+        const { data: updatedConvs } = await query;
+
+        if (updatedConvs && updatedConvs.length > 0) {
+          const convIds = updatedConvs.map(c => c.id);
+          
+          for (const convId of convIds) {
+            const { data: freshConv } = await supabase
+              .from('conversations')
+              .select(`*, visitor:visitors(*), property:properties(*), messages(*)`)
+              .eq('id', convId)
+              .single();
+
+            if (!freshConv) continue;
+
+            const msgs = (freshConv.messages || []) as any[];
+            if (!msgs.some(m => m.sender_type === 'visitor')) continue;
+
+            const sortedMessages = msgs
+              .map(m => ({ ...m, sender_type: m.sender_type as 'agent' | 'visitor' }))
+              .sort((a, b) => a.sequence_number - b.sequence_number);
+
+            updateConversationsCache(prev => {
+              const existing = prev.find(c => c.id === convId);
+              if (!existing) {
+                return [{
+                  ...freshConv,
+                  messages: sortedMessages,
+                  status: freshConv.status as 'active' | 'closed' | 'pending',
+                } as DbConversation, ...prev];
+              }
+
+              const existingMsgIds = new Set((existing.messages || []).map(m => m.id));
+              const hasMissing = sortedMessages.some(m => !existingMsgIds.has(m.id));
+              
+              if (!hasMissing && existing.updated_at >= freshConv.updated_at) return prev;
+
+              return prev.map(c => c.id === convId ? {
+                ...c,
+                ...freshConv,
+                messages: sortedMessages,
+                status: freshConv.status as 'active' | 'closed' | 'pending',
+              } as DbConversation : c);
+            });
+          }
+
+          lastPollRef.current = updatedConvs[0].updated_at;
+          pollInterval = 5000;
+        } else {
+          pollInterval = Math.min(pollInterval * 1.5, 30000);
+        }
+      } catch {
+        pollInterval = Math.min(pollInterval * 2, 30000);
+      }
+
+      if (isActive) {
+        pollIntervalRef.current = setTimeout(poll, pollInterval);
+      }
+    };
+
+    pollIntervalRef.current = setTimeout(poll, pollInterval);
+
+    return () => {
+      isActive = false;
+      if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+    };
+  }, [user, selectedPropertyId, updateConversationsCache]);
 
   const sendMessage = async (conversationId: string, content: string, senderId: string, assignAgentId?: string) => {
     const { data: maxSeqData } = await supabase
