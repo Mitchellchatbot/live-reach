@@ -520,11 +520,13 @@ const TeamMembers = () => {
 
   const fetchCoAdmins = async () => {
     if (!user) return;
+    const ownerIds = await resolveOwnerIds();
 
+    // Fetch co-owners created by any of the resolved owner IDs
     const { data: records } = await supabase
       .from('account_co_owners')
-      .select('id, co_owner_user_id')
-      .eq('owner_user_id', user.id);
+      .select('id, owner_user_id, co_owner_user_id')
+      .in('owner_user_id', ownerIds);
 
     if (!records || records.length === 0) {
       setCoAdmins([]);
