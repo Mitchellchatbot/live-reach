@@ -398,7 +398,7 @@ const Comparison = () => {
       </footer>
 
       {/* Care Assist Chatbot */}
-      <SalesChatBot />
+      <ComparisonChatBot />
     </div>
   );
 };
