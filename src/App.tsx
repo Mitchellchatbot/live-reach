@@ -75,6 +75,7 @@ const Marketing4 = lazy(() => import("./pages/Marketing4"));
 const BookDemo = lazy(() => import("./pages/BookDemo"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 const Comparison = lazy(() => import("./pages/Comparison"));
+const Comparison2 = lazy(() => import("./pages/Comparison2"));
 
 // Lazy load DocsLayout
 const DocsLayout = lazy(() => import("./components/docs/DocsLayout").then(m => ({ default: m.DocsLayout })));
