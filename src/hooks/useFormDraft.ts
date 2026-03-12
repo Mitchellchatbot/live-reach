@@ -42,7 +42,16 @@ export function useFormDraft<T>(
   // Reset when key changes (different property selected)
   useEffect(() => {
     initialised.current = false;
+    isFirstRender.current = true;
     setHasDraft(false);
+    setState(null);
+    // Also clear any stale draft for the new key
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        localStorage.removeItem(storageKey);
+      }
+    } catch { /* ignore */ }
   }, [key]);
 
   // Persist draft to localStorage on every state change (after init)
