@@ -150,11 +150,12 @@ const TeamMembers = () => {
 
   const fetchLinkedAIAgents = async () => {
     if (!user) return;
+    const ownerIds = await resolveOwnerIds();
 
     const { data, error } = await supabase
       .from('ai_agents')
       .select('id, name, linked_agent_id')
-      .eq('owner_id', user.id)
+      .in('owner_id', ownerIds)
       .not('linked_agent_id', 'is', null);
 
     if (!error && data) {
@@ -172,11 +173,12 @@ const TeamMembers = () => {
     if (!user) return;
 
     setLoading(true);
+    const ownerIds = await resolveOwnerIds();
     
     const { data: agentsData, error: agentsError } = await supabase
       .from('agents')
       .select('*')
-      .eq('invited_by', user.id);
+      .in('invited_by', ownerIds);
 
     if (agentsError) {
       console.error('Error fetching agents:', agentsError);
