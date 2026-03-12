@@ -333,7 +333,7 @@ const Properties = () => {
   const displayProperties = isTourMode && properties.length === 0 ? mockProperties : properties;
 
   const handleAdd = () => {
-    navigate('/onboarding');
+    navigate('/onboarding?dev=1');
   };
 
   const handleDelete = async () => {
