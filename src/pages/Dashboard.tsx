@@ -132,17 +132,10 @@ const DashboardContent = () => {
   }, [user, authLoading, navigate]);
 
   // Redirect to onboarding if no properties - only after BOTH auth and data have fully loaded
-  // Use a ref to ensure we only check once per mount to prevent random redirects
-  const onboardingCheckedRef = useRef(false);
-  
   useEffect(() => {
-    // Only check once, after both loading states are complete
+    // Wait until everything is fully loaded
     if (authLoading || dataLoading) return;
     if (!user) return;
-    if (onboardingCheckedRef.current) return;
-    
-    // Mark as checked so we don't redirect again on re-renders
-    onboardingCheckedRef.current = true;
     
     if (properties.length === 0) {
       navigate('/onboarding');
