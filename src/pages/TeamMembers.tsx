@@ -1129,27 +1129,37 @@ const TeamMembers = () => {
                 <div>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
-                    Co-Admins
+                    Shared Logins
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
-                    Co-admins have full access to your account — same properties, inbox, and settings
+                    Create additional email/password logins that share full access to your account
                   </CardDescription>
                 </div>
                 <Dialog open={isCoAdminDialogOpen} onOpenChange={setIsCoAdminDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" className="text-xs sm:text-sm">
-                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                      Add Co-Admin
+                      <KeyRound className="mr-1.5 h-3.5 w-3.5" />
+                      Create Login
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="text-base">Add Co-Admin</DialogTitle>
+                      <DialogTitle className="text-base">Create Shared Login</DialogTitle>
                       <DialogDescription className="text-xs">
-                        Enter the email of an existing account holder. They'll immediately get full access to your workspace.
+                        Create a new email &amp; password that can sign into your account with full access.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-name" className="text-xs">Name</Label>
+                        <Input
+                          id="co-admin-name"
+                          placeholder="Jane Doe"
+                          className="h-8 text-sm"
+                          value={coAdminName}
+                          onChange={(e) => setCoAdminName(e.target.value)}
+                        />
+                      </div>
                       <div className="space-y-1">
                         <Label htmlFor="co-admin-email" className="text-xs">Email</Label>
                         <div className="relative">
@@ -1164,14 +1174,28 @@ const TeamMembers = () => {
                           />
                         </div>
                       </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="co-admin-password" className="text-xs">Password</Label>
+                        <div className="relative">
+                          <KeyRound className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            id="co-admin-password"
+                            type="password"
+                            placeholder="At least 6 characters"
+                            className="pl-8 h-8 text-sm"
+                            value={coAdminPassword}
+                            onChange={(e) => setCoAdminPassword(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" size="sm" onClick={() => setIsCoAdminDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim()}>
+                      <Button size="sm" onClick={handleAddCoAdmin} disabled={isAddingCoAdmin || !coAdminEmail.trim() || !coAdminName.trim() || coAdminPassword.length < 6}>
                         {isAddingCoAdmin && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
-                        Add Co-Admin
+                        Create Login
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -1182,8 +1206,8 @@ const TeamMembers = () => {
               {coAdmins.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No co-admins yet</p>
-                  <p className="text-xs mt-1">Add someone to share full access to your account</p>
+                  <p className="text-sm">No shared logins yet</p>
+                  <p className="text-xs mt-1">Create additional logins to share full access to your account</p>
                 </div>
               ) : (
                 <div className="space-y-3">
