@@ -71,6 +71,7 @@ const MeetSamantha = lazy(() => import("./pages/MeetSamantha"));
 const Marketing = lazy(() => import("./pages/Marketing"));
 const Marketing2 = lazy(() => import("./pages/Marketing2"));
 const Marketing3 = lazy(() => import("./pages/Marketing3"));
+const Marketing4 = lazy(() => import("./pages/Marketing4"));
 const BookDemo = lazy(() => import("./pages/BookDemo"));
 const GetStarted = lazy(() => import("./pages/GetStarted"));
 
