@@ -60,7 +60,7 @@ export const SalesChatBot = () => {
     const text = input.trim();
     if (!text || isTyping) return;
 
-    setShowQuickActions(false);
+    
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     const updated = [...messages, userMsg];
     setMessages(updated);
