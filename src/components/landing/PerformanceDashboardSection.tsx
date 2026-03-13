@@ -1,28 +1,28 @@
 import { Shield } from "lucide-react";
 
 const pills = [
-  "HIPAA-compliant chat widget",
-  "35% more captured leads",
-  "Google learns 27% faster",
-  "Live in 5 minutes",
+  "HIPAA compliant",
+  "35% more leads",
+  "Google Ads optimized",
+  "Live in 5 min",
 ];
 
 const bigStats = [
-  { value: "35%", label: "More leads from existing traffic" },
-  { value: "27%", label: "Faster Google Ads optimization" },
-  { value: "<4s", label: "Average response time" },
+  { value: "35%", label: "More leads" },
+  { value: "27%", label: "Faster Google Ads" },
+  { value: "<4s", label: "Response time" },
 ];
 
 const metrics = [
-  { label: "Leads Captured", value: "+35%", change: "↑ This month", changeColor: "text-green-500" },
-  { label: "Google Ads Learning", value: "27% faster", change: "↑ Cleaner signals", changeColor: "text-primary" },
-  { label: "Cost Per Lead", value: "$42.10", change: "↓ 47%", changeColor: "text-green-500" },
+  { label: "Leads", value: "+35%", change: "↑ This month", changeColor: "text-green-500" },
+  { label: "Google Ads", value: "27%", change: "↑ Faster", changeColor: "text-primary" },
+  { label: "Cost/Lead", value: "$42", change: "↓ 47%", changeColor: "text-green-500" },
 ];
 
 const miniStats = [
-  { value: "3x", label: "More captured leads" },
-  { value: "24/7", label: "Always responding" },
-  { value: "<4s", label: "Response time" },
+  { value: "3x", label: "More leads" },
+  { value: "24/7", label: "Always on" },
+  { value: "<4s", label: "Response" },
 ];
 
 const PerformanceDashboardSection = () => (
@@ -37,14 +37,14 @@ const PerformanceDashboardSection = () => (
     <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-start">
       {/* ── LEFT COLUMN ── */}
       <div className="reveal opacity-0 translate-y-6 transition-all duration-700">
-        <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-4">Care-Assist — AI Chat Widget</p>
+        <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-4">Care-Assist AI Chat</p>
 
         <h2 className="text-3xl md:text-[2.75rem] font-black leading-[1.1] tracking-tight mb-6">
           HIPAA Compliant.
           <br />
           35% More Leads.
           <br />
-          <span className="text-primary">27% Faster</span> Learning.
+          <span className="text-primary">27% Faster</span>.
         </h2>
 
 
@@ -158,7 +158,7 @@ const PerformanceDashboardSection = () => (
           <div className="mx-4 mt-3 mb-4 rounded-lg flex items-center justify-center gap-2 px-3 py-2 bg-green-50 border border-green-200/60">
             <Shield className="w-3.5 h-3.5 text-green-600" />
             <p className="text-[10px] font-semibold text-green-600 tracking-wide">
-              HIPAA-Compliant · Audit Logs · Session Controls · Encrypted
+              HIPAA-Compliant · Encrypted · Audit Logs
             </p>
           </div>
         </div>
