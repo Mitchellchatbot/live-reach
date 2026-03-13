@@ -146,27 +146,31 @@ fbq('track', 'PageView');`;
           </div>
 
 
-          {/* Main headline — bold stacked lines */}
+          {/* Main headline — dramatic */}
           <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
             <h1
               style={{
-                fontSize: 'clamp(2.2rem, 8vw, 5rem)',
+                fontSize: 'clamp(2.6rem, 12vw, 8rem)',
                 fontWeight: 900,
-                lineHeight: 1.05,
-                letterSpacing: '-0.03em',
-                marginBottom: '1.5rem',
+                lineHeight: 0.88,
+                letterSpacing: '-0.04em',
+                textTransform: 'uppercase' as const,
+                marginBottom: '1rem',
+                background: 'linear-gradient(180deg, hsl(20 90% 38%) 0%, hsl(24 100% 50%) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                filter: 'drop-shadow(0 4px 12px hsl(24 100% 50% / 0.2))',
               }}
             >
-              <span className="text-foreground">HIPAA Compliant.</span><br />
-              <span className="text-foreground">35% More Leads.</span><br />
-              <span className="text-primary">27% Faster</span>{' '}
-              <span className="text-foreground">Learning.</span>
+              Never Miss<br />Another Lead
             </h1>
           </div>
 
           {/* Sub-headline */}
-          <p className="text-base md:text-xl mb-5 md:mb-10 animate-fade-in max-w-lg mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
-            <span className="text-muted-foreground">Google Ads & campaigns learn <span className="font-bold text-primary">27% faster</span> when every visitor gets a real conversation instead of a form.</span>
+          <p className="text-base md:text-2xl mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
+            <span className="font-extrabold text-foreground">Care Assist</span>{' '}
+            <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
           {/* CTA Button — visible on mobile load */}
