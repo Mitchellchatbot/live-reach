@@ -201,9 +201,9 @@ export const SalesChatBot = () => {
             ))}
 
             {isTyping && (
-              <div className="flex gap-2.5">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
+              <div className="flex gap-2">
+                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                  <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5">
                   <div className="flex gap-1.5">
