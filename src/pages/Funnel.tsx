@@ -187,8 +187,8 @@ fbq('track', 'PageView');`;
           <div className="flex flex-col items-center gap-1.5 mt-4 md:mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
             <p className="text-xs md:text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
             <div className="flex items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" /> No credit card</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" /> Cancel anytime</span>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/15"><Check className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" /></span> No credit card</span>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/15"><Check className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" /></span> Cancel anytime</span>
             </div>
           </div>
 
