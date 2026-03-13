@@ -190,7 +190,6 @@ fbq('track', 'PageView');`;
 
           {/* CTA Button — visible on mobile load */}
           <div className="relative inline-block mb-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
-            <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
             <Button
               onClick={handleCTA}
               size="lg"
@@ -297,7 +296,6 @@ fbq('track', 'PageView');`;
             Fill out the form below and we'll get your AI agent set up in minutes.
           </p>
           <div className="relative reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
-            <div className="absolute -inset-1 rounded-3xl bg-primary/15 blur-lg" />
             <div className="relative w-full rounded-2xl overflow-hidden border-2 border-primary/25 shadow-2xl shadow-primary/10 bg-card p-4 md:p-6">
               <iframe
                 src="https://api.leadconnectorhq.com/widget/survey/VarcMdVarl1QzePQtEih"
