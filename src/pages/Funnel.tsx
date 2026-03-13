@@ -184,9 +184,7 @@ fbq('track', 'PageView');`;
             </Button>
           </div>
 
-          <p className="text-xs md:text-sm tracking-widest uppercase font-semibold text-foreground animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
-            AI intake assistant&nbsp; · &nbsp;Engages visitors instantly&nbsp; · &nbsp;Routes to admissions
-          </p>
+
 
           <div className="flex flex-col items-center gap-1.5 mt-4 md:mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
             <p className="text-xs md:text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
