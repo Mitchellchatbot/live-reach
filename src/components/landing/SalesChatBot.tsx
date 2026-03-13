@@ -119,29 +119,34 @@ export const SalesChatBot = () => {
               setIsOpen(false);
             }
           }}
-          style={{ width: 'min(280px, calc(100vw - 32px))', height: 'min(340px, calc(100vh - 120px))' }}
+          style={{ width: 'min(260px, calc(100vw - 32px))', height: 'min(320px, calc(100vh - 120px))' }}
         >
           {/* Header */}
-          <div className="px-3 py-2.5 flex items-center justify-between bg-primary relative overflow-hidden">
+          <div className="px-3 py-2 flex items-center justify-between bg-primary relative overflow-hidden">
             <div className="absolute inset-0 opacity-30 bg-gradient-to-r from-white/20 to-transparent" />
             <div className="flex items-center gap-2 relative z-10">
-              <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-white/30">
+              <div className="h-7 w-7 rounded-full overflow-hidden border-2 border-white/30">
                 <img src={agentAvatar} alt="Care Assist" className="h-full w-full object-cover" />
               </div>
               <div>
-                <h3 className="font-semibold text-primary-foreground text-xs">Care Assist</h3>
+                <h3 className="font-semibold text-primary-foreground text-[11px]">Care Assist</h3>
                 <div className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-[10px] text-primary-foreground/80">Online now</span>
+                  <span className="text-[9px] text-primary-foreground/80">Online now</span>
                 </div>
               </div>
             </div>
             <button
               onClick={handleClose}
-              className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors relative z-10"
+              className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors relative z-10"
             >
-              <X className="h-3.5 w-3.5 text-primary-foreground" />
+              <X className="h-3 w-3 text-primary-foreground" />
             </button>
+          </div>
+          {/* HIPAA badge */}
+          <div className="flex items-center justify-center gap-1 px-2 py-1 bg-green-50 border-b border-green-200/60">
+            <Shield className="w-2.5 h-2.5 text-green-600" />
+            <span className="text-[8px] font-semibold text-green-600">100% HIPAA Compliant & Confidential</span>
           </div>
 
           {/* Messages */}
