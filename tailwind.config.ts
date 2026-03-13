@@ -95,11 +95,11 @@ export default {
       keyframes: {
         "jiggle": {
           "0%, 100%": { transform: "rotate(0deg) scale(1)" },
-          "15%": { transform: "rotate(-12deg) scale(1.1)" },
-          "30%": { transform: "rotate(10deg) scale(1.15)" },
-          "45%": { transform: "rotate(-8deg) scale(1.1)" },
-          "60%": { transform: "rotate(6deg) scale(1.05)" },
-          "75%": { transform: "rotate(-3deg) scale(1.02)" },
+          "15%": { transform: "rotate(-5deg) scale(1.04)" },
+          "30%": { transform: "rotate(4deg) scale(1.06)" },
+          "45%": { transform: "rotate(-3deg) scale(1.04)" },
+          "60%": { transform: "rotate(2deg) scale(1.02)" },
+          "75%": { transform: "rotate(-1deg) scale(1.01)" },
         },
         "accordion-down": {
           from: { height: "0" },
