@@ -190,7 +190,6 @@ fbq('track', 'PageView');`;
 
           {/* CTA Button — visible on mobile load */}
           <div className="relative inline-block mb-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
-            <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
             <Button
               onClick={handleCTA}
               size="lg"
