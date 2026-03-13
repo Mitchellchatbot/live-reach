@@ -172,8 +172,8 @@ fbq('track', 'PageView');`;
             <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
-          <p className="text-sm md:text-base text-muted-foreground mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
-            AI intake assistant that engages website visitors instantly and routes qualified inquiries directly to admissions.
+          <p className="text-xs md:text-sm tracking-widest uppercase font-semibold text-muted-foreground/70 mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
+            AI intake assistant&nbsp; · &nbsp;Engages visitors instantly&nbsp; · &nbsp;Routes to admissions
           </p>
 
           {/* CTA Button — visible on mobile load */}
