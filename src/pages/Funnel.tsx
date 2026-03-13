@@ -92,7 +92,7 @@ const Funnel = () => {
   const [showChatBot, setShowChatBot] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
-  const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const handleCTA = () => navigate('/book-demo');
 
   useEffect(() => {
     // Load Meta Pixel Code
