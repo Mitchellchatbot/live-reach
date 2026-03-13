@@ -308,7 +308,7 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section className="px-4 py-10 md:py-14 bg-muted">
+      <section className="px-4 py-10 md:py-14 bg-background">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-extrabold mb-6 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
