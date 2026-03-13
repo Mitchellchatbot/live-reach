@@ -197,7 +197,7 @@ fbq('track', 'PageView');`;
 
           {/* VSL Vimeo Embed — below CTA on mobile */}
           <div className="relative max-w-2xl mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
-            <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 border-primary/30 bg-black">
+            <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 bg-black" style={{ borderColor: '#F97116' }}>
               <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
                   src="https://player.vimeo.com/video/1173333979?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=0&loop=1"
