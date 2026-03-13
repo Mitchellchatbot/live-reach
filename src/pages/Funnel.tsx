@@ -371,22 +371,19 @@ fbq('track', 'PageView');`;
       <PerformanceDashboardSection />
 
       {/* ═══════════════ FINAL CTA WITH SALES CHAT ═══════════════ */}
-      <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden">
-        {/* Rich gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground via-foreground/95 to-foreground" />
-        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/20 blur-[150px]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[120px]" />
+      <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden bg-background">
+        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.05] blur-[120px]" />
 
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5 mb-5 reveal opacity-0 transition-all duration-700">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-5 reveal opacity-0 transition-all duration-700">
             <Zap className="w-4 h-4 text-primary" />
             <span className="text-xs font-bold text-primary uppercase tracking-wider">Limited time offer</span>
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700" style={{ background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(24 100% 70%) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            Try It FREE For 7 Days!
+          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight text-foreground reveal opacity-0 translate-y-4 transition-all duration-700">
+            Try It <span className="text-primary">FREE</span> For 7 Days!
           </h2>
-          <p className="text-white/60 mb-10 text-base md:text-lg max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+          <p className="text-muted-foreground mb-10 text-base md:text-lg max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
             Every hour without Care Assist is leads walking away. Start converting more visitors today.
           </p>
 
@@ -394,7 +391,7 @@ fbq('track', 'PageView');`;
             {/* CTA Button */}
             <div className="reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
               <div className="relative inline-block">
-                <div className="absolute -inset-1 rounded-2xl bg-primary/40 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
+                <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
                 <Button
                   onClick={handleCTA}
                   size="lg"
@@ -405,17 +402,17 @@ fbq('track', 'PageView');`;
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-5 text-sm text-white/50 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
-              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20"><Check className="w-3.5 h-3.5 text-primary" /></span> No credit card</span>
-              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20"><Check className="w-3.5 h-3.5 text-primary" /></span> Cancel anytime</span>
+            <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> No credit card</span>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> Cancel anytime</span>
             </div>
 
             {/* Inline chat widget */}
             <div className="w-full max-w-[360px] reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: '0.4s' }}>
-              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Or ask our AI anything first</p>
+              <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-3">Or ask our AI anything first</p>
               <div className="relative">
-                <div className="absolute -inset-1 rounded-3xl bg-primary/15 blur-lg" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 border border-white/10">
+                <div className="absolute -inset-1 rounded-3xl bg-primary/10 blur-lg" />
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border">
                   <SalesChatBotInline />
                 </div>
               </div>
