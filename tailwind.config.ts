@@ -93,6 +93,14 @@ export default {
         "4xl": "2.5rem",
       },
       keyframes: {
+        "jiggle": {
+          "0%, 100%": { transform: "rotate(0deg) scale(1)" },
+          "15%": { transform: "rotate(-12deg) scale(1.1)" },
+          "30%": { transform: "rotate(10deg) scale(1.15)" },
+          "45%": { transform: "rotate(-8deg) scale(1.1)" },
+          "60%": { transform: "rotate(6deg) scale(1.05)" },
+          "75%": { transform: "rotate(-3deg) scale(1.02)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },

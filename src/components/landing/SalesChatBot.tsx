@@ -19,9 +19,23 @@ export const SalesChatBot = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [jiggling, setJiggling] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  // Jiggle then auto-open after 4 seconds
+  useEffect(() => {
+    const jiggleTimer = setTimeout(() => setJiggling(true), 2500);
+    const openTimer = setTimeout(() => {
+      setJiggling(false);
+      setShowMenu(true);
+    }, 4500);
+    return () => {
+      clearTimeout(jiggleTimer);
+      clearTimeout(openTimer);
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -286,7 +300,8 @@ export const SalesChatBot = () => {
           onClick={handleFABClick}
           className={cn(
             'h-14 w-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 group',
-            showMenu && 'rotate-45'
+            showMenu && 'rotate-45',
+            jiggling && 'animate-[jiggle_0.5s_ease-in-out_infinite]'
           )}
         >
           {showMenu ? (
