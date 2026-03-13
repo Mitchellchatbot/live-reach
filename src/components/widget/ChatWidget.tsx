@@ -75,7 +75,7 @@ export const ChatWidget = ({
   // Detect mobile using screen width (window.innerWidth is unreliable inside a small iframe)
   const isMobileWidget = typeof window !== 'undefined' && (window.screen?.width || window.innerWidth) < 768;
 
-  const [isOpen, setIsOpen] = useState(autoOpen && !isMobileWidget);
+  const [isOpen, setIsOpen] = useState(autoOpen);
   const [isClosing, setIsClosing] = useState(false);
   const [showAttentionBounce, setShowAttentionBounce] = useState(true);
   const [inputValue, setInputValue] = useState('');
