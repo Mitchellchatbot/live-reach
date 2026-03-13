@@ -383,8 +383,8 @@ fbq('track', 'PageView');`;
                 </Button>
               </div>
               <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
-                <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> Cancel anytime</span>
+                <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> No credit card</span>
+                <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> Cancel anytime</span>
               </div>
             </div>
           </div>
