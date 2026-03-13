@@ -158,7 +158,7 @@ const PerformanceDashboardSection = () => (
           <div className="mx-4 mt-3 mb-4 rounded-lg flex items-center justify-center gap-2 px-3 py-2 bg-green-50 border border-green-200/60">
             <Shield className="w-3.5 h-3.5 text-green-600" />
             <p className="text-[10px] font-semibold text-green-600 tracking-wide">
-              HIPAA-Compliant · Audit Logs · Session Controls · Encrypted
+              HIPAA-Compliant · Encrypted · Audit Logs
             </p>
           </div>
         </div>
