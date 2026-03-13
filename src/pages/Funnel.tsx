@@ -316,23 +316,21 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section className="px-4 py-16 md:py-24 bg-muted">
+      <section className="px-4 py-10 md:py-14 bg-muted">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-10 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
-          <div className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-6 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
             {[
-              { step: '1', title: 'Paste One Line of Code', desc: 'Add the widget to your site in under 2 minutes. Works with WordPress, Wix, Squarespace — anything.' },
-              { step: '2', title: 'AI Engages Every Visitor', desc: 'Within 3 seconds of landing, visitors get a warm, human-sounding conversation that naturally captures their name, phone, and insurance.' },
-              { step: '3', title: 'Your Team Gets Warm Leads', desc: 'Slack ping, email alert, or Salesforce record — your admissions team gets notified instantly with full conversation context.' },
-            ].map((s, i, arr) => (
-              <div key={s.step} className={cn("flex gap-5 items-start p-5", i < arr.length - 1 && "border-b border-border/50")}>
-                <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/20">
-                  <span className="font-bold text-primary-foreground">{s.step}</span>
+              { step: '1', title: 'Paste One Line of Code', desc: 'Add to any site in under 2 minutes.' },
+              { step: '2', title: 'AI Engages Visitors', desc: 'Warm conversations that capture leads 24/7.' },
+              { step: '3', title: 'Get Warm Leads', desc: 'Instant Slack, email, or Salesforce alerts.' },
+            ].map((s) => (
+              <div key={s.step} className="flex flex-col items-center gap-2 p-4 bg-background rounded-xl border border-border/50">
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm shadow-primary/20">
+                  <span className="font-bold text-sm text-primary-foreground">{s.step}</span>
                 </div>
-                <div className="text-left">
-                  <h3 className="font-bold text-lg mb-1">{s.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{s.desc}</p>
-                </div>
+                <h3 className="font-bold text-sm">{s.title}</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
