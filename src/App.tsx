@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { WorkspaceProvider } from "./hooks/useWorkspace";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { PageLoader } from "./components/ui/loading";
 
 // Global handler to catch unhandled promise rejections
