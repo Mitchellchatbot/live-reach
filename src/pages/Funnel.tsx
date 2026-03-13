@@ -89,7 +89,9 @@ const Funnel = () => {
   }, []);
 
   const [showStickyFooter, setShowStickyFooter] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
   const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   useEffect(() => {
