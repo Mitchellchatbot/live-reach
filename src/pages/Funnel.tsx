@@ -81,6 +81,10 @@ const Funnel = () => {
   const navigate = useNavigate();
   const scrollRef = useScrollReveal();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [showStickyFooter, setShowStickyFooter] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
