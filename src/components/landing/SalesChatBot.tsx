@@ -122,17 +122,17 @@ export const SalesChatBot = () => {
           style={{ width: 'min(280px, calc(100vw - 32px))', height: 'min(340px, calc(100vh - 120px))' }}
         >
           {/* Header */}
-          <div className="px-4 py-3 flex items-center justify-between bg-primary relative overflow-hidden">
+          <div className="px-3 py-2.5 flex items-center justify-between bg-primary relative overflow-hidden">
             <div className="absolute inset-0 opacity-30 bg-gradient-to-r from-white/20 to-transparent" />
-            <div className="flex items-center gap-2.5 relative z-10">
-              <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-                <img src={careAssistLogo} alt="Care Assist" className="h-7 w-7 object-contain" />
+            <div className="flex items-center gap-2 relative z-10">
+              <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-white/30">
+                <img src={agentAvatar} alt="Care Assist" className="h-full w-full object-cover" />
               </div>
               <div>
-                <h3 className="font-semibold text-primary-foreground text-sm">Care Assist</h3>
-                <div className="flex items-center gap-1.5">
+                <h3 className="font-semibold text-primary-foreground text-xs">Care Assist</h3>
+                <div className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-[11px] text-primary-foreground/80">Online now</span>
+                  <span className="text-[10px] text-primary-foreground/80">Online now</span>
                 </div>
               </div>
             </div>
