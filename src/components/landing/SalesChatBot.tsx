@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Minimize2, Calendar, Zap } from 'lucide-react';
+import { MessageCircle, X, Send, Calendar, Zap, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
