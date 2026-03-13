@@ -177,11 +177,11 @@ fbq('track', 'PageView');`;
           <div className="relative inline-block mb-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
             <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
             <Button
-              onClick={() => navigate('/book-demo')}
+              onClick={handleCTA}
               size="lg"
               className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-lg md:text-2xl px-10 py-6 md:px-14 md:py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold tracking-wide"
             >
-              Book a Demo
+              Start For Free
             </Button>
           </div>
 
