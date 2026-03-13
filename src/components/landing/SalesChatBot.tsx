@@ -19,9 +19,23 @@ export const SalesChatBot = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [jiggling, setJiggling] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  // Jiggle then auto-open after 4 seconds
+  useEffect(() => {
+    const jiggleTimer = setTimeout(() => setJiggling(true), 2500);
+    const openTimer = setTimeout(() => {
+      setJiggling(false);
+      setShowMenu(true);
+    }, 4500);
+    return () => {
+      clearTimeout(jiggleTimer);
+      clearTimeout(openTimer);
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
