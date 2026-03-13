@@ -15,7 +15,7 @@ const bigStats = [
 
 const metrics = [
   { label: "Leads Captured", value: "+35%", change: "↑ This month", changeColor: "text-green-500" },
-  { label: "Google Ad Learning", value: "27% faster", change: "↑ Cleaner signals", changeColor: "text-primary" },
+  { label: "Google Ads Learning", value: "27% faster", change: "↑ Cleaner signals", changeColor: "text-primary" },
   { label: "Cost Per Lead", value: "$42.10", change: "↓ 47%", changeColor: "text-green-500" },
 ];
 
