@@ -240,7 +240,7 @@ export const SalesChatBot = () => {
           onClick={() => setIsOpen(true)}
           className={cn(
             'h-14 w-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 group',
-            jiggling && 'animate-[jiggle_0.5s_ease-in-out_infinite]'
+            jiggling && 'animate-[gentlePulse_2s_ease-in-out_infinite]'
           )}
         >
           <MessageCircle className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />

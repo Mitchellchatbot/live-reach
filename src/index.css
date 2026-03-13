@@ -534,3 +534,8 @@ html.widget-embed-mode #root {
   0% { opacity: 1; transform: scale(1) rotate(0deg); }
   100% { opacity: 0; transform: scale(0.5) rotate(8deg) translateY(10px); }
 }
+
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+}
