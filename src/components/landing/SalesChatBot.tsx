@@ -119,7 +119,7 @@ export const SalesChatBot = () => {
               setIsOpen(false);
             }
           }}
-          style={{ width: 'min(340px, calc(100vw - 32px))', height: 'min(420px, calc(100vh - 120px))' }}
+          style={{ width: 'min(280px, calc(100vw - 32px))', height: 'min(340px, calc(100vh - 120px))' }}
         >
           {/* Header */}
           <div className="px-4 py-3 flex items-center justify-between bg-primary relative overflow-hidden">
