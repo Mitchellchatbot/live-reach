@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Minimize2, Calendar, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
+import agentAvatar from '@/assets/personas/blonde-agent.jpg';
 import { useNavigate } from 'react-router-dom';
 
 interface Message {
@@ -118,20 +119,20 @@ export const SalesChatBot = () => {
               setIsOpen(false);
             }
           }}
-          style={{ width: 'min(340px, calc(100vw - 32px))', height: 'min(420px, calc(100vh - 120px))' }}
+          style={{ width: 'min(280px, calc(100vw - 32px))', height: 'min(340px, calc(100vh - 120px))' }}
         >
           {/* Header */}
-          <div className="px-4 py-3 flex items-center justify-between bg-primary relative overflow-hidden">
+          <div className="px-3 py-2.5 flex items-center justify-between bg-primary relative overflow-hidden">
             <div className="absolute inset-0 opacity-30 bg-gradient-to-r from-white/20 to-transparent" />
-            <div className="flex items-center gap-2.5 relative z-10">
-              <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
-                <img src={careAssistLogo} alt="Care Assist" className="h-7 w-7 object-contain" />
+            <div className="flex items-center gap-2 relative z-10">
+              <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-white/30">
+                <img src={agentAvatar} alt="Care Assist" className="h-full w-full object-cover" />
               </div>
               <div>
-                <h3 className="font-semibold text-primary-foreground text-sm">Care Assist</h3>
-                <div className="flex items-center gap-1.5">
+                <h3 className="font-semibold text-primary-foreground text-xs">Care Assist</h3>
+                <div className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-[11px] text-primary-foreground/80">Online now</span>
+                  <span className="text-[10px] text-primary-foreground/80">Online now</span>
                 </div>
               </div>
             </div>
@@ -145,12 +146,12 @@ export const SalesChatBot = () => {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-gradient-to-b from-background to-muted/20">
-            <div className="flex gap-2.5">
-              <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
+            <div className="flex gap-2">
+              <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
               </div>
-              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[85%]">
-                <p className="text-[13px] text-foreground">
+              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
+                <p className="text-[12px] text-foreground">
                   👋 Hey! How can I help you today?
                 </p>
               </div>
@@ -158,7 +159,7 @@ export const SalesChatBot = () => {
 
             {/* Quick action buttons inside chat */}
             {showQuickActions && messages.length === 0 && (
-              <div className="flex flex-col gap-2 pl-9 animate-fade-in">
+              <div className="flex flex-col gap-1.5 pl-8 animate-fade-in">
                 {[
                   { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question' },
                   { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo' },
@@ -167,13 +168,13 @@ export const SalesChatBot = () => {
                   <button
                     key={item.label}
                     onClick={item.onClick}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
                     style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'both' }}
                   >
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      <item.icon className="h-3.5 w-3.5 text-primary group-hover:text-primary-foreground transition-colors" />
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
+                      <item.icon className="h-3 w-3 text-primary group-hover:text-primary-foreground transition-colors" />
                     </div>
-                    <span className="text-[13px] font-semibold text-foreground">{item.label}</span>
+                    <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -182,13 +183,13 @@ export const SalesChatBot = () => {
             {messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2.5', msg.role === 'user' ? 'justify-end' : '')}>
                 {msg.role === 'assistant' && (
-                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
+                  <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                    <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    'px-3 py-2.5 max-w-[80%] text-[13px]',
+                    'px-2.5 py-2 max-w-[80%] text-[12px]',
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
                       : 'bg-muted/50 text-foreground rounded-2xl rounded-tl-sm'
@@ -200,9 +201,9 @@ export const SalesChatBot = () => {
             ))}
 
             {isTyping && (
-              <div className="flex gap-2.5">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
+              <div className="flex gap-2">
+                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                  <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5">
                   <div className="flex gap-1.5">
