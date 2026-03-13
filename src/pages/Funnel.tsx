@@ -10,6 +10,9 @@ import { SalesChatBotInline } from '@/components/landing/SalesChatBotInline';
 import { SalesChatBot } from '@/components/landing/SalesChatBot';
 import PerformanceDashboardSection from '@/components/landing/PerformanceDashboardSection';
 import careAssistLogo from '@/assets/care-assist-logo.png';
+import googleLogo from '@/assets/logos/google-g.svg';
+import salesforceLogo from '@/assets/logos/salesforce.svg';
+import slackLogo from '@/assets/logos/slack.svg';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
 
