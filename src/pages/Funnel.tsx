@@ -128,7 +128,13 @@ fbq('track', 'PageView');`;
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setShowStickyFooter(window.scrollY > 400);
+    const onScroll = () => {
+      setShowStickyFooter(window.scrollY > 400);
+      if (videoRef.current) {
+        const rect = videoRef.current.getBoundingClientRect();
+        if (rect.bottom < 0) setShowChatBot(true);
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
