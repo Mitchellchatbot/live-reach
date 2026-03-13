@@ -468,8 +468,8 @@ fbq('track', 'PageView');`;
         </div>
       </section>
 
-      {/* Floating sales chat widget */}
-      <SalesChatBot />
+      {/* Floating sales chat widget — appears after scrolling past video */}
+      {showChatBot && <SalesChatBot />}
 
       {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
       <div className={`fixed bottom-0 inset-x-0 z-40 md:hidden transition-all duration-300 ${showStickyFooter ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
