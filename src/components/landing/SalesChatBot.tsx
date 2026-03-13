@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Minimize2, Calendar, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
+import agentAvatar from '@/assets/personas/blonde-agent.jpg';
 import { useNavigate } from 'react-router-dom';
 
 interface Message {
