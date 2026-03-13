@@ -189,7 +189,7 @@ export const SalesChatBot = () => {
                 )}
                 <div
                   className={cn(
-                    'px-3 py-2.5 max-w-[80%] text-[13px]',
+                    'px-2.5 py-2 max-w-[80%] text-[12px]',
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
                       : 'bg-muted/50 text-foreground rounded-2xl rounded-tl-sm'
