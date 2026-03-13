@@ -158,26 +158,17 @@ export const SalesChatBot = () => {
               </div>
             </div>
 
-            {/* Quick action buttons inside chat */}
-            {showQuickActions && messages.length === 0 && (
-              <div className="flex flex-col gap-1.5 pl-8 animate-fade-in">
-                {[
-                  { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question' },
-                  { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo' },
-                  { onClick: handleTryFree, icon: Zap, label: 'Try For Free' },
-                ].map((item, i) => (
-                  <button
-                    key={item.label}
-                    onClick={item.onClick}
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
-                    style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'both' }}
-                  >
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
-                      <item.icon className="h-3 w-3 text-primary group-hover:text-primary-foreground transition-colors" />
-                    </div>
-                    <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
-                  </button>
-                ))}
+            {/* Second message after typing */}
+            {showSecondMessage && messages.length === 0 && (
+              <div className="flex gap-2 animate-fade-in">
+                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                  <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
+                </div>
+                <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
+                  <p className="text-[12px] text-foreground">
+                    I can show you in a quick demo. Our clients capture 4 additional VOBs per month on average 🧡😊
+                  </p>
+                </div>
               </div>
             )}
 
