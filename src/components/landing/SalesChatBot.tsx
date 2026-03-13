@@ -183,8 +183,8 @@ export const SalesChatBot = () => {
             {messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2.5', msg.role === 'user' ? 'justify-end' : '')}>
                 {msg.role === 'assistant' && (
-                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
+                  <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                    <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
                   </div>
                 )}
                 <div
