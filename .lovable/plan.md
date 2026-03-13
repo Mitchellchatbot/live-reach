@@ -1,29 +1,22 @@
 
 
+## Tone Down Chat Bot Animations
 
-## Chat System Audit Cleanup — COMPLETED ✅
+Three animations need to be softened:
 
-All audit items implemented:
+### 1. `gentlePulse` in `src/index.css` (line 538-541)
+Used by `SalesChatBot` FAB before auto-open. Currently scales to 1.06 with a glowing ring.
+- Reduce scale from `1.06` → `1.02`
+- Reduce box-shadow spread from `8px` → `4px`
 
-### 1. ✅ Dead code removed
-Deleted `ensureConversationExists`, `CREATE_CONVERSATION_URL`, `refreshAiEnabledFromServer`, `GET_MESSAGES_URL`, client-side `extractVisitorInfo`, and `EXTRACT_INFO_URL`. Also removed `conversationPromiseRef`.
+### 2. `jiggle` keyframe in `tailwind.config.ts` (line 96-102)
+Aggressive rotation (±12°) and scaling (up to 1.15). Currently unused by these components but defined globally.
+- Reduce rotations: `-12deg` → `-5deg`, `10deg` → `4deg`, `-8deg` → `-3deg`, `6deg` → `2deg`, `-3deg` → `-1deg`
+- Reduce scales: `1.1` → `1.04`, `1.15` → `1.06`, `1.1` → `1.04`, `1.05` → `1.02`, `1.02` → `1.01`
 
-### 2. ✅ Lock bug fixed
-Removed premature `hybridFlowActiveRef.current = false` at the end of the delay window. Lock is now held through typing simulation and only released in the `finally` block. Removed redundant lock release in `cancelledByDashboard` branch.
+### 3. `attention-bounce` in `tailwind.config.ts` (line 143-148)
+Used by `ChatWidget` launcher (`LPDemoWidget` on homepage). Currently bounces 12px up.
+- Reduce bounce: `-12px` → `-5px`, `-6px` → `-2px`
 
-### 3. ✅ Shared helpers extracted
-Created `buildNaturalLeadCaptureFields()` and `computeResponseDelay()` helpers. Both `autoReplyIfPending` and `sendMessage` hybrid flow now use them instead of duplicating the logic.
+All changes are CSS-only — no logic changes needed.
 
-### 4. ✅ Proactive timer stale closure fixed
-`startProactiveTimer` now reads `messagesRef.current` instead of capturing `messages` in the closure. Removed `messages` from the dependency array.
-
-### 5. ✅ Dashboard fetch optimized
-`fetchConversationsData` now uses embedded select (`conversations.select('*, messages(*)')`) — single query instead of batch-chunked message fetches.
-
-### 6. ✅ Realtime channels consolidated
-Three separate channels (messages, conversations, visitors) merged into a single `dashboard-realtime-*` channel with multiple `.on()` listeners.
-
-### 7. ✅ Verbose logging removed
-Stripped all `console.log` statements from Realtime handlers in both `useConversations.ts` and `useWidgetChat.ts`. Kept `console.warn` and `console.error`.
-
-### Estimated reduction: ~200+ lines removed, 2 bug fixes, significant dashboard performance improvement.
