@@ -159,7 +159,7 @@ export const SalesChatBot = () => {
 
             {/* Quick action buttons inside chat */}
             {showQuickActions && messages.length === 0 && (
-              <div className="flex flex-col gap-2 pl-9 animate-fade-in">
+              <div className="flex flex-col gap-1.5 pl-8 animate-fade-in">
                 {[
                   { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question' },
                   { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo' },
