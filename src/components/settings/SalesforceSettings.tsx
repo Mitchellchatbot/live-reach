@@ -157,6 +157,8 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
         auto_export_on_insurance_detected: (data as any).auto_export_on_insurance_detected ?? false,
         auto_export_on_phone_detected: (data as any).auto_export_on_phone_detected ?? false,
         field_mappings: data.field_mappings as Record<string, string>,
+        client_id: data.client_id || '',
+        client_secret: data.client_secret || '',
       });
       
       // Convert field_mappings object to array
