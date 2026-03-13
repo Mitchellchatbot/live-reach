@@ -145,13 +145,6 @@ fbq('track', 'PageView');`;
             <span className="text-xs text-muted-foreground">from 40+ treatment centers</span>
           </div>
 
-          {/* Lead-in text with stagger */}
-          <p className="text-sm md:text-xl italic font-light text-muted-foreground mb-0.5 md:mb-1.5 animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
-            You're Already Paying For Traffic.
-          </p>
-          <p className="text-sm md:text-xl italic font-light text-muted-foreground mb-4 md:mb-8 animate-fade-in" style={{ animationDelay: '0.25s', animationFillMode: 'both' }}>
-            SEO. Google Ads. Referrals.
-          </p>
 
           {/* Main headline — dramatic */}
           <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both', filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))' }}>
