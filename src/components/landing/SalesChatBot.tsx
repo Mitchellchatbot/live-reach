@@ -14,22 +14,21 @@ interface Message {
 export const SalesChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuClosing, setMenuClosing] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [jiggling, setJiggling] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Jiggle then auto-open after 4 seconds
+  // Jiggle then auto-open after delay
   useEffect(() => {
     const jiggleTimer = setTimeout(() => setJiggling(true), 2500);
     const openTimer = setTimeout(() => {
       setJiggling(false);
-      setShowMenu(true);
+      setIsOpen(true);
     }, 4500);
     return () => {
       clearTimeout(jiggleTimer);
@@ -40,7 +39,6 @@ export const SalesChatBot = () => {
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen, messages]);
 
@@ -48,45 +46,24 @@ export const SalesChatBot = () => {
     setIsClosing(true);
   };
 
-  const handleFABClick = () => {
-    if (showMenu || menuClosing) {
-      setMenuClosing(true);
-    } else {
-      setShowMenu(true);
-    }
-  };
-
   const handleOpenChat = () => {
-    setMenuClosing(true);
-    setTimeout(() => {
-      setShowMenu(false);
-      setMenuClosing(false);
-      setIsOpen(true);
-    }, 200);
+    setShowQuickActions(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const handleBookDemo = () => {
-    setMenuClosing(true);
-    setTimeout(() => {
-      setShowMenu(false);
-      setMenuClosing(false);
-      window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank');
-    }, 200);
+    window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank');
   };
 
   const handleTryFree = () => {
-    setMenuClosing(true);
-    setTimeout(() => {
-      setShowMenu(false);
-      setMenuClosing(false);
-      navigate('/auth');
-    }, 200);
+    navigate('/auth');
   };
 
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isTyping) return;
 
+    setShowQuickActions(false);
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     const updated = [...messages, userMsg];
     setMessages(updated);
@@ -127,7 +104,7 @@ export const SalesChatBot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 font-sans">
+    <div className="fixed bottom-4 right-0 z-50 font-sans flex flex-col items-end pr-4">
       {/* Chat Panel */}
       {(isOpen || isClosing) && (
         <div
@@ -158,20 +135,12 @@ export const SalesChatBot = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1 relative z-10">
-              <button
-                onClick={handleClose}
-                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
-              >
-                <Minimize2 className="h-3.5 w-3.5 text-primary-foreground" />
-              </button>
-              <button
-                onClick={handleClose}
-                className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
-              >
-                <X className="h-3.5 w-3.5 text-primary-foreground" />
-              </button>
-            </div>
+            <button
+              onClick={handleClose}
+              className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors relative z-10"
+            >
+              <X className="h-3.5 w-3.5 text-primary-foreground" />
+            </button>
           </div>
 
           {/* Messages */}
@@ -180,12 +149,35 @@ export const SalesChatBot = () => {
               <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <img src={careAssistLogo} alt="" className="h-5 w-5 object-contain" />
               </div>
-              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[80%]">
+              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[85%]">
                 <p className="text-[13px] text-foreground">
-                  👋 Hey! Got questions about Care Assist? Ask me anything about features, pricing, or how it works!
+                  👋 Hey! How can I help you today?
                 </p>
               </div>
             </div>
+
+            {/* Quick action buttons inside chat */}
+            {showQuickActions && messages.length === 0 && (
+              <div className="flex flex-col gap-2 pl-9 animate-fade-in">
+                {[
+                  { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question' },
+                  { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo' },
+                  { onClick: handleTryFree, icon: Zap, label: 'Try For Free' },
+                ].map((item, i) => (
+                  <button
+                    key={item.label}
+                    onClick={item.onClick}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
+                    style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'both' }}
+                  >
+                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <item.icon className="h-3.5 w-3.5 text-primary group-hover:text-primary-foreground transition-colors" />
+                    </div>
+                    <span className="text-[13px] font-semibold text-foreground">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {messages.map((msg) => (
               <div key={msg.id} className={cn('flex gap-2.5', msg.role === 'user' ? 'justify-end' : '')}>
@@ -249,66 +241,16 @@ export const SalesChatBot = () => {
         </div>
       )}
 
-      {/* Quick action menu */}
-      {(showMenu || menuClosing) && !isOpen && (
-        <div
-          className="mb-3 flex flex-col gap-1.5"
-          onAnimationEnd={() => {
-            if (menuClosing) {
-              setMenuClosing(false);
-              setShowMenu(false);
-            }
-          }}
-        >
-          {[
-            { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question', delay: '0.08s', variant: 'light' as const },
-            { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo', delay: '0.04s', variant: 'light' as const },
-            { onClick: handleTryFree, icon: Zap, label: 'Try For Free', delay: '0s', variant: 'primary' as const },
-          ].map((item, i) => (
-            <button
-              key={item.label}
-              onClick={item.onClick}
-              className={cn(
-                'flex items-center gap-3 rounded-full px-4 py-2.5 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]',
-                menuClosing ? 'animate-[wiggle-out_0.25s_ease-in_forwards]' : 'animate-[wiggle-in_0.35s_cubic-bezier(0.34,1.56,0.64,1)_both]',
-                item.variant === 'primary'
-                  ? 'bg-primary shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30'
-                  : 'bg-card shadow-md shadow-black/8 border border-border/40 hover:border-primary/20'
-              )}
-              style={{ animationDelay: menuClosing ? '0s' : item.delay }}
-            >
-              <div className={cn(
-                'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
-                item.variant === 'primary' ? 'bg-white/20' : 'bg-primary/10'
-              )}>
-                <item.icon className={cn('h-4 w-4', item.variant === 'primary' ? 'text-primary-foreground' : 'text-primary')} />
-              </div>
-              <span className={cn(
-                'text-sm font-semibold',
-                item.variant === 'primary' ? 'text-primary-foreground' : 'text-foreground'
-              )}>
-                {item.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* FAB Button */}
       {!isOpen && !isClosing && (
         <button
-          onClick={handleFABClick}
+          onClick={() => setIsOpen(true)}
           className={cn(
             'h-14 w-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 group',
-            showMenu && 'rotate-45',
             jiggling && 'animate-[jiggle_0.5s_ease-in-out_infinite]'
           )}
         >
-          {showMenu ? (
-            <X className="h-6 w-6 text-primary-foreground transition-transform" />
-          ) : (
-            <MessageCircle className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
-          )}
+          <MessageCircle className="h-6 w-6 text-primary-foreground group-hover:scale-110 transition-transform" />
         </button>
       )}
     </div>
