@@ -211,7 +211,7 @@ fbq('track', 'PageView');`;
           </div>
 
           {/* VSL Vimeo Embed — below CTA on mobile */}
-          <div className="relative max-w-2xl mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+          <div ref={videoRef} className="relative max-w-2xl mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
             <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 bg-black" style={{ borderColor: '#F97116' }}>
               <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
