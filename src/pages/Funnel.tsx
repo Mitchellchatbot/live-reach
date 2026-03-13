@@ -20,32 +20,32 @@ const benefits = [
   {
     icon: MessageSquare,
     title: 'AI That Sounds Human',
-    description: 'Visitors can\'t tell they\'re chatting with AI. Natural typos, pacing, and tone that builds real trust.',
+    description: 'Natural typos, pacing, and tone that builds real trust.',
   },
   {
     icon: Clock,
     title: 'Responds in Seconds, 24/7',
-    description: 'Never miss another lead. Your AI agent is always online — nights, weekends, and holidays.',
+    description: 'Never miss a lead. Always online — nights, weekends, holidays.',
   },
   {
     icon: TrendingUp,
     title: 'Captures Leads Automatically',
-    description: 'Names, phone numbers, emails, and insurance info — extracted naturally mid-conversation.',
+    description: 'Names, phone numbers, emails, insurance info — extracted mid-chat.',
   },
   {
     icon: Shield,
     title: 'HIPAA-Ready Compliance',
-    description: 'Built-in data retention policies, audit logs, and session timeouts for healthcare practices.',
+    description: 'Built-in data retention, audit logs, and session controls.',
   },
   {
     icon: Zap,
     title: 'Live in Under 5 Minutes',
-    description: 'Paste one line of code on your site. Your AI agent starts converting visitors immediately.',
+    description: 'Paste one line of code. Start converting immediately.',
   },
   {
     icon: Users,
     title: 'Seamless Human Handoff',
-    description: 'When it matters most, conversations escalate to your team instantly — with full context.',
+    description: 'Escalates to your team instantly with full context.',
   },
 ];
 
