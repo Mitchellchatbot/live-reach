@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Star, Shield, Clock, Zap, Users, TrendingUp, MessageSquare, ArrowRight, Play, BarChart3, Heart } from 'lucide-react';
