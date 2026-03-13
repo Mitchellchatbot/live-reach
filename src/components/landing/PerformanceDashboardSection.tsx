@@ -9,7 +9,7 @@ const pills = [
 
 const bigStats = [
   { value: "35%", label: "More leads from existing traffic" },
-  { value: "27%", label: "Faster Google ad optimization" },
+  { value: "27%", label: "Faster Google Ads optimization" },
   { value: "<4s", label: "Average response time" },
 ];
 
