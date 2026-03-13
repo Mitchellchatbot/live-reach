@@ -37,14 +37,14 @@ const PerformanceDashboardSection = () => (
     <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-start">
       {/* ── LEFT COLUMN ── */}
       <div className="reveal opacity-0 translate-y-6 transition-all duration-700">
-        <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-4">Care-Assist — AI Chat Widget</p>
+        <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary mb-4">Care-Assist AI Chat</p>
 
         <h2 className="text-3xl md:text-[2.75rem] font-black leading-[1.1] tracking-tight mb-6">
           HIPAA Compliant.
           <br />
           35% More Leads.
           <br />
-          <span className="text-primary">27% Faster</span> Learning.
+          <span className="text-primary">27% Faster</span>.
         </h2>
 
 
