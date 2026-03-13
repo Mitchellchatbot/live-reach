@@ -163,7 +163,7 @@ fbq('track', 'PageView');`;
                 letterSpacing: '-0.04em',
                 textTransform: 'uppercase' as const,
                 marginBottom: '1rem',
-                background: 'linear-gradient(180deg, hsl(20 90% 38%) 0%, hsl(24 100% 50%) 100%)',
+                background: 'linear-gradient(180deg, hsl(24 100% 50%) 0%, hsl(24 100% 55%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
