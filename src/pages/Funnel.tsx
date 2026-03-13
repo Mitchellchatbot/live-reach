@@ -10,6 +10,9 @@ import { SalesChatBotInline } from '@/components/landing/SalesChatBotInline';
 import { SalesChatBot } from '@/components/landing/SalesChatBot';
 import PerformanceDashboardSection from '@/components/landing/PerformanceDashboardSection';
 import careAssistLogo from '@/assets/care-assist-logo.png';
+import googleLogo from '@/assets/logos/google-g.svg';
+import salesforceLogo from '@/assets/logos/salesforce.svg';
+import slackLogo from '@/assets/logos/slack.svg';
 
 const avatars = [sarahImg, michaelImg, jenniferImg];
 
@@ -243,6 +246,27 @@ fbq('track', 'PageView');`;
               <p className="text-sm md:text-base text-muted-foreground">
                 Clients using Care Assist report <span className="font-bold text-primary">35% more leads</span> and <span className="font-bold text-primary">4 additional VOBs</span> on average per month.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ INTEGRATIONS ═══════════════ */}
+      <section className="px-4 py-6 md:py-10 bg-background">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 reveal opacity-0 transition-all duration-700">Integrates with your tools</p>
+          <div className="flex items-center justify-center gap-6 md:gap-10 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+            <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={googleLogo} alt="Google" className="w-6 h-6 md:w-8 md:h-8" />
+              <span className="text-sm md:text-base font-semibold text-muted-foreground">Google</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={salesforceLogo} alt="Salesforce" className="w-6 h-6 md:w-8 md:h-8" />
+              <span className="text-sm md:text-base font-semibold text-muted-foreground">Salesforce</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={slackLogo} alt="Slack" className="w-6 h-6 md:w-8 md:h-8" />
+              <span className="text-sm md:text-base font-semibold text-muted-foreground">Slack</span>
             </div>
           </div>
         </div>
