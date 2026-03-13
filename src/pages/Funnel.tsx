@@ -371,44 +371,53 @@ fbq('track', 'PageView');`;
       <PerformanceDashboardSection />
 
       {/* ═══════════════ FINAL CTA WITH SALES CHAT ═══════════════ */}
-      <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden bg-background">
-        <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-primary/8 blur-[120px]" />
+      <section className="relative px-4 py-16 md:py-24 text-center overflow-hidden">
+        {/* Rich gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground via-foreground/95 to-foreground" />
+        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/20 blur-[150px]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[120px]" />
 
         <div className="max-w-4xl mx-auto relative z-10">
-          <h2 className="text-3xl md:text-5xl font-black mb-3 tracking-tight text-foreground reveal opacity-0 translate-y-4 transition-all duration-700">
+          <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5 mb-5 reveal opacity-0 transition-all duration-700">
+            <Zap className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Limited time offer</span>
+          </div>
+
+          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700" style={{ background: 'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(24 100% 70%) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             Try It FREE For 7 Days!
           </h2>
-          <p className="text-muted-foreground mb-10 text-lg max-w-xl mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
-            Every hour without CareAssist is leads walking away. Ask our AI anything about the product — or start your free trial now.
+          <p className="text-white/60 mb-10 text-base md:text-lg max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+            Every hour without Care Assist is leads walking away. Start converting more visitors today.
           </p>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
-            {/* Sales Chat Widget — inline */}
-            <div className="w-full max-w-[380px] reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
-              <div className="relative">
-                <div className="absolute -inset-2 rounded-3xl bg-primary/10 blur-lg" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border">
-                  <SalesChatBotInline />
-                </div>
-              </div>
-            </div>
-
-            {/* CTA side */}
-            <div className="flex flex-col items-center gap-5 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.35s' }}>
-              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Or skip the chat</p>
+          <div className="flex flex-col items-center gap-8">
+            {/* CTA Button */}
+            <div className="reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
               <div className="relative inline-block">
-                <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
+                <div className="absolute -inset-1 rounded-2xl bg-primary/40 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
                 <Button
                   onClick={handleCTA}
                   size="lg"
                   className="relative bg-primary text-primary-foreground hover:bg-primary/90 text-xl px-14 py-7 rounded-2xl shadow-2xl hover:shadow-primary/40 hover:scale-[1.03] transition-all duration-300 font-extrabold"
                 >
-                  Start Now <ArrowRight className="w-5 h-5 ml-2" />
+                  Start For Free <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </div>
-              <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> No credit card</span>
-                <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/15"><Check className="w-3.5 h-3.5 text-primary" /></span> Cancel anytime</span>
+            </div>
+
+            <div className="flex items-center justify-center gap-5 text-sm text-white/50 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20"><Check className="w-3.5 h-3.5 text-primary" /></span> No credit card</span>
+              <span className="flex items-center gap-1.5"><span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20"><Check className="w-3.5 h-3.5 text-primary" /></span> Cancel anytime</span>
+            </div>
+
+            {/* Inline chat widget */}
+            <div className="w-full max-w-[360px] reveal opacity-0 translate-y-6 transition-all duration-700" style={{ transitionDelay: '0.4s' }}>
+              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">Or ask our AI anything first</p>
+              <div className="relative">
+                <div className="absolute -inset-1 rounded-3xl bg-primary/15 blur-lg" />
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/20 border border-white/10">
+                  <SalesChatBotInline />
+                </div>
               </div>
             </div>
           </div>
