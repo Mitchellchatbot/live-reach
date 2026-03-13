@@ -195,6 +195,8 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
       auto_export_on_insurance_detected: config?.auto_export_on_insurance_detected ?? false,
       auto_export_on_phone_detected: config?.auto_export_on_phone_detected ?? false,
       field_mappings: mappingsObject,
+      client_id: config?.client_id || null,
+      client_secret: config?.client_secret || null,
     };
 
     let result;
