@@ -128,10 +128,9 @@ fbq('track', 'PageView');`;
 
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="relative px-4 pt-6 pb-6 md:pt-20 md:pb-14 overflow-hidden bg-background">
-        {/* Ambient background blobs */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[100px]" />
+        {/* Ambient background blobs — subtle */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/[0.06] blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/[0.04] blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Social proof badge */}
@@ -147,7 +146,7 @@ fbq('track', 'PageView');`;
 
 
           {/* Main headline — dramatic */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both', filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))' }}>
+          <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
             <h1
               style={{
                 fontSize: 'clamp(2.6rem, 12vw, 8rem)',
@@ -156,10 +155,11 @@ fbq('track', 'PageView');`;
                 letterSpacing: '-0.04em',
                 textTransform: 'uppercase' as const,
                 marginBottom: '1rem',
-                background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
+                background: 'linear-gradient(180deg, hsl(20 80% 20%) 0%, hsl(20 100% 40%) 50%, hsl(24 100% 50%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
+                filter: 'drop-shadow(0 4px 12px hsl(24 100% 50% / 0.2))',
               }}
             >
               Never Miss<br />Another Lead
