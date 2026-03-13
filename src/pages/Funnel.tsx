@@ -172,12 +172,8 @@ fbq('track', 'PageView');`;
             <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
-          <p className="text-xs md:text-sm tracking-widest uppercase font-semibold text-muted-foreground/70 mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
-            AI intake assistant&nbsp; · &nbsp;Engages visitors instantly&nbsp; · &nbsp;Routes to admissions
-          </p>
-
           {/* CTA Button — visible on mobile load */}
-          <div className="relative inline-block reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
+          <div className="relative inline-block mb-4 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
             <div className="absolute -inset-1 rounded-2xl bg-primary/30 blur-lg animate-[pulse_2.5s_ease-in-out_infinite]" />
             <Button
               onClick={handleCTA}
@@ -187,6 +183,10 @@ fbq('track', 'PageView');`;
               Start For Free
             </Button>
           </div>
+
+          <p className="text-xs md:text-sm tracking-widest uppercase font-semibold text-foreground animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
+            AI intake assistant&nbsp; · &nbsp;Engages visitors instantly&nbsp; · &nbsp;Routes to admissions
+          </p>
 
           <div className="flex flex-col items-center gap-1.5 mt-4 md:mt-6 reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.3s' }}>
             <p className="text-xs md:text-sm font-semibold text-foreground">Free trial · Plans starting at <span className="text-primary">$150/mo</span></p>
