@@ -242,17 +242,16 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ GET STARTED FORM ═══════════════ */}
-      <section className="relative px-4 py-14 md:py-20 overflow-hidden" ref={formRef} id="get-started-form">
+      <section className="relative px-4 py-14 md:py-20 overflow-hidden bg-background" ref={formRef} id="get-started-form">
         {/* Background accent */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5" />
-        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-primary/[0.05] to-transparent" />
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4 reveal opacity-0 transition-all duration-700">
-            <Zap className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold text-primary uppercase tracking-wider">Takes 2 minutes</span>
+          <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-5 py-2 mb-5 shadow-lg shadow-primary/25 reveal opacity-0 transition-all duration-700">
+            <Zap className="w-4 h-4" />
+            <span className="text-xs font-extrabold uppercase tracking-wider">Takes 2 minutes</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
+          <h2 className="text-4xl md:text-5xl font-black mb-3 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700" style={{ background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
             Get Started For Free
           </h2>
           <p className="text-muted-foreground mb-8 text-sm md:text-base max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
