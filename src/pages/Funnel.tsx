@@ -128,10 +128,9 @@ fbq('track', 'PageView');`;
 
       {/* ═══════════════ HERO ═══════════════ */}
       <section className="relative px-4 pt-6 pb-6 md:pt-20 md:pb-14 overflow-hidden bg-background">
-        {/* Ambient background blobs */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/15 blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.03] blur-[100px]" />
+        {/* Ambient background blobs — subtle */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/[0.06] blur-[120px] animate-[pulse_6s_ease-in-out_infinite]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/[0.04] blur-[140px] animate-[pulse_8s_ease-in-out_infinite]" style={{ animationDelay: '3s' }} />
 
         <div className="max-w-3xl mx-auto text-center relative z-10">
           {/* Social proof badge */}
