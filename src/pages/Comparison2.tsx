@@ -571,7 +571,6 @@ const Comparison2 = () => {
                       backgroundColor: 'rgba(255,255,255,0.08)',
                       color: 'white',
                       border: '1px solid rgba(255,255,255,0.12)',
-                      focusRingColor: PRIMARY_LIGHT,
                     }}
                   />
                   <input
