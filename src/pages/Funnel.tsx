@@ -275,14 +275,21 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ BENEFITS ═══════════════ */}
-      <section className="px-4 py-16 md:py-24 bg-background">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3 reveal opacity-0 translate-y-4 transition-all duration-700">
-            Every Click You Pay For<br className="hidden md:block" /> Deserves a Conversation
-          </h2>
-          <p className="text-center text-muted-foreground mb-14 max-w-2xl mx-auto reveal opacity-0 transition-all duration-700">
-            You're spending thousands on Google Ads and Meta — but your "Contact Us" form converts at 2%. Here's what happens when every visitor gets a real conversation instead.
-          </p>
+      <section className="relative px-4 py-16 md:py-24 bg-background overflow-hidden">
+        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.04] blur-[100px]" />
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-5 reveal opacity-0 transition-all duration-700">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold text-primary uppercase tracking-wider">Why it works</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4 reveal opacity-0 translate-y-4 transition-all duration-700">
+              Every Click You Pay For<br className="hidden md:block" /> Deserves a <span className="text-primary">Conversation</span>
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto text-sm md:text-base reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+              You're spending thousands on Google Ads and Meta — but your "Contact Us" form converts at 2%. Here's what changes when every visitor gets a real conversation.
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {benefits.map((b, i) => (
               <div
