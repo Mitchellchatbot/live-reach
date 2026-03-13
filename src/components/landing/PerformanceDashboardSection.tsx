@@ -47,11 +47,6 @@ const PerformanceDashboardSection = () => (
           <span className="text-primary">27% Faster</span> Learning.
         </h2>
 
-        <p className="text-muted-foreground leading-relaxed mb-8 max-w-md">
-          Most centers overlook this. When Care-Assist captures structured, qualified lead data consistently — your
-          Google and Meta campaigns receive cleaner conversion signals. Faster learning. Better targeting. Lower CPL
-          over time.
-        </p>
 
         {/* Pill badges */}
         <div className="grid grid-cols-2 gap-2.5 mb-8 max-w-md">
