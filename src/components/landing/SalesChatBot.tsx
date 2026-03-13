@@ -76,12 +76,25 @@ export const SalesChatBot = () => {
 
       if (error) throw error;
 
-      const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data?.reply || "Sorry, I couldn't process that. Try again!",
-      };
-      setMessages(prev => [...prev, botMsg]);
+      const reply = data?.reply || "Sorry, I couldn't process that. Try again!";
+      
+      // If the AI mentions the booking link, auto-navigate after a short delay
+      if (reply.includes('/book-demo') || reply.toLowerCase().includes('book a demo') || reply.toLowerCase().includes('pick a time')) {
+        const botMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: reply.replace(/https?:\/\/[^\s]+\/book-demo/g, '').trim(),
+        };
+        setMessages(prev => [...prev, botMsg]);
+        setTimeout(() => navigate('/book-demo'), 2000);
+      } else {
+        const botMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: reply,
+        };
+        setMessages(prev => [...prev, botMsg]);
+      }
     } catch (err) {
       console.error('Sales chat error:', err);
       setMessages(prev => [
