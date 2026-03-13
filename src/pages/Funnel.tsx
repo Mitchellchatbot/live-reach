@@ -242,22 +242,33 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ GET STARTED FORM ═══════════════ */}
-      <section className="px-4 py-12 md:py-16 bg-muted/40" ref={formRef} id="get-started-form">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-extrabold mb-3 reveal opacity-0 translate-y-4 transition-all duration-700">
+      <section className="relative px-4 py-14 md:py-20 overflow-hidden" ref={formRef} id="get-started-form">
+        {/* Background accent */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/10 to-primary/5" />
+        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px]" />
+
+        <div className="max-w-2xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4 reveal opacity-0 transition-all duration-700">
+            <Zap className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Takes 2 minutes</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight reveal opacity-0 translate-y-4 transition-all duration-700">
             Get Started For Free
           </h2>
-          <p className="text-muted-foreground mb-6 text-sm md:text-base max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
+          <p className="text-muted-foreground mb-8 text-sm md:text-base max-w-md mx-auto reveal opacity-0 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
             Fill out the form below and we'll get your AI agent set up in minutes.
           </p>
-          <div className="w-full rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-card p-4 md:p-6 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
-            <iframe
-              src="https://api.leadconnectorhq.com/widget/survey/VarcMdVarl1QzePQtEih"
-              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '600px' }}
-              scrolling="no"
-              id="VarcMdVarl1QzePQtEih"
-              title="Get Started Survey"
-            />
+          <div className="relative reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.2s' }}>
+            <div className="absolute -inset-1 rounded-3xl bg-primary/15 blur-lg" />
+            <div className="relative w-full rounded-2xl overflow-hidden border-2 border-primary/25 shadow-2xl shadow-primary/10 bg-card p-4 md:p-6">
+              <iframe
+                src="https://api.leadconnectorhq.com/widget/survey/VarcMdVarl1QzePQtEih"
+                style={{ width: '100%', border: 'none', overflow: 'hidden', height: '420px' }}
+                scrolling="no"
+                id="VarcMdVarl1QzePQtEih"
+                title="Get Started Survey"
+              />
+            </div>
           </div>
         </div>
       </section>
