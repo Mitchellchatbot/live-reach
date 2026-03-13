@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Calendar, Zap, Shield } from 'lucide-react';
+import { MessageCircle, X, Send, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import careAssistLogo from '@/assets/scaled-bot-logo.svg';
@@ -19,7 +19,7 @@ export const SalesChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [jiggling, setJiggling] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(true);
+  const [showSecondMessage, setShowSecondMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -30,41 +30,37 @@ export const SalesChatBot = () => {
     const openTimer = setTimeout(() => {
       setJiggling(false);
       setIsOpen(true);
-    }, 4500); // 1.5s wait + 3s jiggle = 4.5s then pop
+    }, 4500);
     return () => {
       clearTimeout(jiggleTimer);
       clearTimeout(openTimer);
     };
   }, []);
 
+  // After chat opens, show typing then second message
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isOpen && !showSecondMessage && messages.length === 0) {
+      const typingTimer = setTimeout(() => setIsTyping(true), 1500);
+      const msgTimer = setTimeout(() => {
+        setIsTyping(false);
+        setShowSecondMessage(true);
+      }, 4500); // 1.5s wait + 3s typing
+      return () => {
+        clearTimeout(typingTimer);
+        clearTimeout(msgTimer);
+      };
     }
-  }, [isOpen, messages]);
+  }, [isOpen, showSecondMessage, messages.length]);
 
   const handleClose = () => {
     setIsClosing(true);
-  };
-
-  const handleOpenChat = () => {
-    setShowQuickActions(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
-  };
-
-  const handleBookDemo = () => {
-    window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank');
-  };
-
-  const handleTryFree = () => {
-    navigate('/auth');
   };
 
   const handleSend = async () => {
     const text = input.trim();
     if (!text || isTyping) return;
 
-    setShowQuickActions(false);
+    
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     const updated = [...messages, userMsg];
     setMessages(updated);
@@ -157,31 +153,22 @@ export const SalesChatBot = () => {
               </div>
               <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
                 <p className="text-[12px] text-foreground">
-                  👋 Hey! How can I help you today?
+                  Hey! I'm Emily from Care-Assist. Want to see how centers capture 35% more leads? 😊
                 </p>
               </div>
             </div>
 
-            {/* Quick action buttons inside chat */}
-            {showQuickActions && messages.length === 0 && (
-              <div className="flex flex-col gap-1.5 pl-8 animate-fade-in">
-                {[
-                  { onClick: handleOpenChat, icon: MessageCircle, label: 'Ask a Question' },
-                  { onClick: handleBookDemo, icon: Calendar, label: 'Book a Demo' },
-                  { onClick: handleTryFree, icon: Zap, label: 'Try For Free' },
-                ].map((item, i) => (
-                  <button
-                    key={item.label}
-                    onClick={item.onClick}
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
-                    style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'both' }}
-                  >
-                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
-                      <item.icon className="h-3 w-3 text-primary group-hover:text-primary-foreground transition-colors" />
-                    </div>
-                    <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
-                  </button>
-                ))}
+            {/* Second message after typing */}
+            {showSecondMessage && messages.length === 0 && (
+              <div className="flex gap-2 animate-fade-in">
+                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
+                  <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
+                </div>
+                <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
+                  <p className="text-[12px] text-foreground">
+                    I can show you in a quick demo. Our clients capture 4 additional VOBs per month on average 🧡😊
+                  </p>
+                </div>
               </div>
             )}
 
