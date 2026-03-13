@@ -19,7 +19,7 @@ export const SalesChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [jiggling, setJiggling] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(true);
+  const [showSecondMessage, setShowSecondMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -30,34 +30,30 @@ export const SalesChatBot = () => {
     const openTimer = setTimeout(() => {
       setJiggling(false);
       setIsOpen(true);
-    }, 4500); // 1.5s wait + 3s jiggle = 4.5s then pop
+    }, 4500);
     return () => {
       clearTimeout(jiggleTimer);
       clearTimeout(openTimer);
     };
   }, []);
 
+  // After chat opens, show typing then second message
   useEffect(() => {
-    if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isOpen && !showSecondMessage && messages.length === 0) {
+      const typingTimer = setTimeout(() => setIsTyping(true), 1500);
+      const msgTimer = setTimeout(() => {
+        setIsTyping(false);
+        setShowSecondMessage(true);
+      }, 4500); // 1.5s wait + 3s typing
+      return () => {
+        clearTimeout(typingTimer);
+        clearTimeout(msgTimer);
+      };
     }
-  }, [isOpen, messages]);
+  }, [isOpen, showSecondMessage, messages.length]);
 
   const handleClose = () => {
     setIsClosing(true);
-  };
-
-  const handleOpenChat = () => {
-    setShowQuickActions(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
-  };
-
-  const handleBookDemo = () => {
-    window.open('https://calendly.com/care-assist-support/support-call-clone', '_blank');
-  };
-
-  const handleTryFree = () => {
-    navigate('/auth');
   };
 
   const handleSend = async () => {
