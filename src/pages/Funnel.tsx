@@ -436,15 +436,14 @@ fbq('track', 'PageView');`;
       <SalesChatBot />
 
       {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
-      <div className={`fixed bottom-0 inset-x-0 z-40 md:hidden transition-transform duration-300 ${showStickyFooter ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="bg-card/95 backdrop-blur-lg border-t border-border/50 px-4 py-3">
-          <Button
-            onClick={() => navigate('/book-demo')}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 text-sm font-bold shadow-md shadow-primary/20"
-          >
-            Book a Demo
-          </Button>
-        </div>
+      <div className={`fixed bottom-4 left-4 z-40 md:hidden transition-all duration-300 ${showStickyFooter ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
+        <Button
+          onClick={() => navigate('/book-demo')}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5 py-2 text-sm font-bold shadow-lg shadow-primary/25"
+          size="sm"
+        >
+          Book a Demo
+        </Button>
       </div>
     </div>
   );
