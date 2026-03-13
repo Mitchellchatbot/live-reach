@@ -135,9 +135,9 @@ export default {
         },
         "attention-bounce": {
           "0%, 100%": { transform: "translateY(0)" },
-          "15%": { transform: "translateY(-12px)" },
+          "15%": { transform: "translateY(-5px)" },
           "30%": { transform: "translateY(0)" },
-          "45%": { transform: "translateY(-6px)" },
+          "45%": { transform: "translateY(-2px)" },
           "60%": { transform: "translateY(0)" },
         },
         "float-in-left": {
