@@ -315,18 +315,18 @@ fbq('track', 'PageView');`;
       {/* ═══════════════ HOW IT WORKS ═══════════════ */}
       <section className="px-4 py-16 md:py-24 bg-muted">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-14 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
-          <div className="space-y-6 text-left">
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-10 reveal opacity-0 translate-y-4 transition-all duration-700">How It Works</h2>
+          <div className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.1s' }}>
             {[
               { step: '1', title: 'Paste One Line of Code', desc: 'Add the widget to your site in under 2 minutes. Works with WordPress, Wix, Squarespace — anything.' },
               { step: '2', title: 'AI Engages Every Visitor', desc: 'Within 3 seconds of landing, visitors get a warm, human-sounding conversation that naturally captures their name, phone, and insurance.' },
               { step: '3', title: 'Your Team Gets Warm Leads', desc: 'Slack ping, email alert, or Salesforce record — your admissions team gets notified instantly with full conversation context.' },
-            ].map((s, i) => (
-              <div key={s.step} className="flex gap-5 items-start bg-background rounded-2xl p-5 border border-border shadow-sm reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: `${i * 0.12}s` }}>
+            ].map((s, i, arr) => (
+              <div key={s.step} className={cn("flex gap-5 items-start p-5", i < arr.length - 1 && "border-b border-border/50")}>
                 <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-md shadow-primary/20">
                   <span className="font-bold text-primary-foreground">{s.step}</span>
                 </div>
-                <div>
+                <div className="text-left">
                   <h3 className="font-bold text-lg mb-1">{s.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{s.desc}</p>
                 </div>
