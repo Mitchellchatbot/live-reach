@@ -276,10 +276,9 @@ fbq('track', 'PageView');`;
       </section>
 
       {/* ═══════════════ BENEFITS ═══════════════ */}
-      <section className="relative px-4 py-16 md:py-24 bg-background overflow-hidden">
-        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.04] blur-[100px]" />
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="text-center mb-10">
+      <section className="relative px-4 py-14 md:py-20 bg-background overflow-hidden">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-5 reveal opacity-0 transition-all duration-700">
               <TrendingUp className="w-4 h-4 text-primary" />
               <span className="text-xs font-bold text-primary uppercase tracking-wider">Why it works</span>
@@ -291,26 +290,19 @@ fbq('track', 'PageView');`;
               Your forms convert at 2%. Our AI converts at 35%.
             </p>
           </div>
-          <div className="relative">
-            <div className="flex gap-5 animate-[slide_25s_linear_infinite] hover:[animation-play-state:paused]" style={{ width: 'max-content' }}>
-              {[...benefits, ...benefits].map((b, i) => (
-                <div
-                  key={i}
-                  className="group relative bg-gradient-to-br from-card to-muted/50 border border-border/60 rounded-2xl p-7 w-[320px] shrink-0 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 overflow-hidden"
-                >
-                  <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors duration-500" />
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
-                      <b.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-                    </div>
-                    <h3 className="font-bold text-lg mb-2.5 text-foreground">{b.title}</h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">{b.description}</p>
-                  </div>
+          <div className="grid grid-cols-2 gap-3 md:gap-5 reveal opacity-0 translate-y-4 transition-all duration-700" style={{ transitionDelay: '0.15s' }}>
+            {benefits.slice(0, 4).map((b, i) => (
+              <div
+                key={i}
+                className="bg-card border border-border/60 rounded-2xl p-5 md:p-6 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300"
+              >
+                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-3">
+                  <b.icon className="w-5 h-5 text-primary" />
                 </div>
-              ))}
-            </div>
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+                <h3 className="font-bold text-sm md:text-base mb-1.5 text-foreground">{b.title}</h3>
+                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{b.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
