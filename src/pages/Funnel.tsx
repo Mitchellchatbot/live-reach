@@ -89,7 +89,9 @@ const Funnel = () => {
   }, []);
 
   const [showStickyFooter, setShowStickyFooter] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
   const handleCTA = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   useEffect(() => {
@@ -126,7 +128,13 @@ fbq('track', 'PageView');`;
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setShowStickyFooter(window.scrollY > 400);
+    const onScroll = () => {
+      setShowStickyFooter(window.scrollY > 400);
+      if (videoRef.current) {
+        const rect = videoRef.current.getBoundingClientRect();
+        if (rect.bottom < 0) setShowChatBot(true);
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -203,7 +211,7 @@ fbq('track', 'PageView');`;
           </div>
 
           {/* VSL Vimeo Embed — below CTA on mobile */}
-          <div className="relative max-w-2xl mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
+          <div ref={videoRef} className="relative max-w-2xl mx-auto mt-8 md:mt-10 animate-fade-in" style={{ animationDelay: '0.7s', animationFillMode: 'both' }}>
             <div className="relative rounded-2xl overflow-hidden shadow-xl border-2 bg-black" style={{ borderColor: '#F97116' }}>
               <div className="aspect-video rounded-xl overflow-hidden">
                 <iframe
@@ -460,8 +468,8 @@ fbq('track', 'PageView');`;
         </div>
       </section>
 
-      {/* Floating sales chat widget */}
-      <SalesChatBot />
+      {/* Floating sales chat widget — appears after scrolling past video */}
+      {showChatBot && <SalesChatBot />}
 
       {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
       <div className={`fixed bottom-0 inset-x-0 z-40 md:hidden transition-all duration-300 ${showStickyFooter ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
