@@ -168,13 +168,13 @@ export const SalesChatBot = () => {
                   <button
                     key={item.label}
                     onClick={item.onClick}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 group animate-fade-in"
                     style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'both' }}
                   >
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                      <item.icon className="h-3.5 w-3.5 text-primary group-hover:text-primary-foreground transition-colors" />
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
+                      <item.icon className="h-3 w-3 text-primary group-hover:text-primary-foreground transition-colors" />
                     </div>
-                    <span className="text-[13px] font-semibold text-foreground">{item.label}</span>
+                    <span className="text-[11px] font-semibold text-foreground">{item.label}</span>
                   </button>
                 ))}
               </div>
