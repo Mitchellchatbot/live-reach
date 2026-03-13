@@ -153,7 +153,7 @@ export const SalesChatBot = () => {
               </div>
               <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
                 <p className="text-[12px] text-foreground">
-                  👋 Hey! How can I help you today?
+                  Hey! I'm Emily from Care-Assist. Want to see how centers capture 35% more leads? 😊
                 </p>
               </div>
             </div>
