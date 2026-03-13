@@ -26,11 +26,11 @@ export const SalesChatBot = () => {
 
   // Jiggle then auto-open after delay
   useEffect(() => {
-    const jiggleTimer = setTimeout(() => setJiggling(true), 2500);
+    const jiggleTimer = setTimeout(() => setJiggling(true), 1500);
     const openTimer = setTimeout(() => {
       setJiggling(false);
       setIsOpen(true);
-    }, 4500);
+    }, 4500); // 1.5s wait + 3s jiggle = 4.5s then pop
     return () => {
       clearTimeout(jiggleTimer);
       clearTimeout(openTimer);
