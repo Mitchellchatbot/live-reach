@@ -146,7 +146,7 @@ fbq('track', 'PageView');`;
 
 
           {/* Main headline — dramatic */}
-          <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both', filter: 'drop-shadow(0 6px 20px hsl(var(--primary) / 0.35))' }}>
+          <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
             <h1
               style={{
                 fontSize: 'clamp(2.6rem, 12vw, 8rem)',
@@ -155,10 +155,11 @@ fbq('track', 'PageView');`;
                 letterSpacing: '-0.04em',
                 textTransform: 'uppercase' as const,
                 marginBottom: '1rem',
-                background: 'linear-gradient(135deg, hsl(24 100% 55%) 0%, hsl(20 100% 48%) 50%, hsl(28 100% 55%) 100%)',
+                background: 'linear-gradient(180deg, hsl(20 80% 20%) 0%, hsl(20 100% 40%) 50%, hsl(24 100% 50%) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
+                filter: 'drop-shadow(0 4px 12px hsl(24 100% 50% / 0.2))',
               }}
             >
               Never Miss<br />Another Lead
