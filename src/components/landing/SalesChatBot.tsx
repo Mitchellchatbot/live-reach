@@ -150,8 +150,8 @@ export const SalesChatBot = () => {
               <div className="h-6 w-6 rounded-full overflow-hidden shrink-0">
                 <img src={agentAvatar} alt="" className="h-full w-full object-cover" />
               </div>
-              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[85%]">
-                <p className="text-[13px] text-foreground">
+              <div className="bg-muted/50 rounded-2xl rounded-tl-sm px-2.5 py-2 max-w-[85%]">
+                <p className="text-[12px] text-foreground">
                   👋 Hey! How can I help you today?
                 </p>
               </div>
