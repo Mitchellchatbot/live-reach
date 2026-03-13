@@ -84,10 +84,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Read managed credentials from env
-    const clientId = Deno.env.get("SALESFORCE_CLIENT_ID");
+    // Prefer per-property credentials from DB, fallback to env
+    const { data: sfSettings } = await serviceClient
+      .from("salesforce_settings")
+      .select("client_id")
+      .eq("property_id", propertyId)
+      .single();
+
+    const clientId = sfSettings?.client_id || Deno.env.get("SALESFORCE_CLIENT_ID");
     if (!clientId) {
-      return new Response(JSON.stringify({ error: "Salesforce integration not configured" }), {
+      return new Response(JSON.stringify({ error: "Salesforce integration not configured. Please enter your Connected App credentials." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

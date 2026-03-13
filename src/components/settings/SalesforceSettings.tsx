@@ -396,12 +396,66 @@ export const SalesforceSettings = ({ propertyId }: SalesforceSettingsProps) => {
               <div className="text-center space-y-1">
                 <p className="font-medium">Connect your Salesforce account</p>
                 <p className="text-sm text-muted-foreground max-w-sm">
-                  Click below to sign in with Salesforce and grant access. No credentials needed — just log in and approve.
+                  Enter your Salesforce Connected App credentials, then click Connect to authorize.
+                </p>
+              </div>
+              <div className="w-full max-w-sm space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="sf-client-id" className="flex items-center gap-1.5 text-xs">
+                    <KeyRound className="h-3 w-3" />
+                    Consumer Key (Client ID)
+                  </Label>
+                  <Input
+                    id="sf-client-id"
+                    placeholder="3MVG9..."
+                    value={config?.client_id ?? ''}
+                    onChange={(e) => setConfig(prev => prev ? { ...prev, client_id: e.target.value } : {
+                      id: '', enabled: false, instance_url: null, auto_export_on_escalation: false,
+                      auto_export_on_conversation_end: false, auto_export_on_insurance_detected: false,
+                      auto_export_on_phone_detected: false, field_mappings: {}, client_id: e.target.value, client_secret: '',
+                    })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="sf-client-secret" className="flex items-center gap-1.5 text-xs">
+                    <KeyRound className="h-3 w-3" />
+                    Consumer Secret
+                  </Label>
+                  <Input
+                    id="sf-client-secret"
+                    type="password"
+                    placeholder="Enter consumer secret"
+                    value={config?.client_secret ?? ''}
+                    onChange={(e) => setConfig(prev => prev ? { ...prev, client_secret: e.target.value } : {
+                      id: '', enabled: false, instance_url: null, auto_export_on_escalation: false,
+                      auto_export_on_conversation_end: false, auto_export_on_insurance_detected: false,
+                      auto_export_on_phone_detected: false, field_mappings: {}, client_id: '', client_secret: e.target.value,
+                    })}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Find these in Salesforce → Setup → App Manager → Your Connected App → View
                 </p>
               </div>
               <Button 
-                disabled={connecting}
-                onClick={handleConnect}
+                disabled={connecting || !config?.client_id || !config?.client_secret}
+                onClick={async () => {
+                  // Save credentials first, then connect
+                  if (config?.client_id && config?.client_secret) {
+                    const upsertData = {
+                      property_id: propertyId,
+                      client_id: config.client_id,
+                      client_secret: config.client_secret,
+                    };
+                    if (config.id) {
+                      await supabase.from('salesforce_settings').update(upsertData).eq('id', config.id);
+                    } else {
+                      const { data: newRow } = await supabase.from('salesforce_settings').upsert({ ...upsertData, field_mappings: {} }, { onConflict: 'property_id' }).select().single();
+                      if (newRow) setConfig(prev => prev ? { ...prev, id: newRow.id } : prev);
+                    }
+                  }
+                  handleConnect();
+                }}
               >
                 {connecting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

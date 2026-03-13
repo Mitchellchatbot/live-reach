@@ -186,14 +186,14 @@ Deno.serve(async (req) => {
       .update({ pending_oauth_token: null, pending_oauth_expires_at: null, pending_code_verifier: null })
       .eq("property_id", propertyId);
 
-    // Read managed credentials from env secrets
-    const clientId = Deno.env.get("SALESFORCE_CLIENT_ID");
-    const clientSecret = Deno.env.get("SALESFORCE_CLIENT_SECRET");
+    // Prefer per-property credentials from DB, fallback to env secrets
+    const clientId = settings.client_id || Deno.env.get("SALESFORCE_CLIENT_ID");
+    const clientSecret = settings.client_secret || Deno.env.get("SALESFORCE_CLIENT_SECRET");
 
     if (!clientId || !clientSecret) {
-      console.error("Missing SALESFORCE_CLIENT_ID or SALESFORCE_CLIENT_SECRET env vars");
+      console.error("Missing Salesforce credentials for property:", propertyId);
       return new Response(
-        renderPage('error', 'Salesforce integration is not configured.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');`),
+        renderPage('error', 'Salesforce integration is not configured. Please enter your Connected App credentials in settings.', `window.opener?.postMessage({type:'salesforce-oauth-error',error:'missing_credentials'},'*');`),
         { headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
