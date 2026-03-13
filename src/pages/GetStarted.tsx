@@ -28,8 +28,8 @@ const GetStarted = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-start px-3 md:px-4 py-6 md:py-16">
-        <div className="max-w-2xl w-full text-center space-y-4 md:space-y-6">
+      <main className="flex-1 flex flex-col items-center justify-start px-4 py-10 md:py-16">
+        <div className="max-w-2xl w-full text-center space-y-6">
           {/* Social proof */}
           <div className="inline-flex items-center gap-2 bg-muted/60 rounded-full px-4 py-1.5">
             <div className="flex gap-0.5">
@@ -41,35 +41,25 @@ const GetStarted = () => {
           </div>
 
           {/* Heading */}
-          <h1 className="text-2xl md:text-5xl font-bold tracking-tight text-foreground">
-            Get Started For{' '}
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
+            Start For{' '}
             <span className="text-primary">Free</span>
           </h1>
-          <p className="text-muted-foreground text-sm md:text-lg max-w-xl mx-auto">
-            Fill out the form below and we'll get your AI agent set up in minutes.
+          <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+            Fill out the form below and we'll get your AI agent set up. Takes less than 60 seconds.
           </p>
 
           {/* Trust signals */}
-          <div className="flex items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/15">
-                <Check className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" />
-              </span>
-              No credit card
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="flex items-center justify-center w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/15">
-                <Check className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary" />
-              </span>
-              Cancel anytime
-            </span>
+          <div className="flex items-center justify-center gap-5 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> No credit card</span>
+            <span className="flex items-center gap-1.5"><Check className="w-4 h-4 text-primary" /> Cancel anytime</span>
           </div>
 
           {/* Survey/Form Embed */}
-          <div className="w-full mt-4 md:mt-6 rounded-xl md:rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-card p-1.5 md:p-6">
+          <div className="w-full mt-6 rounded-2xl overflow-hidden border border-border/50 shadow-lg bg-card p-4 md:p-6">
             <iframe
               src="https://api.leadconnectorhq.com/widget/survey/VarcMdVarl1QzePQtEih"
-              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '500px' }}
+              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '600px' }}
               scrolling="no"
               id="VarcMdVarl1QzePQtEih"
               title="Get Started Survey"

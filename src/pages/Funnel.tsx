@@ -166,15 +166,10 @@ fbq('track', 'PageView');`;
             </h1>
           </div>
 
-          {/* Descriptor */}
-          <p className="text-sm md:text-lg text-muted-foreground mb-3 md:mb-5 animate-fade-in max-w-lg mx-auto" style={{ animationDelay: '0.5s', animationFillMode: 'both' }}>
-            AI intake assistant that engages website visitors instantly and routes qualified inquiries directly to admissions.
-          </p>
-
           {/* Sub-headline */}
-          <p className="text-base md:text-2xl mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.6s', animationFillMode: 'both' }}>
-            <span className="font-extrabold text-foreground">Start For</span>{' '}
-            <span className="font-extrabold text-primary">Free</span>
+          <p className="text-base md:text-2xl mb-5 md:mb-10 animate-fade-in max-w-md mx-auto" style={{ animationDelay: '0.55s', animationFillMode: 'both' }}>
+            <span className="font-extrabold text-foreground">Care Assist</span>{' '}
+            <span className="text-muted-foreground">captures an additional <span className="font-bold text-primary">35% more leads</span> from your existing website traffic.</span>
           </p>
 
           {/* CTA Button — visible on mobile load */}
