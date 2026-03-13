@@ -35,6 +35,8 @@ interface SalesforceConfig {
   auto_export_on_insurance_detected: boolean;
   auto_export_on_phone_detected: boolean;
   field_mappings: Record<string, string>;
+  client_id: string;
+  client_secret: string;
 }
 
 interface SalesforceField {
