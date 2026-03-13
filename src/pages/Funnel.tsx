@@ -445,17 +445,10 @@ fbq('track', 'PageView');`;
 
       {/* ═══════════════ STICKY FOOTER CTA (mobile) ═══════════════ */}
       <div className={`fixed bottom-0 inset-x-0 z-40 md:hidden transition-transform duration-300 ${showStickyFooter ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="bg-card/95 backdrop-blur-lg border-t border-border/50 px-4 py-3 flex gap-2.5">
+        <div className="bg-card/95 backdrop-blur-lg border-t border-border/50 px-4 py-3">
           <Button
-            onClick={handleCTA}
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 text-sm font-bold shadow-md shadow-primary/20"
-          >
-            Start For Free
-          </Button>
-          <Button
-            onClick={handleCTA}
-            variant="outline"
-            className="flex-1 border-primary/30 text-primary hover:bg-accent rounded-xl py-3 text-sm font-bold"
+            onClick={() => navigate('/book-demo')}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl py-3 text-sm font-bold shadow-md shadow-primary/20"
           >
             Book a Demo
           </Button>
